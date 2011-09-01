@@ -11,6 +11,8 @@ citEntry(entry="article",
            as.person("Giovanni Parmigiani"), as.person("Michael F. Ochs")),
          year = 2010,
          journal = "Bioinformatics",
-         note = "Manuscript Submitted",
-         textVersion = "E.J. Fertig, J. Ding, A.V. Favorov, G. Parmigiani, and M.F. Ochs (2010) CoGAPS: an integrated R/C++ package to identify overlapping patterns of activation of biological processes from expression data.  Manuscript Submitted to Bioinformatics.")
+	 volume = "26",
+	 number = "21",
+	 pages = "2792--2793",
+         textVersion = "E.J. Fertig, J. Ding, A.V. Favorov, G. Parmigiani, and M.F. Ochs (2010) CoGAPS: an integrated R/C++ package to identify overlapping patterns of activation of biological processes from expression data.  Bioinformatics 26:2792-2793.")
            

@@ -25,9 +25,9 @@ email: \texttt{ejfertig@jhmi.edu}}
 
 \chapter{Installation Instructions} \label{install}
 
-\par The GAPS and CoGAPS algorithms are implemented in an open source C++ software based upon JAGS version 2.1.0 (GAPS-JAGS) and an R package to facilitate the running (CoGAPS, available through Bioconductor).  The CoGAPS package relies on the interface between R and JAGS, rjags.  It is important to link rjags to our redistribution of JAGS, GAPS-JAGS, to ensure proper interfacing between the GAPS algorithm and R.  
+\par The GAPS and CoGAPS algorithms are implemented in an open source C++ software based upon JAGS version 2.1.0 (GAPS-JAGS) and an R package to facilitate the running (CoGAPS, available through Bioconductor).  It is important to link CoGAPS to our distribution of GAPS-JAGS to ensure proper interfacing between the GAPS algorithm and R.  
 
-\par The installation instructions provided in this section describe procedures to compile GAPS-JAGS (Section \ref{GAPSJAGSInstall}), to link GAPS-JAGS libraries to rjags (Section \ref{rjagsInstall}), and install the CoGAPS Bioconductor package (Section \ref{CoGAPSInstall}).  We recommend that users proceed with installation in this order; i.e., first install GAPS-JAGS according to Section \ref{GAPSJAGSInstall}, then install rjags according to Section \ref{rjagsInstall}, and finally install the CoGAPS Bioconductor package according to Section \ref{CoGAPSInstall}.  We note that the GAPS-JAGS and rjags installation follow the procedures for likewise installing the standard JAGS software, with the caveat that JAGS has been replaced by our software GAPS-JAGS.
+\par The installation instructions provided in this section describe procedures to compile GAPS-JAGS (Section \ref{GAPSJAGSInstall}) and install the CoGAPS Bioconductor package and link this package to the GAPS-JAGS libraries (Section \ref{CoGAPSInstall}).  We recommend that users proceed with installation in this order; i.e., first install GAPS-JAGS according to Section \ref{GAPSJAGSInstall} and then install the CoGAPS Bioconductor package according to Section \ref{CoGAPSInstall}. 
 
 \section{GAPS-JAGS} \label{GAPSJAGSInstall}
 
@@ -66,39 +66,40 @@ make install
 
 \par We provide an executable which installs GAPS-JAGS in Windows called \texttt{gaps-jags-1.0.0-setup.exe} at \url{http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm}.  To install GAPS-JAGS, download and run this executable, following the installation instructions noted on the screen.  Keep note of the directory to which GAPS-JAGS was installed for the installation of rjags (by default \nolinkurl{C:\\Program Files\\GAPS-JAGS\\GAPS-JAGS-1.0.2}).  If you wish to compile GAPS-JAGS yourself, follow the instructions in the JAGS installation manual (\url{http://sourceforge.net/projects/mcmc-jags/files/}).
 
-\section{rjags} \label{rjagsInstall}
 
-\par Throughout this section, we will assume that GAPS-JAGS was successfully installed into the directory \$GAPSJAGS\_PATH.
+\section{CoGAPS} \label{CoGAPSInstall}
+
+\par Throughout this section, we will assume that GAPS-JAGS was successfully installed into the directory \$GAPSJAGS\_PATH
+
+\par Before installing the CoGAPS R package, standard R procedures should be followed to install the package \texttt{R.utils}.  Once installed, the following subsections contain instructions to install the CoGAPS package on the Unix / Mac and the Windows operating systems.
 
 \subsection{Unix / Mac}
 
 \par On Unix or Mac, use the following command inside R to install rjags and integrate the GAPS-JAGS libraries in \$GAPSJAGS\_PATH:
 \begin{verbatim}
-> install.packages("rjags", 
-  configure.args="--with-jags-include=${GAPSJAGS_PATH}/include/GAPS-JAGS 
-  --with-jags-lib=${GAPSJAGS_PATH}/lib 
-   --with-jags-modules=${GAPSJAGS_PATH}/lib/JAGS/modules-1.0.2")
+source("http://prs.ism.ac.jp/biocLite.R")
+bioCLite("CoGAPS", configure.args="--with-jags-include=${GAPSJAGS_PATH}/include/GAPS-JAGS  --with-jags-lib=${GAPSJAGS_PATH}/lib --with-jags-modules=${GAPSJAGS_PATH}/lib/JAGS/modules-1.0.2")
 \end{verbatim}
 If this installation fails, try installing rjags from another mirror.  Installation on Mac may require adding the flag \texttt{type="source"} to \texttt{install.packages()}.
 
-\par Alternatively, the rjags package can be obtained through CRAN at \url{http://cran.r-project.org/web/packages/rjags/index.html}.  In this case, download the rjags source and install using the following command line argument:
+\par Alternatively, the CoGAPS package can be obtained through \url{http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm}.  In this case, download the CoGAPS source and install using the following command line argument:
 \begin{verbatim}
 R CMD INSTALL --configure-args=
    "--with-jags-include=${GAPSJAGS_PATH}/include/GAPS-JAGS 
     --with-jags-lib=${GAPSJAGS_PATH}/lib 
     --with-jags-modules=${GAPSJAGS_PATH}/lib/JAGS/modules-1.0.2" 
-    rjags_2.1.0-4.tar.gz
+    CoGAPS_1.3.1.tar.gz
 \end{verbatim}
 
-\par As before, this installation procedure requires administrative privileges to install the rjags package in R.  If you do not have administrative privileges, follow standard R procedures to install the package locally using the lib.loc option in \texttt{install.packages} or \texttt{-l} flag in \texttt{R CMD INSTALL}.
+\par As before, this installation procedure requires administrative privileges to install the CoGAPS package in R.  If you do not have administrative privileges, follow standard R procedures to install the package locally using the lib.loc option in \texttt{install.packages} or \texttt{-l} flag in \texttt{R CMD INSTALL}.
 
-\par In some platforms, the dynamic libraries may not be properly linked for loading the rjags package required by CoGAPS, leading to an error message such as
+\par In some platforms, the dynamic libraries may not be properly linked for loading the CoGAPS package, leading to an error message such as
 \begin{verbatim}
 Error in dyn.load(file, DLLpath=DLLpath, ...)  :
   unable to load shared library 'rjags.so'
   libjags.so.1 cannot open shared object file: No such file or directory
-Error : .onLoad failed in 'loadNamespace' for 'rjags'
-Error: package 'rjags' could not be loaded
+Error : .onLoad failed in 'loadNamespace' for 'CoGAPS'
+Error: package 'CoGAPS' could not be loaded
 \end{verbatim}
 In this case, the user should either set the environment variable \texttt{LD\_LIBRARY\_PATH} to \texttt{GAPSJAGS\_PATH/lib} or load in the dynamic libraries \texttt{libjags} and \texttt{libjrmath} manually as follows:
 \begin{verbatim}
@@ -108,7 +109,7 @@ In this case, the user should either set the environment variable \texttt{LD\_LI
 
 \subsection{Windows}
 
-\par Before installing or running rjags, the user must specify an environment variables \texttt{JAGS\_HOME} and \texttt{JAGS\_ROOT} specifying the location of GAPS-JAGS.  By default, \texttt{gaps-jags-1.0.2-setup.exe} will install GAPS-JAGS into \nolinkurl{C:\\Program Files\\GAPS-JAGS\\GAPS-JAGS-1.0.2}.  The corresponding environment variable can be set globally in Windows through the following steps
+\par Before installing or running CoGAPS, the user must specify an environment variables \texttt{JAGS\_HOME} and \texttt{JAGS\_ROOT} specifying the location of GAPS-JAGS.  By default, \texttt{gaps-jags-1.0.2-setup.exe} will install GAPS-JAGS into \nolinkurl{C:\\Program Files\\GAPS-JAGS\\GAPS-JAGS-1.0.2}.  The corresponding environment variable can be set globally in Windows through the following steps
 \begin{enumerate}
 \item Open the \texttt{start} menu.
 \item Right click on the \texttt{My Computer} icon and select \texttt{properties}.
@@ -129,28 +130,12 @@ In this case, the user should either set the environment variable \texttt{LD\_LI
 > Sys.setenv("JAGS_HOME"="${GAPSJAGS_PATH}")
 > Sys.setenv("JAGS_ROOT"="${GAPSJAGS_PATH}")
 \end{verbatim}
-In this case, the user must reenter these commands in each session of R in which rjags will be installed or run.
+In this case, the user must reenter these commands in each session of R in which CoGAPS will be installed or run.
 
-\par Once the environment variables \texttt{JAGS\_HOME} and \texttt{JAGS\_ROOT} have been set, use the following commands inside R to install rjags and integrate the GAPS-JAGS libraries in \$GAPSJAGS\_PATH:
+\par Once the environment variables \texttt{JAGS\_HOME} and \texttt{JAGS\_ROOT} have been set, use the following commands inside R to install CoGAPS and integrate the GAPS-JAGS libraries in \$GAPSJAGS\_PATH:
 \begin{verbatim}
-> install.packages("rjags")
+> install.packages("CoGAPS")
 \end{verbatim}
-
-\section{CoGAPS} \label{CoGAPSInstall}
-
-\par Before installing the CoGAPS R package, standard R procedures should be followed to install the package \texttt{R.utils}.  Once \texttt{R.utils} and \texttt{rjags} have been installed, the installation of CoGAPS should follow the standard R package installation procedure.  Namely, download the package CoGAPS from \url{http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm}.  On UNIX/Mac, install the package with the following command line argument:
-\begin{verbatim}
-R CMD INSTALL CoGAPS_0.99.1.tar.gz
-\end{verbatim}
-
-\par In Windows, a zip file containing the CoGAPS library will be provided when GAPS-JAGS is released for Windows.
-
-Install the package with the following command in R:
-\begin{verbatim}
-install.packages('CoGAPS.zip', repos=NULL, source=TRUE)
-\end{verbatim}
-
-\par As described in Section \ref{rjagsInstall}, CoGAPS can be installed into local directories using the lib.loc option in install packages or -l flag in R CMD INSTALL.
 
 \chapter{Running Instructions}
 

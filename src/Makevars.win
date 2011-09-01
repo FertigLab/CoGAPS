@@ -1,0 +1,5 @@
+ifeq ($(strip $(JAGS_ROOT)),)
+$(error JAGS_ROOT must be set. See README file for details)
+endif
+PKG_CPPFLAGS=-I"$(JAGS_ROOT)\include" 
+PKG_LIBS=-L"$(JAGS_ROOT)\lib" -ljags

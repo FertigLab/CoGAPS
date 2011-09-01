@@ -5,9 +5,6 @@ RunGAPS <- function(data, unc, numPatterns,
                     SAIter, iter, thin=1) {
 
 
-  # load in the matrix decomposition module
-  load.module(c("gaps"))
-
   # get the data needed for MCMC
   matrixDecompData <- GetDataListGAPS(data, unc, numPatterns,
                                       MaxAtomsA, alphaA, lambdaA,
