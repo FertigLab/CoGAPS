@@ -69,16 +69,19 @@ make install
 
 \section{CoGAPS} \label{CoGAPSInstall}
 
-\par Throughout this section, we will assume that GAPS-JAGS was successfully installed into the directory \$GAPSJAGS\_PATH
+\par Throughout this section, we will assume that GAPS-JAGS was successfully installed into the directory \$GAPSJAGS\_PATH.  
 
-\par Before installing the CoGAPS R package, standard R procedures should be followed to install the package \texttt{R.utils}.  Once installed, the following subsections contain instructions to install the CoGAPS package on the Unix / Mac and the Windows operating systems.
+\par Before installing the CoGAPS R package, standard R procedures should be followed to install the package \texttt{R.utils}.  If \$GAPSJAGS\_PATH the default \texttt{/usr/local} directory, CoGAPS can be installed with the standard Bioconductor installation commands.  Otherwise, the following subsections contain instructions to install the CoGAPS package on the Unix / Mac and the Windows operating systems.
 
 \subsection{Unix / Mac}
 
-\par On Unix or Mac, use the following command inside R to install rjags and integrate the GAPS-JAGS libraries in \$GAPSJAGS\_PATH:
+\par On Unix or Mac, use the following command inside R to install CoGAPS and integrate the GAPS-JAGS libraries in \$GAPSJAGS\_PATH:
 \begin{verbatim}
 source("http://prs.ism.ac.jp/biocLite.R")
-bioCLite("CoGAPS", configure.args="--with-jags-include=${GAPSJAGS_PATH}/include/GAPS-JAGS  --with-jags-lib=${GAPSJAGS_PATH}/lib --with-jags-modules=${GAPSJAGS_PATH}/lib/JAGS/modules-1.0.2")
+bioCLite("CoGAPS", 
+	configure.args="--with-jags-include=${GAPSJAGS_PATH}/include/GAPS-JAGS  
+		--with-jags-lib=${GAPSJAGS_PATH}/lib 
+		--with-jags-modules=${GAPSJAGS_PATH}/lib/JAGS/modules-1.0.2")
 \end{verbatim}
 If this installation fails, try installing rjags from another mirror.  Installation on Mac may require adding the flag \texttt{type="source"} to \texttt{install.packages()}.
 
