@@ -16,7 +16,7 @@ else
       if test [ "$prefix" = "NONE" ]; then
          AC_MSG_ERROR("Location of JAGS headers not defined. Use configure arg '--with-jags-include' or environment variable 'JAGS_INCLUDE'")
       else
-         JAGS_INCLUDE=${prefix}/include/JAGS
+         JAGS_INCLUDE=${prefix}/include/GAPS-JAGS
       fi
    fi
 fi
