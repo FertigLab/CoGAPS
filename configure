@@ -3347,7 +3347,7 @@ else
 $as_echo "$as_me: error: \"Location of JAGS library not defined. Use configure arg '--with-jags-lib' or environment variable 'JAGS_LIB'\"" >&2;}
    { (exit 1); exit 1; }; }
       else
-         JAGS_LIB=${prefix}/${LIBnn}
+         JAGS_LIB=${prefix}/lib
       fi
    fi
 fi
