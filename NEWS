@@ -1,3 +1,4 @@
 CoGAPS requires GAPS-JAGS available from http://www.cancerbiostats.onc.jhmi.edu/cogaps.cfm.  This c++ package is a redistribution of JAGS version 2.1.0 with a module implementing the GAPS matrix decomposition for microarray data.  Please see the installation instructions in the users manual.  If you have any questions, please comment Elana Fertig <ejfertig@jhmi.edu> or Michael Ochs <mfo@jhu.edu>.
 
 01Sep2011 - Removed dependency on rjags package on CRAN
+02Sep2011 - Included loading of jags libraries upon package loading to avoid setting the LD_LIBRARY_PATH variable
