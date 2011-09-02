@@ -61,7 +61,7 @@ else
       if test [ "${prefix}" = "NONE" ] ; then 
          AC_MSG_ERROR("Location of JAGS library not defined. Use configure arg '--with-jags-lib' or environment variable 'JAGS_LIB'")
       else
-         JAGS_LIB=${prefix}/${LIBnn}
+         JAGS_LIB=${prefix}/lib
       fi
    fi
 fi
