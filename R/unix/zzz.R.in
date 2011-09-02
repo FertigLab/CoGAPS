@@ -5,7 +5,7 @@
   if (is.null(getOption("jags.libdir"))) {
       options("jags.libdir" = libdir)
   }
-  jagsLib <- file.path(libdir, libjags.so)
+  jagsLib <- file.path(libdir, 'libjags.so')
   if (file.exists(jagsLib)) {
     dyn.load(jagsLib)
   } else {
