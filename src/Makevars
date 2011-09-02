@@ -1,2 +1,0 @@
-PKG_CPPFLAGS=-I/home/bst/other/ejfertig/GAPS-JAGS-1.0.2/local/include/GAPS-JAGS
-PKG_LIBS=-L/home/bst/other/ejfertig/GAPS-JAGS-1.0.2/local/lib -ljags
