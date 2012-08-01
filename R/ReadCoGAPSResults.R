@@ -72,7 +72,7 @@ ReadCoGAPSResults <- function(path=getwd(), output.list=TRUE) {
     M.matrix <- M[[fileIDS[1]]]
     colnames(M.matrix) <- paste(colnames(M[[fileIDS[1]]]),
        rep(fileIDS[1],ncol(M[[fileIDS[1]]])), sep=".")  
-    }
+    
     
     if (length(fileIDS)>1) {
       for (ID in fileIDS[2:length(fileIDS)]) {
