@@ -2,6 +2,10 @@ export(CoGAPS)
 export(GAPS)
 export(calcCoGAPSStat)
 export(plotGAPS)
+export(ReadCoGAPSResults)
+export(GSTargetHeatmaps)
+export(computeGeneGSProb)
+
 if(tools:::.OStype() == "windows") {
 importFrom(utils, readRegistry, winProgressBar, setWinProgressBar)
 }
@@ -12,6 +16,7 @@ importFrom(grDevices, dev.new, dev.off, pdf)
 importFrom(methods, is)
 importFrom(stats, heatmap, runif)
 importFrom(utils, read.table, write.table)
+importFrom(gplots, heatmap.2)
 S3method(coef, jags)
 S3method(update, jags)
 S3method(variable.names, jags)

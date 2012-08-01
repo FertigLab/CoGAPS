@@ -1,4 +1,4 @@
 CoGAPS		Algorithm for coordination of activity in gene sets with patterns from GAPS
 GAPS		MCMC matrix decomposition algorithm
-calcCoGASPStat	Computes the CoGAPS gene set statistic
+calcCoGASPStat	Computes the CoGAPS gene set statistic 
 LoadGAPSJAGSLib	Loads in the c++ libraries that perform the GAPS matrix decomposition.  Recommended to be performed before any run of CoGAPS.
