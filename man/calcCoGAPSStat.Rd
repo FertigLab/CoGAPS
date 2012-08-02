@@ -9,14 +9,14 @@ Computes the p-value for the association of underlying patterns from microarray 
   calcCoGAPSStat(Amean, Asd, GStoGenes, numPerm=500)}
 
 \arguments{
-\item{Amean}{Sampled mean value of the amplitude matrix \eqn{{\bf{A}}}.  \code{row.names(Amean)} must correspond to the gene names contained in GStoGenes.}
-\item{Asd}{Sampled standard deviation of the amplitude matrix \eqn{{\bf{A}}}.}
+\item{Amean}{Sampled mean value of the amplitude matrix \eqn{{{A}}}.  \code{row.names(Amean)} must correspond to the gene names contained in GStoGenes.}
+\item{Asd}{Sampled standard deviation of the amplitude matrix \eqn{{{A}}}.}
 \item{GStoGenes}{List or data frame containing the genes in each gene set. If a list, gene set names are the list names and corresponding elements are the names of genes contained in each set. If a data frame, gene set names are in the first column and corresponding gene names are listed in rows beneath each gene set name.}
 \item{numPerm}{Number of permuations used for the null distribution in the gene set statistic. (optional; default=500)}
 }
 
 \details{
-  This script links the patterns identified in the columns of \eqn{\bf{P}}  to activity in each of the gene sets specified in GStoGenes using a novel z-score based statistic developed in Ochs et al. (2009).  Specifically, the z-score for pattern \eqn{p} and gene set \eqn{G_{i}} containing $G$ total genes is given by \deqn{Z_{i,p} = \frac{1}{G} \sum_{g in \mathcal{G_{i}}} {\frac{{\bf{A}_{gp}}}{\sigma_{gp}}},} where \eqn{g} indexes the genes in the set and \eqn{\sigma_{gp}} is the standard deviation of \eqn{{\bf{A}}_{gp}} obtained from MCMC sampling.  CoGAPS then uses the specified \code{numPerm} random sample tests to compute a consistent p value estimate from that z score.
+  This script links the patterns identified in the columns of \eqn{{P}}  to activity in each of the gene sets specified in GStoGenes using a novel z-score based statistic developed in Ochs et al. (2009).  Specifically, the z-score for pattern \eqn{p} and gene set \eqn{G_{i}} containing \eqn{G} total genes is given by \deqn{Z_{i,p} = \frac{1}{G} \sum_{g in G_{i}}A_{gp} / \sigma_{gp}}, where \eqn{g} indexes the genes in the set and \eqn{\sigma_{gp}} is the standard deviation of \eqn{{{A}}_{gp}} obtained from MCMC sampling.  CoGAPS then uses the specified \code{numPerm} random sample tests to compute a consistent p value estimate from that z score.
 }
 
 \value{
