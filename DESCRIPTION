@@ -1,18 +1,19 @@
 Package: CoGAPS
 Version: 1.7.1
 Date: 2011-09-02
-Title: Coordinated Gene Activity in Pattern Sets 
+Title: Coordinated Gene Activity in Pattern Sets
 Author: Elana J. Fertig
 Description: Coordinated Gene Activity in Pattern Sets (CoGAPS) infers
   biological processes which are active in individual gene sets from
   corresponding microarray measurements.  CoGAPS achieves this inference by
   combining a MCMC matrix decomposition algorithm (GAPS) with a novel statistic
   inferring activity on gene sets. 
-Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>, Michael F. Ochs <mfo@jhu.edu>
+Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>, Michael F. Ochs
+        <mfo@jhu.edu>
 SystemRequirements: GAPS-JAGS (==1.0.2)
-Depends: R (>= 2.9.0), R.utils (>= 1.2.4), gplots (>=2.8.0)
+Depends: R (>= 2.9.0), R.utils (>= 1.2.4), gplots (>= 2.8.0)
 Imports: graphics, grDevices, methods, stats, utils
 License: GPL (== 2)
 URL: http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm
-biocViews: GeneExpression, Microarray, Bioinformatics 
-
+biocViews: GeneExpression, Microarray, Bioinformatics
+Packaged: 2012-08-01 20:06:49 UTC; ejfertig

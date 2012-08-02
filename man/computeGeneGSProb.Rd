@@ -3,7 +3,10 @@
 \alias{geneGSProb}
 \title{CoGAPS gene membership statistic}
 
-\description{Computes the p-value for gene set membership based on the CoGAPS inferred activity of genes relative to the activity of prior estimates for members of the gene sets.}
+\description{Computes the p-value for gene set membership using the CoGAPS-based statistics developed in Fertig et al. (2012).  This statistic refines set membership for each candidate gene in a set specified in \code{GSGenes} by comparing the inferred activity of that gene to the average activity of the set.  Specifically, we compute the following summary statistic for each gene \eqn{g} that is a candidate member of gene set \eqn{G}:
+\deqn{S_{g,G} = (\sum_{p} -log(Pr_{G,p})(A_{gp}/\sigma_{gp})) / \sum_{p}-log(Pr_{G,p}),}
+where \eqn{p} indexes each of the patterns, \eqn{Pr_{G,p}} is the probability that gene set \eqn{G} is upregulated computed with \code{\link{calcCoGAPSStat}}, \eqn{A_{gp}} is the mean amplitude matrix from the \code{GAPS} matrix factorization, and \eqn{\sigma_{gp}} is the standard deviation of the amplitude matrix. P-values are formulated from a permutation test comparing the value of \eqn{S_{g,G}} for genes in \code{GSGenes} relative to the value of \eqn{S_{g,G}} \code{numPerm} random gene sets with the same number of targets.
+}
 
 \usage{computeGeneGSProb(Amean, Asd, GSGenes, numPerm=500)}
 
@@ -15,7 +18,7 @@
 }
 
 \value{
-  A vector of length GSGenes containing the p-values of gene set membership.
+  A vector of length GSGenes containing the p-values of set membership for each gene containined in the set specified in GSGenes.
 }
 
 \examples{
