@@ -19,7 +19,7 @@ email: \texttt{ejfertig@jhmi.edu}}
 
 \par The GAPS algorithm is implemented in a module of the open source, C++ MCMC software Just Another Gibbs Sampler (JAGS; \url{http://www-fis.iarc.fr/~martyn/software/jags/}; \cite{Plummer2003}).  We call the software package containing this implementation of the GAPS algorithm GAPS-JAGS. As an extension including a redistribution of JAGS, GAPS-JAGS is also licensed under the GNU General Public License version 2.  You may freely modify and redistribute GAPS under certain conditions that are described in the top level source directory file \nolinkurl{COPYING}.
 
-\par The R package CoGAPS is designed to facilitate the corresponding analysis of microarray measurements by calling libraries in the GAPS-JAGS package.  The installation instructions provided in Chapter \ref{install} will ensure proper interaction between the CoGAPS R package and GAPS-JAGS libraries.  Running instructions for the GAPS and CoGAPS analyses are provided in Sections \ref{GAPSRun} and \ref{CoGAPSRun}, respectively.  CoGAPS and GAPS-JAGS are freely available at \url{http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm}.
+\par The R package CoGAPS is designed to facilitate the corresponding analysis of microarray measurements by calling libraries in the GAPS-JAGS package.  The installation instructions provided in Chapter \ref{install} will ensure proper interaction between the CoGAPS R package and GAPS-JAGS libraries.  Running instructions for the GAPS and CoGAPS analyses are provided in Sections \ref{GAPSRun} and \ref{CoGAPSRun}, respectively.  CoGAPS and GAPS-JAGS are freely available at \url{http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm}, \url{http://www.rits.onc.jhmi.edu/dbb/custom/A6/CoGAPS.cfm}, and \url{http://astor.som.jhmi.edu/~ejfertig/ejfertig/Software.html}.  
 
 \par If you use the \texttt{CoGAPS} package for your analysis please cite:
 \cite{Fertig2010} EJ Fertig, J Ding, AV Favorov, G Parmigiani, and MF Ochs (2010) CoGAPS: an R/C++ package to identify patterns and biological process activity in transcriptomic data. \textit{Bioinformatics} \textbf{26}: 2792-2793. 
@@ -374,6 +374,83 @@ message('Deleting analysis results from CoGAPS for Vignette')
 unlink('GISTResults', recursive=T)
 @  
 
+\section{Using CoGAPS-based statistics to infer gene membership in annotated gene sets}
+
+\par As we describe in the previous section, the GAPS matrix factorization can be used to infer gene set activity in each pattern the function \texttt{calcCoGAPSStat} \cite{Ochs2009}.  The \texttt{computeGeneGSProb} function extends this gene set statistic to compute a statistic quantifying the likely membership of each gene annotated to a set based upon its inferred activity \cite{Fertig2012}.  This statistic is formulated by comparing the expression pattern computed with CoGAPS of a given gene $g$ annotated as a member of $\mathcal{G}$ to the common expression pattern of all annotated members of $\mathcal{G}$.  This similarity is quantified with the following summary statistic
+\begin{equation}
+S_{g,\mathcal{G}} = \frac{\sum_{p} -log\left(\mbox{Pr}_{\mathcal{G}p}\right){\bf{A}}_{gp}/{\bf{Asd}}_{gp}}{\sum_{p} -log\left(\mbox{Pr}_{\mathcal{G}p}\right)},
+\label{eq:summaryGSStat}
+\end{equation}
+where $\mbox{Pr}_{\mathcal{G}p}$ is the probability of upregulation of the geneset, returned from \texttt{calcCoGAPSStat} as \texttt{GSActEst} based upon eq.~(\ref{eq:avgZ}).  Similar to the gene set statistics, p-values for the set membership are computed with permutation tests that compare the value of $S_{g,\mathcal{G}}$ from eq.~(\ref{eq:summaryGSStat}) to the statistic formulated for a random gene set of the same size that also contains gene $g$.  
+
+\par The set membership statistic is computed from the results from the GAPS matrix factorization, computed with either the \texttt{GAPS} function described in Section \ref{GAPSR un} or the \texttt{CoGAPS} function described in Section \ref{CoGAPSRun} as follows:
+\begin{verbatim}
+> computeGeneGSProb(Amean, Asd, GStoGenes, numPerm=500)
+\end{verbatim}
+
+\par \noindent \textbf{\underline{Input Arguments}}
+\begin{description}
+\item[Amean]{Mean amplitude matrix estimated from the GAPS matrix factorization}
+\item[Asd]{Standard deviation of the amplitude matrix estimated from the GAPS matrix factorization}
+\item[GStoGenes]{List or data frame containing the genes in each gene set. If a list, gene set names are the list names and corresponding elements are the names of genes contained in each set. If a data frame, gene set names are in the first column and corresponding gene names are listed in rows beneath each gene set name.}
+\item[nPerm]{Number of permutations used for the null distribution in the gene set and set membership statistics. (optional; default=500).}
+\end{description}
+  
+\par \noindent \textbf{\underline{Function Output}}
+\begin{description}
+\item p-value of set membership for each gene specified in \texttt{GStoGenes}.
+\end{description}
+
+\subsection{Examples}
+
+\par Although not run in the interest of installation time, the following examples were used to generate some of the results in \cite{Fertig2012}, with the complete analysis code available from \url{http://astor.som.jhmi.edu/~ejfertig/ejfertig/Publications.html}.
+
+\subsubsection{Simulated data}
+
+\par  In this example, we have simulated data in TFSimData (TFGeneReg\$D) with four known patterns (TFGeneReg\$P) and corresponding amplitude (TFGeneReg\$A) with specified activity in four gene sets (TFGeneReg\$TFGeneReg) from \cite{Fertig2012}.  The following code will generate the corresponding probability of membership for each gene in TFGeneReg\$TFGeneReg using the \texttt{computeGeneGSProb} statistic.  
+
+<<eval=FALSE, keep.source=TRUE>>=
+data(TFSimData)
+results <- GAPS(data=TFGeneReg$D,
+                		  unc=0.1*pmax(TFGeneReg$M,1),
+                		  isPercentError=FALSE,
+                		  numPatterns=4,
+                		  SAIter = 2*nIter, iter = nIter,
+                		  outputDir='GSResults')
+TFtargets <- lapply(TFGeneReg$TFGeneReg,names)
+TFGenesP <- lapply(TFtargets, function(x){
+   computeGeneGSProb(Amean=results$Amean, Asd=results$Asd, GSGenes=x)})
+@
+
+\subsubsection{GIST data}
+
+\par This example refines transcription factor targets annotated in TRANSFAC (TFGSList) to identify context-specific targets from gene expression data (GIST\_TS\_20084)from \cite{Ochs2009}.  
+
+<<eval=FALSE, keep.source=TRUE>>=
+# load the data
+data('GIST_TS_20084')
+data('TFGSList')
+
+# define transcription factors of interest based on Ochs et al. (2009)
+TFs <- c("c.Jun", 'NF.kappaB', 'Smad4', "STAT3", "Elk.1", "c.Myc", "E2F.1",
+         "AP.1", "CREB", "FOXO", "p53", "Sp1")
+
+# run the GAPS matrix factorization
+nIter <- 5e7
+
+GISTResults <- GAPS(data=GIST.D, unc=GIST.S,
+                    numPatterns=5, outputDir = 'GISTGSCoGAPS',
+                    isPercentError=F, SAIter=2*nIter, iter=nIter)
+
+# set membership statistics
+permTFStats <- list()
+for (tf in TFs) {
+     genes <- levels(tf2ugFC[,tf])
+     genes <- genes[2:length(genes)]
+     permTFStats[[tf]] <- computeGeneTFProb(Amean = GISTResults$Amean,
+                                            Asd = GistResults$Asd, genes)
+}
+@
 
 \chapter{Feedback}
 
