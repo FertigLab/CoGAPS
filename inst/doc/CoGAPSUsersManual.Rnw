@@ -15,13 +15,25 @@ email: \texttt{ejfertig@jhmi.edu}}
 
 \chapter{Introduction}
 
-\par Gene Association in Pattern Sets (GAPS) infers underlying patterns in gene expression a matrix of microarray measurements.  This Markov chain Monte Carlo (MCMC) matrix decomposition which infers these patterns also infers the extent to which individual genes belong to these patterns.  The CoGAPS algorithm extends GAPS to infer the coordinated activity in sets of genes for each of the inferred patterns.
+\par Gene Association in Pattern Sets (GAPS) infers underlying patterns in gene expression a matrix of microarray measurements.  This Markov chain Monte Carlo (MCMC) matrix decomposition which infers these patterns also infers the extent to which individual genes belong to these patterns.  The CoGAPS algorithm extends GAPS to infer the coordinated activity in sets of genes for each of the inferred patterns based upon \cite{Ochs2009} and refine set membership based upon \cite{Fertig2012}.
 
 \par The GAPS algorithm is implemented in a module of the open source, C++ MCMC software Just Another Gibbs Sampler (JAGS; \url{http://www-fis.iarc.fr/~martyn/software/jags/}; \cite{Plummer2003}).  We call the software package containing this implementation of the GAPS algorithm GAPS-JAGS. As an extension including a redistribution of JAGS, GAPS-JAGS is also licensed under the GNU General Public License version 2.  You may freely modify and redistribute GAPS under certain conditions that are described in the top level source directory file \nolinkurl{COPYING}.
 
 \par The R package CoGAPS is designed to facilitate the corresponding analysis of microarray measurements by calling libraries in the GAPS-JAGS package.  The installation instructions provided in Chapter \ref{install} will ensure proper interaction between the CoGAPS R package and GAPS-JAGS libraries.  Running instructions for the GAPS and CoGAPS analyses are provided in Sections \ref{GAPSRun} and \ref{CoGAPSRun}, respectively.  CoGAPS and GAPS-JAGS are freely available at \url{http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm}.
 
-\par Please contact Elana J. Fertig \url{ejfertig@jhmi.edu} or Michael F. Ochs \url{mfo@jhu.edu} for citation information. 
+\par If you use the \texttt{CoGAPS} package for your analysis please cite:
+\cite{Fertig2010} EJ Fertig, J Ding, AV Favorov, G Parmigiani, and MF Ochs (2010) CoGAPS: an R/C++ package to identify patterns and biological process activity in transcriptomic data. \textit{Bioinformatics} \textbf{26}: 2792-2793. 
+
+\par To cite the CoGAPS algorithm use:
+\cite{Ochs2003} MF Ochs (2003) Bayesian Decomposition in \textit{The Analysis of Gene Expression Data: Methods and Software} G Parmigiani, E Garrett, R Irizarry, and S Zeger, ed. New York: Springer Verlag.
+
+\par To cite the gene set statistic use:
+\cite{Ochs2009} MF Ochs, L Rink, C Tarn, S Mburu, T Taguchi, B Eisenberg, and AK Godwin (2009) Detection of treatment-induced changes in signaling pathways in gastrointestinal stromal tumors using transcriptomic data. \textit{Cancer Research} \textbf{69}: 9125-9132.
+
+\par To site the set-membership refinement statistic use:
+\cite{Fertig2012} EJ Fertig, AV Favorov, and MF Ochs (2012) Identifying context-specific transcription factor targets from prior knowledge and gene expression data. \textit{2012 IEEE International Conference on Bioinformatics and Biomedicine}, B310, \textit{in press}.
+
+\par Please contact Elana J. Fertig \url{ejfertig@jhmi.edu} or Michael F. Ochs \url{mfo@jhu.edu} for assistance. 
 
 \chapter{Installation Instructions} \label{install}
 
@@ -361,6 +373,7 @@ plotGAPS(results$Amean, results$Pmean, 'GISTFigs')
 message('Deleting analysis results from CoGAPS for Vignette')
 unlink('GISTResults', recursive=T)
 @  
+
 
 \chapter{Feedback}
 
