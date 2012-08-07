@@ -102,13 +102,11 @@ bioCLite("CoGAPS",
 If this installation fails, try installing rjags from another mirror.  Installation on Mac may require adding the flag \texttt{type="source"} to \texttt{install.packages()}.
 
 \par Alternatively, the CoGAPS package can be obtained through Bioconductor.  In this case, download the CoGAPS source and install using the following command line argument:
-\begin{verbatim}
-R CMD INSTALL --configure-args=
-   "--with-jags-include=${GAPSJAGS_PATH}/include/GAPS-JAGS 
-    --with-jags-lib=${GAPSJAGS_PATH}/lib 
-    --with-jags-modules=${GAPSJAGS_PATH}/lib/JAGS/modules-1.0.2" 
-    CoGAPS_1.3.2.tar.gz
-\end{verbatim}
+\par \noindent \texttt{R CMD INSTALL --configure-args=}
+\par \texttt{"--with-jags-include=\${GAPSJAGS\_PATH}/include/GAPS-JAGS} 
+\par \texttt{ --with-jags-lib=\${GAPSJAGS\_PATH}/lib} 
+\par \texttt{ --with-jags-modules=\${GAPSJAGS\_PATH}/lib/JAGS/modules-1.0.2"} 
+\par \texttt{CoGAPS\_\Sexpr{packageVersion('CoGAPS')}.tar.gz}
 
 \par As before, this installation procedure requires administrative privileges to install the CoGAPS package in R.  If you do not have administrative privileges, follow standard R procedures to install the package locally using the lib.loc option in \texttt{install.packages} or \texttt{-l} flag in \texttt{R CMD INSTALL}.
 
