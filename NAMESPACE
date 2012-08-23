@@ -3,8 +3,6 @@ export(GAPS)
 export(calcCoGAPSStat)
 export(plotGAPS)
 export(ReadCoGAPSResults)
-export(GSTargetHeatmaps)
-export(computeGeneGSProb)
 
 if(tools:::.OStype() == "windows") {
 importFrom(utils, readRegistry, winProgressBar, setWinProgressBar)
