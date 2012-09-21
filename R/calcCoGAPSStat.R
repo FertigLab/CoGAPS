@@ -39,7 +39,7 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
     numGenes <- length(zValues)
     label <- as.character(numGenes)
     
-    if (!exists(label,env=results)) {
+    if (!exists(label,envir=results)) {
       for (p in 1:numPatt) {
         for (j in 1:numPerm) {
           temp <- floor(runif(numGenes,1,numG))
@@ -47,7 +47,7 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
           zPerm[p,j] <- mean(temp2)
         }
       }
-      assign(label,zPerm,env=results)
+      assign(label,zPerm,envir=results)
     }
   }
 
@@ -64,7 +64,7 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
       numGenes <- length(zValues)
       label <- as.character(numGenes)
 
-      permzValues <- get(label, env=results)[p,]
+      permzValues <- get(label, envir=results)[p,]
       ordering <- order(permzValues)
       permzValues <- permzValues[ordering]
 
@@ -91,9 +91,9 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
   rownames(statsDown) <- colnames(zMatrix)
   rownames(actEst) <- colnames(zMatrix)
 
-  assign('GSUpreg', statsUp, env=results)
-  assign('GSDownreg', statsDown, env=results)
-  assign('GSActEst', actEst, env=results)
+  assign('GSUpreg', statsUp, envir=results)
+  assign('GSDownreg', statsDown, envir=results)
+  assign('GSActEst', actEst, envir=results)
   
   return(results)
 }
