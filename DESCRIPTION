@@ -1,5 +1,5 @@
 Package: CoGAPS
-Version: 1.9.0
+Version: 1.9.1
 Date: 2011-09-02
 Title: Coordinated Gene Activity in Pattern Sets
 Author: Elana J. Fertig
@@ -14,6 +14,6 @@ SystemRequirements: GAPS-JAGS (==1.0.2)
 Depends: R (>= 2.9.0), R.utils (>= 1.2.4), gplots (>= 2.8.0)
 Imports: graphics, grDevices, methods, stats, utils
 License: GPL (== 2)
-URL: http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm
+URL: http://sourceforge.net/p/cogapscpp/wiki/Home/
 biocViews: GeneExpression, Microarray, Bioinformatics
-Packaged: 2012-08-01 20:06:49 UTC; ejfertig
+Packaged: 2013-01-02 18:46:41 UTC; ejfertig
