@@ -1,5 +1,5 @@
-% \VignetteIndexEntry{GAPS/CoGAPS Users Manual}
-% \VignettePackage{CoGAPS}
+%\VignetteIndexEntry{GAPS/CoGAPS Users Manual}
+%\VignettePackage{CoGAPS}
 
 \documentclass{report}
 \usepackage{Sweave,fullpage,./chicago,graphicx,subfigure,amssymb,amsmath,color,hyperref,wrapfig}
@@ -19,7 +19,7 @@ email: \texttt{ejfertig@jhmi.edu}}
 
 \par The GAPS algorithm is implemented in a module of the open source, C++ MCMC software Just Another Gibbs Sampler (JAGS; \url{http://www-fis.iarc.fr/~martyn/software/jags/}; \cite{Plummer2003}).  We call the software package containing this implementation of the GAPS algorithm GAPS-JAGS. As an extension including a redistribution of JAGS, GAPS-JAGS is also licensed under the GNU General Public License version 2.  You may freely modify and redistribute GAPS under certain conditions that are described in the top level source directory file \nolinkurl{COPYING}.
 
-\par The R package CoGAPS is designed to facilitate the corresponding analysis of microarray measurements by calling libraries in the GAPS-JAGS package.  The installation instructions provided in Chapter \ref{install} will ensure proper interaction between the CoGAPS R package and GAPS-JAGS libraries.  Running instructions for the GAPS and CoGAPS analyses are provided in Sections \ref{GAPSRun} and \ref{CoGAPSRun}, respectively.  CoGAPS and GAPS-JAGS are freely available at \url{http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm}, \url{http://www.rits.onc.jhmi.edu/dbb/custom/A6/CoGAPS.cfm}, and \url{http://astor.som.jhmi.edu/~ejfertig/ejfertig/Software.html}.  
+\par The R package CoGAPS is designed to facilitate the corresponding analysis of microarray measurements by calling libraries in the GAPS-JAGS package.  The installation instructions provided in Chapter \ref{install} will ensure proper interaction between the CoGAPS R package and GAPS-JAGS libraries.  Running instructions for the GAPS and CoGAPS analyses are provided in Sections \ref{GAPSRun} and \ref{CoGAPSRun}, respectively.  CoGAPS and GAPS-JAGS are freely available at \url{http://sourceforge.net/p/cogapscpp/wiki/Home/}, \url{http://www.rits.onc.jhmi.edu/dbb/custom/A6/CoGAPS.cfm}, and \url{http://astor.som.jhmi.edu/~ejfertig/ejfertig/Software.html}.  
 
 \par If you use the \texttt{CoGAPS} package for your analysis please cite:
 \cite{Fertig2010} EJ Fertig, J Ding, AV Favorov, G Parmigiani, and MF Ochs (2010) CoGAPS: an R/C++ package to identify patterns and biological process activity in transcriptomic data. \textit{Bioinformatics} \textbf{26}: 2792-2793. 
@@ -55,7 +55,7 @@ email: \texttt{ejfertig@jhmi.edu}}
 \item[\textbf{BLAS and LAPACK}:]{These libraries are typically available by default on most platforms.  If not provided on your machine, installation instructions are provided in the JAGS user manual available at \url{http://sourceforge.net/projects/mcmc-jags/files/}.}
 \end{description}
 
-\par To install GAPS-JAGS, download the source from \url{http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm} and enter the top directory of the downloaded source.  Then, GAPS-JAGS follows the typical GNU installation procedure of
+\par To install GAPS-JAGS, download the source from \url{http://sourceforge.net/p/cogapscpp/wiki/Home/} and enter the top directory of the downloaded source.  Then, GAPS-JAGS follows the typical GNU installation procedure of
 \begin{verbatim}
 ./configure
 make
@@ -76,7 +76,7 @@ make install
 
 \subsection{Windows}
 
-\par We provide an executable which installs GAPS-JAGS in Windows called \texttt{gaps-jags-1.0.0-setup.exe} at \url{http://www.cancerbiostats.onc.jhmi.edu/CoGAPS.cfm}.  To install GAPS-JAGS, download and run this executable, following the installation instructions noted on the screen.  Keep note of the directory to which GAPS-JAGS was installed for the installation of rjags (by default \nolinkurl{C:\\Program Files\\GAPS-JAGS\\GAPS-JAGS-1.0.2}).  If you wish to compile GAPS-JAGS yourself, follow the instructions in the JAGS installation manual (\url{http://sourceforge.net/projects/mcmc-jags/files/}).
+\par We provide an executable which installs GAPS-JAGS in Windows called \texttt{gaps-jags-1.0.0-setup.exe} at \url{http://sourceforge.net/p/cogapscpp/wiki/Home/}.  To install GAPS-JAGS, download and run this executable, following the installation instructions noted on the screen.  Keep note of the directory to which GAPS-JAGS was installed for the installation of rjags (by default \nolinkurl{C:\\Program Files\\GAPS-JAGS\\GAPS-JAGS-1.0.2}).  If you wish to compile GAPS-JAGS yourself, follow the instructions in the JAGS installation manual (\url{http://sourceforge.net/projects/mcmc-jags/files/}).
 
 
 \section{CoGAPS} \label{CoGAPSInstall}
@@ -236,7 +236,7 @@ The number of rows in ${\bf{P}}$ (columns in ${\bf{A}}$) defines the number of b
 
 \par In this example, we perform the GAPS matrix decomposition on a simulated data set with known underlying patterns (ModSim) as follows.
 
-<<label=GAPSModSim, echo=TRUE, include=FALSE, cache=TRUE>>=
+<<label=GAPSModSim, echo=TRUE>>=
 library('CoGAPS')
 data('ModSim')
 nIter <- 500000
@@ -263,7 +263,7 @@ Figure \ref{fig:ModSim} shows the results from plotting the GAPS estimates of ${
 Figure \ref{fig:ModSimPtrue} displays the true patterns used to create the ModSim data, stored in \texttt{ModSim.P.true}.
 \begin{figure}[ht]
   \begin{center}
-<<label=ModSimPtrue, fig=TRUE, echo=FALSE, cache=TRUE>>=
+<<label=ModSimPtrue, fig=TRUE, echo=FALSE>>=
 arrayIdx <- 1:ncol(ModSim.P.true)
 matplot(arrayIdx, t(ModSim.P.true), type='l', lwd=10)
 @ 
@@ -357,7 +357,7 @@ Figure \ref{fig:GS} shows the results from running CoGAPS on the GIST data in \c
 \subsubsection{GIST data}
 
 \par We also provide the code that would be used for the CoGAPS analysis of GIST data (GIST\_TS\_20084) with gene sets defined by transcription factors (TFGSList), as in the DESIDE analysis of \cite{Ochs2009}.  To enable quick package installation, we do not evaluate this code in the vignette, but leave it for the user to compare to the results of \cite{Ochs2009}.
-<<eval=FALSE>>=
+<<keep.source=T, eval=FALSE>>=
 library('CoGAPS')
 data('GIST_TS_20084')
 data('TFGSList')
