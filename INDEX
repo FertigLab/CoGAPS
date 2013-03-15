@@ -4,3 +4,4 @@ calcCoGASPStat	Computes the CoGAPS gene set statistic
 plotSmoothPatterns	Plot loess smoothed CoGAPS patterns
 ReadCoGAPSResults	Parse results saved to output folder after CoGAPS simulations
 computeGeneGSProb	CoGAPS gene membership statistic
+reorderByPatternMatch	Match two sets of patterns found with CoGAPS
