@@ -3,6 +3,7 @@ export(GAPS)
 export(calcCoGAPSStat)
 export(plotGAPS)
 export(ReadCoGAPSResults)
+export(plotSmoothPatterns)
 
 if(tools:::.OStype() == "windows") {
 importFrom(utils, readRegistry, winProgressBar, setWinProgressBar)

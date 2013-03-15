@@ -4,3 +4,4 @@ CoGAPS requires GAPS-JAGS available from http://sourceforge.net/p/cogapscpp/wiki
 02Sep2011 - Included loading of jags libraries upon package loading to avoid setting the LD_LIBRARY_PATH variable
 01Aug2012 - Incorporated statistic to quantify inferred membership of each gene in a specified gene set with corresponding examples published in Fertig, Favorov, and Ochs (2012) IEEE Conference on Bioinformatics and Biomedicine (B310). 
 02Jan2013 - Updated link to software
+03Mar2013 - Added smooth plotting and utilities to do pattern matching and updated statistic from August to work with multiple contexts
