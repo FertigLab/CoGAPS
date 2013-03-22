@@ -111,7 +111,7 @@ GAPS <- function(data, unc,
   if (outputDir != "" && outputDir != ".") {
      fullOutputPath <- paste(outputDir,outputBase,sep="/")
      if (!file.exists(outputDir)) {
-        dir.create(outputDir)
+        dir.create(outputDir, recursive=T)
      }
   } else {
      fullOutputPath <- outputBase
