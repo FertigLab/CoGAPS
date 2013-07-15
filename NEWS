@@ -5,3 +5,4 @@ CoGAPS requires GAPS-JAGS available from http://sourceforge.net/p/cogapscpp/wiki
 01Aug2012 - Incorporated statistic to quantify inferred membership of each gene in a specified gene set with corresponding examples published in Fertig, Favorov, and Ochs (2012) IEEE Conference on Bioinformatics and Biomedicine (B310). 
 02Jan2013 - Updated link to software
 03Mar2013 - Added smooth plotting and utilities to do pattern matching and updated statistic from August to work with multiple contexts
+15Jul2013 - Added processed data from Colantuoni et al. (2011) Temporal dynamics and genetic control of transcription in the human prefrontal cortex. Nature, 478:519-523 used for Fertig et al. (2013) Pattern identification in time course gene expression data with the CoGAPS matrix factorization. Chapter 6 in MF Ochs (ed) Methods in Molecular Biology: Gene Function Analysis, 2nd Edition, Springer, New York.
