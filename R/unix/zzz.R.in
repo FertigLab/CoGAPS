@@ -1,17 +1,6 @@
 .onLoad <- function(lib, pkg)
 {
   ## Load the rjags wrapper ...
-  libdir <- "@JAGS_LIB@"
-  if (is.null(getOption("jags.libdir"))) {
-      options("jags.libdir" = libdir)
-  }
-  jagsLib <- file.path(libdir, 'libjags.so')
-  if (file.exists(jagsLib)) {
-    dyn.load(jagsLib)
-  } else {
-    warning(sprintf('Could not find library %s.  CoGAPS may not run properly.',
-                    jagsLib)) 
-  }
  
   library.dynam("CoGAPS", pkg, lib, local=FALSE)
 
