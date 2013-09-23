@@ -1,4 +1,4 @@
-AC_INIT([CoGAPS], [3])
+AC_INIT([CoGAPS], [1.3.1])
 
 AC_PREFIX_PROGRAM(jags)
 
