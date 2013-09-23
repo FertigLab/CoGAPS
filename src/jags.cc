@@ -433,7 +433,7 @@ extern "C" {
     {
 	Console *console = ptrArg(ptr);
 	bool status = true;
-	console->adaptOff();
+	console->adaptOff(status);
 	return ScalarLogical(status);
     }
 
