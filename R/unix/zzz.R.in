@@ -1,22 +1,25 @@
 .onLoad <- function(lib, pkg)
 {
   ## Load the rjags wrapper ...
-  libdir <- "@JAGS_LIB@"
+  libdir <- "@GAPSJAGS_LIB@"
   if (is.null(getOption("jags.libdir"))) {
       options("jags.libdir" = libdir)
   }
+
   jagsLib <- file.path(libdir, 'libjags.so')
   if (file.exists(jagsLib)) {
     dyn.load(jagsLib)
-  } else {
-    warning(sprintf('Could not find library %s.  CoGAPS may not run properly.',
-                    jagsLib)) 
+  }
+
+  jrmathLib <- file.path(libdir, 'libjrmath.so')
+  if (file.exists(jrmathLib)) {
+    dyn.load(jrmathLib)
   }
  
   library.dynam("CoGAPS", pkg, lib, local=FALSE)
 
   ## ... and the modules
-  moddir <- "@JAGS_MODULES@"
+  moddir <- "@GAPSJAGS_MODULES@"
   if (is.null(getOption("jags.moddir"))) {
       options("jags.moddir" = moddir)
   }

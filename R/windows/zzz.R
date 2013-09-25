@@ -3,7 +3,7 @@
 ### First task is to get installation directory of JAGS
 
     ## Try environment variable first
-    jags.home <- Sys.getenv("JAGS_HOME")
+    jags.home <- Sys.getenv("GAPSJAGS_HOME")
     if (nchar(jags.home)==0) {
         keyname <- "SOFTWARE\\JAGS\\JAGS-2.1.0"
         if (identical(.Platform$r_arch, "x64")) {
