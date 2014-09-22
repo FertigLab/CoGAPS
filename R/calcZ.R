@@ -1,3 +1,11 @@
+# calcZ: function to generate Z-score matrix
+# History: v1.0 EJF original CoGAPS
+
+# Inputs: meanMat - matrix of mean values
+#         sdMat - matrix of standard deviations
+
+# Output: matrix of Z-scores
+
 calcZ <- function (meanMat, sdMat) {
 
   # compute the z score for each gene's association to each pattern
