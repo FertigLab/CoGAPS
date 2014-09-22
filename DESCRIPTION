@@ -1,19 +1,23 @@
 Package: CoGAPS
-Version: 1.15.2
-Date: 2011-09-02
+Version: 1.99.0 
+Date: 2014-08-23
 Title: Coordinated Gene Activity in Pattern Sets
-Author: Elana J. Fertig
-Description: Coordinated Gene Activity in Pattern Sets (CoGAPS) infers
-        biological processes which are active in individual gene sets
-        from corresponding microarray measurements.  CoGAPS achieves
-        this inference by combining a MCMC matrix decomposition
-        algorithm (GAPS) with a novel statistic inferring activity on
-        gene sets.
+Author: Elana J. Fertig, Michael F. Ochs
+Description: Coordinated Gene Activity in Pattern Sets (CoGAPS) 
+    implements a Bayesian MCMC matrix factorization algorithm,
+    GAPS, and links it to gene set statistic methods to infer biological
+    process activity.  It can be used to perform sparse matrix factorization on
+    any data, and when this data represents biomolecules, to do gene set
+    analysis.
 Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>, Michael F. Ochs
-        <mfo@jhu.edu>
-SystemRequirements: GAPS-JAGS (==1.0.3)
-Depends: R (>= 2.9.0), R.utils (>= 1.2.4), gplots (>= 2.8.0)
-Imports: graphics, grDevices, methods, stats, utils
-License: GPL (== 2)
-URL: http://sourceforge.net/p/cogapscpp/wiki/Home/
+    <ochsm@tcnj.edu>
+Depends: R (>= 3.0.1), Rcpp (>= 0.11.2), RColorBrewer (>= 1.0.5), gplots (>= 2.8.0)
+Imports:
+    graphics,
+    grDevices,
+    methods,
+    stats, 
+    utils
+LinkingTo: Rcpp, BH
+License: GPL (==2)
 biocViews: GeneExpression, Microarray
