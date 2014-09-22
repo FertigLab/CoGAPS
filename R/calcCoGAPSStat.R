@@ -1,5 +1,31 @@
+# calcCoGAPSStat: calculate gene set statistics for A matrix columns
+# History: v1.0 EJF original CoGAPS 
+
+# Inputs: Amean - A matrix mean values
+#         Asd - A matrix standard deviations
+#         GStoGenes - data.frame or list with gene sets
+#         numPerm - number of permutations for null
+
+# Output: list with gene set statistics 
+
+#'\code{calcCoGAPSStat} calculates the gene set statistics for each
+#'column of A using a Z-score from the elements of the A matrix,
+#'the input gene set, and permutation tests
+#'
+#'@param Amean A matrix mean values
+#'@param Asd A matrix standard deviations
+#'@param GStoGenes data.frame or list with gene sets
+#'@param numPerm number of permutations for null
+#'@export
+
 calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
 
+  # test for std dev of zero, possible mostly in simple simulations
+  if (sum(Asd==0) > 0) {
+      temp <- min(Asd[Asd>0])
+      Asd[Asd==0] <- temp
+  }
+  
   # calculate Z scores
   zMatrix <- calcZ(Amean,Asd)
   
@@ -28,7 +54,7 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
   statsUp   <- matrix(ncol = numGS, nrow = numPatt)
   statsDown <- matrix(ncol = numGS, nrow = numPatt)
   actEst    <- matrix(ncol = numGS, nrow = numPatt)
-  results   <- new.env()
+  results   <- list() 
   zPerm     <- matrix(ncol=numPerm,nrow=numPatt)
 
   # do permutation test
@@ -39,7 +65,7 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
     numGenes <- length(zValues)
     label <- as.character(numGenes)
     
-    if (!exists(label,envir=results)) {
+    if (!any(names(results)==label)) {
       for (p in 1:numPatt) {
         for (j in 1:numPerm) {
           temp <- floor(runif(numGenes,1,numG))
@@ -47,11 +73,11 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
           zPerm[p,j] <- mean(temp2)
         }
       }
-      assign(label,zPerm,envir=results)
+      results[[label]] <- zPerm
     }
   }
 
-  # get p-value
+# get p-value
   for (p in 1:numPatt) {
 
     for (gs in 1:numGS) {
@@ -64,7 +90,7 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
       numGenes <- length(zValues)
       label <- as.character(numGenes)
 
-      permzValues <- get(label, envir=results)[p,]
+      permzValues <- results[[label]]
       ordering <- order(permzValues)
       permzValues <- permzValues[ordering]
 
@@ -91,9 +117,9 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
   rownames(statsDown) <- colnames(zMatrix)
   rownames(actEst) <- colnames(zMatrix)
 
-  assign('GSUpreg', statsUp, envir=results)
-  assign('GSDownreg', statsDown, envir=results)
-  assign('GSActEst', actEst, envir=results)
+  results[['GSUpreg']] <- statsUp
+  results[['GSDownreg']] <- statsDown
+  results[['GSActEst']] <- actEst 
   
   return(results)
 }

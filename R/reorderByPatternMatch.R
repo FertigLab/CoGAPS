@@ -1,3 +1,19 @@
+# reorderByPatternMatch: function to identify corresponding rows
+#                        between two P matrices
+# History: EJF - original CoGAPS
+
+# Inputs: P - matrix to be matched
+#         matchTo - matrix to match P to
+
+# Output: P with reordered rows to match matchTo
+
+#'\code{reorderByPatternMatch} plots the output A and P matrices as a
+#' heatmap and line plot respectively
+#'
+#'@param P matrix to be matched
+#'@param matchTo matrix to match P to
+#'@export
+
 reorderByPatternMatch <- function(P, matchTo) {
 	
 	# check that P and the matchTo matrix have the same dimensions for valid matching
