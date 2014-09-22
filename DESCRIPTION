@@ -1,5 +1,5 @@
 Package: CoGAPS
-Version: 1.15.1
+Version: 1.15.2
 Date: 2011-09-02
 Title: Coordinated Gene Activity in Pattern Sets
 Author: Elana J. Fertig
@@ -11,7 +11,7 @@ Description: Coordinated Gene Activity in Pattern Sets (CoGAPS) infers
         gene sets.
 Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>, Michael F. Ochs
         <mfo@jhu.edu>
-SystemRequirements: GAPS-JAGS (==1.0.2)
+SystemRequirements: GAPS-JAGS (==1.0.3)
 Depends: R (>= 2.9.0), R.utils (>= 1.2.4), gplots (>= 2.8.0)
 Imports: graphics, grDevices, methods, stats, utils
 License: GPL (== 2)
