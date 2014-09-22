@@ -8,45 +8,23 @@
 where \eqn{p} indexes each of the patterns, \eqn{Pr_{G,p}} is the probability that gene set \eqn{G} is upregulated computed with \code{\link{calcCoGAPSStat}}, \eqn{A_{gp}} is the mean amplitude matrix from the \code{GAPS} matrix factorization, Pw[p] is a prior weighting for each pattern based upon the context to which that pattern relates, and \eqn{\sigma_{gp}} is the standard deviation of the amplitude matrix. P-values are formulated from a permutation test comparing the value of \eqn{S_{g,G}} for genes in \code{GSGenes} relative to the value of \eqn{S_{g,G}} \code{numPerm} random gene sets with the same number of targets.
 }
 
-\usage{computeGeneGSProb(Amean, Asd, GSGenes, Pw=rep(1,ncol(Amean)),numPerm=500,PwNull=F)}
+\usage{computeGeneGSProb(Amean, Asd, GStoGenes, Pw=rep(1,ncol(Amean)),numPerm=500,PwNull=F)}
 
 \arguments{
 \item{Amean}{Sampled mean value of the amplitude matrix \eqn{{\bf{A}}}.  \code{row.names(Amean)} must correspond to the gene names contained in GStoGenes.}
 \item{Asd}{Sampled standard deviation of the amplitude matrix \eqn{{\bf{A}}}.}
-\item{GSGenes}{Vector containing the prior estimate of members of the gene set of interest.}
+\item{GStoGenes}{Vector containing the prior estimate of members of the gene set of interest.}
 \item{Pw}{Vector containing the weight to assign each pattern in the gene statistic assumed to be computed from the association of the pattern with samples in a given context (optional: default=1 giving all patterns equal weight).}
 \item{numPerm}{Number of permuations used for the null distribution in the gene set statistic. (optional; default=500)}
 \item{PwNull}{Logical value. If TRUE, use pattern weighting in Pw when computing the null distribution for the statistic.  If FALSE, do not use the pattern weighting so that the null is context independent. (optional; default=F)}
 }
 
 \value{
-  A vector of length GSGenes containing the p-values of set membership for each gene containined in the set specified in GSGenes.
+  A vector of length GStoGenes containing the p-values of set membership for each gene containined in the set specified in GStoGenes.
 }
 
 \examples{
 \dontrun{
-##########################################
-# Simulated data in Fertig et al. (2012) #
-##########################################
-
-## Load data
-data(TFSimData)
-
-## Run the CoGAPS matrix decomposition
-nIter <- 5e+07 
-
-results <- GAPS(data=TFGeneReg$D, 
-                unc=0.1*pmax(TFGeneReg$M,1), 
-                isPercentError=FALSE,
-                numPatterns=4,
-                SAIter = 2*nIter, iter = nIter,
-                outputDir='GSResults')
-
-# compute the probablity of membership of each gene in each set
-TFtargets <- lapply(TFGeneReg$TFGeneReg,names)
-TFGenesP <- lapply(TFtargets, function(x){
-   computeGeneGSProb(Amean=results$Amean, Asd=results$Asd, GSGenes=x)
-})
 
 #################################################
 # Results for GIST data in Fertig et al. (2012) #
@@ -61,11 +39,11 @@ TFs <- c("c.Jun", 'NF.kappaB', 'Smad4', "STAT3", "Elk.1", "c.Myc", "E2F.1",
          "AP.1", "CREB", "FOXO", "p53", "Sp1")
 
 # run the GAPS matrix factorization
-nIter <- 5e7
-
-GISTResults <- GAPS(data=GIST.D, unc=GIST.S, 
-                    numPatterns=5, outputDir = 'GISTGSCoGAPS',
-                    isPercentError=F, SAIter=2*nIter, iter=nIter)
+nIter <- 10000
+results <- CoGAPS(GIST.D, GIST.S, tf2ugFC,
+                  nFactor=5,
+                  nEquil=nIter, nSample=nIter,
+                  plot=FALSE)
 
 # set membership statistics
 permTFStats <- list()

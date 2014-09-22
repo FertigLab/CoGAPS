@@ -32,5 +32,5 @@ Computes the p-value for the association of underlying patterns from microarray 
 M.F. Ochs, L. Rink, C. Tarn, S. Mburu, T. Taguchi, B. Eisenberg, and A.K. Godwin.  (2009) Detection and treatment-induced changes in signaling pathways in gastrointestinal stromal tumors using transcriptomic data.  Cancer Research, 69:9125-9132.
 }
 
-\seealso{\code{\link{CoGAPS}}, \code{\link{GAPS}}}
+\seealso{\code{\link{CoGAPS}}}
 \keyword{misc}

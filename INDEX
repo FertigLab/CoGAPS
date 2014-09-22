@@ -1,7 +1,0 @@
-CoGAPS		Algorithm for coordination of activity in gene sets with patterns from GAPS
-GAPS		MCMC matrix decomposition algorithm
-calcCoGASPStat	Computes the CoGAPS gene set statistic 
-plotSmoothPatterns	Plot loess smoothed CoGAPS patterns
-ReadCoGAPSResults	Parse results saved to output folder after CoGAPS simulations
-computeGeneGSProb	CoGAPS gene membership statistic
-reorderByPatternMatch	Match two sets of patterns found with CoGAPS

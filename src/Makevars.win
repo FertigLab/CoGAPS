@@ -1,5 +1,0 @@
-ifeq ($(strip $(GAPSJAGS_ROOT)),)
-$(error GAPSJAGS_ROOT must be set. See README file for details)
-endif
-PKG_CPPFLAGS=-I"$(GAPSJAGS_ROOT)\include" 
-PKG_LIBS=-L"$(GAPSJAGS_ROOT)\lib" -ljags
