@@ -22,8 +22,8 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
 
   # test for std dev of zero, possible mostly in simple simulations
   if (sum(Asd==0) > 0) {
-      temp <- min(Asd[Asd>0])
-      Asd[Asd==0] <- temp
+      #temp <- min(Asd[Asd>0])
+      Asd[Asd==0] <- .Machine$double.eps
   }
   
   # calculate Z scores
@@ -90,7 +90,7 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
       numGenes <- length(zValues)
       label <- as.character(numGenes)
 
-      permzValues <- results[[label]]
+      permzValues <- results[[label]][p,]
       ordering <- order(permzValues)
       permzValues <- permzValues[ordering]
 
