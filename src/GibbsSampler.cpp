@@ -347,6 +347,24 @@ unsigned int GibbsSampler::getCol(char matrix_label ,unsigned int iBin){
   return iBin;
 }
 
+unsigned int GibbsSampler::getAtomBin(char matrix_label, unsigned int iRow, unsigned int iCol) {
+	switch(matrix_label) {
+		case 'A':
+		{
+			return(iRow * _nFactor + iCol);
+			break;
+		}
+		case 'P':
+		{
+			return(iCol * _nFactor + iRow);
+			break;
+		}
+			
+	}
+	
+	// EJF dummy return to avoid warnings
+	return iRow;
+}
 
 unsigned int GibbsSampler::getTotNumAtoms(char matrix_label){
 
@@ -1738,8 +1756,8 @@ void GibbsSampler::check_atomic_matrix_consistency(char the_matrix_label)
     break;
   } 
   case 'P': {
-    total_atom_mass = _PAtomicdomain.get_atomicDomain_totalmass();
-    total_matrix_mass = _PMatrix.cal_totalsum();
+	  total_atom_mass = _PAtomicdomain.get_atomicDomain_totalmass();
+	  total_matrix_mass = _PMatrix.cal_totalsum();
     break;
   }
   } // end of switch-block
@@ -1747,12 +1765,8 @@ void GibbsSampler::check_atomic_matrix_consistency(char the_matrix_label)
   double diff_total_mass = fabs(total_atom_mass - total_matrix_mass);
 
   if(diff_total_mass > 1.e-5){
-    /*cout << "Mass inconsistency!! Total mass difference = " << diff_total_mass << endl;
-    cout << "total atom mass = " << total_atom_mass << endl;
-    cout << "total matrix mass = " << total_matrix_mass << endl;
-    cout << "Oper_type = " << _oper_type << endl;
-    */
     throw logic_error("Mass inconsistency between atomic domain and matrix!");
+
   } 
   
 }
