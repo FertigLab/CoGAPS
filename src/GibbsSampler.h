@@ -150,6 +150,8 @@ class GibbsSampler
   unsigned int getRow( char matrix_label ,unsigned int iBin);
 
   unsigned int getCol(char matrix_label ,unsigned int iBin);
+	
+  unsigned int getAtomBin(char matrix_label, unsigned int iRow, unsigned int iCol);
 
   unsigned int getTotNumAtoms(char matrix_label);
 
