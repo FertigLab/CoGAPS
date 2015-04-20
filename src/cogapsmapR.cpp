@@ -362,14 +362,24 @@ Rcpp::List cogapsmap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
   // Based on the information of D, construct and initialize for A and P both 
   // the matrices and atomic spaces.
 
+	
   GibbsSampMap.init_AMatrix_and_PMatrix(); // initialize A and P matrices
+	
+	
   GibbsSampMap.init_Mapped_Matrix(); //initialize the mapped matrix
+	
   GibbsSampMap.init_AAtomicdomain_and_PAtomicdomain(); // intialize atomic spaces
+
  
   GibbsSampMap.initialize_atomic_domain_map(); // keep domains in line with A,P
+	
   GibbsSampMap.init_sysChi2(); // initialize the system chi2 value
+	
     GibbsSampMap.check_atomic_matrix_consistency('A');
+	
+	
     GibbsSampMap.check_atomic_matrix_consistency('P');
+	
   //  GibbsSampMap.print_A_and_P(); // for debugging
 
   // ===========================================================================
