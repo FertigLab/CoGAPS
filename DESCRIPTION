@@ -1,5 +1,5 @@
 Package: CoGAPS
-Version: 2.3.2
+Version: 2.3.3
 Date: 2014-08-23
 Title: Coordinated Gene Activity in Pattern Sets
 Author: Elana J. Fertig, Michael F. Ochs
@@ -19,4 +19,5 @@ Imports:
     utils
 LinkingTo: Rcpp, BH
 License: GPL (==2)
-biocViews: GeneExpression, Microarray
+biocViews: GeneExpression, Transcription, GeneSetEnrichment, DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray, MultipleComparison, DimensionReduction 
+NeedsCompilation: yes

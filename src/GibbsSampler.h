@@ -11,7 +11,7 @@
 #include "sub_func.h"
 #include "Matrix.h"
 #include "AtomicSupport.h"
-#include <limits>
+#include<limits>
 
 using namespace gaps;
 
@@ -94,8 +94,7 @@ class GibbsSampler
 	       double alphaA, double alphaP, double nMaxA, double nMaxP,
 	       unsigned long nIterA, unsigned long nIterP, 
 	       double max_gibbsmass_paraA, double max_gibbsmass_paraP, 
-	       double lambdaA_scale_factor, double lambdaP_scale_factor, 
-               unsigned long atomicSize,
+	       unsigned long long atomicSize,
 	       char label_A,char label_P,char label_D,char label_S,
 	       const string & datafile, const string & variancefile,
                const string & simulation_id);
@@ -103,9 +102,8 @@ class GibbsSampler
   GibbsSampler(unsigned long nEquil, unsigned long nSample, unsigned int nFactor, 
 	       double alphaA, double alphaP, double nMaxA, double nMaxP,
 	       unsigned long nIterA, unsigned long nIterP, 
-	       double max_gibbsmass_paraA, double max_gibbsmass_paraP, 
-	       double lambdaA_scale_factor, double lambdaP_scale_factor, 
-               unsigned long atomicSize,
+	       double max_gibbsmass_paraA, double max_gibbsmass_paraP,  
+               unsigned long long atomicSize,
 	       char label_A,char label_P,char label_D,char label_S,
 	       vector<vector<double> > &DVector, vector<vector<double> > &SVector,
                const string & simulation_id);
@@ -117,6 +115,14 @@ class GibbsSampler
   void init_AMatrix_and_PMatrix();
 
   void init_AAtomicdomain_and_PAtomicdomain();
+  
+  void init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, const char input_file_name[]);
+  
+  void init_AAtomicdomain_and_PAtomicdomain(const char input_file_nameA[],const char input_file_nameP[]);
+  
+  void init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, vector<vector<double> > ReadBinProbs);
+  
+  void init_AAtomicdomain_and_PAtomicdomain(vector<vector<double> > ReadBinProbsA, vector<vector<double> > ReadBinProbsP);
 
   void clear_Proposal();
 
@@ -125,6 +131,8 @@ class GibbsSampler
   void display_matrix(char matrix_label);
 
   void display_atomicdomain(char atomic_label);
+  
+  void print_A_and_P();
 
   void local_display_matrix(vector<vector<double> > Mat, 
                             unsigned int n_row, unsigned int n_col);
@@ -134,6 +142,9 @@ class GibbsSampler
 
   void local_display_matrix2F(ofstream& outputFile, double ** Mat_ptr, 
 			      unsigned int n_row, unsigned int n_col);
+				  
+  // Added for debugging the fixed bins code
+  void print_totMassinBins(char AtomicDomainLabel);
 
   void check_results();
 
@@ -150,10 +161,21 @@ class GibbsSampler
   unsigned int getRow( char matrix_label ,unsigned int iBin);
 
   unsigned int getCol(char matrix_label ,unsigned int iBin);
-	
-  unsigned int getAtomBin(char matrix_label, unsigned int iRow, unsigned int iCol);
 
   unsigned int getTotNumAtoms(char matrix_label);
+ 
+  
+  // Snapshot methods
+   vector <vector <vector <double> > > getNormedMatrices();
+  
+  // COGAPS TEST Methods
+   map <unsigned long long, double> getAtomicDomain(char matrix_label);
+   
+  vector <vector <double> > createSampleAMat(map <unsigned long long, double> ADomain);
+  
+  vector <vector <double> > createSamplePMat(map <unsigned long long, double> PDomain);
+  
+  double ManualCalcChiSqu(vector <vector <double> > SampleAMat, vector <vector <double> > SamplePMat);
 
   // **************** METHODS FOR COMPUTING LIKELIHOOD FUNCTIONS *****************
   double cal_logLikelihood();

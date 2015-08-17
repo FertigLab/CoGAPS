@@ -19,20 +19,21 @@ plotP<-function(PMean_Mat, P_SD)  {
 
     Nfactor=dim(PMean_Mat)[1]
     Nobs=dim(PMean_Mat)[2]
-    RowP <- rep(1:Nobs,times=Nfactor)
-    max <- nrow(PMean_Mat)
+    RowP <- 1:Nobs
+    colors <- rainbow(Nfactor)
+    ylimits <- c(0,(max(PMean_Mat + P_SD)*1.05))
 
-    layout(rbind(1,2), heights=c(9,1)) 
-    matplot(t(PMean_Mat), type="b", pch = 1:max,cex=0.6, lty=rep(1,max), col = rainbow(max),
-        main="Patterns from P Matrix",ylab="Amplitude",
-        cex.axis=0.8,cex.main=1.4,cex.lab=1.3) 
-    plotCI(x=RowP, y= as.vector(t(PMean_Mat)), 
-        uiw=c(t(matrix(P_SD,nrow=Nfactor,ncol=Nobs,byrow=FALSE))), 
-        add=T,col = rep(rainbow(ncol(t(PMean_Mat))),
-        each=nrow(t(PMean_Mat)))) 
-    par(mar=c(0, 0, 0, 0))
-    plot.new()
-    legend("top", paste("Pattern", 1:max, sep = ""), pch = 1:max, lty=1,cex=0.8,
-        col=rainbow(max),bty="y",ncol=5)
+    plotCI(x=RowP, y=PMean_Mat[1,], col=colors[1],uiw=P_SD[1,],
+          ylim=ylimits,type='l',ylab="Relative Amplitude")
+    
+    for (i in 2:Nfactor) {
+        points(RowP, PMean_Mat[i,], col=colors[i], pch=i)
+        plotCI(RowP, y=PMean_Mat[i,], col=colors[i], uiw=P_SD[i,],
+            add=TRUE)
+    }
+
+    legend("bottom", paste("Pattern", 1:Nfactor, sep = ""),
+         pch = 1:Nfactor, lty=1,cex=0.8,
+        col=colors,bty="y",ncol=5)
 
 }

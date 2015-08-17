@@ -1,9 +1,10 @@
 
-# gapsRun: function to call C++ cogaps code
+# gapsMapTestRun: function to call C++ cogaps code
 # History: v1.0 CK with MFO edits, August 2014
 
 # Inputs: D - data matrix
 #         S - uncertainty matrix (std devs for chi-squared of Log Likelihood)
+#         FP - fixed A columns or P rows
 #         nFactor - number of patterns (basis vectors, metagenes) 
 #         simulation_id - name to attach to atoms files if created
 #         nEquil - number of iterations for burn-in
@@ -17,12 +18,15 @@
 
 # Output: list with A and P matrix estimates, chi-squared and atom
 #         numbers of sample by iteration, and chi-squared of mean
-#'\code{gapsRun} calls the C++ MCMC code and performs Bayesian
+
+#'\code{gapsMapTestRun} calls the C++ MCMC code and performs Bayesian
 #'matrix factorization returning the two matrices that reconstruct
-#'the data matrix
+#'the data matrix; as opposed to gapsRun, this method takes an
+#'additional input specifying set patterns in the P matrix
 #'
 #'@param D data matrix
 #'@param S uncertainty matrix (std devs for chi-squared of Log Likelihood)
+#'@param FP data.frame with rows giving fixed patterns for P
 #'@param ABins a matrix of same size as A which gives relative
 #' probability of that element being non-zero
 #'@param PBins a matrix of same size as P which gives relative
@@ -34,13 +38,12 @@
 #'@param  nSample number of iterations for sampling
 #'@param  nOutR how often to print status into R by iterations
 #'@param  output_atomic whether to write atom files (large)
+#'@param  fixedMatrix character indicating whether A or P matrix
+#' has fixed columns or rows respectively
 #'@param fixedBinProbs Boolean for using relative probabilities
 #' given in Abins and Pbins
 #'@param fixedDomain character to indicate whether A or P is
 #' domain for relative probabilities
-#'@param sampleSnapshots Boolean to indicate whether to capture
-#' individual samples from Markov chain during sampling
-#'@param numSnapshots the number of individual samples to capture
 #'@param alphaA sparsity parameter for A domain
 #'@param nMaxA PRESENTLY UNUSED, future = limit number of atoms
 #'@param max_gibbmass_paraA limit truncated normal to max size
@@ -49,35 +52,34 @@
 #'@param max_gibbmass_paraP limit truncated normal to max size
 #'@export
 
-#--CHANGES 1/20/15--
-#Added FixedPatt frame to C++ version to match Ondrej's code for updating bin sizes based on an input matrix
-gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
-                    nFactor = 7, simulation_id = "simulation",
-                    nEquil = 1000, nSample = 1000, nOutR = 1000,
-                    output_atomic = FALSE, fixedBinProbs = FALSE,
-                    fixedDomain = "N", sampleSnapshots = TRUE,
-                    numSnapshots = 100, alphaA = 0.01,
-                    nMaxA = 100000, max_gibbmass_paraA = 100.0,
-                    alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0)
+gapsMapTestRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(),
+                           nFactor = 7, simulation_id = "simulation",
+                           nEquil = 1000, nSample = 1000, nOutR = 1000,
+                           output_atomic = FALSE, fixedMatrix = "P",
+                           fixedBinProbs = FALSE, fixedDomain = "N",
+                           alphaA = 0.01,  nMaxA = 100000,
+                           max_gibbmass_paraA = 100.0, alphaP = 0.01,
+                           nMaxP = 100000, max_gibbmass_paraP = 100.0)
 {
+  
   #Begin data type error checking code
-  charDataErrors = c(!is.character(simulation_id), !is.character(fixedDomain))
-  charCheck = c("simulation_id", "fixedDomain")
+  charDataErrors = c(!is.character(simulation_id), !is.character(fixedDomain), !is.character(fixedMatrix))
+  charCheck = c("simulation_id", "fixedDomain", "fixedMatrix")
   
-  boolDataErrors = c(!is.logical(output_atomic), !is.logical(fixedBinProbs), !is.logical(sampleSnapshots))
-  boolCheck = c("output_atomic", "fixedBinProbs", "sampleSnapshots")
+  boolDataErrors = c(!is.logical(output_atomic), !is.logical(fixedBinProbs))
+  boolCheck = c("output_atomic", "fixedBinProbs")
   
-  numericDataErrors = c(!is.numeric(nFactor), !is.numeric(nEquil), !is.numeric(nSample), !is.numeric(nOutR), !is.numeric(numSnapshots), 
+  numericDataErrors = c(!is.numeric(nFactor), !is.numeric(nEquil), !is.numeric(nSample), !is.numeric(nOutR),
                         !is.numeric(alphaA), !is.numeric(nMaxA), !is.numeric(max_gibbmass_paraA), !is.numeric(alphaP), 
                         !is.numeric(nMaxP), !is.numeric(max_gibbmass_paraP))
-  numericCheck = c("nFactor", "nEquil", "nSample", "nOutR", "numSnapshots", "alphaA", "nMaxA", 
+  numericCheck = c("nFactor", "nEquil", "nSample", "nOutR", "alphaA", "nMaxA", 
                    "max_gibbmass_paraA", "alphaP",	"nMaxP", "max_gibbmass_paraP")
   
-  dataFrameErrors = c(!is.data.frame(D), !is.data.frame(S), !is.data.frame(ABins), !is.data.frame(PBins))
-  dataFrameCheck = c("D", "S", "ABins", "PBins")
+  dataFrameErrors = c(!is.data.frame(D), !is.data.frame(S), !is.data.frame(ABins), !is.data.frame(PBins), !is.data.frame(FP))
+  dataFrameCheck = c("D", "S", "ABins", "PBins", "FP")
   
-  matrixErrors = c(!is.matrix(D), !is.matrix(S), !is.matrix(ABins), !is.matrix(PBins))
-  matrixCheck = c("D", "S", "ABins", "PBins")
+  matrixErrors = c(!is.matrix(D), !is.matrix(S), !is.matrix(ABins), !is.matrix(PBins), !is.matrix(FP))
+  matrixCheck = c("D", "S", "ABins", "PBins", "FP")
   
   
   if(any(charDataErrors))
@@ -122,8 +124,9 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     return()
   }
   
-  #At least one of A, P, ABins, or PBins is not a matrix or data.frame 
-  if(any((dataFrameErrors[1] && matrixErrors[1]), (dataFrameErrors[2] && matrixErrors[2]), (dataFrameErrors[3] && matrixErrors[3]), (dataFrameErrors[4] && matrixErrors[4])))
+  
+  #At least one of A, P, ABins, PBins, or FP is not a matrix or data.frame 
+  if(any((dataFrameErrors[1] && matrixErrors[1]), (dataFrameErrors[2] && matrixErrors[2]), (dataFrameErrors[3] && matrixErrors[3]), (dataFrameErrors[4] && matrixErrors[4]), (dataFrameErrors[5] && matrixErrors[5])))
   {
     for(i in 1:length(dataFrameCheck))
     {
@@ -141,17 +144,15 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   nEquil = floor(nEquil)
   nSample = floor(nSample)
   nOutR = floor(nOutR)
-  numSnapshots = floor(numSnapshots)
   nMaxA = floor(nMaxA)
   nMaxP = floor(nMaxP)
   
-  
   # pass all settings to C++ within a list
   #    if (is.null(P)) {
-  Config = c(simulation_id, output_atomic, fixedBinProbs, fixedDomain, sampleSnapshots);
+  Config = c(simulation_id, output_atomic, fixedBinProbs, fixedDomain, fixedMatrix);
   
   ConfigNums = c(nFactor, nEquil, nSample, nOutR, alphaA, nMaxA, max_gibbmass_paraA, 
-                 alphaP, nMaxP, max_gibbmass_paraP, numSnapshots);
+                 alphaP, nMaxP, max_gibbmass_paraP);
   
   #Begin logic error checking code
   
@@ -163,17 +164,23 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     return()
   }
   
-  #Check for nonsensical inputs (such as numSnapshots < nEquil or nSample)
-  if((numSnapshots > nEquil) || (numSnapshots > nSample))
+  if((nOutR > nEquil) || (nOutR > nSample))
   {
-    stop("Error in gapsRun: Cannot have more snapshots of A and P than equilibration and/or sampling iterations.")
+    stop("Error in gapsRun: Cannot have more output steps than equilibration and/or sampling iterations.")
     
     return()
   }
   
-  if((nOutR > nEquil) || (nOutR > nSample))
+  if(ncol(FP) != ncol(D))
   {
-    stop("Error in gapsRun: Cannot have more output steps than equilibration and/or sampling iterations.")
+    stop("Error in gapsRun: Columns of Data Matrix and Fixed Pattern Matrix do not line up. Please see documentation for details.")
+    
+    return()
+  }
+  
+  if(nFactor < (nrow(FP)))
+  {
+    stop("Error in gapsRun: Number of patterns cannot be less than the rows of the patterns to fix (FP). Please see documentation for details.")
     
     return()
   }
@@ -191,7 +198,6 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   
   #   }
   
-  
   geneNames = rownames(D);
   sampleNames = colnames(D);
   
@@ -203,7 +209,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   }
   
   # call to C++ Rcpp code
-  cogapResult = cogaps(D, S, ABins, PBins, Config, ConfigNums);
+  cogapResult = cogapsMapTest(D, S, FP, ABins, PBins, Config, ConfigNums);
   
   # convert returned files to matrices to simplify visualization and processing
   cogapResult$Amean = as.matrix(cogapResult$Amean);
@@ -236,8 +242,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   }
   
   cogapResult = c(cogapResult, calcChiSq);
-  
-  names(cogapResult)[12] = "meanChi2";
+  names(cogapResult)[20] = "meanChi2";
   
   message(paste("Chi-Squared of Mean:",calcChiSq))
   

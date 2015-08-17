@@ -43,10 +43,10 @@ double randgen(char rand_type, double para1, double para2)
       }
     default:
       //cout << "Not an accounted distribution type!" << endl;
-      return -9999.0;
+	  return -9999.0;
       break;
     }
-
-    // EJF -- return dummy value to avoid warning
+	
+	// EJF -- return dummy value to avoid warning
     return -9999.0;
 }
