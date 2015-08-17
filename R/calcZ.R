@@ -6,6 +6,13 @@
 
 # Output: matrix of Z-scores
 
+#'\code{calcZ} calculates the Z-score for each element based
+#'on input mean and standard deviation matrices
+#'
+#'@param meanMat matrix of mean values
+#'@param sdMat matrix of standard deviation values
+#'@export
+
 calcZ <- function (meanMat, sdMat) {
 
   # compute the z score for each gene's association to each pattern

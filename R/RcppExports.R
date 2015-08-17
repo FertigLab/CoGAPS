@@ -4,11 +4,19 @@
 #'\code{RcppExports}
 #'@export
 
-cogapsmap <- function(DFrame, SFrame, FixedPatt, Config) {
-    .Call('CoGAPS_cogapsmap', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, Config)
+cogapsMap <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums) {
+    .Call('CoGAPS_cogapsMap', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums)
 }
 
-cogaps <- function(DFrame, SFrame, Config) {
-    .Call('CoGAPS_cogaps', PACKAGE = 'CoGAPS', DFrame, SFrame, Config)
+cogapsMapTest <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums) {
+    .Call('CoGAPS_cogapsMapTest', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums)
+}
+
+cogaps <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums) {
+    .Call('CoGAPS_cogaps', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums)
+}
+
+cogapsTest <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums) {
+    .Call('CoGAPS_cogapsTest', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums)
 }
 

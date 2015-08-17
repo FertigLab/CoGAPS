@@ -11,7 +11,7 @@ t# plotAtoms: function to plot Rows of P with error bars
 #'@param gapsRes the list resulting from applying GAPS
 #'@param type the atoms to plot, values are "sampA", "sampP" ,
 #'"equilA", or "equilP" to plot sampling or equilibration teop
-#'atome numbers
+#'atom numbers
 #'@export
 
 

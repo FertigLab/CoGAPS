@@ -27,8 +27,7 @@ class GibbsSamplerMap : public GibbsSampler
 	       double alphaA, double alphaP, double nMaxA, double nMaxP,
 	       unsigned long nIterA, unsigned long nIterP, 
 	       double max_gibbsmass_paraA, double max_gibbsmass_paraP, 
-	       double lambdaA_scale_factor, double lambdaP_scale_factor, 
-               unsigned long atomicSize,
+	       unsigned long long atomicSize,
 	       char label_A,char label_P,char label_D,char label_S,
 	       const string & datafile, const string & variancefile,
                const string & simulation_id, 
@@ -38,17 +37,15 @@ class GibbsSamplerMap : public GibbsSampler
 	       double alphaA, double alphaP, double nMaxA, double nMaxP,
 	       unsigned long nIterA, unsigned long nIterP, 
 	       double max_gibbsmass_paraA, double max_gibbsmass_paraP, 
-	       double lambdaA_scale_factor, double lambdaP_scale_factor, 
-               unsigned long atomicSize,
+              unsigned long long atomicSize,
 	       char label_A,char label_P,char label_D,char label_S,
 	       vector<vector<double> > &DVector, vector<vector<double> > &SVector,
                const string & simulation_id,
 			   vector <vector <double> >  &parameters, char the_fixed_matrix);			   
    
   ~GibbsSamplerMap(){};
-
-
-  // *************** METHODS FOR INITIALIZATION, DISPLAY, OUTPUT ***********************
+  
+   // *************** METHODS FOR INITIALIZATION, DISPLAY, OUTPUT ***********************
 	
 	// for initializing the correct matrix with the fixed pattern
     void init_Mapped_Matrix();
@@ -56,8 +53,6 @@ class GibbsSamplerMap : public GibbsSampler
 	// for keeping the atomic domain consistent with the initialized matrix
 	void initialize_atomic_domain_map();
 	
-	//for debugging
-	void print_A_and_P();
 
   // **************** METHODS FOR COMPUTING LIKELIHOOD FUNCTIONS *****************
 
@@ -82,37 +77,21 @@ class GibbsSamplerMap : public GibbsSampler
   void mapUpdate(char the_matrix_label);
   
   bool Q_fixed(unsigned long long location, char the_matrix_label);
-    
-  void mappedDeath(char the_matrix_label, 	
-				      double const * const * D,
-				      double const * const * S,
-				      double ** AOrig,
-				      double ** POrig);
-					  
-  void mappedBirth(char the_matrix_label, 	
-				      double const * const * D,
-				      double const * const * S,
-				      double ** AOrig,
-				      double ** POrig);
-  
-  void mappedMove(char the_matrix_label, 	
-				      double const * const * D,
-				      double const * const * S,
-				      double ** AOrig,
-				      double ** POrig);
-
-  void mappedExchange(char the_matrix_label,
-					double const * const * D,
-					double const * const * S,
-					double ** AOrig,
-					double ** POrig);
-					  
- // *************** METHODS FOR UPDATING THE MATRIX ***********************************	
  
-  bool calc_new_matrix_Pattern(char the_matrix_label, vector <double> &PatternUpdate, 
-										unsigned long long location, double mass);
   
-  void update_fixed_pattern(char the_matrix_label, vector <double> &newPat, unsigned int thePat);
+  // *************************** METHODS FOR TESTGAPS *********************************
 
+  vector <vector <double> > createSampleAMatMap(map <unsigned long long, double> ADomain);
+
+  vector <vector <double> > createSamplePMatMap(map <unsigned long long, double> PDomain);
+  
+  unsigned int getBin(unsigned long long location, char matrix_label){
+   if (matrix_label=='A'){
+    return _AAtomicdomain.getBin(location);
+	}
+   else{
+    return _PAtomicdomain.getBin(location);
+   }
+  }	
 };
 #endif

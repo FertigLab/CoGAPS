@@ -1,5 +1,5 @@
 
-# gapsRun: function to call C++ cogaps code
+# gapsTestRun: function to call C++ cogaps code
 # History: v1.0 CK with MFO edits, August 2014
 
 # Inputs: D - data matrix
@@ -17,7 +17,7 @@
 
 # Output: list with A and P matrix estimates, chi-squared and atom
 #         numbers of sample by iteration, and chi-squared of mean
-#'\code{gapsRun} calls the C++ MCMC code and performs Bayesian
+#'\code{gapsTestRun} calls the C++ MCMC code and performs Bayesian
 #'matrix factorization returning the two matrices that reconstruct
 #'the data matrix
 #'
@@ -38,9 +38,6 @@
 #' given in Abins and Pbins
 #'@param fixedDomain character to indicate whether A or P is
 #' domain for relative probabilities
-#'@param sampleSnapshots Boolean to indicate whether to capture
-#' individual samples from Markov chain during sampling
-#'@param numSnapshots the number of individual samples to capture
 #'@param alphaA sparsity parameter for A domain
 #'@param nMaxA PRESENTLY UNUSED, future = limit number of atoms
 #'@param max_gibbmass_paraA limit truncated normal to max size
@@ -49,29 +46,25 @@
 #'@param max_gibbmass_paraP limit truncated normal to max size
 #'@export
 
-#--CHANGES 1/20/15--
-#Added FixedPatt frame to C++ version to match Ondrej's code for updating bin sizes based on an input matrix
-gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
-                    nFactor = 7, simulation_id = "simulation",
-                    nEquil = 1000, nSample = 1000, nOutR = 1000,
-                    output_atomic = FALSE, fixedBinProbs = FALSE,
-                    fixedDomain = "N", sampleSnapshots = TRUE,
-                    numSnapshots = 100, alphaA = 0.01,
-                    nMaxA = 100000, max_gibbmass_paraA = 100.0,
-                    alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0)
+gapsTestRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
+                        nFactor = 7, simulation_id = "simulation", nEquil = 1000,
+                        nSample = 1000, nOutR = 1000, output_atomic = FALSE,
+                        fixedBinProbs = FALSE, fixedDomain = "N", alphaA = 0.01,
+                        nMaxA = 100000, max_gibbmass_paraA = 100.0, alphaP = 0.01,
+                        nMaxP = 100000, max_gibbmass_paraP = 100.0)
 {
   #Begin data type error checking code
   charDataErrors = c(!is.character(simulation_id), !is.character(fixedDomain))
   charCheck = c("simulation_id", "fixedDomain")
   
-  boolDataErrors = c(!is.logical(output_atomic), !is.logical(fixedBinProbs), !is.logical(sampleSnapshots))
-  boolCheck = c("output_atomic", "fixedBinProbs", "sampleSnapshots")
+  boolDataErrors = c(!is.logical(output_atomic), !is.logical(fixedBinProbs))
+  boolCheck = c("output_atomic", "fixedBinProbs")
   
-  numericDataErrors = c(!is.numeric(nFactor), !is.numeric(nEquil), !is.numeric(nSample), !is.numeric(nOutR), !is.numeric(numSnapshots), 
+  numericDataErrors = c(!is.numeric(nFactor), !is.numeric(nEquil), !is.numeric(nSample), !is.numeric(nOutR), 
                         !is.numeric(alphaA), !is.numeric(nMaxA), !is.numeric(max_gibbmass_paraA), !is.numeric(alphaP), 
                         !is.numeric(nMaxP), !is.numeric(max_gibbmass_paraP))
-  numericCheck = c("nFactor", "nEquil", "nSample", "nOutR", "numSnapshots", "alphaA", "nMaxA", 
-                   "max_gibbmass_paraA", "alphaP",	"nMaxP", "max_gibbmass_paraP")
+  numericCheck = c("nFactor", "nEquil", "nSample", "nOutR", "alphaA", "nMaxA", 
+                   "max_gibbmass_paraA", "alphaP",	"nMaxP", "max_gibbmass_paraP")		
   
   dataFrameErrors = c(!is.data.frame(D), !is.data.frame(S), !is.data.frame(ABins), !is.data.frame(PBins))
   dataFrameCheck = c("D", "S", "ABins", "PBins")
@@ -122,6 +115,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     return()
   }
   
+  
   #At least one of A, P, ABins, or PBins is not a matrix or data.frame 
   if(any((dataFrameErrors[1] && matrixErrors[1]), (dataFrameErrors[2] && matrixErrors[2]), (dataFrameErrors[3] && matrixErrors[3]), (dataFrameErrors[4] && matrixErrors[4])))
   {
@@ -141,17 +135,16 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   nEquil = floor(nEquil)
   nSample = floor(nSample)
   nOutR = floor(nOutR)
-  numSnapshots = floor(numSnapshots)
   nMaxA = floor(nMaxA)
   nMaxP = floor(nMaxP)
   
-  
   # pass all settings to C++ within a list
   #    if (is.null(P)) {
-  Config = c(simulation_id, output_atomic, fixedBinProbs, fixedDomain, sampleSnapshots);
+  Config = c(simulation_id, output_atomic, fixedBinProbs, fixedDomain);
   
   ConfigNums = c(nFactor, nEquil, nSample, nOutR, alphaA, nMaxA, max_gibbmass_paraA, 
-                 alphaP, nMaxP, max_gibbmass_paraP, numSnapshots);
+                 alphaP, nMaxP, max_gibbmass_paraP);
+  
   
   #Begin logic error checking code
   
@@ -159,14 +152,6 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   if(any(ConfigNums <= 0))
   {
     stop("Error in gapsRun: Numeric Arguments cannot be non-zero!")
-    
-    return()
-  }
-  
-  #Check for nonsensical inputs (such as numSnapshots < nEquil or nSample)
-  if((numSnapshots > nEquil) || (numSnapshots > nSample))
-  {
-    stop("Error in gapsRun: Cannot have more snapshots of A and P than equilibration and/or sampling iterations.")
     
     return()
   }
@@ -191,7 +176,6 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   
   #   }
   
-  
   geneNames = rownames(D);
   sampleNames = colnames(D);
   
@@ -203,7 +187,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   }
   
   # call to C++ Rcpp code
-  cogapResult = cogaps(D, S, ABins, PBins, Config, ConfigNums);
+  cogapResult = cogapsTest(D, S, ABins, PBins, Config, ConfigNums);
   
   # convert returned files to matrices to simplify visualization and processing
   cogapResult$Amean = as.matrix(cogapResult$Amean);
@@ -236,8 +220,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   }
   
   cogapResult = c(cogapResult, calcChiSq);
-  
-  names(cogapResult)[12] = "meanChi2";
+  names(cogapResult)[20] = "meanChi2";
   
   message(paste("Chi-Squared of Mean:",calcChiSq))
   
