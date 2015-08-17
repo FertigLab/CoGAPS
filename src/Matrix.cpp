@@ -18,6 +18,9 @@
 #include <istream>
 #include <iterator>
 #include <fstream>
+
+//For debugging to R terminal
+//#include <Rcpp.h>
 // -----------------------------------------------------------------------------
 
 // constants not already in main code
@@ -134,7 +137,7 @@ void Matrix::matrix_init() {
         }
     }
 }
-
+/*
 // set a row of the matrix to passed vector 
 // implemented to fix rows at a time with maps
 void Matrix::setRow(vector <double> &newRow, int RowNum){
@@ -150,10 +153,10 @@ void Matrix::setCol(vector <double> &newCol, int ColNum){
 	  _Matrix[n][ColNum] = newCol.at(n); 
         }
     } 
-	
+*/	
 // set a row of the matrix to passed vector
 // implemented to fix rows at a time with maps
-void Matrix::setRow(vector <double> const &theRow, int RowNum){
+void Matrix::setRow(vector <double> theRow, int RowNum){
         for (int n=0; n<_n_col;++n) {        
 	  _Matrix[RowNum][n] = theRow.at(n); 
         }
@@ -161,7 +164,7 @@ void Matrix::setRow(vector <double> const &theRow, int RowNum){
 	
 // set a column of the matrix to passed vector 
 // implemented to fix columns at a time with maps
-void Matrix:: setCol(vector <double> const &theCol, int ColNum){
+void Matrix:: setCol(vector <double> theCol, int ColNum){
         for (int n=0; n<_n_row;++n) {        
 	  _Matrix[n][ColNum] = theCol.at(n); 
         }
@@ -174,16 +177,20 @@ double ** Matrix::get_matrix() const {
   return _Matrix;
 }
 
-void Matrix::get_Row(int rowNum, vector <double> &theRow) const {
+vector <double> Matrix::get_Row(int rowNum) {
+  vector <double> theRow;
   for (int iCol = 0; iCol < _n_col; iCol++){
    theRow.push_back(_Matrix[rowNum][iCol]);
    }
+   return theRow;
 }
 
-void Matrix::get_Col(int colNum, vector <double> &theCol) const {
+vector <double> Matrix::get_Col(int colNum) {
+  vector <double> theCol;
   for (int iRow=0; iRow < _n_row; iRow++){
    theCol.push_back(_Matrix[iRow][colNum]);
    }
+   return theCol;
 }
 
 
@@ -286,17 +293,18 @@ void Matrix::matrix_Elem_update(vector<boost::tuple<unsigned int, unsigned int, 
 // print out a matrix on the output
 // USED FOR DEBUGGING
 void Matrix::display_matrix() {
-    /*cout << endl;
-    cout << "The matrix " << _label << " is: " << endl;
+	/*uncomment when debugging matrices
+    Rcpp::Rcout << endl;
+    Rcpp::Rcout << "The matrix " << _label << " is: " << endl;
     for(int m=0;m<_n_row;++m) {
         for (int n=0; n<_n_col;++n) {
-	    cout << std::setw(10) << std::right;
-            cout << _Matrix[m][n] << " ";
+	    Rcpp::Rcout << std::setw(10) << std::right;
+            Rcpp::Rcout << _Matrix[m][n] << " ";
         }
-        cout << endl;
+        Rcpp::Rcout << endl;
     }
-    cout << endl;
-    */
+    Rcpp::Rcout << endl;
+	*/
 }
 
 void Matrix::display_matrixF(ofstream& outputFile) {

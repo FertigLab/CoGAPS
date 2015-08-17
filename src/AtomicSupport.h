@@ -8,6 +8,8 @@
 #include "sub_func.h"
 #include "randgen.h"
 
+
+
 using std::map;
 using namespace std;
 
@@ -23,8 +25,16 @@ namespace gaps {
 	 * @short Initialize atoms into the atomic domain -- 
 	    adding ONE atom to the location [loc] with mass (mass)
 	 */
-    void initializeAtomic(unsigned int nBin, unsigned long long NatomLength, 
+	void initializeAtomic(unsigned int nBin, unsigned long long NatomLength, 
 			  double alpha, double lambda, char atomic_domain_label);
+     	
+    void FixedBins_initializeAtomic(unsigned int nBin, unsigned long long NatomLength, 
+			  double alpha, double lambda, char atomic_domain_label,
+			  const char input_file_name[]);
+	
+	void FixedBins_initializeAtomic(unsigned int nBin, unsigned long long NatomLength, 
+			  double alpha, double lambda, char atomic_domain_label,
+			  std::vector<std::vector<double> > ReadBinProbs);
 
     /**
      * @short Find the bin to which the given location refers.
@@ -45,8 +55,11 @@ namespace gaps {
     unsigned long long binToLocation(unsigned int bin);
 
     double getTotalMass(unsigned int bin);
+	
     unsigned int getNumAtoms(unsigned int bin);
-
+	
+	map <unsigned long long, double> getDomain();
+	
     double get_atomicDomain_totalmass();
 
     void setInitialAtoms(const map<unsigned long long, double> initAtoms);
@@ -87,6 +100,8 @@ namespace gaps {
 
     bool inDomain(unsigned long long location);
     double getMass(unsigned long long location);
+	
+	unsigned long long birthAtomLocation();
 
     void setProposedAtomMass(const map<unsigned long long, double> newProposal,
 			     bool isNewProposal);

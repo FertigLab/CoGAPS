@@ -17,7 +17,7 @@
 #         alphaA, alphaP - sparsity parameters for A and P domains
 #         max_gibbmass_paraA(P) - limit truncated normal to max size
 #         nMaxA, nMaxP - PRESENTLY UNUSED, future = limit number of atoms
-#         lambdaA(P)_scale_factor - lambda factor in penalized likelihood
+
 
 # Output: list with matrices, mean chi-squared value, and gene set
 #         results
@@ -29,44 +29,50 @@
 #'
 #'@param data data matrix
 #'@param unc uncertainty matrix (std devs for chi-squared of Log Likelihood)
+#'@param ABins a matrix of same size as A which gives relative
+#' probability of that element being non-zero
+#'@param PBins a matrix of same size as P which gives relative
+#' probability of that element being non-zero
 #'@param GStoGenes data.frame or list with gene sets
 #'@param nFactor number of patterns (basis vectors, metagenes)
 #'@param simulation_id name to attach to atoms files if created
-#'@param plot logical to determine if plots produced
-#'@param nPerm number of permutations for gene set test
 #'@param nEquil number of iterations for burn-in
 #'@param nSample number of iterations for sampling
 #'@param nOutR how often to print status into R by iterations
 #'@param output_atomic whether to write atom files (large)
-#'@param alphaA sparsity parameter for A domain 
-#'@param alphaP sparsity parameter for P domain 
-#'@param max_gibbmass_paraA limit truncated normal to max size for A
-#'@param max_gibbmass_paraP limit truncated normal to max size for P
-#'@param nMaxA PRESENTLY UNUSED, future = limit number of atoms for A
-#'@param nMaxP PRESENTLY UNUSED, future = limit number of atoms for P
-#'@param lambdaA_scale_factor lambda factor in penalized likelihood for A
-#'@param lambdaP_scale_factor lambda factor in penalized likelihood for P
+#'@param fixedBinProbs Boolean for using relative probabilities
+#' given in Abins and Pbins
+#'@param fixedDomain character to indicate whether A or P is
+#' domain for relative probabilities
+#'@param sampleSnapshots Boolean to indicate whether to capture
+#' individual samples from Markov chain during sampling
+#'@param numSnapshots the number of individual samples to capture
+#'@param plot Boolean to indicate whether to produce output graphics
+#'@param nPerm number of permutations in gene set test
+#'@param alphaA sparsity parameter for A domain
+#'@param nMaxA PRESENTLY UNUSED, future = limit number of atoms
+#'@param alphaP sparsity parameter for P domain
+#'@param max_gibbmass_paraA limit truncated normal to max size
+#'@param nMaxP PRESENTLY UNUSED, future = limit number of atoms
+#'@param max_gibbmass_paraP limit truncated normal to max size
 #'@export
 
-CoGAPS <- function(data, unc, GStoGenes, nFactor = "7", nEquil=1000,
-                nSample=1000, nOutR=1000, output_atomic="false",
-                simulation_id="simulation", plot=TRUE,nPerm=500,
-                 alphaA = "0.01",  nMaxA = "100000", 
-                 max_gibbmass_paraA = "100.0", lambdaA_scale_factor = "1.0", 
-                 alphaP = "0.01", nMaxP = "100000", 
-                 max_gibbmass_paraP = "100.0", lambdaP_scale_factor = "1.0") {
+CoGAPS <- function(data, unc, ABins = data.frame(), PBins = data.frame(), GStoGenes, nFactor = 7, simulation_id="simulation", nEquil=1000,
+                nSample=1000, nOutR=1000, output_atomic=FALSE,
+                fixedBinProbs = FALSE, fixedDomain = "N",
+                sampleSnapshots = TRUE, numSnapshots = 100,
+                plot=TRUE, nPerm=500,
+                alphaA = 0.01,  nMaxA = 100000,
+                max_gibbmass_paraA = 100.0,
+                alphaP = 0.01, nMaxP = 100000,
+                max_gibbmass_paraP = 100.0) {
 
 
   # decompose the data
-  matrixDecomp <- gapsRun(data, unc, nFactor=nFactor, 
-    simulation_id=simulation_id, nEquil=nEquil, 
-    nSample=nSample, nOutR = nOutR, output_atomic = output_atomic, 
-    alphaA = alphaA,  nMaxA = nMaxA, 
-    max_gibbmass_paraA = max_gibbmass_paraA, 
-    lambdaA_scale_factor = lambdaA_scale_factor, 
-    alphaP = alphaP, nMaxP = nMaxP, 
-    max_gibbmass_paraP = max_gibbmass_paraP, 
-    lambdaP_scale_factor = lambdaP_scale_factor)
+  matrixDecomp <- gapsRun(data, unc, ABins, PBins, nFactor, simulation_id,
+					nEquil, nSample, nOutR, output_atomic, fixedBinProbs, 
+					fixedDomain, sampleSnapshots, numSnapshots, alphaA,  nMaxA, max_gibbmass_paraA, 
+					alphaP, nMaxP, max_gibbmass_paraP)
 
   # plot patterns and show heatmap of Anorm
   if (plot) {
