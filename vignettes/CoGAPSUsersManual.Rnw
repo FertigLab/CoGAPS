@@ -2,7 +2,7 @@
 %\VignettePackage{CoGAPS}
 
 \documentclass{report}
-\usepackage{fullpage,./chicago,graphicx,subfigure,amssymb,amsmath,color,hyperref}
+\usepackage{fullpage,./chicago,graphicx,subfigure,amssymb,amsmath,color,hyperref,underscore}
 
 \author{Elana J. Fertig (\texttt{ejfertig@jhmi.edu}) and Michael F. Ochs (\texttt{ochsm@tcnj.edu})}
 \title{GAPS/CoGAPS Users Manual}
@@ -65,37 +65,38 @@ The number of rows in ${\bf{P}}$ (columns in ${\bf{A}}$) defines the number of b
 
 \par The GAPS algorithm is run by calling the \texttt{gapsRun} function in the CoGAPS R package as follows:
 \begin{verbatim}
-> results <- gapsRun(data, unc, nFactor = "5", simulation_id = "simulation", 
-                     nEquil = "1000", nSample = "1000", nOutR = 1000, 
-                     output_atomic = "FALSE", 
-                     alphaA = "0.01",  nMaxA = "100000", 
-                     max_gibbmass_paraA = "100.0", 
-                     lambdaA_scale_factor = "1.0",
-                     alphaP = "0.01", nMaxP = "100000", 
-                     max_gibbmass_paraP = "100.0", 
-                     lambdaP_scale_factor = "1.0")
+> gapsRun(D, S, ABins = data.frame(), PBins = data.frame(), nFactor = 7,
+          simulation_id = "simulation", nEquil = 1000, nSample = 1000,
+          nOutR = 1000, output_atomic = "FALSE", fixedBinProbs = "FALSE",
+          fixedDomain = "N", sampleSnapshots = "TRUE", numSnapshots = 100,
+          alphaA = 0.01, nMaxA = 1e+05, max_gibbmass_paraA = 100, 
+          alphaP = 0.01, nMaxP = 1e+05, max_gibbmass_paraP = 100)
 \end{verbatim}
 
 
 \par \noindent \textbf{\underline{Input Arguments}}
 The inputs that must be set each time are only the data and standard deviation matrices, with all other inputs having default values.  However, in reality it is essential to set at least nFactor, nEquil, and nSample based on the expected dimensionality of the data and the number of iterations needed to explore the posterior distribution.  The arguments are as follows:
 \begin{description}
-\item[data]{The matrix of m genes by n samples of expression data.  The input should be a matrix object and row names and column names will be retained in the output matrices as appropriate.  }
-\item[unc]{The matrix of m genes by n samples of standard deviations for the expression data.  The values will be used in estimating the Likelihood, presently under an assumption of normal error distribution.}
-\item[nFactor]{Number of patterns into which the data will be decomposed.  The value must be less than the number of genes and number of samples in the data to avoid instability from an ill-posed problem.}
-\item[simulation\_id]{The base name to attach to files with atoms if created.}
-\item[nEquil]{The number of iterations for ``burning in'' the sampler before beginning to gather samples for the statistics. The equilibration is done using a simulated annealing approach that slowly lowers the ``temperature'' to more thoroughly explore the posterior distribution prior to sampling.}
-\item[nSample]{The number of iterations for sampling.  Each iteration refers to a number of proposals chosen from a Poisson distribution with mean equal to the present number of atoms.}
-\item[nOutR]{The number of iterations between reporting the present status of the sampler back to R.}
-\item[output\_atomic]{This determines whether to write atom files to disk (large).}
-\item[alphaA]{A sparsity parameter reflecting the expected number of atoms per element of the amplitude $\mathbf{A}$ matrix in the decomposition.  To enforce sparsity, this parameter should typically be less than one. (optional; default=0.01)}
-\item[alphaP]{A sparsity parameter reflecting the expected number of atoms per element of the pattern matrix in the decomposition.  To enforce sparsity, this parameter should typically be less than one. (optional; default=0.01)}
-\item [max\_gibbmass\_paraA]{This provides an upper limit on the size of the truncated normal used during Gibbs sampling steps on the A domain.  This avoids the creation of an unusually large mass during sampling when the sampler is in the tail of the truncated normal.}
-\item [max\_gibbmass\_paraP]{This is the corresponding limit for the P domain.}
-\item[nMaxA]{This will set a maximum number of atoms in the A domain, however it is not yet implemented in this version.}
-\item[nMaxP]{This will set a maximum number of atoms in the P domain, however it is not yet implemented in this version.}
-\item[lambdaA\_scale\_factor]{This is the lambda factor for the penalized likelihood in A.}
-\item[lambdaP\_scale\_factor]{This is the lambda factor for the penalized likelihood in P.}
+\item[D]{The matrix of m genes by n samples of expression data.  The input should be a matrix object and row names and column names will be retained in the output matrices as appropriate.  }
+\item[S]{The matrix of m genes by n samples of standard deviations for the expression data.  The values will be used in estimating the Likelihood, presently under an assumption of normal error distribution.}
+\item[ABins]{a matrix of same size as A which gives relative probability of that element being non-zero (optional)}
+\item[PBins]{a matrix of same size as P which gives relative probability of that element being non-zero (optional)}
+\item[nFactor]{number of patterns (basis vectors, metagenes), which must be greater than or equal to the number of rows of FP }
+\item[simulation_id]{name to attach to atoms files if created}
+\item[nEquil]{number of iterations for burn-in}
+\item[nSample]{number of iterations for sampling}
+\item[nOutR]{how often to print status into R by iterations}
+\item[output_atomic]{whether to write atom files (large)}
+\item[fixedBinProbs]{Boolean for using relative probabilities given in Abins and Pbins}
+\item[fixedDomain]{character to indicate whether A or P is domain for relative probabilities}
+\item[sampleSnapshots]{Boolean to indicate whether to capture individual samples from Markov chain during sampling}
+\item[numSnapshots]{the number of individual samples to capture}
+\item[alphaA]{sparsity parameter for A domain}
+\item[nMaxA]{PRESENTLY UNUSED, future = limit number of atoms}
+\item[max_gibbmass_paraA]{limit truncated normal to max size}
+\item[alphaP]{sparsity parameter for P domain}
+\item[nMaxP]{PRESENTLY UNUSED, future = limit number of atoms}
+\item[max_gibbmass_paraP]{limit truncated normal to max size}
 \end{description}
 
 The algorithm returns in the results a list with
@@ -110,6 +111,8 @@ The algorithm returns in the results a list with
 \item[atomsPSamp]{A vector with the number of atoms in the P domain throughout the sampling steps.}
 \item[chiSqValues]{A vector with the sample chi-squared values throughput sampling.}
 \item[meanChi2]{${\chi^2}$ value of the final mean result, i.e. $\chi^2 = frac{(D-AP)^2}{\sigma^2}$.}
+\item[ASnapshots]{Samples of A matrices taken during sampling.}
+\item[PSnapshots]{Samples of P matrices taken during sampling.}
 \end{description}
   
 \par Once the GAPS algorithm has been run, the inferred patterns and corresponding amplitude can be displayed using the \texttt{plotGAPS} function as follows:
@@ -151,10 +154,10 @@ Figure \ref{fig:ModSim} shows the results from plotting the GAPS estimates of ${
 \begin{figure}[ht]
   \begin{center}
     \subfigure[Inferred amplitude matrix]{
-      \includegraphics[width=0.45\linewidth]{ModSimFigs_Amplitude}
+      \includegraphics[width=0.45\linewidth]{ModSimFigs-Amplitude}
     }
     \subfigure[Inferred patterns]{
-      \includegraphics[width=0.45\linewidth]{ModSimFigs_Patterns}
+      \includegraphics[width=0.45\linewidth]{ModSimFigs-Patterns}
     }
   \end{center}
   \caption{Results from GAPS on simulated data set with known true patterns.}
@@ -188,13 +191,15 @@ where $g$ indexes the genes in the set and ${\bf{Asd}}_{gp}$ is the standard dev
 
 \par The CoGAPS algorithm is run by calling the \texttt{CoGAPS} function in the CoGAPS R package as follows:
 \begin{verbatim}
-> results <- CoGAPS(data, unc, GStoGenes, nFactor = "5", nEquil=10000,
-                nSample=10000, nOutR=1000, output_atomic="false",
-                simulation_id="simulation", plot=TRUE, nPerm=500,
-                 alphaA = "0.01",  nMaxA = "100000", 
-                 max_gibbmass_paraA = "100.0", lambdaA_scale_factor = "1.0", 
-                 alphaP = "0.01", nMaxP = "100000", 
-                 max_gibbmass_paraP = "100.0", lambdaP_scale_factor = "1.0") 
+> results <- CoGAPS(data, unc, ABins = data.frame(), PBins = data.frame(), 
+                                   GStoGenes, nFactor = 7, simulation_id = "simulation", 
+                                   nEquil = 1000, nSample = 1000, nOutR = 1000, 
+                                   output_atomic = FALSE, fixedBinProbs = FALSE, 
+                                   fixedDomain = "N", sampleSnapshots = TRUE,
+                                   numSnapshots = 100, plot = TRUE, nPerm = 500, 
+                                   alphaA = 0.01, nMaxA = 1e+05, 
+                                   max_gibbmass_paraA = 100, alphaP = 0.01, 
+                                   nMaxP = 1e+05, max_gibbmass_paraP = 100)
 
 \end{verbatim}
 
@@ -242,10 +247,10 @@ Figure \ref{fig:GS2} shows the results from running CoGAPS on the GIST data in \
 \begin{figure}[ht]
 \begin{center}
 \subfigure[Inferred amplitude matrix]{
-\includegraphics[width=0.45\linewidth]{GSFigs_Amplitude}
+\includegraphics[width=0.45\linewidth]{GSFigs-Amplitude}
 }
 \subfigure[Inferred patterns]{
-\includegraphics[width=0.45\linewidth]{GSFigs_Patterns}
+\includegraphics[width=0.45\linewidth]{GSFigs-Patterns}
 }
 \end{center}
 \caption{Results from GAPS on data of simulated gene set data.}
@@ -274,10 +279,10 @@ Figure \ref{fig:GS} shows the results from running CoGAPS on the GIST data in \c
 \begin{figure}[ht]
 \begin{center}
 \subfigure[Inferred amplitude matrix]{
-\includegraphics[width=0.45\linewidth]{GISTFigs_Amplitude}
+\includegraphics[width=0.45\linewidth]{GISTFigs-Amplitude}
 }
 \subfigure[Inferred patterns]{
-\includegraphics[width=0.45\linewidth]{GISTFigs_Patterns}
+\includegraphics[width=0.45\linewidth]{GISTFigs-Patterns}
 }
 \end{center}
 \caption{Results from GAPS on data of simulated gene set data.}
@@ -346,7 +351,7 @@ for (tf in TFs) {
 
 \par This new version of CoGAPS relies on extensive recoding by Waishing Lee in C++ and work for C++ streamlining and R integration by Ondrej Maxian and Conor Kelton.  John Stansfield provided additional R code for visualization. Special thanks to paper co-authors Jie Ding, Alexander V. Favorov, and Giovanni Parmigiani for statistical advice in developing the GAPS / CoGAPS algorithms.  Additional thanks to Simina M. Boca, Ludmila V. Danilova, Genevieve Stein-O'Brien, Jeffrey Leek, and Svitlana Tyekcheva for their useful feedback.
 
-\par This work was funded by NIH/NLM R21LM009382, NIH/NLM R01LM011000 and NSF Grant 0342111. 
+\par This work was funded by NIH/NLM R21LM009382, NIH/NLM R01LM011000, NIH/NCI K25CA141053, and NSF Grant 0342111. 
 
 \bibliographystyle{plain}
 \bibliography{AppNote}
