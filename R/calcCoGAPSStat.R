@@ -3,7 +3,7 @@
 
 # Inputs: Amean - A matrix mean values
 #         Asd - A matrix standard deviations
-#         GStoGenes - data.frame or list with gene sets
+#         GStoGenes - data.frame, GSA.genesets class, or list with gene sets
 #         numPerm - number of permutations for null
 
 # Output: list with gene set statistics 
@@ -32,8 +32,13 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
   # compute the p-value for each gene set belonging to each pattern
 
   # check input arguments
-  if (!is(GStoGenes, "data.frame") && !is(GStoGenes, "list")) {
-    stop("GStoGenes must be a data.frame or list with format specified in the users manual.")
+  if (!is(GStoGenes, "data.frame") && !is(GStoGenes, "list") && !is(GStoGenes,"GSA.genesets")) {
+    stop("GStoGenes must be a data.frame,GSA.genesets, or list with format specified in the users manual.")
+  }
+
+  if (is(GStoGenes, "GSA.genesets")) {
+    names(GStoGenes$genesets) <- GStoGenes$geneset.names
+    GStoGenes <- GStoGenes$genesets
   }
 	
   if (is(GStoGenes, "list")) {
