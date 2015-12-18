@@ -1,0 +1,18 @@
+citHeader("To cite package 'CoGAPS' in publications use:")
+
+desc <- packageDescription("CoGAPS")
+year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", desc$Date)
+vers <- paste("R package version", desc$Version)
+
+citEntry(entry="article",
+         title = "{CoGAPS: an integrated R/C++ package to identify overlapping patterns of activation of biological processes from expression data}",
+         author = personList(as.person("Elana J. Fertig"),
+           as.person("Jie Ding"), as.person("Alexander V. Favorov"),
+           as.person("Giovanni Parmigiani"), as.person("Michael F. Ochs")),
+         year = 2010,
+         journal = "Bioinformatics",
+	 volume = "26",
+	 number = "21",
+	 pages = "2792--2793",
+         textVersion = "E.J. Fertig, J. Ding, A.V. Favorov, G. Parmigiani, and M.F. Ochs (2010) CoGAPS: an integrated R/C++ package to identify overlapping patterns of activation of biological processes from expression data.  Bioinformatics 26:2792-2793.")
+           
