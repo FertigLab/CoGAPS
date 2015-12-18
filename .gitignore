@@ -1,0 +1,17 @@
+# ignore R created files
+.Rprofile
+.Rhistory
+
+# ignore compiled files
+*.so
+*.o*
+*.sw?
+
+# ignore R data
+*.RDS
+
+# ignore PDFs
+*.pdf
+
+# ignore OS X files
+*.DS_Store
