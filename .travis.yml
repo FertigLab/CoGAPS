@@ -1,0 +1,7 @@
+# necessary yml
+language: r
+sudo: required
+
+# notification setup
+notifications:
+  slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts
