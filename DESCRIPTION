@@ -10,17 +10,20 @@ Description: Coordinated Gene Activity in Pattern Sets (CoGAPS)
     any data, and when this data represents biomolecules, to do gene set
     analysis.
 Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>
-Depends:
+Depends: 
     R (>= 3.0.1),
     Rcpp (>= 0.11.2),
     RColorBrewer (>= 1.0.5),
     gplots (>= 2.8.0)
-Imports:
+Imports: 
     graphics,
     grDevices,
     methods,
     stats,
     utils
+Suggests: 
+    testthat,
+    lintr
 LinkingTo: Rcpp, BH
 License: GPL (==2)
 biocViews: GeneExpression, Transcription, GeneSetEnrichment,
