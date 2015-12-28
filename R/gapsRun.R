@@ -104,8 +104,6 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
         stop(paste("Error in gapsRun: Argument",boolCheck[i],"is of the incorrect type. Please see documentation for details."))
       }
     }
-    
-    return()
   }
   
   if(any(numericDataErrors))
@@ -119,7 +117,6 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
         
       }
     }
-    return()
   }
   
   #At least one of A, P, ABins, or PBins is not a matrix or data.frame 
@@ -133,7 +130,6 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
         
       }
     }
-    return()
   }
   
   #Floor the parameters that are integers to prevent allowing doubles.
@@ -159,23 +155,17 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   if(any(ConfigNums <= 0))
   {
     stop("Error in gapsRun: Numeric Arguments cannot be non-zero!")
-    
-    return()
   }
   
   #Check for nonsensical inputs (such as numSnapshots < nEquil or nSample)
   if((numSnapshots > nEquil) || (numSnapshots > nSample))
   {
     stop("Error in gapsRun: Cannot have more snapshots of A and P than equilibration and/or sampling iterations.")
-    
-    return()
   }
   
   if((nOutR > nEquil) || (nOutR > nSample))
   {
     stop("Error in gapsRun: Cannot have more output steps than equilibration and/or sampling iterations.")
-    
-    return()
   }
   
   if(nFactor > (ncol(D)))
