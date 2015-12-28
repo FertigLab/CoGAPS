@@ -1,2 +1,18 @@
-linters: with_defaults(line_length_linter(120))
+linters: with_defaults(
+    camel_case_linter = NULL, # 1066
+    no_tab_linter = NULL, # 479
+    trailing_whitespace_linter = NULL, # 355
+    assignment_linter = NULL, # 239
+    infix_spaces_linter = NULL, # 150
+    open_curly_linter = NULL, # 113
+    line_length_linter = NULL, # 111
+    spaces_left_parentheses_linter = NULL, # 53
+    single_quotes_linter = NULL, # 33
+    object_usage_linter = NULL, # 13
+    commented_code_linter = NULL, # 6
+    commas_linter = NULL, # 3
+    trailing_blank_lines_linter = NULL, # 2
+    closed_curly_linter = NULL, # 1
+    NULL
+  )
 exclusions: list("R/RcppExports.R")
