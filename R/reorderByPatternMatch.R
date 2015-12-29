@@ -45,4 +45,3 @@ reorderByPatternMatch <- function(P, matchTo) {
 	return(P[pMatch,])
 	
 }
-
