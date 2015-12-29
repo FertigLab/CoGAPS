@@ -132,7 +132,7 @@ gapsMapTestRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(),
     {
       if((dataFrameErrors[i] && matrixErrors[i]) == TRUE)
       {
-        stop(paste("Error in gapsRun: Argument",dataFrameCheck[i],"is not a matrix or data.frame. Please see documentation for details."))
+        stop(paste("Error in gapsRun: Argument", dataFrameCheck[i], "is not a matrix or data.frame. Please see documentation for details."))
         
       }
     }
