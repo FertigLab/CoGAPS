@@ -18,7 +18,7 @@
 
 plotGAPS <- function(A, P, outputPDF="") {
     if (outputPDF != "") {
-      pdf(file=paste(outputPDF,"-Patterns",".pdf",sep=""))
+      pdf(file=paste(outputPDF, "-Patterns", ".pdf", sep=""))
     } else {
               dev.new()
     }
@@ -36,7 +36,7 @@ plotGAPS <- function(A, P, outputPDF="") {
       dev.new()
     } else {
       dev.off()
-      pdf(file=paste(outputPDF,"-Amplitude",".pdf",sep=""))
+      pdf(file=paste(outputPDF, "-Amplitude", ".pdf", sep=""))
     }
 
     heatmap(A, Rowv=NA, Colv=NA)
