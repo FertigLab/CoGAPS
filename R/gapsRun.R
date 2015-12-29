@@ -71,7 +71,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                         !is.numeric(alphaA), !is.numeric(nMaxA), !is.numeric(max_gibbmass_paraA), !is.numeric(alphaP), 
                         !is.numeric(nMaxP), !is.numeric(max_gibbmass_paraP))
   numericCheck = c("nFactor", "nEquil", "nSample", "nOutR", "numSnapshots", "alphaA", "nMaxA", 
-                   "max_gibbmass_paraA", "alphaP",	"nMaxP", "max_gibbmass_paraP")
+                   "max_gibbmass_paraA", "alphaP",    "nMaxP", "max_gibbmass_paraP")
   
   dataFrameErrors = c(!is.data.frame(D), !is.data.frame(S), !is.data.frame(ABins), !is.data.frame(PBins))
   dataFrameCheck = c("D", "S", "ABins", "PBins")

@@ -71,7 +71,7 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
                         !is.numeric(alphaA), !is.numeric(nMaxA), !is.numeric(max_gibbmass_paraA), !is.numeric(alphaP), 
                         !is.numeric(nMaxP), !is.numeric(max_gibbmass_paraP))
   numericCheck = c("nFactor", "nEquil", "nSample", "nOutR", "numSnapshots", "alphaA", "nMaxA", 
-                   "max_gibbmass_paraA", "alphaP",	"nMaxP", "max_gibbmass_paraP")
+                   "max_gibbmass_paraA", "alphaP",    "nMaxP", "max_gibbmass_paraP")
   
   dataFrameErrors = c(!is.data.frame(D), !is.data.frame(S), !is.data.frame(ABins), !is.data.frame(PBins), !is.data.frame(FP))
   dataFrameCheck = c("D", "S", "ABins", "PBins", "FP")

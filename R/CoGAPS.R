@@ -70,9 +70,9 @@ CoGAPS <- function(data, unc, ABins = data.frame(), PBins = data.frame(), GStoGe
 
   # decompose the data
   matrixDecomp <- gapsRun(data, unc, ABins, PBins, nFactor, simulation_id,
-					nEquil, nSample, nOutR, output_atomic, fixedBinProbs, 
-					fixedDomain, sampleSnapshots, numSnapshots, alphaA,  nMaxA, max_gibbmass_paraA, 
-					alphaP, nMaxP, max_gibbmass_paraP)
+                    nEquil, nSample, nOutR, output_atomic, fixedBinProbs, 
+                    fixedDomain, sampleSnapshots, numSnapshots, alphaA,  nMaxA, max_gibbmass_paraA, 
+                    alphaP, nMaxP, max_gibbmass_paraP)
 
   # plot patterns and show heatmap of Anorm
   if (plot) {
