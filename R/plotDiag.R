@@ -56,7 +56,7 @@ plotDiag <-function(gapsRes)  {
   plot(ChiSq, main="Chi Squared Values")
   
   
-  par(mfrow=c(2,2))
+  par(mfrow=c(2, 2))
   plot(AtomsAEquil, main="Atoms A Equilibrium")
   plot(AtomsASamp, main="Atoms A Sample")
   plot(AtomsPEquil, main="Atoms P Equilibrium")
