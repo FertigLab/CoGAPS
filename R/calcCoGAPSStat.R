@@ -40,7 +40,7 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500) {
     names(GStoGenes$genesets) <- GStoGenes$geneset.names
     GStoGenes <- GStoGenes$genesets
   }
-	
+    
   if (is(GStoGenes, "list")) {
     GStoGenesList <- GStoGenes
   } else {
