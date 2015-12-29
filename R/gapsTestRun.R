@@ -70,8 +70,6 @@ gapsTestRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   dataFrameCheck = c("D", "S", "ABins", "PBins")
   
   matrixErrors = c(!is.matrix(D), !is.matrix(S), !is.matrix(ABins), !is.matrix(PBins))
-  matrixCheck = c("D", "S", "ABins", "PBins")
-  
   
   if(any(charDataErrors))
   {

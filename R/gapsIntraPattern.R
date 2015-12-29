@@ -26,9 +26,6 @@ gapsIntraPattern <- function(Amean, Asd, DMatrix, sdThreshold = 3)
 	#A matrix holding the values of our correlation coefficients between genes for the current column
 	tempGeneCorrMatrix = matrix();
 	
-	#The mean of the current gene correlation matrix
-	tempCorrMatrMean = 0;
-	
 	#A list to hold all the correlation matrices
 	geneCorrMatrices = list();
 	
