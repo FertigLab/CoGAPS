@@ -91,9 +91,9 @@ plotSmoothPatterns <- function(P, x=NULL, breaks=NULL, breakStyle=T, orderP=!all
                                    
     # specify the structure of these plots based upon the breaks
     if (!add) {
-        split.screen(c(nrow(P),length(which(breakStyle))))
+        split.screen(c(nrow(P), length(which(breakStyle))))
     } else {
-        split.screen(c(nrow(P), length(which(breakStyle))),erase=F)
+        split.screen(c(nrow(P), length(which(breakStyle))), erase=F)
     }
 
     scr <- 1
@@ -118,10 +118,10 @@ plotSmoothPatterns <- function(P, x=NULL, breaks=NULL, breakStyle=T, orderP=!all
             }
                         
             if (add) {
-                plot(x[idxTmp],loess(P[iP,idxTmp]~x[idxTmp])$fit, col=lineCol, type='l', axes=F, xlab='', ylab='',lwd=3, 
+                plot(x[idxTmp], loess(P[iP,idxTmp]~x[idxTmp])$fit, col=lineCol, type='l', axes=F, xlab='', ylab='',lwd=3, 
                      ylim=c(0,max(P[iP,])),xlim=xBorders,...)
             } else {
-                plot(x[idxTmp],loess(P[iP,idxTmp]~x[idxTmp])$fit, col=lineCol, lty=2, lwd=3, type='l', xlab=k, ylab=ylab, 
+                plot(x[idxTmp], loess(P[iP,idxTmp]~x[idxTmp])$fit, col=lineCol, lty=2, lwd=3, type='l', xlab=k, ylab=ylab, 
                      ylim=c(0,max(P[iP,])),xlim=xBorders,...)
             }
             
