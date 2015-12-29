@@ -142,4 +142,3 @@ gapsInterPattern <- function(Amean, Asd, sdThreshold = 3)
 	
 	return(results);
 }
-
