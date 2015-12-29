@@ -77,7 +77,7 @@ computeGeneGSProb <- function(Amean, Asd, GSGenes, Pw=rep(1,ncol(Amean)),
 	}
 	
 	finalStats <- sapply(GSGenes,
-						 function(x){length(which(permGSStat > geneGSStat[x])) / length(permGSStat)})
+						 function(x) length(which(permGSStat > geneGSStat[x])) / length(permGSStat))
 	
 	return(finalStats)
 	
