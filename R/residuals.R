@@ -17,7 +17,7 @@
 #'@export
 
 
-residuals=function(AMean_Mat, PMean_Mat, D, S)    
+residuals=function(AMean_Mat, PMean_Mat, D, S)
 {
 
     M_Mean <- AMean_Mat%*%PMean_Mat
