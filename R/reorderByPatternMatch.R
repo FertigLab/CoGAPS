@@ -15,22 +15,22 @@
 #'@export
 
 reorderByPatternMatch <- function(P, matchTo) {
-    
+
     # check that P and the matchTo matrix have the same dimensions for valid matching
     if (nrow(matchTo) != nrow(P) | ncol(matchTo) != ncol(P)) {
         stop('CoGAPS: reorderByPatternMatch: dimensions of P and matchTo must agree')
     }
-    
+
     # ensuring that rownames match for simplicty of matching process
     row.names(matchTo) <- row.names(P)
-    
+
     # compute the correlation between each entry
     corP <- cor(t(matchTo),t(P))
-    
+
     # initalize the new matrix
     pMatch <- rep(0, nrow(P))
     names(pMatch) <- row.names(P)
-    
+
     # match patterns in order of correlation
     for (p in 1:(nrow(P)-1)) {
         ptemp <- which(corP==max(corP),arr.ind=T)
@@ -40,8 +40,8 @@ reorderByPatternMatch <- function(P, matchTo) {
         }
     }
     pMatch[which(pMatch==0)] <- setdiff(names(pMatch), pMatch)
-    
+
     # return matched patterns
     return(P[pMatch,])
-    
+
 }

@@ -1,5 +1,5 @@
 # plotGAPS: function to plot the decomposed A and P matrices
-# History: EJF - original CoGAPS 
+# History: EJF - original CoGAPS
 
 # Inputs: A - A matrix
 #         P - P matrix
@@ -31,7 +31,7 @@ plotGAPS <- function(A, P, outputPDF="") {
     title(main='Inferred Patterns')
     legend("topright", paste("Pattern", 1:nPatt, sep = ""), pch = 1:nPatt,
         lty=1,cex=0.8,col=rainbow(nPatt),bty="y",ncol=5)
-  
+
     if (outputPDF == "") {
       dev.new()
     } else {
@@ -40,9 +40,9 @@ plotGAPS <- function(A, P, outputPDF="") {
     }
 
     heatmap(A, Rowv=NA, Colv=NA)
-    
+
     if (outputPDF != "") {
         dev.off()
     }
-  
+
 }

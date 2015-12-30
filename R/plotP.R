@@ -25,7 +25,7 @@ plotP<-function(PMean_Mat, P_SD)  {
 
     plotCI(x=RowP, y=PMean_Mat[1,], col=colors[1],uiw=P_SD[1,],
           ylim=ylimits,type='l',ylab="Relative Amplitude")
-    
+
     for (i in 2:Nfactor) {
         points(RowP, PMean_Mat[i,], col=colors[i], pch=i)
         plotCI(RowP, y=PMean_Mat[i,], col=colors[i], uiw=P_SD[i,],
