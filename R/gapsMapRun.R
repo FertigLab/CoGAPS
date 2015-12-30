@@ -88,8 +88,6 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
         stop(paste("Error in gapsRun: Argument",charCheck[i],"is of the incorrect type. Please see documentation for details."))
       }
     }
-
-    return()
   }
 
   if(any(boolDataErrors))
@@ -102,8 +100,6 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
         stop(paste("Error in gapsRun: Argument",boolCheck[i],"is of the incorrect type. Please see documentation for details."))
       }
     }
-
-    return()
   }
 
   if(any(numericDataErrors))
@@ -117,7 +113,6 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
 
       }
     }
-    return()
   }
 
 
@@ -132,7 +127,6 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
 
       }
     }
-    return()
   }
 
   #Floor the parameters that are integers to prevent allowing doubles.
@@ -157,37 +151,27 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
   if(any(ConfigNums <= 0))
   {
     stop("Error in gapsRun: Numeric Arguments cannot be non-zero!")
-
-    return()
   }
 
   #Check for nonsensical inputs (such as numSnapshots < nEquil or nSample)
   if((numSnapshots > nEquil) || (numSnapshots > nSample))
   {
     stop("Error in gapsRun: Cannot have more snapshots of A and P than equilibration and/or sampling iterations.")
-
-    return()
   }
 
   if((nOutR > nEquil) || (nOutR > nSample))
   {
     stop("Error in gapsRun: Cannot have more output steps than equilibration and/or sampling iterations.")
-
-    return()
   }
 
   if(ncol(FP) != ncol(D))
   {
     stop("Error in gapsRun: Columns of Data Matrix and Fixed Pattern Matrix do not line up. Please see documentation for details.")
-
-    return()
   }
 
   if(nFactor < (nrow(FP)))
   {
     stop("Error in gapsRun: Number of patterns cannot be less than the rows of the patterns to fix (FP). Please see documentation for details.")
-
-    return()
   }
 
   if(nFactor > (ncol(D)))

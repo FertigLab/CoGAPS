@@ -88,8 +88,6 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
         stop(paste("Error in gapsRun: Argument",charCheck[i],"is of the incorrect type. Please see documentation for details."))
       }
     }
-
-    return()
   }
 
   if(any(boolDataErrors))
