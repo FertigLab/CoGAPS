@@ -6,6 +6,11 @@ sudo: required
 bioc_required: true
 bioc_use_devel: true
 
+# before installing, lint c++ code
+before_install:
+  - sudo apt-get install cpplint -y
+  - cpplint src
+
 # test code coverage
 r_github_packages:
   - jimhester/covr
