@@ -240,26 +240,6 @@ void GibbsSampler::clear_new_Proposal(){
   _new_matrixElemChange.clear();
 }
 
-
-void GibbsSampler::display_matrix(char matrix_label){
-  switch(matrix_label){
-  case 'D':
-    {_DMatrix.display_matrix();break;}
-  case 'S':
-    {_SMatrix.display_matrix();break;}
-  case 'A':
-    {_AMatrix.display_matrix();break;}
-  case 'P':
-    {_PMatrix.display_matrix();break;}
-  }
-}
-
-	// Just to see the matrices in the terminal
-void GibbsSampler:: print_A_and_P(){
-	  display_matrix('A');
-	  display_matrix('P');
-	  }
-
 void GibbsSampler::display_atomicdomain(char atomic_label){
   switch(atomic_label){
   case 'A':
