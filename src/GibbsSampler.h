@@ -128,12 +128,8 @@ class GibbsSampler
 
   void clear_new_Proposal();
 
-  void display_matrix(char matrix_label);
-
   void display_atomicdomain(char atomic_label);
   
-  void print_A_and_P();
-
   void local_display_matrix2F(ofstream& outputFile, double ** Mat_ptr, 
 			      unsigned int n_row, unsigned int n_col);
 				  
