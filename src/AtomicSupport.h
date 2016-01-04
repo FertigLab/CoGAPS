@@ -74,7 +74,7 @@ namespace gaps {
 	   distribution on number of atoms. Propose methods are
 	   below makeProposal. 
     */
-    void makeProposal(double rng);
+    void makeProposal();
 	
 	void ProposeBirth();
 	void ProposeDeath();

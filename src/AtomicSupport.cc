@@ -543,7 +543,7 @@ namespace gaps {
 
   }
 
-   void AtomicSupport::makeProposal(double rng){
+   void AtomicSupport::makeProposal(){
 
     // initialize the update
     cleanClearProposal();
