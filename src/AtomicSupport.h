@@ -129,7 +129,6 @@ namespace gaps {
     void updateAtomicBins(double binProbabilities[], unsigned int length,
 			  bool onlyUpdateRelativeWidth);
 
-    void printAtomicInfo(); // original
     void printAtomicInfoF(ofstream& outputFile);
 
     void writeAtomicInfo(char outputFilename[],unsigned long Samp_cycle);

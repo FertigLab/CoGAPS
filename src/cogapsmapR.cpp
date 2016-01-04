@@ -158,7 +158,6 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 			tempFrameCol = DFrame[j];
 			tempFrameElement = tempFrameCol[i];
 			DVector[i][j] = tempFrameElement;
-			//Rcpp::Rcout << DVector[i][j] << endl;
 		}
 	}
 	
@@ -178,7 +177,6 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 			tempFrameCol = SFrame[j];
 			tempFrameElement = tempFrameCol[i];
 			SVector[i][j] = tempFrameElement;
-			//Rcpp::Rcout << SVector[i][j] << endl;
 		}
 	}
 	
@@ -197,7 +195,6 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 			tempFrameCol = FixedPatt[j];
 			tempFrameElement = tempFrameCol[i];
 			FPVector[i][j] = tempFrameElement;
-			//Rcpp::Rcout << SVector[i][j] << endl;
 		}
 	}
 	//--------------------END CREATING D and S C++ VECTORS
@@ -269,7 +266,6 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 				tempFrameCol = ABinsFrame[j];
 				tempFrameElement = tempFrameCol[i];
 				ABinsVector[i][j] = tempFrameElement;
-				//Rcpp::Rcout << ABinsVector[i][j] << endl;
 			}
 		}
 		
@@ -293,7 +289,6 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 				tempFrameCol = PBinsFrame[j];
 				tempFrameElement = tempFrameCol[i];
 				PBinsVector[i][j] = tempFrameElement;
-				//Rcpp::Rcout << PBinsVector[i][j] << endl;
 			}
 		}
 		
@@ -345,21 +340,16 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 
     for (unsigned long iterA=1; iterA <= nIterA; ++iterA){
       GibbsSampMap.mapUpdate('A');
-      //GibbsSampMap.check_atomic_matrix_consistency('A');
-      //GibbsSampMap.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('A');
 
     for (unsigned long iterP=1; iterP <= nIterP; ++iterP){
       GibbsSampMap.mapUpdate('P');
-      //GibbsSampMap.check_atomic_matrix_consistency('P');
-      //GibbsSampMap.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('P');
 	
 	//Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
 	tempChiSq = GibbsSampMap.get_sysChi2();
-	//Rcpp::Rcout << (ext_iter) - 1 << endl;
 	chiVect[(ext_iter)-1] = tempChiSq;
     // ----------- output computing info ---------
 	tempAtomA = GibbsSampMap.getTotNumAtoms('A');
@@ -368,16 +358,9 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 	nPEquil[outCount] = tempAtomP;
 	outCount++;
     if ( ext_iter % numOutputs == 0){
-      //chi2 = 2.*GibbsSampMap.cal_logLikelihood();
-	  
-
-	  //COMMENTED OUT FOR THE R VERSION
-      //GibbsSampMap.output_computing_info(outputFilename,ext_iter,nEquil,0,nSample)
-	  //---------------------------------
       Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil << 
               ", Atoms:" << tempAtomA << "("
 	      << tempAtomP << ")" <<
-	// " ,chi2 = " << chi2 <<
               "  Chi2 = " << tempChiSq << endl;
 		
     }
@@ -386,8 +369,6 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
     // re-calculate nIterA and nIterP to the expected number of atoms 
     nIterA = (unsigned long) randgen('P',max((double) GibbsSampMap.getTotNumAtoms('A'),10.));
     nIterP = (unsigned long) randgen('P',max((double) GibbsSampMap.getTotNumAtoms('P'),10.));
-    //nIterA = (unsigned long) randgen('P',(double) GibbsSampMap.getTotNumAtoms('A')+10.);
-    //nIterP = (unsigned long) randgen('P',(double) GibbsSampMap.getTotNumAtoms('P')+10.);
     // --------------------------------------------
 
   }  // end of for-block for equilibration
@@ -404,15 +385,11 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 
     for (unsigned long iterA=1; iterA <= nIterA; ++iterA){
       GibbsSampMap.mapUpdate('A');
-      //GibbsSamp.check_atomic_matrix_consistency('A');
-      //GibbsSamp.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('A');
 
     for (unsigned long iterP=1; iterP <= nIterP; ++iterP){
       GibbsSampMap.mapUpdate('P');
-      //GibbsSamp.check_atomic_matrix_consistency('P');
-      //GibbsSamp.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('P');
 	
@@ -441,15 +418,11 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
   for (unsigned long i=1; i <= nSample; ++i){
     for (unsigned long iterA=1; iterA <= nIterA; ++iterA){
       GibbsSampMap.mapUpdate('A');
-      //GibbsSampMap.check_atomic_matrix_consistency('A');
-      //GibbsSampMap.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('A');
 
     for (unsigned long iterP=1; iterP <= nIterP; ++iterP){ 
       GibbsSampMap.mapUpdate('P');
-      //GibbsSampMap.check_atomic_matrix_consistency('P');
-      //GibbsSampMap.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('P');
 
@@ -463,7 +436,6 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 	
 	//Do the same as above.
 	tempChiSq = GibbsSampMap.get_sysChi2();
-	//Rcpp::Rcout << (nEquil + i) - 1 << endl;
 	chiVect[(nEquil + i)-1] = tempChiSq;
     // ----------- output computing info ---------
 		tempAtomA = GibbsSampMap.getTotNumAtoms('A');
@@ -502,8 +474,6 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
     // re-calculate nIterA and nIterP to the expected number of atoms 
     nIterA = (unsigned long) randgen('P',max((double) GibbsSampMap.getTotNumAtoms('A'),10.));
     nIterP = (unsigned long) randgen('P',max((double) GibbsSampMap.getTotNumAtoms('P'),10.));
-    //nIterA = (unsigned long) randgen('P',(double) GibbsSampMap.getTotNumAtoms('A')+10.);
-    //nIterP = (unsigned long) randgen('P',(double) GibbsSampMap.getTotNumAtoms('P')+10.);
     // --------------------------------------------
 	
   }  // end of for-block for Sampling
@@ -570,21 +540,6 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 			PStdMatrix(i,j) = PStdVector[i][j] ;
 		}
 	}
-	
-	/* Same Code for APMEAN Matrix, not needed
-	numRow = APMeanVector.size();
-	numCol = APMeanVector[0].size() ;
-	Rcpp::NumericMatrix APMeanMatrix( numRow, numCol ) ;
-	for(int i=0; i<numRow; i++)
-	{
-		for(int j=0; j<numCol; j++)
-		{
-			APMeanMatrix(i,j) = APMeanVector[i][j] ;
-		}
-	}
-	*/
-	
-	
 	
 	//Code for transferring Snapshots in R
 	int numSnaps = numSnapshots; //Arbitrary to keep convention

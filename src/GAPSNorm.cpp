@@ -23,19 +23,6 @@ using namespace std;
 namespace gaps
 {  
 
-  void GAPSNorm::local_display_matrix(double const * const * Mat, unsigned int n_row,
-				      unsigned int n_col) {
-	/*
-    for (unsigned int m = 0; m < n_row; ++m){
-      for (unsigned int n=0; n < n_col; ++n){
-	cout << setw(10);
-	cout << Mat[m][n] << " ";
-      }
-      cout << endl;
-    }
-	*/
-  }
-
   // ---------------------------------------------------------------------------
   // Calculation of M = A*P (matrix multiplication)
     void GAPSNorm::computeMock(double ** M, double const * const * A, 
