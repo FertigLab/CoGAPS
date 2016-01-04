@@ -153,7 +153,6 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 			tempFrameCol = DFrame[j];
 			tempFrameElement = tempFrameCol[i];
 			DVector[i][j] = tempFrameElement;
-			//Rcpp::Rcout << DVector[i][j] << endl;
 		}
 	}
 	
@@ -173,7 +172,6 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 			tempFrameCol = SFrame[j];
 			tempFrameElement = tempFrameCol[i];
 			SVector[i][j] = tempFrameElement;
-			//Rcpp::Rcout << SVector[i][j] << endl;
 		}
 	}
 	
@@ -192,7 +190,6 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 			tempFrameCol = FixedPatt[j];
 			tempFrameElement = tempFrameCol[i];
 			FPVector[i][j] = tempFrameElement;
-			//Rcpp::Rcout << SVector[i][j] << endl;
 		}
 	}
 	//--------------------END CREATING D and S C++ VECTORS
@@ -236,63 +233,6 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
   char label_S = 'S';// label for matrix S
   char label_FP = fixedMatrixStr[0]; //Label for the Fixed Matrix
 
-  // Output parameters and computing info to files:
-  
-  
-  //---------------------------------------------------------------------------
-  //ENTIRE SECTION ONLY RELEVANT FOR BASE C++ VERSION 
-  /*
-  char outputFilename[80];
-  strcpy(outputFilename,simulation_id.c_str());
-  strcat(outputFilename,"_computing_info.txt");
-  
- 
-  ofstream outputFile;
-  outputFile.open(outputFilename,ios::out);  // start by deleting previous content and 
-                                             // rewriting the file
-  outputFile << "Common parameters and info:" << endl;
-//outputFile << "input data file: " << datafile << endl;
-//outputFile << "input variance file: " << variancefile << endl;
-  outputFile << "simulation id: " << simulation_id << endl;
-  outputFile << "nFactor = " << nFactor << endl;
-  outputFile << "nEquil = " << nEquil << endl;
-  outputFile << "nSample = " << nSample << endl;
-  outputFile << "Q_output_atomic (bool) = " << Q_output_atomic << endl << endl;
-
-  outputFile << "Parameters for A:" << endl;
-  outputFile << "alphaA = " << alphaA << endl;
-  outputFile << "nMaxA = " << nMaxA << endl;
-  outputFile << "nIterA = " << nIterA << endl;
-  outputFile << "max_gibbsmass_paraA = " << max_gibbsmass_paraA << endl;
-  outputFile << "lambdaA_scale_factor = " << lambdaA_scale_factor << endl << endl;
-
-  outputFile << "Parameters for P:" << endl;
-  outputFile << "alphaP = " << alphaP << endl;
-  outputFile << "nMaxP = " << nMaxP << endl;
-  outputFile << "nIterP = " << nIterP << endl;
-  outputFile << "max_gibbsmass_paraP = " << max_gibbsmass_paraP << endl;
-  outputFile << "lambdaP_scale_factor = " << lambdaP_scale_factor << endl << endl;
-
-  outputFile.close();
-  //--------------------------------------------------------------------------------
-  */
-
-
-  // ---------------------------------------------------------------------------
-  // Initialize the GibbsSampMap.
-
-  /*Regular Version
-  GibbsSamplerMap GibbsSampMap(nEquil,nSample,nFactor,   // construct GibbsSampMapler and 
-                         alphaA,alphaP,nMaxA,nMaxP,// Read in D and S matrices
-                         nIterA,nIterP,
-			 max_gibbsmass_paraA, max_gibbsmass_paraP, 
-			 lambdaA_scale_factor, lambdaP_scale_factor,
-                         atomicSize,
-                         label_A,label_P,label_D,label_S,
-			 datafile,variancefile,simulation_id);
-	*/
-	
-	
   //R Version
   //Now with Variable Bin capability for priors (Fixed Bins)
   
@@ -343,7 +283,6 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 				tempFrameCol = ABinsFrame[j];
 				tempFrameElement = tempFrameCol[i];
 				ABinsVector[i][j] = tempFrameElement;
-				//Rcpp::Rcout << ABinsVector[i][j] << endl;
 			}
 		}
 		
@@ -367,7 +306,6 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 				tempFrameCol = PBinsFrame[j];
 				tempFrameElement = tempFrameCol[i];
 				PBinsVector[i][j] = tempFrameElement;
-				//Rcpp::Rcout << PBinsVector[i][j] << endl;
 			}
 		}
 		
@@ -420,21 +358,16 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 
     for (unsigned long iterA=1; iterA <= nIterA; ++iterA){
       GibbsSampMap.mapUpdate('A');
-      //GibbsSampMap.check_atomic_matrix_consistency('A');
-      //GibbsSampMap.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('A');
 
     for (unsigned long iterP=1; iterP <= nIterP; ++iterP){
       GibbsSampMap.mapUpdate('P');
-      //GibbsSampMap.check_atomic_matrix_consistency('P');
-      //GibbsSampMap.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('P');
 	
 	//Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
 	tempChiSq = GibbsSampMap.get_sysChi2();
-	//Rcpp::Rcout << (ext_iter) - 1 << endl;
 	chiVect[(ext_iter)-1] = tempChiSq;
     // ----------- output computing info ---------
 	tempAtomA = GibbsSampMap.getTotNumAtoms('A');
@@ -448,16 +381,10 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
     EquilPAtomicDomains.push_back(GibbsSampMap.getAtomicDomain('P'));
 	
     if ( ext_iter % numOutputs == 0){
-      //chi2 = 2.*GibbsSampMap.cal_logLikelihood();
-	  
-
-	  //COMMENTED OUT FOR THE R VERSION
-      //GibbsSampMap.output_computing_info(outputFilename,ext_iter,nEquil,0,nSample)
 	  //---------------------------------
       Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil << 
               ", Atoms:" << tempAtomA << "("
 	      << tempAtomP << ")" <<
-	// " ,chi2 = " << chi2 <<
               "  Chi2 = " << tempChiSq << endl;
 		
     }
@@ -466,8 +393,6 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
     // re-calculate nIterA and nIterP to the expected number of atoms 
     nIterA = (unsigned long) randgen('P',max((double) GibbsSampMap.getTotNumAtoms('A'),10.));
     nIterP = (unsigned long) randgen('P',max((double) GibbsSampMap.getTotNumAtoms('P'),10.));
-    //nIterA = (unsigned long) randgen('P',(double) GibbsSampMap.getTotNumAtoms('A')+10.);
-    //nIterP = (unsigned long) randgen('P',(double) GibbsSampMap.getTotNumAtoms('P')+10.);
     // --------------------------------------------
 
   }  // end of for-block for equilibration
@@ -484,15 +409,11 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 
     for (unsigned long iterA=1; iterA <= nIterA; ++iterA){
       GibbsSampMap.mapUpdate('A');
-      //GibbsSamp.check_atomic_matrix_consistency('A');
-      //GibbsSamp.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('A');
 
     for (unsigned long iterP=1; iterP <= nIterP; ++iterP){
       GibbsSampMap.mapUpdate('P');
-      //GibbsSamp.check_atomic_matrix_consistency('P');
-      //GibbsSamp.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('P');
 	
@@ -515,15 +436,11 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
   for (unsigned long i=1; i <= nSample; ++i){
     for (unsigned long iterA=1; iterA <= nIterA; ++iterA){
       GibbsSampMap.mapUpdate('A');
-      //GibbsSampMap.check_atomic_matrix_consistency('A');
-      //GibbsSampMap.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('A');
 
     for (unsigned long iterP=1; iterP <= nIterP; ++iterP){ 
       GibbsSampMap.mapUpdate('P');
-      //GibbsSampMap.check_atomic_matrix_consistency('P');
-      //GibbsSampMap.detail_check(outputchi2_Filename);
     }
     GibbsSampMap.check_atomic_matrix_consistency('P');
 
@@ -537,7 +454,6 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 	
 	//Do the same as above.
 	tempChiSq = GibbsSampMap.get_sysChi2();
-	//Rcpp::Rcout << (nEquil + i) - 1 << endl;
 	chiVect[(nEquil + i)-1] = tempChiSq;
     // ----------- output computing info ---------
 		tempAtomA = GibbsSampMap.getTotNumAtoms('A');
@@ -573,8 +489,6 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
     // re-calculate nIterA and nIterP to the expected number of atoms 
     nIterA = (unsigned long) randgen('P',max((double) GibbsSampMap.getTotNumAtoms('A'),10.));
     nIterP = (unsigned long) randgen('P',max((double) GibbsSampMap.getTotNumAtoms('P'),10.));
-    //nIterA = (unsigned long) randgen('P',(double) GibbsSampMap.getTotNumAtoms('A')+10.);
-    //nIterP = (unsigned long) randgen('P',(double) GibbsSampMap.getTotNumAtoms('P')+10.);
     // --------------------------------------------
 
   }  // end of for-block for Sampling
@@ -669,19 +583,6 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 			PStdMatrix(i,j) = PStdVector[i][j] ;
 		}
 	}
-	
-	/* Same Code for APMEAN Matrix, not needed
-	numRow = APMeanVector.size();
-	numCol = APMeanVector[0].size() ;
-	Rcpp::NumericMatrix APMeanMatrix( numRow, numCol ) ;
-	for(int i=0; i<numRow; i++)
-	{
-		for(int j=0; j<numCol; j++)
-		{
-			APMeanMatrix(i,j) = APMeanVector[i][j] ;
-		}
-	}
-	*/
 	
 	//Code for returning all the Atomic Domains
 	//First Create the lists for each equil or sample snapshot of the AtomicDomains

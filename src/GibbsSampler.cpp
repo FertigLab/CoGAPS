@@ -147,10 +147,6 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, const 
   _AAtomicdomain.initializeAtomic(_nBinsA,atomicSize,_alphaA,_lambdaA,_label_A);
   _PAtomicdomain.FixedBins_initializeAtomic(_nBinsP,atomicSize,_alphaP,_lambdaP,_label_P, input_file_name);
   }
-
-  //cout << "_lambdaA = " << _lambdaA << ", _max_gibbsmassA = " << _max_gibbsmassA << endl;
-  //cout << "_lambdaP = " << _lambdaP << ", _max_gibbsmassP = " << _max_gibbsmassP << endl << endl;
-
 }
 
 // For fixing two domains
@@ -173,11 +169,6 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(const char input_file_na
   // initialize the atomic spaces (BOTH FIXED)
   _AAtomicdomain.FixedBins_initializeAtomic(_nBinsA,atomicSize,_alphaA,_lambdaA,_label_A, input_file_nameA);
   _PAtomicdomain.FixedBins_initializeAtomic(_nBinsP,atomicSize,_alphaP,_lambdaP,_label_P, input_file_nameP);
- 
-
-  //cout << "_lambdaA = " << _lambdaA << ", _max_gibbsmassA = " << _max_gibbsmassA << endl;
-  //cout << "_lambdaP = " << _lambdaP << ", _max_gibbsmassP = " << _max_gibbsmassP << endl << endl;
-
 }
 
 // For fixing one domain in R
@@ -206,10 +197,6 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, vector
   _AAtomicdomain.initializeAtomic(_nBinsA,atomicSize,_alphaA,_lambdaA,_label_A);
   _PAtomicdomain.FixedBins_initializeAtomic(_nBinsP,atomicSize,_alphaP,_lambdaP,_label_P, ReadBinProbs);
   }
-
-  //cout << "_lambdaA = " << _lambdaA << ", _max_gibbsmassA = " << _max_gibbsmassA << endl;
-  //cout << "_lambdaP = " << _lambdaP << ", _max_gibbsmassP = " << _max_gibbsmassP << endl << endl;
-
 }
 
 // For fixing two domains in R
@@ -232,11 +219,6 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(vector<vector<double> > 
   // initialize the atomic spaces (BOTH FIXED)
   _AAtomicdomain.FixedBins_initializeAtomic(_nBinsA,atomicSize,_alphaA,_lambdaA,_label_A, ReadBinProbsA);
   _PAtomicdomain.FixedBins_initializeAtomic(_nBinsP,atomicSize,_alphaP,_lambdaP,_label_P, ReadBinProbsP);
- 
-
-  //cout << "_lambdaA = " << _lambdaA << ", _max_gibbsmassA = " << _max_gibbsmassA << endl;
-  //cout << "_lambdaP = " << _lambdaP << ", _max_gibbsmassP = " << _max_gibbsmassP << endl << endl;
-
 }
 
 // clear all quantities related to the local matrix proposal
@@ -287,43 +269,6 @@ void GibbsSampler::display_atomicdomain(char atomic_label){
   }
 }
 
-void GibbsSampler::local_display_matrix(vector<vector<double> > Mat, 
-					unsigned int n_row, unsigned int n_col)
-{
-	/*To be uncommented for debugging 
-  cout << endl;
-  for(unsigned int m=0;m<n_row;++m)
-    {
-      for (unsigned int n=0; n<n_col;++n)
-	{
-	  cout << std::setw(10) << std::right;
-	  cout << Mat[m][n] << " ";
-	}
-      cout << endl;
-    }
-  cout << endl;
-  */
-}
-
-
-void GibbsSampler::local_display_matrix2(double ** Mat_ptr, 
-					 unsigned int n_row, unsigned int n_col)
-{
-	/*To be uncommented for debugging
-  cout << endl;
-  for(unsigned int m=0;m<n_row;++m)
-    {
-      for (unsigned int n=0; n<n_col;++n)
-	{
-	  cout << std::setw(10) << std::right; 
-	  cout << Mat_ptr[m][n] << " ";
-	}
-      cout << endl;
-    }
-  cout << endl;
-  */
-}
-
 void GibbsSampler::local_display_matrix2F(ofstream& outputFile, double ** Mat_ptr, 
 					  unsigned int n_row, unsigned int n_col){
   for(unsigned int m=0;m<n_row;++m)
@@ -338,23 +283,6 @@ void GibbsSampler::local_display_matrix2F(ofstream& outputFile, double ** Mat_pt
 
 }
 
-// Added for debugging the fixed bins code
-void GibbsSampler::print_totMassinBins(char AtomicDomainLabel){
-	/*Uncomment when debugging
- if (AtomicDomainLabel=='A'){
-  for (int i=0; i < _nRow*_nFactor; i++){
-   if (i%8==0 && i < 50){
-   cout << _AAtomicdomain.getTotalMass(i) << endl;
-   }
-   }
-   } else{
-  for (int i=0; i < _nFactor * _nCol; i++){
-  cout << _PAtomicdomain.getTotalMass(i) << endl;
-   }
-   }
-   */
- }
- 
 // -----------------------------------------------------------------------------
 void GibbsSampler::check_results(){
   //EJF double const * const * D = _DMatrix.get_matrix();
@@ -373,7 +301,6 @@ void GibbsSampler::check_results(){
     }
   }
 
-  //cout << "The product matrix AP = A*P is: " << endl;
   local_display_matrix(AP,_nRow,_nCol);
 
 }
@@ -546,9 +473,6 @@ unsigned int GibbsSampler::getTotNumAtoms(char matrix_label){
   else if(matrix_label == 'P'){
    return _PAtomicdomain.getDomain();
   }
-  else{
-   //cout << "Invalid input matrix" << endl;
-   }
    return zero;
   }
   
@@ -595,11 +519,7 @@ unsigned int GibbsSampler::getTotNumAtoms(char matrix_label){
  // Manually calculate the chi squared value based on the 2 matrices passed in  
   double GibbsSampler::ManualCalcChiSqu(vector <vector <double> > SampleAMat, vector <vector <double> > SamplePMat){
    Matrix SampleAMatrix(SampleAMat, 'S');
-   //cout << "THe sample A matrix: " << endl;
-   //SampleAMatrix.display_matrix();
    Matrix SamplePMatrix(SamplePMat, 'S');
-   //cout << "THe sample P matrix: " << endl;
-   //SamplePMatrix.display_matrix();
    double ** D = _DMatrix.get_matrix();
    double ** S = _SMatrix.get_matrix();
    double ** A = SampleAMatrix.get_matrix();
@@ -1036,22 +956,10 @@ void GibbsSampler::update(char the_matrix_label){
       _atomicProposal = _AAtomicdomain.getProposedAtoms();
       extract_atomicProposal('A');
 	  
-	  /*Uncomment when debugging
-      if (_nChange_atomicProposal == 1 && (_oper_type =='E' || _oper_type =='M'))
-	{cout << "update inconsistency A1! _nChange_atomicProposal = " << _nChange_atomicProposal <<
-	         ", _nChange_matrixElemChange = " << _nChange_matrixElemChange << 
-	         ", _oper_type = " << _oper_type << endl;}         
-      if (_nChange_atomicProposal == 2 && (_oper_type =='D' || _oper_type =='B'))
-	{cout << "update inconsistency A2! _nChange_atomicProposal = " << _nChange_atomicProposal << 
- 	         ", _nChange_matrixElemChange = " << _nChange_matrixElemChange << 
-	         ", _oper_type = " << _oper_type << endl;}   
-	*/ 
-	
       // ----------------------------------
       // the proposal is translated into a proposal to matrix A:
 	  
       // ----------- modify the proposal in a Gibbs way:      
-      //EJF unsigned int iRow, iCol, iFactor;
       if ( _nChange_atomicProposal == 0){}
       if ( _nChange_atomicProposal> 2){
 	   throw logic_error("GibbsSampler: can't change more than two atoms!!");
@@ -1083,22 +991,10 @@ void GibbsSampler::update(char the_matrix_label){
       _atomicProposal = _PAtomicdomain.getProposedAtoms();
       extract_atomicProposal('P');    
 
-	/*Uncomment when debugging
-      if (_nChange_atomicProposal == 1 && (_oper_type =='E' || _oper_type =='M'))
-	{cout << "update inconsistency P1! _nChange_atomicProposal = " << _nChange_atomicProposal <<
-	         ", _nChange_matrixElemChange = " << _nChange_matrixElemChange << 
-	         ", _oper_type = " << _oper_type << endl;}         
-      if (_nChange_atomicProposal == 2 && (_oper_type =='D' || _oper_type =='B'))
-	{cout << "update inconsistency P2! _nChange_atomicProposal = " << _nChange_atomicProposal << 
- 	         ", _nChange_matrixElemChange = " << _nChange_matrixElemChange << 
-	         ", _oper_type = " << _oper_type << endl;}   
-	*/
-	
       // ----------------------------------
       // the proposal is translated into a proposal to matrix P:
 
       // ----------- modify the proposal in a Gibbs way:     
-      //EJF unsigned int iRow, iCol, iFactor;
       if (_nChange_atomicProposal== 0){}
       if (_nChange_atomicProposal > 2){
 	   throw logic_error("GibbsSampler: can't chnage more than two atoms!!");
@@ -1408,7 +1304,6 @@ bool GibbsSampler::move(char the_matrix_label,
   atom++;
   chmass2 = atom->second;
   if (_atomicProposal.size()==1){
-  //cout << "Not doing a move due to update inconsistency."<< endl;
   return false;
   }
 
@@ -1470,8 +1365,6 @@ bool GibbsSampler::move(char the_matrix_label,
 
   // return false if bin1 == bin2
   if (bin1 == bin2){
-    // cout << "Exchanges in the same bin!! So, no change!" << endl;
-    //return nullMatrix;
     return false;
   }
   
@@ -1496,14 +1389,6 @@ bool GibbsSampler::move(char the_matrix_label,
       break;}
   }
 
-  /*if (pnew == 0. && pold == 0.) {
-    priorLL = 0.0;
-  } else if(pnew != 0. && pold == 0.) {
-    priorLL = DOUBLE_POSINF;
-  } else {
-    priorLL = log(pnew / pold);
-  } */
-	 
   double delLLnew;
   switch(the_matrix_label){
   case 'A':
@@ -1531,12 +1416,7 @@ bool GibbsSampler::move(char the_matrix_label,
   }
 
   double tmp;
-  /*if (priorLL == DOUBLE_POSINF){ priorLL is always 0 in move
-    //return newMatrix;
-    return true;
-  } else { */
     tmp = priorLL + delLLnew*_annealingTemperature;
-  //}
 
   double rng = log(randgen('U',0,0));
  
@@ -2013,13 +1893,6 @@ void GibbsSampler::check_atomic_matrix_consistency(char the_matrix_label)
 
   if(diff_total_mass > 1.e-5){
 	
-	/*
-    cout << "Mass inconsistency!! Total mass difference = " << diff_total_mass << endl;
-    cout << "total atom mass = " << total_atom_mass << endl;
-    cout << "total matrix mass = " << total_matrix_mass << endl;
-    cout << "Oper_type = " << _oper_type << endl;
-	*/
-	
     throw logic_error("Mass inconsistency between atomic domain and matrix!");
   } 
   
@@ -2468,13 +2341,6 @@ double GibbsSampler::getMass(char the_matrix_label, double origMass,
 void GibbsSampler::detail_check(char outputchi2_Filename[]){
 
       double chi2 = 2.*cal_logLikelihood();
-	  /*
-      cout << "oper_type: " << _oper_type <<
-              " ,nA: " << getTotNumAtoms('A') <<
-	      " ,nP: " << getTotNumAtoms('P') << 
-              " ,_sysChi2 = " << _sysChi2 << endl;
-		*/
-
 
       ofstream outputchi2_File;
       outputchi2_File.open(outputchi2_Filename,ios::out|ios::app);
