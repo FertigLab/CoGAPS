@@ -240,15 +240,6 @@ void GibbsSampler::clear_new_Proposal(){
   _new_matrixElemChange.clear();
 }
 
-void GibbsSampler::display_atomicdomain(char atomic_label){
-  switch(atomic_label){
-  case 'A':
-    {_AAtomicdomain.printAtomicInfo(); break;}
-  case 'P':
-    {_PAtomicdomain.printAtomicInfo(); break;}
-  }
-}
-
 void GibbsSampler::local_display_matrix2F(ofstream& outputFile, double ** Mat_ptr, 
 					  unsigned int n_row, unsigned int n_col){
   for(unsigned int m=0;m<n_row;++m)
@@ -264,27 +255,6 @@ void GibbsSampler::local_display_matrix2F(ofstream& outputFile, double ** Mat_pt
 }
 
 // -----------------------------------------------------------------------------
-void GibbsSampler::check_results(){
-  //EJF double const * const * D = _DMatrix.get_matrix();
-  //EJF double const * const * S = _SMatrix.get_matrix();
-  double const * const * A = _AMatrix.get_matrix();
-  double const * const * P = _PMatrix.get_matrix();
-
-  vector<vector<double> > AP;
-  AP.resize(_nRow,vector<double>(_nCol,0.0));
-
-  for (unsigned int m=0; m < _nRow; ++m){
-    for (unsigned int n=0; n < _nCol; ++n){
-      for (unsigned int k=0; k < _nFactor; ++k){
-	AP[m][n] += A[m][k]*P[k][n];
-      }
-    }
-  }
-
-  local_display_matrix(AP,_nRow,_nCol);
-
-}
-
 void GibbsSampler::check_resultsF(ofstream& outputFile){
   //EJF double const * const * D = _DMatrix.get_matrix();
   //EJF double const * const * S = _SMatrix.get_matrix();
