@@ -1,11 +1,6 @@
 #include <iostream>
 #include "sub_func.h"
 #include <stdexcept>
-//#include <boost/math/distributions.hpp>
-//#include <boost/math/distributions/gamma.hpp> // for gamma distribution
-//#include <boost/math/distributions/normal.hpp> // for normal distribution
-//#include <boost/math/distributions/exponential.hpp> // for exponential distribution
-//#include "randgen.h"
 
 using std::logic_error;
 
@@ -81,7 +76,6 @@ double sub_func::runif(double a, double b)
     {
       double rng = randgen('U',0,0);
       return a+(b-a)*rng;  // ----- temp! used at the moment
-      // return a+(b-a)*rand_uniform01[0]; // doesn't work!
     }
 }
 

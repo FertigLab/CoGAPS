@@ -19,10 +19,6 @@
 #include <iterator>
 #include <fstream>
 
-//For Debug statements in R
-//#include <Rcpp.h>
-
-
 using std::vector;
 using std::copy;
 using std::min;
@@ -30,7 +26,6 @@ using std::string;
 using std::logic_error;
 using std::pair;
 using std::map;
-using std::cout;
 using std::endl;
 
 const double DOUB_POSINF = std::numeric_limits<double>::max();
@@ -143,17 +138,10 @@ namespace gaps {
      for (int iCol=0; iCol < n_col; iCol++){
 	  for (int iRow=0; iRow < n_row; iRow++){
 	   binProb[iBin]=ReadBinProbs[iRow][iCol];
-	   //cout <<"Bin Number" << iBin << " probability " << binProb[iBin] << endl;
 	   iBin++;
 	   }
 	  }
 	}
-    
-    // In the old version, this set all binProbs as equal	
-	/* for (unsigned int iBin = 0; iBin < nBin; iBin++) {
-      binProb[iBin] = 1.;
-    } */
-    
 
     updateAtomicBins(binProb, nBin, true); // true means to update only the bin width
   }
@@ -202,59 +190,23 @@ namespace gaps {
 	int iBin = 0;
 	if (_atomic_domain_label == 'A'){
 	 for (int iRow=0; iRow < n_row; iRow++){
-		//Rcpp::Rcout << endl;
 	  for (int iCol=0; iCol < n_col; iCol++){
 	   binProb[iBin]=ReadBinProbs[iRow][iCol];
-	   //Rcpp::Rcout << binProb[iBin] << " ";
 	   iBin++;
 	   }
 	  }
-	 // Rcpp::Rcout << endl;
     } 
 	else{ //if (theFixedDomain == 'P')
      for (int iCol=0; iCol < n_col; iCol++){
 	  for (int iRow=0; iRow < n_row; iRow++){
 	   binProb[iBin]=ReadBinProbs[iRow][iCol];
-	   //cout <<"Bin Number" << iBin << " probability " << binProb[iBin] << endl;
 	   iBin++;
 	   }
 	  }
 	}
     
-    // In the old version, this set all binProbs as equal	
-	/* for (unsigned int iBin = 0; iBin < nBin; iBin++) {
-      binProb[iBin] = 1.;
-    } */
-    
-
     updateAtomicBins(binProb, nBin, true); // true means to update only the bin width
   }
-
- 
-  void AtomicSupport::printAtomicInfo() {
-    /*uncomment when debugging
-	cout << endl;
-    cout << "nBin: "<<_nBin<<endl;
-    cout << "NatomLength: "<< _NatomLength<<endl;
-    cout << "lambda: "<<_lambda<<endl;
-    cout << "alpha: "<<_alpha<<endl;
-    cout << "atomic_domain_label: " << _atomic_domain_label << endl;
-    cout << "atomDomain = [";
-
-    unsigned int iBin;
-	
-	Rcpp::Rcout << "[" << endl;
-    for (iBin = 0; iBin < _nBin; iBin++) {
-      //Rcpp::Rcout << "[" << iBin << " " << _lBoundariesByBin[iBin]<<" "<<getNumAtoms(iBin)<<" "<<getTotalMass(iBin) << "];";
-		Rcpp::Rcout << iBin << ": " << getTotalMass(iBin) << endl;
-    }
-    Rcpp::Rcout << "];" << endl;
-    Rcpp::Rcout << endl;
-	
-	*/
-	
-  }
- 
 
   void AtomicSupport::printAtomicInfoF(ofstream& outputFile) {
     outputFile << endl;
@@ -410,13 +362,6 @@ namespace gaps {
 	boost::variate_generator<boost::mt19937&, boost::uniform_int<uint64_t> > getRand(randGen, uInt64Dist);
 	uint64_t location= getRand();
 
-	/*
-	Rcpp::Rcout << location << endl;
-	Rcpp::Rcout << _NatomLength << endl;
-	Rcpp::Rcout << ULLONG_MAX << endl;
-	Rcpp::Rcout << getBin(location) << endl;
-	*/
-	
 	return(location);
 
    }
@@ -674,8 +619,6 @@ namespace gaps {
 	 while (iter!=_AtomicDomain.end()){
 	  proposedLocation=birthAtomLocation();
 	  iter=_AtomicDomain.find(proposedLocation);
-	  //cout << "Location: " << proposedLocation << endl;
-	  //cout << "Bin: " << getBin(proposedLocation) << endl;
 	  }
 
 	  //generate a random mass - got rid of normAtomic statement here
@@ -726,32 +669,6 @@ namespace gaps {
       }
  
       double newLocation = sub_func::runif((double) lbound, (double) rbound);
-	  
-
-      // allow the domain to wrap around 
-    /* if (moveAtom == 0) {
-	
-	unsigned long long otherLBound;
-	for (iter = _AtomicDomain.begin(); iter != _AtomicDomain.end(); 
-	     iter++) {
-	  otherLBound = iter->first;
-	}
-
-	double probRBin = (double) (_NatomLength-1 - otherLBound) / 
-	  (double) (rbound + (_NatomLength-1 - otherLBound));
-	if (probRBin < sub_func::runif(0., 1.)) {
-	  newLocation = sub_func::runif((double) otherLBound,
-					(double) (_NatomLength-1));
-	}
-
-      } else if (moveAtom >= _nAtom -1) {
-	unsigned long long otherRBound = _AtomicDomain.begin()->first;
-	double probLBin = (double) (otherRBound) / 
-	  (double) (otherRBound + (rbound - lbound));
-	if (probLBin < sub_func::runif(0., 1.)) {
-	  newLocation = sub_func::runif(0., (double) otherRBound);
-	  	}
-      } */
 	  
       // add to proposal
       _proposedAtoms.insert(pair<unsigned long long, double>
@@ -954,10 +871,6 @@ namespace gaps {
     }
     atomicDiagFile << "Reset output to start at iteration " << _initIterOutput << " at every " 
 		   << thinDiag << " iterations." << endl; 
-	/*
-    cout << "Reset output to start at iteration " << _initIterOutput << " at every " 
-	 << thinDiag << " iterations." << endl;
-	 */
   }
   
   void AtomicSupport::writeAtomicHeader(char diagnosticFileName[],
@@ -996,8 +909,6 @@ namespace gaps {
       return;
     }
 
-   // cout << "outputting at: "<<_iter<< "; init: " << _initIterOutput << endl;
-
     unsigned int iBin;
     map<unsigned long long, double>::const_iterator iter;
     unsigned int nAtomPerBin[_nBin];
@@ -1009,7 +920,6 @@ namespace gaps {
 
     // output the location of atoms
     for (iter = _AtomicDomain.begin(); iter != _AtomicDomain.end(); iter++) {
-      //atomicDiagFile << "\t" << iter->first;
       iBin = getBin(iter->first);
       nAtomPerBin[iBin]++;
       massPerBin[iBin] += iter->second;
@@ -1189,10 +1099,8 @@ namespace gaps {
 
       _lBoundariesByBin.insert(pair<unsigned int, unsigned long long>(iBin, newBoundaries[iBin]));
       _lBoundaries.insert(pair<unsigned long long, unsigned int>(newBoundaries[iBin], iBin));
-      //cout  << newBoundaries[iBin] << endl; // used for testing the boundaries
 
     }
-     //cout << _NatomLength - 1 << endl;
     if (!onlyUpdateRelativeWidth) {
       // TODO - consider changing other parameters to reflect true probabilities
     }

@@ -45,9 +45,9 @@ class Matrix
 
   void matrix_init();
 
-  
+
   void setRow(vector <double> theRow, int RowNum);
-  
+      
   void setCol(vector <double> theCol, int ColNum);
 
   double ** get_matrix() const;
@@ -82,8 +82,6 @@ class Matrix
 			  char oper_type, unsigned int nChange);
 
   // ********************* DISPLAY METHODS *****************************************
-
-  void display_matrix();
 
   void display_matrixF(ofstream& outputFile);
 

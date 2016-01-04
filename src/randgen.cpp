@@ -42,7 +42,6 @@ double randgen(char rand_type, double para1, double para2)
 	break;
       }
     default:
-      //cout << "Not an accounted distribution type!" << endl;
 	  return -9999.0;
       break;
     }

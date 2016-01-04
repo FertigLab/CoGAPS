@@ -19,10 +19,6 @@
 #include <iterator>
 #include <fstream>
 
-//For debugging to R terminal
-//#include <Rcpp.h>
-// -----------------------------------------------------------------------------
-
 // constants not already in main code
 double epsilon = 1.0e-10;
 
@@ -137,23 +133,7 @@ void Matrix::matrix_init() {
         }
     }
 }
-/*
-// set a row of the matrix to passed vector 
-// implemented to fix rows at a time with maps
-void Matrix::setRow(vector <double> &newRow, int RowNum){
-        for (int n=0; n<_n_col;++n) {        
-	  _Matrix[RowNum][n] = newRow.at(n); 
-        }
-    }
-	
-// set a column of the matrix to passed vector
-// implemented to fix columns at a time with maps
-void Matrix::setCol(vector <double> &newCol, int ColNum){
-        for (int n=0; n<_n_row;++n) {        
-	  _Matrix[n][ColNum] = newCol.at(n); 
-        }
-    } 
-*/	
+
 // set a row of the matrix to passed vector
 // implemented to fix rows at a time with maps
 void Matrix::setRow(vector <double> theRow, int RowNum){
@@ -278,9 +258,6 @@ void Matrix::matrix_Elem_update(vector<boost::tuple<unsigned int, unsigned int, 
     chRow = the_matrixElemChange[m].get<0>();
     chCol = the_matrixElemChange[m].get<1>();
     delelem = the_matrixElemChange[m].get<2>();
-    //cout << "chRow = " << chRow << endl;
-    //cout << "chCol = " << chCol << endl;
-    //cout << "delelem = " << delelem << endl;
      _Matrix[chRow][chCol] += delelem;
       if (fabs(_Matrix[chRow][chCol]) < epsilon){
 	_Matrix[chRow][chCol] = 0.0;
@@ -290,23 +267,6 @@ void Matrix::matrix_Elem_update(vector<boost::tuple<unsigned int, unsigned int, 
 } // end of method matrix_Elem_update 
 
 // ********************* DISPLAY METHODS *****************************************
-// print out a matrix on the output
-// USED FOR DEBUGGING
-void Matrix::display_matrix() {
-	/*uncomment when debugging matrices
-    Rcpp::Rcout << endl;
-    Rcpp::Rcout << "The matrix " << _label << " is: " << endl;
-    for(int m=0;m<_n_row;++m) {
-        for (int n=0; n<_n_col;++n) {
-	    Rcpp::Rcout << std::setw(10) << std::right;
-            Rcpp::Rcout << _Matrix[m][n] << " ";
-        }
-        Rcpp::Rcout << endl;
-    }
-    Rcpp::Rcout << endl;
-	*/
-}
-
 void Matrix::display_matrixF(ofstream& outputFile) {
     outputFile << endl;
     outputFile << "The matrix " << _label << " is: " << endl;
