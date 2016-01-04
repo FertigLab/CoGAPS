@@ -134,18 +134,9 @@ class GibbsSampler
   
   void print_A_and_P();
 
-  void local_display_matrix(vector<vector<double> > Mat, 
-                            unsigned int n_row, unsigned int n_col);
-
-  void local_display_matrix2(double ** Mat_ptr, 
-			     unsigned int n_row, unsigned int n_col);
-
   void local_display_matrix2F(ofstream& outputFile, double ** Mat_ptr, 
 			      unsigned int n_row, unsigned int n_col);
 				  
-  // Added for debugging the fixed bins code
-  void print_totMassinBins(char AtomicDomainLabel);
-
   void check_results();
 
   void check_resultsF(ofstream& outputFile);

@@ -21,7 +21,6 @@ using std::vector;
 // -----------------------------------------------------------------------------
   const double DOUBLE_POSINF = std::numeric_limits<double>::max();
   const double DOUBLE_NEGINF = -std::numeric_limits<double>::max();
-//  const double epsilon = 1e-10;
 // -----------------------------------------------------------------------------
 
 
@@ -291,17 +290,6 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label){
       extract_atomicProposal('A');
 	  
 	  // Check to make sure there are no problems with the proposal
-	  
-	  /*Uncomment for debugging
-      if (_nChange_atomicProposal == 1 && (_oper_type =='E' || _oper_type =='M'))
-	{cout << "update inconsistency A1! _nChange_atomicProposal = " << _nChange_atomicProposal <<
-	         ", _nChange_matrixElemChange = " << _nChange_matrixElemChange << 
-	         ", _oper_type = " << _oper_type << endl;}         
-      if (_nChange_atomicProposal == 2 && (_oper_type =='D' || _oper_type =='B'))
-	{cout << "update inconsistency A2! _nChange_atomicProposal = " << _nChange_atomicProposal << 
- 	         ", _nChange_matrixElemChange = " << _nChange_matrixElemChange << 
-	         ", _oper_type = " << _oper_type << endl;}   
-	*/
 	  if ( _nChange_atomicProposal == 0){}
       if ( _nChange_atomicProposal> 2){
 	   throw logic_error("GibbsSampler: can't change more than two atoms!!");
@@ -357,10 +345,8 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label){
 		} // end if one or both locations in a fixed pattern 
 		else if (!fixed1 && !fixed2) { //both locations not in fixed pattern, normal Gibbs */
 	     if (_oper_type == 'M') {
-		  //cout << "Starting regular move" << endl;
 	      Q_update = move('A',D,S,AOrig,POrig);
          } else {
-		  //cout << "Starting regular exchange" << endl;
 	      Q_update = exchange('A',D,S,AOrig,POrig);
 		 }
 		 // Modify the proposal in normal Gibbs manner
@@ -382,18 +368,6 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label){
       extract_atomicProposal('P');
 	  
 	  // Check to make sure there are no problems with the proposal
-	  
-	  /*uncomment for debugging
-      if (_nChange_atomicProposal == 1 && (_oper_type =='E' || _oper_type =='M'))
-	{cout << "update inconsistency P1! _nChange_atomicProposal = " << _nChange_atomicProposal <<
-	         ", _nChange_matrixElemChange = " << _nChange_matrixElemChange << 
-	         ", _oper_type = " << _oper_type << endl;}         
-      if (_nChange_atomicProposal == 2 && (_oper_type =='D' || _oper_type =='B'))
-	{cout << "update inconsistency P2! _nChange_atomicProposal = " << _nChange_atomicProposal << 
- 	         ", _nChange_matrixElemChange = " << _nChange_matrixElemChange << 
-	         ", _oper_type = " << _oper_type << endl;}   
-	*/
-		
 	  if ( _nChange_atomicProposal == 0){}
       if ( _nChange_atomicProposal> 2){
 	   throw logic_error("GibbsSampler: can't change more than two atoms!!");
@@ -523,23 +497,16 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label){
    //Copy the parsed domain 
     map<unsigned long long, double>::const_iterator iter;
 	for (iter = ADomain.begin(); iter != ADomain.end(); iter++){
-	 //cout << "Location: " << iter->first << endl;
-	 //cout << "Mass: " << iter->second << endl;
 	 // Check if the location falls in a fixed pattern
 	 // If it does, add the mass in the mapped way
 	 unsigned int theBin = _AAtomicdomain.getBin(iter->first);
-	 //cout << "The bin: " << theBin << endl;
 	 // Put the mass in the bin in the matrix
 	 unsigned int theRow = getRow('A', theBin);
-	 //cout << "Corresponding row: " << theRow << endl;
 	 unsigned int theCol = getCol('A', theBin);
-	 //cout << "Corresponding column: " << theCol << endl;
 	 bool fixedLoc = Q_fixed(iter->first, 'A');
 	 if (fixedLoc){
-	  //cout << "Fixed location!!!" << endl;
 	  for (int iRow=0; iRow < _nRow; iRow++){
 	   SampleAMatrix[iRow][theCol]+=(_MapValues[theCol][iRow])*(iter->second);
-	   //cout << "Adding " << (_MapValues[theCol][iRow])*(iter->second) << " to row " << iRow << "in the A matrix" << endl;
 	   }
      } else{
 	 // Otherwise add in a regular way
@@ -559,24 +526,17 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label){
    //Copy the parsed domain 
     map<unsigned long long, double>::const_iterator iter;
 	for (iter = PDomain.begin(); iter != PDomain.end(); iter++){
-	 //cout << "Location: " << iter->first << endl;
-	 //cout << "Mass: " << iter->second << endl;
 	 // Check if the location falls in a fixed pattern
 	 // If it does, add the mass in the mapped way
 	 unsigned int theBin = _PAtomicdomain.getBin(iter->first);
-	 //cout << "The bin: " << theBin << endl;
 	 // Put the mass in the bin in the matrix
 	 unsigned int theRow = getRow('P', theBin);
-	 //cout << "The row: " << theRow << endl;
 	 unsigned int theCol = getCol('P', theBin);
-	 //cout << "The col: " << theCol << endl;
 	 bool fixedLoc = Q_fixed(iter->first, 'P');
 	 if (fixedLoc){
-	 //cout << "Fixed location!!!" << endl;
 	  int fixedPatNum = theRow - (_nFactor - _nFixedMaps);
 	  for (int iCol=0; iCol < _nCol; iCol++){
 	   SamplePMatrix[theRow][iCol]+=(_MapValues[fixedPatNum][iCol])*(iter->second);
-	   //cout << "Adding " << (_MapValues[fixedPatNum][iCol])*(iter->second) << " to column " << iCol << "in the P matrix" << endl;
 	   }
      } else{
 	 SamplePMatrix[theRow][theCol]+=iter->second;

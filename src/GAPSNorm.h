@@ -5,9 +5,7 @@
 #include <vector>
 #include <boost/tuple/tuple.hpp>
 
-//using namespace gaps;
 using namespace std;
-//using std::vector;
 
 namespace gaps
 {
@@ -23,9 +21,6 @@ namespace gaps
     GAPSNorm();
     ~GAPSNorm();
 
-    void local_display_matrix(double const * const * Mat, unsigned int n_row,
-				     unsigned int n_col);
- 
     static double calChi2(double const * const * D, double const * const * S,
 			  double const * const * A, double const * const * P,
 			  unsigned int nRow, unsigned int nCol,
