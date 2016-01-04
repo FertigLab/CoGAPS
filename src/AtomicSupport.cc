@@ -58,14 +58,8 @@ namespace gaps {
     _epsilon = lepsilon;
 
     // check the validity of the parameters
-    if (NatomLength <= 0) 
-      throw logic_error("Invalid value for maximum number of atoms in AtomicSupport.");
-
     if (lambda <= 0) 
       throw logic_error("Invalid value for lambda in AtomicSupport.");
-
-    if (nBin <= 0)
-      throw logic_error("Invalid number of bins in AtomicSupport.");
 
     // initialize the internal atomic domain
     _nAtom = 0;
