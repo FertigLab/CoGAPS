@@ -285,7 +285,7 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label){
   case 'A':
     {
       // ----------- making a proposal from atomic space A:
-      _AAtomicdomain.makeProposal(rng);
+      _AAtomicdomain.makeProposal();
       get_oper_type('A');
       _atomicProposal = _AAtomicdomain.getProposedAtoms();
       extract_atomicProposal('A');
@@ -376,7 +376,7 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label){
   case 'P':
     {
       // ----------- making a proposal from atomic space P:
-      _PAtomicdomain.makeProposal(rng);
+      _PAtomicdomain.makeProposal();
       get_oper_type('P');
       _atomicProposal = _PAtomicdomain.getProposedAtoms();
       extract_atomicProposal('P');
