@@ -20,6 +20,13 @@ break-blocks=all
 # spaces around operator
 pad-oper
 
+# remove spaces in and around parenthesis except in front of headers
+# Example: foo ( bar, baz ); -> foo(bar, baz);
+unpad-paren
+
+# insert a space after if, while, for, etc (exception to previous rule)
+pad-header
+
 # delete empty lines not created by `break-blocks=all`
 delete-empty-lines
 
