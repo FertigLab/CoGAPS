@@ -38,7 +38,8 @@ boost::mt19937 rng3(43);
 
 
 // [[Rcpp::export]]
-Rcpp::List cogapsTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums) {
+Rcpp::List cogapsTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame,
+                      Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums) {
     // ===========================================================================
     // Initialization of the random number generator.
     // Different seeding methods:

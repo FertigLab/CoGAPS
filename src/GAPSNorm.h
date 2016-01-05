@@ -61,7 +61,8 @@ class GAPSNorm {
     *   @short Calculate the parameters involved in exchange action for further use
     *   @return a pair <s, su> of alpha distribution parameters for further calculations.
     */
-    static pair<double, double> calcAlphaParameters(char the_matrix_label, unsigned int nRow, unsigned int nCol, unsigned int nFactor,
+    static pair<double, double> calcAlphaParameters(char the_matrix_label, unsigned int nRow, unsigned int nCol,
+            unsigned int nFactor,
             double const *const *D, double const *const *S, double **AOrig,
             double **POrig, unsigned int iGene1, unsigned int iPattern1,
             unsigned int iGene2, unsigned int iPattern2, unsigned int iSample1,

@@ -217,7 +217,8 @@ void AtomicSupport::printAtomicInfoF(ofstream &outputFile) {
     unsigned int iBin;
 
     for (iBin = 0; iBin < _nBin; iBin++) {
-        outputFile << "[" << iBin << " " << _lBoundariesByBin[iBin] << " " << getNumAtoms(iBin) << " " << getTotalMass(iBin) << "];";
+        outputFile << "[" << iBin << " " << _lBoundariesByBin[iBin] << " " << getNumAtoms(iBin) << " " << getTotalMass(
+                       iBin) << "];";
     }
 
     outputFile << "];" << endl;
