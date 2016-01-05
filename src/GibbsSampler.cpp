@@ -184,7 +184,8 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, vector
 }
 
 // For fixing two domains in R
-void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(vector<vector<double> > ReadBinProbsA, vector<vector<double> > ReadBinProbsP) {
+void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(vector<vector<double> > ReadBinProbsA,
+        vector<vector<double> > ReadBinProbsP) {
     // extract information from D as parameters
     _nRow = _DMatrix.get_nRow();
     _nCol = _DMatrix.get_nCol();
@@ -1169,7 +1170,8 @@ bool GibbsSampler::birth(char the_matrix_label,
                 _AAtomicdomain.acceptProposal(false); //accept original proposal
                 delLL = computeDeltaLL('A', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
                 update_sysChi2(delLL);  // update system Chi2
-                _new_atomicProposal.insert(pair<unsigned long long, double>(location, origMass)); //update _new_atomicProposal with original change
+                _new_atomicProposal.insert(pair<unsigned long long, double>(location,
+                                           origMass)); //update _new_atomicProposal with original change
                 extract_new_atomicProposal('A');
                 return true;
             }

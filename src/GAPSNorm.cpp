@@ -628,7 +628,8 @@ double GAPSNorm::calcDeltaLL2Map(char matrix_label,
 // action is possible. If it is, s and su are adjusted for annealingtemp
 // and used to determine distribution on alpha. For full proof, see Fertig (2009)
 
-pair<double, double> GAPSNorm:: calcAlphaParameters(char the_matrix_label, unsigned int nRow, unsigned int nCol, unsigned int nFactor,
+pair<double, double> GAPSNorm:: calcAlphaParameters(char the_matrix_label, unsigned int nRow, unsigned int nCol,
+        unsigned int nFactor,
         double const *const *D, double const *const *S, double **AOrig,
         double **POrig, unsigned int iGene1, unsigned int iPattern1,
         unsigned int iGene2, unsigned int iPattern2, unsigned int iSample1,
