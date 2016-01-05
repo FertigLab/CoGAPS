@@ -44,3 +44,6 @@ lineend=linux
 # why not keep the date the same?
 # although the date is modified by micro seconds to force compile
 preserve-date
+
+# restrict lines to 80 characters
+max-code-length=120
