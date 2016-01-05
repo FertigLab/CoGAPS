@@ -157,6 +157,7 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
         }
     }
 
+    // Convert FixedPatt (DataFrame) to vector of vectors (double)
     numC = FixedPatt.size();
     tempFrameCol = FixedPatt[0];
     numR = tempFrameCol.size() ;
