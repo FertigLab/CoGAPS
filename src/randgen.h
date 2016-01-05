@@ -12,6 +12,6 @@
 
 extern boost::mt19937 rng;
 
-double randgen(char rand_type, double para1=0, double para2=1);
+double randgen(char rand_type, double para1 = 0, double para2 = 1);
 
 #endif

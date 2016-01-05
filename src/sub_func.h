@@ -8,35 +8,35 @@
 #include <boost/math/distributions/exponential.hpp> // for exponential distribution
 #include "randgen.h" // for generating uniformly random variates in [0,1].
 
-namespace gaps{
+namespace gaps {
 
 class sub_func
 
 {
- private:
+  private:
 
- public:
-  sub_func(){};
-  ~sub_func(){};
+  public:
+    sub_func() {};
+    ~sub_func() {};
 
-  static double pexp(double p, double rate, bool boolpara1, bool boolpara2);
+    static double pexp(double p, double rate, bool boolpara1, bool boolpara2);
 
-  static double qexp(double q, double rate, bool boolpara1, bool boolpara2);
+    static double qexp(double q, double rate, bool boolpara1, bool boolpara2);
 
-  static double dgamma(double newMass, double shape, double scale, bool boolpara);
+    static double dgamma(double newMass, double shape, double scale, bool boolpara);
 
-  static double pgamma(double p, double shape, double scale, bool boolpara1, bool boolpara2);
+    static double pgamma(double p, double shape, double scale, bool boolpara1, bool boolpara2);
 
-  static double qgamma(double q, double shape, double scale, bool boolpara1, bool boolpara2);
+    static double qgamma(double q, double shape, double scale, bool boolpara1, bool boolpara2);
 
-  static double dnorm(double u, double mean, double sd, bool unknown);
+    static double dnorm(double u, double mean, double sd, bool unknown);
 
-  static double qnorm(double u, double mean, double sd, double INF_Ref,double unknown);
+    static double qnorm(double u, double mean, double sd, double INF_Ref, double unknown);
 
-  static double pnorm(double u, double mean, double sd, double INF_Ref,double unknown);
+    static double pnorm(double u, double mean, double sd, double INF_Ref, double unknown);
 
-  //static double runif(double a, double b, double rng); // old form, changed into the next line.
-  static double runif(double a, double b);
+    //static double runif(double a, double b, double rng); // old form, changed into the next line.
+    static double runif(double a, double b);
 
 };
 
