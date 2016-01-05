@@ -739,7 +739,6 @@ void AtomicSupport::acceptProposal(bool updateIterCount) {
     double proposedMass;
     // define map iterators
     map<unsigned long long, double>::const_iterator proposeIter;
-    map<unsigned long long, double>::iterator updateIter;
 
     // ensures that only one atom is updated at a time
     if (_proposedAtoms.size() > 2 && _iter > 0) {
