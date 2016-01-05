@@ -266,13 +266,10 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label) {
         return;
     }
 
-    double rng = 0.1; // no use, filling up the list
     double **D = _DMatrix.get_matrix();
     double **S = _SMatrix.get_matrix();
     double **AOrig = _AMatrix.get_matrix();
     double **POrig = _PMatrix.get_matrix();
-    vector<vector<double> > del_matrix;
-    map<unsigned long long, double>::iterator iter;
     bool Q_update;
 
     switch (the_matrix_label) {
