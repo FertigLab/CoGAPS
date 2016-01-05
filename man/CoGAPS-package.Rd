@@ -8,7 +8,7 @@
 CoGAPS implements a Bayesian MCMC matrix factorization algorithm,
 GAPS, and links it to gene set statistic methods to infer
 biological process activity.  It can be used to perform
-sparse matrix factorization on any data, and when this 
+sparse matrix factorization on any data, and when this
 data represents biomolecules, to do gene set analysis.
 \tabular{ll}{
 Package: \tab CoGAPS\cr
@@ -19,13 +19,13 @@ License: \tab LGPL\cr
 }
 }
 \author{
-Maintainer: Elana J. Fertig \email{ejfertig@jhmi.edu}, 
+Maintainer: Elana J. Fertig \email{ejfertig@jhmi.edu},
             Michael F. Ochs \email{ochsm@tcnj.edu}
 }
 \references{
-Fertig EJ, Ding J, Favorov AV, Parmigiani G, Ochs MF.  
+Fertig EJ, Ding J, Favorov AV, Parmigiani G, Ochs MF.
 CoGAPS: an R/C++ package to identify patterns and biological
-process activity in transcriptomic data. 
+process activity in transcriptomic data.
 Bioinformatics. 2010 Nov 1;26(21):2792-3
 }
 
