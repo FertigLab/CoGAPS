@@ -11,8 +11,9 @@ style=google
 indent=spaces=4
 convert-tabs
 
-# indent 'class' blocks
+# indent 'class' and 'switch' blocks
 indent-classes
+indent-switches
 
 # empty lines around blocks, labels, class, closing headers, ...
 break-blocks=all
