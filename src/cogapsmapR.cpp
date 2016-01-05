@@ -176,7 +176,7 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
     }
 
     //--------------------END CREATING D and S C++ VECTORS
-// Parameters or structures to be calculated or constructed:
+    // Parameters or structures to be calculated or constructed:
     unsigned long nIterA = 10;    // initial inner loop iterations for A
     unsigned long nIterP = 10;    // initial inner loop iterations for P
     unsigned long atomicSize = 0; // number of atomic points
