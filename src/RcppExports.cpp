@@ -6,11 +6,9 @@
 using namespace Rcpp;
 
 // cogapsMap
-Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt,
-                     Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
-RcppExport SEXP CoGAPS_cogapsMap(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP,
-                                 SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
-    BEGIN_RCPP
+Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
+RcppExport SEXP CoGAPS_cogapsMap(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
+BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type DFrame(DFrameSEXP);
@@ -22,14 +20,12 @@ RcppExport SEXP CoGAPS_cogapsMap(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPat
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
     __result = Rcpp::wrap(cogapsMap(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums));
     return __result;
-    END_RCPP
+END_RCPP
 }
 // cogapsMapTest
-Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt,
-                         Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
-RcppExport SEXP CoGAPS_cogapsMapTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP,
-                                     SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
-    BEGIN_RCPP
+Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
+RcppExport SEXP CoGAPS_cogapsMapTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
+BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type DFrame(DFrameSEXP);
@@ -41,14 +37,12 @@ RcppExport SEXP CoGAPS_cogapsMapTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP Fixe
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
     __result = Rcpp::wrap(cogapsMapTest(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums));
     return __result;
-    END_RCPP
+END_RCPP
 }
 // cogaps
-Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame,
-                  Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
-RcppExport SEXP CoGAPS_cogaps(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP,
-                              SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
-    BEGIN_RCPP
+Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
+RcppExport SEXP CoGAPS_cogaps(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
+BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type DFrame(DFrameSEXP);
@@ -59,14 +53,12 @@ RcppExport SEXP CoGAPS_cogaps(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameS
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
     __result = Rcpp::wrap(cogaps(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums));
     return __result;
-    END_RCPP
+END_RCPP
 }
 // cogapsTest
-Rcpp::List cogapsTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame,
-                      Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
-RcppExport SEXP CoGAPS_cogapsTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP,
-                                  SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
-    BEGIN_RCPP
+Rcpp::List cogapsTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
+RcppExport SEXP CoGAPS_cogapsTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
+BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type DFrame(DFrameSEXP);
@@ -77,5 +69,5 @@ RcppExport SEXP CoGAPS_cogapsTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFr
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
     __result = Rcpp::wrap(cogapsTest(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums));
     return __result;
-    END_RCPP
+END_RCPP
 }
