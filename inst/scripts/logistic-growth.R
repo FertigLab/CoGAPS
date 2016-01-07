@@ -1,4 +1,4 @@
-library(ggplot)
+library(ggplot2)
 
 cogaps.utility <- function() {
     data(SimpSim)
