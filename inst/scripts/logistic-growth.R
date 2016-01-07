@@ -40,14 +40,15 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1, plot=FALSE) {
                     nrow=nrow(M),
                     ncol=ncol(M))
     D <- M + error
-    S <- error ^ 2
+    D[D < 0] <- 0
+    S <- matrix(0.1, nrow=nrow(D), ncol=ncol(M))
 
     out <- list(D=D, S=S, A=A, P=P)
     return(out)
 }
 
 logistic.cogaps <- function(D, S) {
-    nIter <- 5000
-    nBurn <- 20000
+    nIter <- 10000
+    nBurn <- 100000
     results <- gapsRun(D, S, nFactor=3, nEquil=nBurn, nSample=nIter)
 }
