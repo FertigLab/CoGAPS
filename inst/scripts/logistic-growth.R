@@ -47,6 +47,8 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1, plot=FALSE) {
 }
 
 logistic.cogaps <- function(D, S) {
+    set.seed(1)
     nIter <- 5000
-    results <- gapsRun(D, S, nFactor=3, nEquil=nIter, nSample=nIter)
+    nBurn <- 20000
+    results <- gapsRun(D, S, nFactor=3, nEquil=nBurn, nSample=nIter)
 }
