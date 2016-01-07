@@ -21,17 +21,6 @@ class GibbsSamplerMap : public GibbsSampler {
   public:
 
     // ******************** CONSTRUCTOR ********************************************
-
-    GibbsSamplerMap(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
-                    double alphaA, double alphaP, double nMaxA, double nMaxP,
-                    unsigned long nIterA, unsigned long nIterP,
-                    double max_gibbsmass_paraA, double max_gibbsmass_paraP,
-                    unsigned long long atomicSize,
-                    char label_A, char label_P, char label_D, char label_S,
-                    const string &datafile, const string &variancefile,
-                    const string &simulation_id,
-                    vector <vector <double> >  &parameters, char the_fixed_matrix);
-
     GibbsSamplerMap(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
                     double alphaA, double alphaP, double nMaxA, double nMaxP,
                     unsigned long nIterA, unsigned long nIterP,
