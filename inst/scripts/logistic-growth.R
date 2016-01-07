@@ -7,6 +7,11 @@ cogaps.utility <- function() {
     matplot(x$rotation[, 1:3])
 }
 
+logistic.growth <- function(x, x.0=0.5, L=1, k=1) {
+    output <- L / (1 + exp(- k * (x - x.0)))
+    return(output)
+}
+
 logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
     data(SimpSim)
     P <- SimpSim.P
@@ -29,9 +34,4 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
     P[3, ] <- c(p3.t, p3.u)
 
     return(P)
-}
-
-logistic.growth <- function(x, x.0=0.5, L=1, k=1) {
-    output <- L / (1 + exp(- k * (x - x.0)))
-    return(output)
 }
