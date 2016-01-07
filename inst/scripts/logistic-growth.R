@@ -48,7 +48,10 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1, plot=FALSE) {
 }
 
 logistic.cogaps <- function(D, S) {
-    nIter <- 10000
-    nBurn <- 100000
+    nIter <- 5000
+    nBurn <- 5000
     results <- gapsRun(D, S, nFactor=3, nEquil=nBurn, nSample=nIter)
+    P <- results$Pmean
+    arrayIdx <- 1:ncol(P)
+    matplot(arrayIdx, t(P), type='l', lwd=10)
 }
