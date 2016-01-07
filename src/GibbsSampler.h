@@ -95,15 +95,6 @@ class GibbsSampler {
                  double max_gibbsmass_paraA, double max_gibbsmass_paraP,
                  unsigned long long atomicSize,
                  char label_A, char label_P, char label_D, char label_S,
-                 const string &datafile, const string &variancefile,
-                 const string &simulation_id);
-
-    GibbsSampler(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
-                 double alphaA, double alphaP, double nMaxA, double nMaxP,
-                 unsigned long nIterA, unsigned long nIterP,
-                 double max_gibbsmass_paraA, double max_gibbsmass_paraP,
-                 unsigned long long atomicSize,
-                 char label_A, char label_P, char label_D, char label_S,
                  vector<vector<double> > &DVector, vector<vector<double> > &SVector,
                  const string &simulation_id);
 
@@ -134,10 +125,6 @@ class GibbsSampler {
 
     void output_atomicdomain(char atomic_label, unsigned long Samp_cycle);
 
-    void output_computing_info(char outputFilename[],
-                               unsigned long Equil_cycle, unsigned long nEquil,
-                               unsigned long Samp_cycle, unsigned long nSample);
-
     // ********* METHODS TO GO BETWEEN ATOMIC SPACE AND MATRIX *****************
 
     unsigned int getRow(char matrix_label , unsigned int iBin);
@@ -162,8 +149,6 @@ class GibbsSampler {
     // **************** METHODS FOR COMPUTING LIKELIHOOD FUNCTIONS *****************
     double cal_logLikelihood();
 
-    void cal_delloglikelihood_example();
-
     /**
       * @short Compute the change in likelihood, DeltaLL, by first getting the proposal from
       *  the atomic space, then it invokes the corresponding methods in GAPSNorm
@@ -177,35 +162,6 @@ class GibbsSampler {
                           double const *const *P,
                           unsigned int the_nChange_matrixElemChange,
                           const vector<boost::tuple<unsigned int, unsigned int, double> > the_matrixElemChange);
-
-    double computeDeltaLL2(char the_matrix_label,
-                           double const *const *D,
-                           double const *const *S,
-                           double const *const *A,
-                           double const *const *P,
-                           unsigned int the_nChange_matrixElemChange,
-                           const vector<boost::tuple<unsigned int, unsigned int, double> > the_matrixElemChange);
-
-
-    // *************** METHODS FOR MAKING PROPOSAL *********************************
-    void update_example(char atomic_domain_label);
-
-    /**
-      * @short Construct a "newMatrix" whose mass is given by
-      *  newMatrix = proposed changes mapped from corresponding atomic space
-    * @return the matrix as a vector of vectors
-    */
-    vector<vector<double> > atomicProposal2Matrix(char atomic_domain_label,
-            double const *const *origMatrix);
-
-    /**
-      * @short Construct a "FullnewMatrix" whose mass is given by
-      *  newMatrix = origMatrix + proposed changes from corresponding atomic space
-    * @return the new matrix
-    */
-    vector<vector<double> > atomicProposal2FullMatrix(char atomic_domain_label,
-            double const *const *origMatrix);
-
     /**
       * @short Extract information of the proposal made in the atomic space.
       *  Assuming an _atomicProposal, this method instantiates the
@@ -277,8 +233,6 @@ class GibbsSampler {
     // ************ METHODS FOR LOOPING AND CONTROL ********************************
     void set_iter(unsigned long ext_iter);
 
-    double get_AnnealingTemperature();
-
     /**
       * @short Calculate the _new annealingTemperature as a function of iteration step _iter.
       * (Note: the annealingTemperature here is really the inverted temperature!)
@@ -335,11 +289,5 @@ class GibbsSampler {
                    double const *const *currentChainMatrix,
                    double const *const *D, double const *const *S,
                    double rng);
-    // ---------------------------------------------------------------------------
-
-    void detail_check(char outputchi2_Filename[]);
-
-
-
 };
 #endif
