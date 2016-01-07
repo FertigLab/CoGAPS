@@ -12,7 +12,7 @@ logistic.growth <- function(x, x.0=0.5, L=1, k=1) {
     return(output)
 }
 
-logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
+logistic.pattern <- function(rate.treat=2, rate.untreat=1, plot=FALSE) {
     data(SimpSim)
     P <- SimpSim.P
     A <- SimpSim.A
@@ -25,11 +25,13 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
     p3.t <- logistic.growth(T, x.0=0, L=0.3, k=rate.treat)
     p3.u <- logistic.growth(T, x.0=1, L=0.3, k=rate.untreat)
 
-    data <- data.frame(t=c(T, T), y=c(p3.t, p3.u), status=rep(c("treated", "untreated"), each=n))
+    if (plot) {
+        data <- data.frame(t=c(T, T), y=c(p3.t, p3.u), status=rep(c("treated", "untreated"), each=n))
 
-    ggplot(data, aes(x=t, y=y)) +
-        geom_point(aes(colour=status)) +
-        geom_line(aes(colour=status))
+        ggplot(data, aes(x=t, y=y)) +
+            geom_point(aes(colour=status)) +
+            geom_line(aes(colour=status))
+    }
 
     P[3, ] <- c(p3.t, p3.u)
 
