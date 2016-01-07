@@ -34,6 +34,13 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1, plot=FALSE) {
     }
 
     P[3, ] <- c(p3.t, p3.u)
+    M <- A %*% P
+    error <- matrix(rnorm(prod(dim(M)), sd=0.1), 
+                    nrow=nrow(M),
+                    ncol=ncol(M))
+    D <- M + error
+    S <- error ^ 2
 
-    return(P)
+    out <- list(D=D, S=S, A=A, P=P)
+    return(out)
 }
