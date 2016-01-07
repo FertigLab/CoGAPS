@@ -7,7 +7,7 @@ cogaps.utility <- function() {
     matplot(x$rotation[, 1:3])
 }
 
-logistic.pattern <- function() {
+logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
     data(SimpSim)
     P <- SimpSim.P
     A <- SimpSim.A
@@ -17,8 +17,8 @@ logistic.pattern <- function() {
     n <- 10
     T <- seq(-5, 5, length.out = n)
 
-    p3.t <- logistic.growth(T, x.0=0, L=0.3, k=2)
-    p3.u <- logistic.growth(T, x.0=1, L=0.3, k=1)
+    p3.t <- logistic.growth(T, x.0=0, L=0.3, k=rate.treat)
+    p3.u <- logistic.growth(T, x.0=1, L=0.3, k=rate.untreat)
 
     data <- data.frame(t=c(T, T), y=c(p3.t, p3.u), status=rep(c("treated", "untreated"), each=n))
 
@@ -27,6 +27,8 @@ logistic.pattern <- function() {
         geom_line(aes(colour=status))
 
     P[3, ] <- c(p3.t, p3.u)
+
+    return(P)
 }
 
 logistic.growth <- function(x, x.0=0.5, L=1, k=1) {
