@@ -43,26 +43,14 @@ class AtomicSupport {
     unsigned int getBin(unsigned long long location);
 
     unsigned long long getMidLocation(unsigned int iBin);
-    unsigned long long getStartLocation(unsigned int iBin);
-    unsigned long long getEndLocation(unsigned int iBin);
 
     unsigned int getExpectedNAtom() {
         return _alpha * _nBin;
     }
 
-    double getNAtomPriorProb(int delAtom, bool log);
-
-    unsigned long long binToLocation(unsigned int bin);
-
-    double getTotalMass(unsigned int bin);
-
-    unsigned int getNumAtoms(unsigned int bin);
-
     map <unsigned long long, double> getDomain();
 
     double get_atomicDomain_totalmass();
-
-    void setInitialAtoms(const map<unsigned long long, double> initAtoms);
 
     double getLambda();
 
@@ -110,18 +98,6 @@ class AtomicSupport {
 
     void rejectProposal(bool updateIter);
 
-    void writeAtomicDiagnostics();
-
-    void writeAtomicDiagnosticsBinary(bool isByCol, bool outByCol,
-                                      unsigned int nRow, unsigned int nCol);
-
-    void initializeAtomicBinary(char diagnosticFileName[]);
-
-    void writeAtomicHeader(char diagnosticFileName[],
-                           int thinDiag);
-
-    void resetAtomicOutputThin(int thinDiag);
-
     unsigned int getNBin() {
         return _nBin;
     }
@@ -129,11 +105,7 @@ class AtomicSupport {
     void updateAtomicBins(double binProbabilities[], unsigned int length,
                           bool onlyUpdateRelativeWidth);
 
-    void printAtomicInfoF(ofstream &outputFile);
-
     void writeAtomicInfo(char outputFilename[], unsigned long Samp_cycle);
-
-    char get_atomic_domain_label();
 
     char get_oper_type();
 
