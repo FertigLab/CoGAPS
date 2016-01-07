@@ -1,4 +1,5 @@
 library(ggplot2)
+library(CoGAPS)
 
 cogaps.utility <- function() {
     data(SimpSim)
@@ -43,4 +44,9 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1, plot=FALSE) {
 
     out <- list(D=D, S=S, A=A, P=P)
     return(out)
+}
+
+logistic.cogaps <- function(D, S) {
+    nIter <- 5000
+    results <- gapsRun(D, S, nFactor=3, nEquil=nIter, nSample=nIter)
 }
