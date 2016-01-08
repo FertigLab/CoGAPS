@@ -9,4 +9,4 @@ linters: with_defaults(
     commented_code_linter = NULL, # 6
     NULL
   )
-exclusions: list("R/RcppExports.R")
+exclusions: list("R/RcppExports.R", "inst/scripts/logistic-growth.R")
