@@ -1,21 +1,8 @@
-#include <iostream>
-#include <cmath>
-#include <limits>
-#include <stdexcept>
 #include "GibbsSampler.h"
-
-using namespace std;
-using namespace gaps;
-using std::vector;
 
 // -----------------------------------------------------------------------------
 unsigned long long atomicSize = std::numeric_limits<unsigned long long>::max();
-const double DOUBLE_POSINF = std::numeric_limits<double>::max();
-const double DOUBLE_NEGINF = -std::numeric_limits<double>::max();
-const double epsilon = 1e-10;
 // -----------------------------------------------------------------------------
-
-
 
 // ******************** CONSTRUCTOR ********************************************
 GibbsSampler:: GibbsSampler(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,

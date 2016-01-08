@@ -18,13 +18,6 @@ using namespace std;
 using namespace gaps;
 using std::vector;
 
-// -----------------------------------------------------------------------------
-const double DOUBLE_POSINF = std::numeric_limits<double>::max();
-const double DOUBLE_NEGINF = -std::numeric_limits<double>::max();
-// -----------------------------------------------------------------------------
-
-
-
 // ******************** CONSTRUCTOR ********************************************
 GibbsSamplerMap::GibbsSamplerMap(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
                                  double alphaA, double alphaP, double nMaxA, double nMaxP,

@@ -1,8 +1,8 @@
 #ifndef _GIBBSSAMPLER_H_
 #define _GIBBSSAMPLER_H_
 
-#include<iostream>
-#include<fstream>
+#include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -11,9 +11,20 @@
 #include "sub_func.h"
 #include "Matrix.h"
 #include "AtomicSupport.h"
-#include<limits>
+#include <limits>
+#include <cmath>
+#include <limits>
+#include <stdexcept>
 
 using namespace gaps;
+using namespace std;
+using std::vector;
+
+// -----------------------------------------------------------------------------
+const double DOUBLE_POSINF = std::numeric_limits<double>::max();
+const double DOUBLE_NEGINF = -std::numeric_limits<double>::max();
+const double epsilon = 1e-10;
+// -----------------------------------------------------------------------------
 
 class GibbsSampler {
   protected:
