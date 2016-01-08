@@ -265,11 +265,6 @@ class GibbsSampler {
     /** @short Use the matrices prepared in compute_statistics_prepare_matrices()
       * to compute the means and variances of individual elements in A and P.
     */
-    void compute_statistics(char outputFilename[],
-                            char outputAmean_Filename[], char outputAsd_Filename[],
-                            char outputPmean_Filename[], char outputPsd_Filename[],
-                            char outputAPmean_Filename[],
-                            unsigned int Nstat);
 
     void compute_statistics(unsigned int Nstat,
                             vector< vector <double> > &AMeanVect,
