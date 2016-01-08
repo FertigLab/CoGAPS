@@ -132,8 +132,6 @@ class GibbsSampler {
     void local_display_matrix2F(ofstream &outputFile, double **Mat_ptr,
                                 unsigned int n_row, unsigned int n_col);
 
-    void check_resultsF(ofstream &outputFile);
-
     void output_atomicdomain(char atomic_label, unsigned long Samp_cycle);
 
     // ********* METHODS TO GO BETWEEN ATOMIC SPACE AND MATRIX *****************
