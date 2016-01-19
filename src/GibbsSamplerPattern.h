@@ -16,8 +16,9 @@ class GibbsSamplerPattern : public GibbsSamplerMap {
                         char label_A, char label_P, char label_D, char label_S,
                         vector<vector<double> > &DVector, vector<vector<double> > &SVector,
                         const string &simulation_id,
-                        vector <vector <double> >  &parameters, char the_fixed_matrix);
+                        vector <vector <double> >  &parameters, char the_fixed_matrix, int whichPattern);
 
     ~GibbsSamplerPattern() {};
+};
 
 #endif
