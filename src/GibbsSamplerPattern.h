@@ -1,5 +1,5 @@
-#ifndef _GIBBSSAMPLERPATTER_H_
-#define _GIBBSSAMPLERPATTER_H_
+#ifndef _GIBBSSAMPLERPATTERN_H_
+#define _GIBBSSAMPLERPATTERN_H_
 
 #include "GibbsSamplerMap.h"
 
