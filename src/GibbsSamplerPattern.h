@@ -2,6 +2,7 @@
 #define _GIBBSSAMPLERPATTERN_H_
 
 #include "GibbsSamplerMap.h"
+#include <vector>
 
 class GibbsSamplerPattern : public GibbsSamplerMap {
   protected:
@@ -20,7 +21,13 @@ class GibbsSamplerPattern : public GibbsSamplerMap {
 
     ~GibbsSamplerPattern() {};
     
-    void update_pattern();
+    // expect that some transformation of the pattern will be linear so
+    // allow for passing an a priori function that transforms the pattern
+    // to a linear pattern
+    // for example, if we expect the pattern to be logistic, we can pass a logistic
+    // function to transform the data i.e.
+    // GibbSampPatt.update_pattern(&transformation);
+    void update_pattern(std::vector<double>(*transformation)(std::vector<double>));
 };
 
 #endif
