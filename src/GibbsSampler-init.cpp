@@ -67,50 +67,6 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain() {
     //cout << "_lambdaA = " << _lambdaA << ", _max_gibbsmassA = " << _max_gibbsmassA << endl;
     //cout << "_lambdaP = " << _lambdaP << ", _max_gibbsmassP = " << _max_gibbsmassP << endl << endl;
 }
-// For fixing one domain
-void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, const char input_file_name[]) {
-    // extract information from D as parameters
-    _nRow = _DMatrix.get_nRow();
-    _nCol = _DMatrix.get_nCol();
-    double D_mean = _DMatrix.cal_mean();
-    // calcuate #Bins and lambda for the atomic spaces
-    _nBinsA = _nRow * _nFactor;
-    _lambdaA = _alphaA * sqrt(_nFactor / D_mean) * _lambdaA_scale_factor;
-    _nBinsP = _nFactor * _nCol;
-    _lambdaP = _alphaP * sqrt(_nFactor / D_mean) * _lambdaP_scale_factor;
-    // calculate the maximum gibbs mass for A and p
-    _max_gibbsmassA = _max_gibbsmass_paraA / _lambdaA;
-    _max_gibbsmassP = _max_gibbsmass_paraP / _lambdaP;
-
-    // initialize the atomic spaces (fixed or not)
-    if (fixeddomain == 'A') {
-        _AAtomicdomain.FixedBins_initializeAtomic(_nBinsA, atomicSize, _alphaA, _lambdaA, _label_A, input_file_name);
-        _PAtomicdomain.initializeAtomic(_nBinsP, atomicSize, _alphaP, _lambdaP, _label_P);
-
-    } else {
-        _AAtomicdomain.initializeAtomic(_nBinsA, atomicSize, _alphaA, _lambdaA, _label_A);
-        _PAtomicdomain.FixedBins_initializeAtomic(_nBinsP, atomicSize, _alphaP, _lambdaP, _label_P, input_file_name);
-    }
-}
-
-// For fixing two domains
-void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(const char input_file_nameA[], const char input_file_nameP[]) {
-    // extract information from D as parameters
-    _nRow = _DMatrix.get_nRow();
-    _nCol = _DMatrix.get_nCol();
-    double D_mean = _DMatrix.cal_mean();
-    // calcuate #Bins and lambda for the atomic spaces
-    _nBinsA = _nRow * _nFactor;
-    _lambdaA = _alphaA * sqrt(_nFactor / D_mean) * _lambdaA_scale_factor;
-    _nBinsP = _nFactor * _nCol;
-    _lambdaP = _alphaP * sqrt(_nFactor / D_mean) * _lambdaP_scale_factor;
-    // calculate the maximum gibbs mass for A and p
-    _max_gibbsmassA = _max_gibbsmass_paraA / _lambdaA;
-    _max_gibbsmassP = _max_gibbsmass_paraP / _lambdaP;
-    // initialize the atomic spaces (BOTH FIXED)
-    _AAtomicdomain.FixedBins_initializeAtomic(_nBinsA, atomicSize, _alphaA, _lambdaA, _label_A, input_file_nameA);
-    _PAtomicdomain.FixedBins_initializeAtomic(_nBinsP, atomicSize, _alphaP, _lambdaP, _label_P, input_file_nameP);
-}
 
 // For fixing one domain in R
 void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, vector<vector<double> > ReadBinProbs) {
