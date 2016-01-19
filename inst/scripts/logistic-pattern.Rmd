@@ -1,0 +1,64 @@
+---
+title: "Logistic Growth"
+author: "Jacob Carey"
+date: \today
+output: 
+    pdf_document
+---
+
+```{r, echo=FALSE}
+library(ggplot2)
+library(CoGAPS)
+```
+
+Run CoGAPS on two normal patterns and one logistic pattern
+
+```{r}
+data(SimpSim)
+P <- SimpSim.P; A <- SimpSim.A
+
+n <- 10
+T <- seq(-5, 5, length.out = n)
+rate.treat <- 2; rate.untreat <- 1
+
+p3.t <- L / (1 + exp(-rate.treat * (T)))
+p3.u <- L / (1 + exp(-rate.untreat * (T - 1)))
+
+P[3, ] <- c(p3.t, p3.u)
+M <- A %*% P
+error <- matrix(rnorm(prod(dim(M)), sd=0.1), 
+                nrow=nrow(M),
+                ncol=ncol(M))
+D <- M + error
+D[D < 0] <- 0
+S <- matrix(0.1, nrow=nrow(D), ncol=ncol(M))
+
+nIter <- 5000
+nBurn <- 5000
+results <- gapsRun(D, S, nFactor=3, nEquil=nBurn, nSample=nIter)
+P <- results$Pmean
+arrayIdx <- 1:ncol(P)
+matplot(arrayIdx, t(P), type='l', lwd=10)
+```
+
+Simulate some data for approximating rate
+
+```{r}
+# parameters
+x.0 <- 0
+L <- 1
+k <- 2.5
+N <- 1000
+
+# generate data
+data.time <- seq(-3, 3, length.out = N)
+data.logit <- L / (1 + exp(- k * (data.time - x.0)))
+data <- rbind(data.frame(x=data.time, y=data.logit, trans="identity"),
+              data.frame(x=data.time, y=-log(L/data.logit-1), trans="-log(L/y-1)"))
+
+# plots
+ggplot(data, aes(x=x, y=y)) +
+    geom_point() +
+    facet_wrap(~trans, scales="free") +
+    theme_classic()
+```
