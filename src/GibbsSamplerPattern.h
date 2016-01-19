@@ -19,6 +19,8 @@ class GibbsSamplerPattern : public GibbsSamplerMap {
                         vector <vector <double> >  &parameters, char the_fixed_matrix, int whichPattern);
 
     ~GibbsSamplerPattern() {};
+    
+    void update_pattern();
 };
 
 #endif
