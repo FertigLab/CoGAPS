@@ -139,14 +139,6 @@ class AtomicSupport {
     char _atomic_domain_label;  // label of the atomic domain
     char _oper_type; // the type of operation in makeProposal
     double _epsilon; // small number for setting things to zero
-
-    // output file with diagnostic atomic information
-    ofstream atomicDiagFile;
-    ofstream atomicDiagFileBinary;
-    bool     outputAtomicDiag;
-    int      thinAtomicDiag;
-    int      _initIterOutput;
-
 };
 }
 
