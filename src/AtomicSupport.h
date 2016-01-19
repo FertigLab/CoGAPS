@@ -30,10 +30,6 @@ class AtomicSupport {
 
     void FixedBins_initializeAtomic(unsigned int nBin, unsigned long long NatomLength,
                                     double alpha, double lambda, char atomic_domain_label,
-                                    const char input_file_name[]);
-
-    void FixedBins_initializeAtomic(unsigned int nBin, unsigned long long NatomLength,
-                                    double alpha, double lambda, char atomic_domain_label,
                                     std::vector<std::vector<double> > ReadBinProbs);
 
     /**
