@@ -117,10 +117,6 @@ class GibbsSampler {
 
     void init_AAtomicdomain_and_PAtomicdomain();
 
-    void init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, const char input_file_name[]);
-
-    void init_AAtomicdomain_and_PAtomicdomain(const char input_file_nameA[], const char input_file_nameP[]);
-
     void init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, vector<vector<double> > ReadBinProbs);
 
     void init_AAtomicdomain_and_PAtomicdomain(vector<vector<double> > ReadBinProbsA, vector<vector<double> > ReadBinProbsP);
