@@ -25,3 +25,7 @@ std::vector<double> GibbsSamplerPattern::logit(std::vector<double> data) {
 
     return transformation;
 }
+
+std::vector<double> GibbsSamplerPattern::identity(std::vector<double> data) {
+    return data;
+}

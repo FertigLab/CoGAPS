@@ -31,7 +31,10 @@ class GibbsSamplerPattern : public GibbsSamplerMap {
     void update_pattern(std::vector<double>(*transformation)(std::vector<double>));
 
     // transformations
+    // logistic transformation (log(p / 1 - p))
     std::vector<double> logit(std::vector<double> data);
+    // identity transformation (pattern is already linear)
+    std::vector<double> identity(std::vector<double> data);
 };
 
 #endif
