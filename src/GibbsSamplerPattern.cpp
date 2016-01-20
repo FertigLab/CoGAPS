@@ -15,3 +15,13 @@ GibbsSamplerPattern::GibbsSamplerPattern(unsigned long nEquil, unsigned long nSa
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix) {
     _whichPattern = whichPattern;
 }
+
+std::vector<double> GibbsSamplerPattern::logit(std::vector<double> data) {
+    std::vector<double> transformation(data.size());
+
+    for (int i = 0; i < data.size(); ++i) {
+        transformation[i] = log(data[i] / (1 - data[i]));
+    }
+
+    return transformation;
+}

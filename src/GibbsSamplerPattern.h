@@ -3,6 +3,7 @@
 
 #include "GibbsSamplerMap.h"
 #include <vector>
+#include <cmath>
 
 class GibbsSamplerPattern : public GibbsSamplerMap {
   protected:
@@ -28,6 +29,9 @@ class GibbsSamplerPattern : public GibbsSamplerMap {
     // function to transform the data i.e.
     // GibbSampPatt.update_pattern(&transformation);
     void update_pattern(std::vector<double>(*transformation)(std::vector<double>));
+
+    // transformations
+    std::vector<double> logit(std::vector<double> data);
 };
 
 #endif
