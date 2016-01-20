@@ -27,7 +27,7 @@ class GibbsSamplerPattern : public GibbsSamplerMap {
     // to a linear pattern
     // for example, if we expect the pattern to be logistic, we can pass a logistic
     // function to transform the data i.e.
-    // GibbSampPatt.update_pattern(&transformation);
+    // GibbSampPatt.update_pattern(GibbsSampPatt::&logit);
     void update_pattern(std::vector<double>(*transformation)(std::vector<double>));
 
     // transformations
