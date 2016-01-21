@@ -40,6 +40,6 @@ pattern.inits <- function() {
 pattern.fit <- jags(data=pattern.data, inits=pattern.inits,
                     parameters.to.save=pattern.params, 
                     model.file=pattern.model, n.chains=3,
-                    n.iter=10000)
+                    n.iter=1000)
 
 pattern.fit
