@@ -58,7 +58,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                     fixedDomain = "N", sampleSnapshots = TRUE,
                     numSnapshots = 100, alphaA = 0.01,
                     nMaxA = 100000, max_gibbmass_paraA = 100.0,
-                    alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0)
+                    alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0, threads=1)
 {
   #Begin data type error checking code
   charDataErrors = c(!is.character(simulation_id), !is.character(fixedDomain))
@@ -189,7 +189,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   }
 
   # call to C++ Rcpp code
-  cogapResult = cogaps(D, S, ABins, PBins, Config, ConfigNums);
+  cogapResult = cogaps(D, S, ABins, PBins, Config, ConfigNums, threads);
 
   # convert returned files to matrices to simplify visualization and processing
   cogapResult$Amean = as.matrix(cogapResult$Amean);

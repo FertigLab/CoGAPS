@@ -24,6 +24,7 @@
 // does all the atomic space to matrix conversion
 // and sampling actions.
 #include <Rcpp.h>
+#include <omp.h>
 // ------------------------------------------------------
 
 //namespace bpo = boost::program_options;
@@ -36,7 +37,8 @@ boost::mt19937 rng(43);
 
 // [[Rcpp::export]]
 Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame,
-                  Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums) {
+                  Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums,
+                  int threads) {
     // ===========================================================================
     // Initialization of the random number generator.
     // Different seeding methods:
