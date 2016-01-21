@@ -5,7 +5,7 @@ library(R2jags)
 x.0 <- 2.5
 L <- 1
 k <- 5
-N <- 1000
+N <- 100
 data.time <- seq(-5, 5, length.out = N)
 # data.time <- runif(N, -3, 3)
 data.logit <- boot::logit(logistic.growth(data.time, x.0=x.0, L=L, k=k))
