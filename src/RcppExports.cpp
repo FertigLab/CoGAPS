@@ -40,8 +40,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cogaps
-Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
-RcppExport SEXP CoGAPS_cogaps(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
+Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int threads);
+RcppExport SEXP CoGAPS_cogaps(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -51,7 +51,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type PBinsFrame(PBinsFrameSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type Config(ConfigSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
-    __result = Rcpp::wrap(cogaps(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums));
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    __result = Rcpp::wrap(cogaps(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, threads));
     return __result;
 END_RCPP
 }

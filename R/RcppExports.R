@@ -9,8 +9,8 @@ cogapsMapTest <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Con
     .Call('CoGAPS_cogapsMapTest', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums)
 }
 
-cogaps <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums) {
-    .Call('CoGAPS_cogaps', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums)
+cogaps <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, threads) {
+    .Call('CoGAPS_cogaps', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, threads)
 }
 
 cogapsTest <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums) {
