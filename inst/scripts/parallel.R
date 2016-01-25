@@ -26,8 +26,8 @@ gelman.rubin <- function(param) {
 }
 
 data(SimpSim)
-nIter <- 5000
-nBurn <- 30000
+nIter <- 10000
+nBurn <- 300000
 chains <- 3 # num of MCMC chains
 patterns <- 3
 a <- p <- c <- matrix(NA, nrow=nIter, ncol=chains)           # empty matrix to store values from each chain
@@ -41,6 +41,15 @@ for (i in 1:3) {
     A.mean[, , i] <- results$Amean
     P.mean[, , i] <- results$Pmean
 }
+
+x <- a[, 1]
+qplot(x, geom="density")
+d = rbind(data.frame(t=1:10000, x=a[, 1], chain="1"),
+          data.frame(t=1:10000, x=a[, 2], chain="2"),
+          data.frame(t=1:10000, x=a[, 3], chain="3"))
+ggplot(d, aes(x=t, y=x)) + geom_point(aes(colour=chain))
+
+s <- list(a=a, p=p, c=c)
 
 # calculate gelman-rubin
 a.Rhat <- round(gelman.rubin(a), 3)
