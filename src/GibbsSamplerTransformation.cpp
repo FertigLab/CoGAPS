@@ -35,4 +35,12 @@ std::vector<double> GibbsSamplerTransformation::identity(std::vector<double> dat
 
 void update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
     // split pattern up by treatment status
+    std::vector<std::vector<double> > pattern_by_case;
+
+    // split to do ....
+
+    for (int i = 0; i < pattern_by_case.size(); ++i) {
+        double post_mean = 0.0;
+        double post_var = 0.0;
+    }
 }
