@@ -20,6 +20,10 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     double _mu1 = 0.0;
     double _tau1 = 0.0;
 
+    // current beta estimates
+    std::vector<double> _beta0;
+    std::vector<double> _beta1;
+
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
                                double alphaA, double alphaP, double nMaxA, double nMaxP,
