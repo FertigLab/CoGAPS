@@ -11,6 +11,8 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     int _whichPattern;
     // vector of case status (assume 0 is non-case) i.e. {0, 0, 0, 1, 1, 1}
     std::vector<int> _caseStatus;
+    // vector of time recordings
+    std::vector<double> _timeRecorded;
 
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
