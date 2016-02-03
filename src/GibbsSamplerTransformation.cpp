@@ -32,3 +32,7 @@ std::vector<double> GibbsSamplerTransformation::logit(std::vector<double> data) 
 std::vector<double> GibbsSamplerTransformation::identity(std::vector<double> data) {
     return data;
 }
+
+void update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
+    // split pattern up by treatment status
+}
