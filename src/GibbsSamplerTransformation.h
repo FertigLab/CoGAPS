@@ -10,7 +10,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     // indicates which pattern is growth (will be removed most likely)
     int _whichPattern;
     // vector of case status (assume 0 is non-case) i.e. {0, 0, 0, 1, 1, 1}
-    std::vector<int> _caseStatus;
+    std::vector<int> _treatStatus;
     // vector of time recordings
     std::vector<double> _timeRecorded;
 
