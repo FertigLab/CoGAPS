@@ -14,6 +14,12 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     // vector of time recordings
     std::vector<double> _timeRecorded;
 
+    // priors for Gibbs Sampling of regression coefficients
+    double _mu0 = 0.0;
+    double _tau0 = 0.0;
+    double _mu1 = 0.0;
+    double _tau1 = 0.0;
+
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
                                double alphaA, double alphaP, double nMaxA, double nMaxP,
