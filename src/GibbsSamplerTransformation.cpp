@@ -1,4 +1,4 @@
-#include "GibbsSamplerPattern.h"
+#include "GibbsSamplerTransformation.h"
 
 // ******************** CONSTRUCTOR ********************************************
 GibbsSamplerPattern::GibbsSamplerPattern(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
