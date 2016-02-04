@@ -3,7 +3,6 @@
 
 #include "GibbsSamplerMap.h"
 #include <vector>
-#include <list>
 #include <cmath>
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -27,6 +26,10 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     arma::vec _beta0;
     arma::vec _beta1;
     arma::vec _tau;
+
+    // initialize lists of y and x for each regression
+    std::vector<arma::vec> _y;
+    std::vector<arma::vec> _x;
 
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
