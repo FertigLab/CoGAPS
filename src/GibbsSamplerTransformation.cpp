@@ -57,7 +57,7 @@ void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformat
         _x[i] = _timeRecorded.elem(_timeRecorded.find(_treatStatus == i));
     }
 
-    // split to do ....
+    // http://www.cs.toronto.edu/~radford/csc2541.S11/week3.pdf
 
     for (int i = 0; i < _nFactor; ++i) {
         // initialize variables for full conditionals
