@@ -14,7 +14,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     // vector of case status (assume 0 is non-case) i.e. {0, 0, 0, 1, 1, 1}
     std::vector<int> _treatStatus;
     // vector of time recordings
-    std::vector<double> _timeRecorded;
+    arma::vec _timeRecorded;
 
     // priors for Gibbs Sampling of regression coefficients
     double _mu0 = 0.0;    // beta prior mean
