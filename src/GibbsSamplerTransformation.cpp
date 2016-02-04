@@ -47,9 +47,15 @@ std::vector<double> GibbsSamplerTransformation::identity(std::vector<double> dat
 }
 
 void update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
-    // split pattern up by treatment status
-    std::list<arma::vec> pattern_by_case;
-    std::vector<std::vector<double> > pattern_by_case;
+    // get current pattern data
+    double** POrig = _PMatrix.get_matrix();
+    arma::vec y_all = POrig[_whichPattern, ];
+
+    // split data into lists
+    for (int i = 0; i < _nFactor; ++i) {
+        _y[i] = y.elem(y_all.find(_treatStatus == i));
+        _x[i] = _timeRecorded.elem(_timeRecorded.find(_treatStatus == i));
+    }
 
     // split to do ....
 
