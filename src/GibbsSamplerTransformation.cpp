@@ -75,5 +75,8 @@ void update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
         post_mean = (_tau0 * _mu0 + _tau * arma::sum(_x[i] * (_y[i] - _beta1)) * post_var;
         _beta1 = randgen("N", post_mean, sqrt(post_var));
 
+        // \tau | x, y, _beta0, _beta1
+        post_shape = _a + n / 2.;
+        post_rate = _b + arma::sum(pow(_y[i] - _beta0 - _beta1 * _x[i], 2.0) / 2.0);
     }
 }
