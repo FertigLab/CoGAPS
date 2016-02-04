@@ -53,7 +53,7 @@ void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformat
 
     // split data into lists
     for (int i = 0; i < _nFactor; ++i) {
-        _y[i] = y.elem(y_all.find(_treatStatus == i));
+        _y[i] = y_all.elem(y_all.find(_treatStatus == i));
         _x[i] = _timeRecorded.elem(_timeRecorded.find(_treatStatus == i));
     }
 
