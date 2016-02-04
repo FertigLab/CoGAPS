@@ -26,8 +26,8 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
 
     // sample from prior to initialize regression parameters
     for (int i = 0; i < nFactor; ++i) {
-        _beta0[i] = randgen("N", _mu0, sqrt(1. / _tau0));
-        _beta1[i] = randgen("N", _mu0, sqrt(1. / _tau0));
+        _beta0[i] = randgen('N', _mu0, sqrt(1. / _tau0));
+        _beta1[i] = randgen('N', _mu0, sqrt(1. / _tau0));
         _tau[i] = arma::randg(1, arma::distr_param(_a, _b));
     }
 }
@@ -68,12 +68,12 @@ void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformat
         // \beta_0 | x, y, \beta_1, \tau
         post_var = 1. / (_tau0 + n * _tau);
         post_mean = (_tau0 * _mu0 + _tau * arma::sum(_y[i] - _beta1 * _x[i])) * post_var;
-        _beta0[i] = randgen("N", post_mean, sqrt(post_var));
+        _beta0[i] = randgen('N', post_mean, sqrt(post_var));
 
         // \beta_1 | x, y, \beta_0, \tau
         post_var = 1. / (_tau0 + _tau * arma::sum(pow(_x[i], 2.0)))
         post_mean = (_tau0 * _mu0 + _tau * arma::sum(_x[i] * (_y[i] - _beta1)) * post_var;
-        _beta1[i] = randgen("N", post_mean, sqrt(post_var));
+        _beta1[i] = randgen('N', post_mean, sqrt(post_var));
 
         // \tau | x, y, _beta0, _beta1
         post_shape = _a + n / 2.;
