@@ -28,7 +28,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     for (int i = 0; i < nFactor; ++i) {
         _beta0[i] = randgen('N', _mu0, sqrt(1. / _tau0));
         _beta1[i] = randgen('N', _mu0, sqrt(1. / _tau0));
-        _tau[i] = arma::randg(1, arma::distr_param(_a, _b));
+        _tau[i] = arma::conv_to<double>(arma::randg(1, arma::distr_param(_a, _b)));
     }
 }
 
@@ -78,6 +78,6 @@ void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformat
         // \tau | x, y, _beta0, _beta1
         post_shape = _a + n / 2.;
         post_rate = _b + arma::sum(pow(_y[i] - _beta0 - _beta1 * _x[i], 2.0) / 2.0);
-        _tau[i] = arma::randg(1, arma::distr_param(post_shape, post_rate));
+        _tau[i] = arma::conv_to<double>(arma::randg(1, arma::distr_param(post_shape, post_rate)));
     }
 }
