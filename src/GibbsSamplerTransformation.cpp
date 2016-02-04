@@ -66,9 +66,14 @@ void update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
         int n = _y[i].size();
 
         // \beta_0 | x, y, \beta_1, \tau
-        post_mean = (_tau0 * _mu0 + _tau * arma::sum(_y[i] - _beta1 * _x[i])) / (_tau0 + n * _tau);
         post_var = 1. / (_tau0 + n * _tau);
+        post_mean = (_tau0 * _mu0 + _tau * arma::sum(_y[i] - _beta1 * _x[i])) * post_var;
         _beta0 = randgen("N", post_mean, sqrt(post_var));
+
+        // \beta_1 | x, y, \beta_0, \tau
+        post_var = 1. / (_tau0 + _tau * arma::sum(_x[i] ^ 2)
+        post_mean = (_tau0 * _mu0 + _tau * arma::sum(_x[i] * (_y[i] - _beta1)) * post_var;
+        _beta1 = randgen("N", post_mean, sqrt(post_var));
 
     }
 }
