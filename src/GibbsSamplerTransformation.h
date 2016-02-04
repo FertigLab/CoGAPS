@@ -19,7 +19,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
 
     // priors for Gibbs Sampling of regression coefficients
     double _mu0 = 0.0;    // beta prior mean
-    double _tau0 = 0.0;   // beta prior precision
+    double _tau0 = 0.001; // beta prior precision
     double _a = 1.0;      // variance prior shape
     double _b = 1.0;      // variance prior rate
 
