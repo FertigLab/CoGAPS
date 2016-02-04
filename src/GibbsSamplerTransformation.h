@@ -3,6 +3,7 @@
 
 #include "GibbsSamplerMap.h"
 #include <vector>
+#include <list>
 #include <cmath>
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]

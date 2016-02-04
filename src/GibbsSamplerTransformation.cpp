@@ -35,6 +35,7 @@ std::vector<double> GibbsSamplerTransformation::identity(std::vector<double> dat
 
 void update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
     // split pattern up by treatment status
+    std::list<arma::vec> pattern_by_case;
     std::vector<std::vector<double> > pattern_by_case;
 
     // split to do ....
