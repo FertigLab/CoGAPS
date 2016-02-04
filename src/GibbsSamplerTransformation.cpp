@@ -65,5 +65,10 @@ void update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
         double post_shape, post_rate;   // gamma distributions
         int n = _y[i].size();
 
+        // \beta_0 | x, y, \beta_1, \tau
+        post_mean = (_tau0 * _mu0 + _tau * arma::sum(_y[i] - _beta1 * _x[i])) / (_tau0 + n * _tau);
+        post_var = 1. / (_tau0 + n * _tau);
+        _beta0 = randgen("N", post_mean, sqrt(post_var));
+
     }
 }
