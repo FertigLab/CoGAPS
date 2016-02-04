@@ -14,9 +14,22 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     GibbsSamplerMap(nEquil, nSample, nFactor, alphaA, alphaP, nMaxA, nMaxP, nIterA, nIterP,
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix) {
+    // assignments for growth data
     _whichPattern = whichPattern;
     _treatStatus = treatStatus;
     _timeRecorded = timeRecorded;
+
+    // size regression parameters
+    _beta0.resize(nFactor);
+    _beta1.resize(nFactor);
+    _tau.resize(nFactor);
+
+    // sample from prior to initialize regression parameters
+    for (int i = 0; i < nFactor; ++i) {
+        _beta0[i] = randgen("N", _mu0, sqrt(1. / _tau0));
+        _beta1[i] = randgen("N", _mu0, sqrt(1. / _tau0));
+        _tau[i] = arma::randg(1, arma::distr_param(_a, _b));
+    }
 }
 
 std::vector<double> GibbsSamplerTransformation::logit(std::vector<double> data) {
