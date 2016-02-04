@@ -46,7 +46,7 @@ std::vector<double> GibbsSamplerTransformation::identity(std::vector<double> dat
     return data;
 }
 
-void update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
+void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
     // get current pattern data
     double** POrig = _PMatrix.get_matrix();
     arma::vec y_all = POrig[_whichPattern, ];
