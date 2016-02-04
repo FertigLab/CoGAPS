@@ -22,9 +22,10 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     double _a = 1.0;      // variance prior shape
     double _b = 1.0;      // variance prior rate
 
-    // current beta estimates
+    // current estimates
     arma::vec _beta0;
     arma::vec _beta1;
+    arma::vec _tau;
 
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
