@@ -60,7 +60,10 @@ void update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
     // split to do ....
 
     for (int i = 0; i < pattern_by_case.size(); ++i) {
-        double post_mean = 0.0;
-        double post_var = 0.0;
+        // initialize variables for full conditionals
+        double post_mean, post_var;     // normal distributions
+        double post_shape, post_rate;   // gamma distributions
+        int n = _y[i].size();
+
     }
 }
