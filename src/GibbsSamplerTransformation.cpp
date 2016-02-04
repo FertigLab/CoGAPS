@@ -59,7 +59,7 @@ void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformat
 
     // split to do ....
 
-    for (int i = 0; i < pattern_by_case.size(); ++i) {
+    for (int i = 0; i < _nFactor; ++i) {
         // initialize variables for full conditionals
         double post_mean, post_var;     // normal distributions
         double post_shape, post_rate;   // gamma distributions
