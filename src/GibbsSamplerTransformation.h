@@ -4,6 +4,8 @@
 #include "GibbsSamplerMap.h"
 #include <vector>
 #include <cmath>
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
 
 class GibbsSamplerTransformation : public GibbsSamplerMap {
   protected:
