@@ -23,8 +23,8 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     double _b = 1.0;      // variance prior rate
 
     // current beta estimates
-    std::vector<double> _beta0;
-    std::vector<double> _beta1;
+    arma::vec _beta0;
+    arma::vec _beta1;
 
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
