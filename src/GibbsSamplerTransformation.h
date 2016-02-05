@@ -27,10 +27,6 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     arma::vec _beta1;
     arma::vec _tau;
 
-    // initialize lists of y and x for each regression
-    std::vector<arma::vec> _y;
-    std::vector<arma::vec> _x;
-
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
                                double alphaA, double alphaP, double nMaxA, double nMaxP,
