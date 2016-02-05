@@ -3,4 +3,5 @@
                                    growth.trans="logistic", 
                                    time.of.sample=1:ncol(D), # default
                                    condition=rep(0, ncol(D)),  # treated/untreated (or treat1 treat2, etc, untreated)
-                                   nEquil=nBurn, nSample=nIter)
+                                   nEquil=nBurn, nSample=nIter) {
+ }
