@@ -48,36 +48,33 @@ std::vector<double> GibbsSamplerTransformation::identity(std::vector<double> dat
 
 void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
     // get current pattern data
-    arma::mat POrig(_PMatrix.get_matrix(), _nFactor, _DMatrix.get_nCol());
-    arma::vec y_all = POrig[_whichPattern, ];
-
-    // split data into lists
-    for (int i = 0; i < _nFactor; ++i) {
-        _y[i] = y_all.elem(y_all.find(_treatStatus == i));
-        _x[i] = _timeRecorded.elem(_timeRecorded.find(_treatStatus == i));
-    }
+    arma::vec y_all = _PMatrix.get_Row(_whichPattern);
 
     // http://www.cs.toronto.edu/~radford/csc2541.S11/week3.pdf
 
     for (int i = 0; i < _nFactor; ++i) {
+        // initialize lists of y and x for each regression
+        arma::vec _y = y_all(arma::find(_treatStatus == i));
+        arma::vec _x = _timeRecorded(arma::find(_treatStatus == i));
+
         // initialize variables for full conditionals
         double post_mean, post_var;     // normal distributions
         double post_shape, post_rate;   // gamma distributions
-        int n = _y[i].size();
+        int n = _y.size();
 
         // \beta_0 | x, y, \beta_1, \tau
         post_var = 1. / (_tau0 + n * _tau[i]);
-        post_mean = (_tau0 * _mu0 + _tau[i] * arma::sum(_y[i] - _beta1[i] * _x[i])) * post_var;
+        post_mean = (_tau0 * _mu0 + _tau[i] * arma::sum(_y - _beta1[i] * _x)) * post_var;
         _beta0[i] = randgen('N', post_mean, sqrt(post_var));
 
         // \beta_1 | x, y, \beta_0, \tau
-        post_var = 1. / (_tau0 + _tau[i] * arma::sum(arma::pow(_x[i], 2.0)));
-        post_mean = (_tau0 * _mu0 + _tau[i] * arma::sum(_x[i] * (_y[i] - _beta1[i]))) * post_var;
+        post_var = 1. / (_tau0 + _tau[i] * arma::sum(arma::pow(_x, 2.0)));
+        post_mean = (_tau0 * _mu0 + _tau[i] * arma::sum(_x * (_y - _beta1[i]))) * post_var;
         _beta1[i] = randgen('N', post_mean, sqrt(post_var));
 
         // \tau | x, y, _beta0, _beta1
         post_shape = _a + n / 2.;
-        post_rate = _b + arma::sum(arma::pow(_y[i] - _beta0[i] - _beta1[i] * _x[i], 2.0) / 2.0);
+        post_rate = _b + arma::sum(arma::pow(_y - _beta0[i] - _beta1[i] * _x, 2.0) / 2.0);
         _tau[i] = arma::conv_to<double>::from(arma::randg(1, arma::distr_param(post_shape, post_rate)));
     }
 }
