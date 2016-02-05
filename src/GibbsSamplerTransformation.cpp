@@ -54,27 +54,32 @@ void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformat
 
     for (int i = 0; i < _nFactor; ++i) {
         // initialize lists of y and x for each regression
-        arma::vec _y = y_all(arma::find(_treatStatus == i));
-        arma::vec _x = _timeRecorded(arma::find(_treatStatus == i));
+        arma::vec y = y_all(arma::find(_treatStatus == i));
+        arma::vec x = _timeRecorded(arma::find(_treatStatus == i));
+        arma::vec x_sq(x.size());
+
+        for (int j = 0; j < x.size(); ++j) {
+            x_sq[j] = pow(x[j], 2.0);
+        }
 
         // initialize variables for full conditionals
         double post_mean, post_var;     // normal distributions
         double post_shape, post_rate;   // gamma distributions
-        int n = _y.size();
+        int n = y.size();
 
         // \beta_0 | x, y, \beta_1, \tau
         post_var = 1. / (_tau0 + n * _tau[i]);
-        post_mean = (_tau0 * _mu0 + _tau[i] * arma::sum(_y - _beta1[i] * _x)) * post_var;
+        post_mean = (_tau0 * _mu0 + _tau[i] * arma::sum(y - _beta1[i] * x)) * post_var;
         _beta0[i] = randgen('N', post_mean, sqrt(post_var));
 
         // \beta_1 | x, y, \beta_0, \tau
-        post_var = 1. / (_tau0 + _tau[i] * arma::sum(arma::pow(_x, 2.0)));
-        post_mean = (_tau0 * _mu0 + _tau[i] * arma::sum(_x * (_y - _beta1[i]))) * post_var;
+        post_var = 1. / (_tau0 + _tau[i] * arma::sum(x_sq));
+        post_mean = (_tau0 * _mu0 + _tau[i] * arma::sum(x * (y - _beta1[i]))) * post_var;
         _beta1[i] = randgen('N', post_mean, sqrt(post_var));
 
         // \tau | x, y, _beta0, _beta1
         post_shape = _a + n / 2.;
-        post_rate = _b + arma::sum(arma::pow(_y - _beta0[i] - _beta1[i] * _x, 2.0) / 2.0);
+        post_rate = _b + arma::sum(arma::pow(y - _beta0[i] - _beta1[i] * x, 2.0) / 2.0);
         _tau[i] = arma::conv_to<double>::from(arma::randg(1, arma::distr_param(post_shape, post_rate)));
     }
 }
