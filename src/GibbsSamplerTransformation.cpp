@@ -19,11 +19,6 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _treatStatus = treatStatus;
     _timeRecorded = timeRecorded;
 
-    // size regression parameters
-    _beta0.resize(nFactor);
-    _beta1.resize(nFactor);
-    _tau.resize(nFactor);
-
     // initialize priors in constructor
     _mu0 = 0.0;    // beta prior mean
     _tau0 = 0.001; // beta prior precision
@@ -31,11 +26,10 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _b = 1.0;      // variance prior rate
 
     // sample from prior to initialize regression parameters
-    for (int i = 0; i < nFactor; ++i) {
-        _beta0[i] = randgen('N', _mu0, sqrt(1. / _tau0));
-        _beta1[i] = randgen('N', _mu0, sqrt(1. / _tau0));
-        _tau[i] = arma::conv_to<double>::from(arma::randg(1, arma::distr_param(_a, _b)));
-    }
+    int nTreats = Rcpp::unique(treatStatus).size();
+    _beta0 = Rcpp::rnorm(nTreats, _mu0, sqrt(1. / _tau0));
+    _beta1 = Rcpp::rnorm(nTreats, _mu0, sqrt(1. / _tau0));
+    _tau = Rcpp::rgamma(nTreats, _a, _b);
 }
 
 void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
