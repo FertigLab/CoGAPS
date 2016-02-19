@@ -24,6 +24,12 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _beta1.resize(nFactor);
     _tau.resize(nFactor);
 
+    // initialize priors in constructor
+    _mu0 = 0.0;    // beta prior mean
+    _tau0 = 0.001; // beta prior precision
+    _a = 1.0;      // variance prior shape
+    _b = 1.0;      // variance prior rate
+
     // sample from prior to initialize regression parameters
     for (int i = 0; i < nFactor; ++i) {
         _beta0[i] = randgen('N', _mu0, sqrt(1. / _tau0));
