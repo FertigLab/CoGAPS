@@ -3,20 +3,19 @@
 
 #include <vector>
 #include <cmath>
-#include <RcppArmadillo.h>
-// [[Rcpp::depends(RcppArmadillo)]]
+#include <Rcpp.h>
 
 class TransTest {
   public:
     // stored data
-    arma::vec y_all;
-    arma::ivec _treatStatus;
-    arma::vec _timeRecorded;
+    Rcpp::NumericVector y_all;
+    Rcpp::IntegerVector _treatStatus;
+    Rcpp::NumericVector _timeRecorded;
 
     // current estimates
-    arma::vec _beta0;
-    arma::vec _beta1;
-    arma::vec _tau;
+    Rcpp::NumericVector _beta0;
+    Rcpp::NumericVector _beta1;
+    Rcpp::NumericVector _tau;
 
     // priors for Gibbs Sampling of regression coefficients
     double _mu0;    // beta prior mean
@@ -27,8 +26,8 @@ class TransTest {
     // number of treatments
     int _nFactor;
 
-    TransTest(arma::vec y, arma::ivec treatStatus, 
-              arma::vec timeRecorded);
+    TransTest(Rcpp::NumericVector y, Rcpp::IntegerVector treatStatus, 
+              Rcpp::NumericVector timeRecorded);
 
     ~TransTest() {};
 
