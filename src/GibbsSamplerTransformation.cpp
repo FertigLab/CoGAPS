@@ -32,20 +32,6 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     }
 }
 
-std::vector<double> GibbsSamplerTransformation::logit(std::vector<double> data) {
-    std::vector<double> transformation(data.size());
-
-    for (int i = 0; i < data.size(); ++i) {
-        transformation[i] = log(data[i] / (1 - data[i]));
-    }
-
-    return transformation;
-}
-
-std::vector<double> GibbsSamplerTransformation::identity(std::vector<double> data) {
-    return data;
-}
-
 void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
     // get current pattern data
     arma::vec y_all = _PMatrix.get_Row(_whichPattern);
