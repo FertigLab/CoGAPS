@@ -9,8 +9,8 @@ T <- seq(-5, 5, length.out = n)
 rate.treat <- 2
 rate.untreat <- 1
 
-p3.t <- logistic.growth(T, x.0=0, L=1, k=rate.treat)
-p3.u <- logistic.growth(T, x.0=1, L=1, k=rate.untreat)
+p3.t <- logistic.growth(T, x.0=0, L=1, k=rate.treat) / 2
+p3.u <- logistic.growth(T, x.0=1, L=1, k=rate.untreat) / 3
 
 devtools::load_all("../trans")
 
