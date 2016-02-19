@@ -34,19 +34,17 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
 
 void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector)) {
     // get current pattern data
-    arma::vec y_all = _PMatrix.get_Row(_whichPattern);
+    Rcpp::NumericVector y_all = _PMatrix.get_Row(_whichPattern);
+    int nTreats = Rcpp::unique(_treatStatus).size();
 
     // http://www.cs.toronto.edu/~radford/csc2541.S11/week3.pdf
 
-    for (int i = 0; i < _nFactor; ++i) {
+    for (int i = 0; i < nTreats; ++i) {
         // initialize lists of y and x for each regression
-        arma::vec y = y_all(arma::find(_treatStatus == i));
-        arma::vec x = _timeRecorded(arma::find(_treatStatus == i));
-        arma::vec x_sq(x.size());
-
-        for (int j = 0; j < x.size(); ++j) {
-            x_sq[j] = pow(x[j], 2.0);
-        }
+        Rcpp::NumericVector y = y_all[_treatStatus == i];
+        y = transformation(y / (Rcpp::max(y) + 1e-6));
+        Rcpp::NumericVector x = _timeRecorded[_treatStatus == i];
+        Rcpp::NumericVector x_sq = Rcpp::pow(x, 2.0);
 
         // initialize variables for full conditionals
         double post_mean, post_var;     // normal distributions
@@ -55,17 +53,17 @@ void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformat
 
         // \beta_0 | x, y, \beta_1, \tau
         post_var = 1. / (_tau0 + n * _tau[i]);
-        post_mean = (_tau0 * _mu0 + _tau[i] * arma::sum(y - _beta1[i] * x)) * post_var;
-        _beta0[i] = randgen('N', post_mean, sqrt(post_var));
-
+        post_mean = (_tau0 * _mu0 + _tau[i] * Rcpp::sum(y - _beta1[i] * x)) * post_var;
+        _beta0[i] = Rcpp::as<double>(Rcpp::rnorm(1, post_mean, 
+                                                 sqrt(post_var)));
         // \beta_1 | x, y, \beta_0, \tau
-        post_var = 1. / (_tau0 + _tau[i] * arma::sum(x_sq));
-        post_mean = (_tau0 * _mu0 + _tau[i] * arma::sum(x * (y - _beta1[i]))) * post_var;
-        _beta1[i] = randgen('N', post_mean, sqrt(post_var));
+        post_var = 1. / (_tau0 + _tau[i] * Rcpp::sum(x_sq));
+        post_mean = (_tau0 * _mu0 + _tau[i] * Rcpp::sum(x * (y - _beta1[i]))) * post_var;
+        _beta1[i] = Rcpp::as<double>(Rcpp::rnorm(1, post_mean, sqrt(post_var)));
 
         // \tau | x, y, _beta0, _beta1
         post_shape = _a + n / 2.;
-        post_rate = _b + arma::sum(arma::pow(y - _beta0[i] - _beta1[i] * x, 2.0) / 2.0);
-        _tau[i] = arma::conv_to<double>::from(arma::randg(1, arma::distr_param(post_shape, post_rate)));
+        post_rate = _b + Rcpp::sum(Rcpp::pow(y - _beta0[i] - _beta1[i] * x, 2.0) / 2.0);
+        _tau[i] = Rcpp::as<double>(Rcpp::rgamma(1, post_shape, 1. / post_rate));
     }
 }
