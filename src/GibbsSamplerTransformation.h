@@ -4,28 +4,27 @@
 #include "GibbsSamplerMap.h"
 #include <vector>
 #include <cmath>
-#include <RcppArmadillo.h>
-// [[Rcpp::depends(RcppArmadillo)]]
+#include <Rcpp.h>
 
 class GibbsSamplerTransformation : public GibbsSamplerMap {
   protected:
     // indicates which pattern is growth (will be removed most likely)
     int _whichPattern;
     // vector of case status (assume 0 is non-case) i.e. {0, 0, 0, 1, 1, 1}
-    arma::ivec _treatStatus;
+    Rcpp::IntegerVector _treatStatus;
     // vector of time recordings
-    arma::vec _timeRecorded;
+    Rcpp::NumericVector _timeRecorded;
 
     // priors for Gibbs Sampling of regression coefficients
-    double _mu0 = 0.0;    // beta prior mean
-    double _tau0 = 0.001; // beta prior precision
-    double _a = 1.0;      // variance prior shape
-    double _b = 1.0;      // variance prior rate
+    double _mu0;    // beta prior mean
+    double _tau0; // beta prior precision
+    double _a;      // variance prior shape
+    double _b;      // variance prior rate
 
     // current estimates
-    arma::vec _beta0;
-    arma::vec _beta1;
-    arma::vec _tau;
+    Rcpp::NumericVector _beta0;
+    Rcpp::NumericVector _beta1;
+    Rcpp::NumericVector _tau;
 
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
@@ -47,13 +46,8 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     // for example, if we expect the pattern to be logistic, we can pass a logistic
     // function to transform the data i.e.
     // GibbSampPatt.update_pattern(GibbsSampPatt::&logit);
-    void update_pattern(std::vector<double>(*transformation)(std::vector<double>));
+    void update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector));
 
-    // transformations
-    // logistic transformation (log(p / 1 - p))
-    std::vector<double> logit(std::vector<double> data);
-    // identity transformation (pattern is already linear)
-    std::vector<double> identity(std::vector<double> data);
 };
 
 #endif
