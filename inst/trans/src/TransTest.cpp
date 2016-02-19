@@ -24,7 +24,7 @@ TransTest::TransTest(Rcpp::NumericVector y,
     _tau = Rcpp::rgamma(_nFactor, _a, _b);
 }
 
-void TransTest::update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
+void TransTest::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector)) {
     // http://www.cs.toronto.edu/~radford/csc2541.S11/week3.pdf
 
     for (int i = 0; i < _nFactor; ++i) {

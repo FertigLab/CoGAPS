@@ -31,7 +31,7 @@ class TransTest {
 
     ~TransTest() {};
 
-    void update_pattern(std::vector<double>(*transformation)(std::vector<double>));
+    void update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector));
 
     void runMCMC(int iter);
 };
