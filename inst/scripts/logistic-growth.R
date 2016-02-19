@@ -23,8 +23,8 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1, plot=FALSE) {
     n <- 10
     T <- seq(-5, 5, length.out = n)
 
-    p3.t <- logistic.growth(T, x.0=0, L=0.3, k=rate.treat)
-    p3.u <- logistic.growth(T, x.0=1, L=0.3, k=rate.untreat)
+    p3.t <- logistic.growth(T, x.0=0, L=1, k=rate.treat)
+    p3.u <- logistic.growth(T, x.0=1, L=1, k=rate.untreat)
 
     if (plot) {
         data <- data.frame(t=c(T, T), y=c(p3.t, p3.u), status=rep(c("treated", "untreated"), each=n))
@@ -51,6 +51,40 @@ logistic.cogaps <- function(D, S) {
     nIter <- 5000
     nBurn <- 5000
     results <- gapsRun(D, S, nFactor=3, nEquil=nBurn, nSample=nIter)
+    P <- results$Pmean
+    arrayIdx <- 1:ncol(P)
+    matplot(arrayIdx, t(P), type='l', lwd=10)
+}
+
+cogaps.trans <- function(D, S) {
+    # MCMC parameters
+    nIter <- 5000
+    nBurn <- 5000
+
+    # get matrices
+    patts <- logistic.pattern()
+    D <- patts$D
+    S <- patts$S
+    P.true <- patts$P
+    A.true <- patts$A
+
+    # set up fixed pattern
+    fixed.patt <- NULL # ????
+
+    # set up measurement info
+    n <- 10
+    treatStatus <- rep(0:1, each=n)
+    timeRecorded <- rep(seq(-5, 5, len=n), 2)
+
+    results <- gapsTrans(D, S, fixed.patt=fixed.patt,
+                         treatStatus=treatStatus, timeRecorded=timeRecorded,
+                         nFactor=3, nEquil=nBurn, nSample=nIter)
+
+    # check the logistic growth rates are correct
+    k <- results$kmean
+    all.equal(sort(k), c(1, 2), tol=2e-1)
+
+    # check the pattern matrix
     P <- results$Pmean
     arrayIdx <- 1:ncol(P)
     matplot(arrayIdx, t(P), type='l', lwd=10)
