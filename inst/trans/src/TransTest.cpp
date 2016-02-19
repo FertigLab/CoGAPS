@@ -30,7 +30,7 @@ void TransTest::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::Numeri
     for (int i = 0; i < _nFactor; ++i) {
         // initialize lists of y and x for each regression
         Rcpp::NumericVector y = y_all[_treatStatus == i];
-        y = &transformation(y);
+        y = transformation(y);
         Rcpp::NumericVector x = _timeRecorded[_treatStatus == i];
         Rcpp::NumericVector x_sq = Rcpp::pow(x, 2.0);
 
