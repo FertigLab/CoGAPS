@@ -32,7 +32,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _tau = Rcpp::rgamma(nTreats, _a, _b);
 }
 
-void GibbsSamplerTransformation::update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
+void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector)) {
     // get current pattern data
     arma::vec y_all = _PMatrix.get_Row(_whichPattern);
 
