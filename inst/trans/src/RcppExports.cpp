@@ -6,3 +6,17 @@
 
 using namespace Rcpp;
 
+// test_run
+Rcpp::List test_run(Rcpp::NumericVector y, Rcpp::IntegerVector treatStatus, Rcpp::NumericVector timeRecorded, int iter);
+RcppExport SEXP trans_test_run(SEXP ySEXP, SEXP treatStatusSEXP, SEXP timeRecordedSEXP, SEXP iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type treatStatus(treatStatusSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type timeRecorded(timeRecordedSEXP);
+    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
+    __result = Rcpp::wrap(test_run(y, treatStatus, timeRecorded, iter));
+    return __result;
+END_RCPP
+}
