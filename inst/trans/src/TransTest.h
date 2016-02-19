@@ -19,13 +19,13 @@ class TransTest {
     arma::vec _tau;
 
     // priors for Gibbs Sampling of regression coefficients
-    double _mu0 = 0.0;    // beta prior mean
-    double _tau0 = 0.001; // beta prior precision
-    double _a = 1.0;      // variance prior shape
-    double _b = 1.0;      // variance prior rate
+    double _mu0;    // beta prior mean
+    double _tau0;   // beta prior precision
+    double _a;      // variance prior shape
+    double _b;      // variance prior rate
 
     // number of treatments
-    int _nFactor = 2;
+    int _nFactor;
 
     TransTest(arma::vec y, arma::ivec treatStatus, 
               arma::vec timeRecorded);

@@ -10,6 +10,15 @@ TransTest::TransTest(arma::vec y, arma::ivec treatStatus,
     _beta0.resize(2);
     _beta1.resize(2);
     _tau.resize(2);
+
+    // priors for Gibbs Sampling of regression coefficients
+    _mu0 = 0.0;    // beta prior mean
+    _tau0 = 0.001; // beta prior precision
+    _a = 1.0;      // variance prior shape
+    _b = 1.0;      // variance prior rate
+
+    // number of treatments
+    _nFactor = 2;
 }
 
 void TransTest::update_pattern(std::vector<double>(*transformation)(std::vector<double>)) {
