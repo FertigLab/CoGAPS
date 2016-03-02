@@ -64,7 +64,9 @@ void TransTest::runMCMC(int iter) {
 
     for (int s = 0; s < iter; ++s) {
         update_pattern(&logit);
-        _beta1chain(iter, Rcpp::_) = _beta1;
+        for (int j = 0; j < _nFactor; ++j) {
+            chain(s, j) = _beta1[j];
+        }
     }
 
     _beta1chain = chain;

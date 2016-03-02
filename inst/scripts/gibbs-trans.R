@@ -38,4 +38,10 @@ testing <- function(t0=-5, tf=5, n=100, rate.treat=2, rate.untreat=1) {
     test_run(y, treatStatus, timeRecorded, iter=2000)
 }
 
-testing(t0=-1, tf=4)$beta1
+# explore output with varying t0 tf
+out <- testing()
+colMeans(out$beta1chain)
+apply(out$beta1chain, 2, sd)
+out <- testing(t0=-1, tf=4)
+colMeans(out$beta1chain)
+apply(out$beta1chain, 2, sd)
