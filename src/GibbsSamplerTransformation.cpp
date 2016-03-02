@@ -26,7 +26,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _b = 1.0;      // variance prior rate
 
     // sample from prior to initialize regression parameters
-    int nTreats = Rcpp::unique(treatStatus).size();
+    int nTreats = Rcpp::unique(_treatStatus).size();
     _beta0 = Rcpp::rnorm(nTreats, _mu0, sqrt(1. / _tau0));
     _beta1 = Rcpp::rnorm(nTreats, _mu0, sqrt(1. / _tau0));
     _tau = Rcpp::rgamma(nTreats, _a, _b);
@@ -34,7 +34,9 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
 
 void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector)) {
     // get current pattern data
-    Rcpp::NumericVector y_all = _PMatrix.get_Row(_whichPattern);
+    std::vector<double> y_all_temp = _PMatrix.get_Row(_whichPattern);
+    Rcpp::NumericVector y_all;
+    y_all = y_all_temp;
     int nTreats = Rcpp::unique(_treatStatus).size();
 
     // http://www.cs.toronto.edu/~radford/csc2541.S11/week3.pdf
