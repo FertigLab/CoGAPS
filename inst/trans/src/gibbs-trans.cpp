@@ -9,5 +9,6 @@ Rcpp::List test_run(Rcpp::NumericVector y, Rcpp::IntegerVector treatStatus,
 
     return Rcpp::List::create(Rcpp::Named("beta0")=obj._beta0,
                               Rcpp::Named("beta1")=obj._beta1,
-                              Rcpp::Named("tau")=obj._tau);
+                              Rcpp::Named("tau")=obj._tau,
+                              Rcpp::Named("beta1chain")=obj._beta1chain);
 }

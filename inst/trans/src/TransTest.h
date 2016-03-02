@@ -17,6 +17,9 @@ class TransTest {
     Rcpp::NumericVector _beta1;
     Rcpp::NumericVector _tau;
 
+    // chains
+    Rcpp::NumericMatrix _beta1chain;
+
     // priors for Gibbs Sampling of regression coefficients
     double _mu0;    // beta prior mean
     double _tau0;   // beta prior precision
