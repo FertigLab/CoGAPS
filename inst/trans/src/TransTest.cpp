@@ -60,10 +60,12 @@ void TransTest::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::Numeri
 
 void TransTest::runMCMC(int iter) {
     // size chains
-    _beta1chain.resize(iter, _nFactor);
+    Rcpp::NumericMatrix chain(iter, _nFactor);
 
     for (int s = 0; s < iter; ++s) {
         update_pattern(&logit);
-        _beta1chain[iter, Rcpp::_] = _beta1;
+        _beta1chain(iter, Rcpp::_) = _beta1;
     }
+
+    _beta1chain = chain;
 }
