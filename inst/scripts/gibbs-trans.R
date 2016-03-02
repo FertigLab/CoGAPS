@@ -37,3 +37,5 @@ testing <- function(t0=-5, tf=5, n=100, rate.treat=2, rate.untreat=1) {
     # cross fingers...
     test_run(y, treatStatus, timeRecorded, iter=2000)
 }
+
+testing(t0=-1, tf=4)$beta1
