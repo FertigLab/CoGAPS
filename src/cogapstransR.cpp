@@ -39,7 +39,9 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                        Rcpp::DataFrame ABinsFrame,
                        Rcpp::DataFrame PBinsFrame,
                        Rcpp::CharacterVector Config,
-                       Rcpp::NumericVector ConfigNums) {
+                       Rcpp::NumericVector ConfigNums,
+                       Rcpp::NumericVector time_of_sample,
+                       Rcpp::IntegerVector condition) {
     // ===========================================================================
     // Initialization of the random number generator.
     // Different seeding methods:
