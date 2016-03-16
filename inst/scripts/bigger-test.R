@@ -54,11 +54,11 @@ cogaps.trans <- function(D, S) {
     treatStatus <- rep(0:1, each=n)
     timeRecorded <- rep(seq(-5, 5, len=n), 2)
 
-    results <- gapsRunTransformation(D, S, nFactor=3,
-                                     growth.trans="logistic",
-                                     time.of.sample=timeRecorded,
-                                     condition=treatStatus,
-                                     nEquil=nBurn, nSample=nIter)
+#     results <- gapsRunTransformation(D, S, nFactor=3,
+#                                      growth.trans="logistic",
+#                                      time.of.sample=timeRecorded,
+#                                      condition=treatStatus,
+#                                      nEquil=nBurn, nSample=nIter)
 
     # testings gapsTransRun
     ABins=data.frame(); PBins=data.frame(); simulation_id="simulation";
