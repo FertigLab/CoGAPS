@@ -63,6 +63,8 @@ cogaps.trans <- function(D, S) {
     # testings gapsTransRun
     ABins=data.frame()
     PBins=data.frame()
+    # whatever initial guess is, that's your pattern 
+    # we could inherit 
     FP <- matrix(0, nrow=3, ncol=ncol(D))
     nFactor <- 3
     simulation_id="simulation"
