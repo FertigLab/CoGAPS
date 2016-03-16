@@ -34,15 +34,6 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
     return(out)
 }
 
-logistic.cogaps <- function(D, S) {
-    nIter <- 5000
-    nBurn <- 5000
-    results <- gapsRun(D, S, nFactor=3, nEquil=nBurn, nSample=nIter)
-    P <- results$Pmean
-    arrayIdx <- 1:ncol(P)
-    matplot(arrayIdx, t(P), type='l', lwd=10)
-}
-
 cogaps.trans <- function(D, S) {
     # MCMC parameters
     nIter <- 5000
@@ -63,16 +54,9 @@ cogaps.trans <- function(D, S) {
     treatStatus <- rep(0:1, each=n)
     timeRecorded <- rep(seq(-5, 5, len=n), 2)
 
-    results <- gapsTrans(D, S, fixed.patt=fixed.patt,
-                         treatStatus=treatStatus, timeRecorded=timeRecorded,
-                         nFactor=3, nEquil=nBurn, nSample=nIter)
-
-    # check the logistic growth rates are correct
-    k <- results$kmean
-    all.equal(sort(k), c(1, 2), tol=2e-1)
-
-    # check the pattern matrix
-    P <- results$Pmean
-    arrayIdx <- 1:ncol(P)
-    matplot(arrayIdx, t(P), type='l', lwd=10)
+    results <- gapsRunTransformation(D, S, nFactor=3,
+                                     growth.trans="logistic",
+                                     time.of.sample=timeRecorded,
+                                     condition=treatStatus,
+                                     nEquil=nBurn, nSample=nIter)
 }
