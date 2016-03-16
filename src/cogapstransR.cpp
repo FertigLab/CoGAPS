@@ -29,7 +29,7 @@ using namespace std;
 using namespace gaps;
 using std::vector;
 
-boost::mt19937 rng3(43);
+boost::mt19937 rng5(43);
 
 
 // [[Rcpp::export]]
