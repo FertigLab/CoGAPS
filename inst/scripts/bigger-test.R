@@ -63,6 +63,7 @@ cogaps.trans <- function(D, S) {
     # testings gapsTransRun
     ABins=data.frame()
     PBins=data.frame()
+    FP <- matrix(0, nrow=3, ncol=ncol(D))
     nFactor <- 3
     simulation_id="simulation"
     nEquil = 1000
@@ -82,8 +83,8 @@ cogaps.trans <- function(D, S) {
     max_gibbmass_paraP = 100.0
     # parameters for transformaiton routine
     growth.trans="logistic"
-    time.of.sample=1:ncol(D) # default
-    condition=rep(0, ncol(D))
+    time.of.sample=timeRecorded
+    condition=treatStatus
 
     #Begin data type error checking code
     charDataErrors = c(!is.character(simulation_id), !is.character(fixedDomain), !is.character(fixedMatrix))
