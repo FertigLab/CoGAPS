@@ -59,4 +59,14 @@ cogaps.trans <- function(D, S) {
                                      time.of.sample=timeRecorded,
                                      condition=treatStatus,
                                      nEquil=nBurn, nSample=nIter)
+
+    # testings gapsTransRun
+    ABins=data.frame(); PBins=data.frame(); simulation_id="simulation";
+    nEquil = 1000; nSample = 1000; nOutR = 1000; output_atomic = FALSE; fixedMatrix = "P";
+    fixedBinProbs = FALSE; fixedDomain = "N"; sampleSnapshots = TRUE; numSnapshots = 100; alphaA = 0.01;
+    nMaxA = 100000; max_gibbmass_paraA = 100.0; alphaP = 0.01; nMaxP = 100000; max_gibbmass_paraP = 100.0;
+    # parameters for transformaiton routine
+    growth.trans="logistic"; 
+    time.of.sample=1:ncol(D) # default
+    condition=rep(0, ncol(D))
 }
