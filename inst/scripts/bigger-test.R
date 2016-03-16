@@ -63,6 +63,7 @@ cogaps.trans <- function(D, S) {
     # testings gapsTransRun
     ABins=data.frame()
     PBins=data.frame()
+    nFactor <- 3
     simulation_id="simulation"
     nEquil = 1000
     nSample = 1000
@@ -91,9 +92,12 @@ cogaps.trans <- function(D, S) {
     boolDataErrors = c(!is.logical(output_atomic), !is.logical(fixedBinProbs), !is.logical(sampleSnapshots))
     boolCheck = c("output_atomic", "fixedBinProbs", "sampleSnapshots")
 
-    numericDataErrors = c(!is.numeric(nFactor), !is.numeric(nEquil), !is.numeric(nSample), !is.numeric(nOutR), !is.numeric(numSnapshots),
-                          !is.numeric(alphaA), !is.numeric(nMaxA), !is.numeric(max_gibbmass_paraA), !is.numeric(alphaP),
-                          !is.numeric(nMaxP), !is.numeric(max_gibbmass_paraP))
+    numericDataErrors = c(!is.numeric(nFactor), !is.numeric(nEquil), 
+                          !is.numeric(nSample), !is.numeric(nOutR), 
+                          !is.numeric(numSnapshots), !is.numeric(alphaA), 
+                          !is.numeric(nMaxA), !is.numeric(max_gibbmass_paraA), 
+                          !is.numeric(alphaP), !is.numeric(nMaxP), 
+                          !is.numeric(max_gibbmass_paraP))
     numericCheck = c("nFactor", "nEquil", "nSample", "nOutR", "numSnapshots", "alphaA", "nMaxA",
                      "max_gibbmass_paraA", "alphaP",    "nMaxP", "max_gibbmass_paraP")
 
