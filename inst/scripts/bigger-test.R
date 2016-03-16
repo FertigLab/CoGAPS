@@ -95,48 +95,6 @@ cogaps.trans <- function(D, S) {
 
     #Begin logic error checking code
 
-    #Check for negative or zero arguments
-    if(any(ConfigNums <= 0))
-    {
-      stop("Error in gapsRun: Numeric Arguments cannot be non-zero!")
-    }
-
-    #Check for nonsensical inputs (such as numSnapshots < nEquil or nSample)
-    if((numSnapshots > nEquil) || (numSnapshots > nSample))
-    {
-      stop("Error in gapsRun: Cannot have more snapshots of A and P than equilibration and/or sampling iterations.")
-    }
-
-    if((nOutR > nEquil) || (nOutR > nSample))
-    {
-      stop("Error in gapsRun: Cannot have more output steps than equilibration and/or sampling iterations.")
-    }
-
-    if(ncol(FP) != ncol(D))
-    {
-      stop("Error in gapsRun: Columns of Data Matrix and Fixed Pattern Matrix do not line up. Please see documentation for details.")
-    }
-
-    if(nFactor < (nrow(FP)))
-    {
-      stop("Error in gapsRun: Number of patterns cannot be less than the rows of the patterns to fix (FP). Please see documentation for details.")
-    }
-
-    if(nFactor > (ncol(D)))
-    {
-      warning("Warning in gapsRun: Number of requested patterns greater than columns of Data Matrix.")
-    }
-
-
-
-    #        P <- as.data.frame(matrix(nrow=1,c(1,1,1))) # make something to pass
-    #    } else {
-    #        Config = c(nFactor, simulation_id, nEquil, nSample, nOutR,
-    #        output_atomic, alphaA, nMaxA, max_gibbmass_paraA, lambdaA_scale_factor,
-    #        alphaP, nMaxP, max_gibbmass_paraP, lambdaP_scale_factor, 1)
-
-    #   }
-
     geneNames = rownames(D);
     sampleNames = colnames(D);
 
@@ -150,43 +108,4 @@ cogaps.trans <- function(D, S) {
     # call to C++ Rcpp code
     cogapResult = cogapsMap(D, S, FP, ABins, PBins, Config, ConfigNums);
 
-    # convert returned files to matrices to simplify visualization and processing
-    cogapResult$Amean = as.matrix(cogapResult$Amean);
-    cogapResult$Asd = as.matrix(cogapResult$Asd);
-    cogapResult$Pmean = as.matrix(cogapResult$Pmean);
-    cogapResult$Psd = as.matrix(cogapResult$Psd);
-
-    # label matrices
-    colnames(cogapResult$Amean) = patternNames;
-    rownames(cogapResult$Amean) = geneNames;
-    colnames(cogapResult$Asd) = patternNames;
-    rownames(cogapResult$Asd) = geneNames;
-    colnames(cogapResult$Pmean) = sampleNames;
-    rownames(cogapResult$Pmean) = patternNames;
-    colnames(cogapResult$Psd) = sampleNames;
-    rownames(cogapResult$Psd) = patternNames;
-
-    # calculate chi-squared of mean, this should be smaller than individual
-    # chi-squared sample values if sampling is good
-    calcChiSq = c(0);
-    MMatrix = (cogapResult$Amean %*% cogapResult$Pmean);
-
-
-    for(i in 1:(nrow(MMatrix)))
-    {
-      for(j in 1:(ncol(MMatrix)))
-      {
-        calcChiSq = (calcChiSq) + ((D[i,j] - MMatrix[i,j])/(S[i,j]))^(2);
-      }
-    }
-
-    cogapResult = c(cogapResult, calcChiSq);
-
-
-    names(cogapResult)[12] = "meanChi2";
-
-    message(paste("Chi-Squared of Mean:",calcChiSq))
-
-    return(cogapResult);
-}
 }
