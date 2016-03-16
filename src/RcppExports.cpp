@@ -71,3 +71,20 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// cogapsTrans
+Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
+RcppExport SEXP CoGAPS_cogapsTrans(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type DFrame(DFrameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type SFrame(SFrameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FixedPatt(FixedPattSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type ABinsFrame(ABinsFrameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type PBinsFrame(PBinsFrameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type Config(ConfigSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
+    __result = Rcpp::wrap(cogapsTrans(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums));
+    return __result;
+END_RCPP
+}
