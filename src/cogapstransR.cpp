@@ -191,16 +191,17 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     char label_S = 'S';// label for matrix S
     char label_FP = fixedMatrixStr[0]; //Label for the Fixed Matrix
     // ---------------------------------------------------------------------------
-    // Initialize the GibbsSampMap.
+    // Initialize the GibbsSampTrans.
     //R Version
     //Now with Variable Bin capability for priors (Fixed Bins)
-    GibbsSamplerMap GibbsSampMap(nEquil, nSample, nFactor, // construct GibbsSampMapler and
-                                 alphaA, alphaP, nMaxA, nMaxP, // Read in D and S matrices
-                                 nIterA, nIterP,
-                                 max_gibbsmass_paraA, max_gibbsmass_paraP,
-                                 atomicSize,
-                                 label_A, label_P, label_D, label_S,
-                                 DVector, SVector, simulation_id, FPVector, label_FP);
+    GibbsSamplerTransformation GibbsSampTrans(nEquil, nSample, nFactor, // construct GibbsSamplerTrans and
+                                              alphaA, alphaP, nMaxA, nMaxP, // Read in D and S matrices
+                                              nIterA, nIterP,
+                                              max_gibbsmass_paraA, max_gibbsmass_paraP,
+                                              atomicSize,
+                                              label_A, label_P, label_D, label_S,
+                                              DVector, SVector, simulation_id, FPVector, label_FP,
+                                              time_of_sample, condition);
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.
