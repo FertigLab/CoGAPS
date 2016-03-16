@@ -86,15 +86,6 @@ cogaps.trans <- function(D, S) {
     time.of.sample=timeRecorded
     condition=treatStatus
 
-    #Floor the parameters that are integers to prevent allowing doubles.
-    nFactor = floor(nFactor)
-    nEquil = floor(nEquil)
-    nSample = floor(nSample)
-    nOutR = floor(nOutR)
-    numSnapshots = floor(numSnapshots)
-    nMaxA = floor(nMaxA)
-    nMaxP = floor(nMaxP)
-
     # pass all settings to C++ within a list
     #    if (is.null(P)) {
     Config = c(simulation_id, output_atomic, fixedBinProbs, fixedDomain, fixedMatrix, sampleSnapshots);
