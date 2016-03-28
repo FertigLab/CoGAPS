@@ -516,7 +516,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                     Rcpp::Named("ASnapshots") = ASnapR, Rcpp::Named("PSnapshots") = PSnapR,
                                     Rcpp::Named("atomsAEquil") = nAEquil, Rcpp::Named("atomsASamp") = nASamp,
                                     Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect,
-                                    Rcpp::Named("beta0") = GibbsSampTrans._beta0, Rcpp::Named("beta1") = GibbsSampTrans._beta1);
+                                    Rcpp::Named("beta0") = GibbsSampTrans.beta0(), Rcpp::Named("beta1") = GibbsSampTrans.beta1());
         return (fileContainer);
 
     } else {
@@ -528,7 +528,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                     Rcpp::Named("ASnapshots") = ASnapR, Rcpp::Named("PSnapshots") = PSnapR,
                                     Rcpp::Named("atomsAEquil") = nAEquil, Rcpp::Named("atomsASamp") = nASamp,
                                     Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect,
-                                    Rcpp::Named("beta0") = GibbsSampTrans._beta0, Rcpp::Named("beta1") = GibbsSampTrans._beta1);
+                                    Rcpp::Named("beta0") = GibbsSampTrans.beta0(), Rcpp::Named("beta1") = GibbsSampTrans.beta1());
         return (fileContainer);
     }
 }
