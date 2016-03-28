@@ -201,7 +201,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                               atomicSize,
                                               label_A, label_P, label_D, label_S,
                                               DVector, SVector, simulation_id, FPVector, label_FP, 3,
-                                              time_of_sample, condition);
+                                              condition, time_of_sample);
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.
