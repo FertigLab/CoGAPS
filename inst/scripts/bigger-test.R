@@ -61,7 +61,7 @@ ABins=data.frame()
 PBins=data.frame()
 # whatever initial guess is, that's your pattern 
 # we could inherit 
-FP <- matrix(0, nrow=3, ncol=ncol(D))
+FP <- matrix(1, nrow=3, ncol=ncol(D))
 nFactor <- 3
 simulation_id="simulation"
 nEquil = 1000
