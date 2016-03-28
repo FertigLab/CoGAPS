@@ -22,6 +22,7 @@
 #include "GAPSNorm.h"  // for incorporating calculation of statistics in cogaps.
 #include "GibbsSampler.h" // for incorporating the GibbsSampMapler which
 #include "GibbsSamplerTransformation.h"
+#include "transformations.h"
 #include <Rcpp.h>
 // ------------------------------------------------------
 
@@ -308,6 +309,10 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         }
 
         GibbsSampTrans.check_atomic_matrix_consistency('P');
+
+        // update pattern
+        GibbsSampTrans.update_pattern(&logit);
+
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSampTrans.get_sysChi2();
         chiVect[(ext_iter) - 1] = tempChiSq;
@@ -380,6 +385,9 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         }
 
         GibbsSampTrans.check_atomic_matrix_consistency('P');
+
+        // update pattern
+        GibbsSampTrans.update_pattern(&logit);
 
         if (Q_output_atomic == true) {
             GibbsSampTrans.output_atomicdomain('A', i);
