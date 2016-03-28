@@ -45,9 +45,6 @@ S <- patts$S
 P.true <- patts$P
 A.true <- patts$A
 
-# set up fixed pattern
-fixed.patt <- NULL # ????
-
 # set up measurement info
 n <- 10
 treatStatus <- rep(0:1, each=n)
