@@ -200,7 +200,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                               max_gibbsmass_paraA, max_gibbsmass_paraP,
                                               atomicSize,
                                               label_A, label_P, label_D, label_S,
-                                              DVector, SVector, simulation_id, FPVector, label_FP,
+                                              DVector, SVector, simulation_id, FPVector, label_FP, 3,
                                               time_of_sample, condition);
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
