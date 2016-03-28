@@ -42,7 +42,7 @@ Rcpp::NumericVector GibbsSamplerTransformation::beta1() {
 
 void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector)) {
     // get current pattern data
-    std::vector<double> y_all_temp = _PMatrix.get_Row(_whichPattern);
+    std::vector<double> y_all_temp = _PMatrix.get_Row(_whichPattern - 1);
     Rcpp::NumericVector y_all;
     y_all = y_all_temp;
     int nTreats = Rcpp::unique(_treatStatus).size();
