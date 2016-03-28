@@ -32,6 +32,14 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _tau = Rcpp::rgamma(nTreats, _a, _b);
 }
 
+Rcpp::NumericVector GibbsSamplerTransformation::beta0() {
+    return _beta0;
+}
+
+Rcpp::NumericVector GibbsSamplerTransformation::beta1() {
+    return _beta1;
+}
+
 void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector)) {
     // get current pattern data
     std::vector<double> y_all_temp = _PMatrix.get_Row(_whichPattern);

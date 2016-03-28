@@ -39,6 +39,9 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
                                std::vector<int> treatStatus, std::vector<double> timeRecorded);
 
     ~GibbsSamplerTransformation() {};
+
+    Rcpp::NumericVector beta0();
+    Rcpp::NumericVector beta1();
     
     // expect that some transformation of the pattern will be linear so
     // allow for passing an a priori function that transforms the pattern
