@@ -1,6 +1,3 @@
-# load code
-devtools::load_all("../..")
-
 # function to simulate logistic growth
 logistic.growth <- function(x, x.0=0.5, L=1, k=1) {
     output <- L / (1 + exp(- k * (x - x.0)))
@@ -34,25 +31,27 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
     return(out)
 }
 
-cogaps.trans <- function(D, S) {
-    # MCMC parameters
-    nIter <- 5000
-    nBurn <- 5000
+# load code
+devtools::load_all("../..")
 
-    # get matrices
-    patts <- logistic.pattern()
-    D <- patts$D
-    S <- patts$S
-    P.true <- patts$P
-    A.true <- patts$A
+# MCMC parameters
+nIter <- 5000
+nBurn <- 5000
 
-    # set up fixed pattern
-    fixed.patt <- NULL # ????
+# get matrices
+patts <- logistic.pattern()
+D <- patts$D
+S <- patts$S
+P.true <- patts$P
+A.true <- patts$A
 
-    # set up measurement info
-    n <- 10
-    treatStatus <- rep(0:1, each=n)
-    timeRecorded <- rep(seq(-5, 5, len=n), 2)
+# set up fixed pattern
+fixed.patt <- NULL # ????
+
+# set up measurement info
+n <- 10
+treatStatus <- rep(0:1, each=n)
+timeRecorded <- rep(seq(-5, 5, len=n), 2)
 
 #     results <- gapsRunTransformation(D, S, nFactor=3,
 #                                      growth.trans="logistic",
@@ -60,61 +59,54 @@ cogaps.trans <- function(D, S) {
 #                                      condition=treatStatus,
 #                                      nEquil=nBurn, nSample=nIter)
 
-    # testings gapsTransRun
-    ABins=data.frame()
-    PBins=data.frame()
-    # whatever initial guess is, that's your pattern 
-    # we could inherit 
-    FP <- matrix(0, nrow=3, ncol=ncol(D))
-    nFactor <- 3
-    simulation_id="simulation"
-    nEquil = 1000
-    nSample = 1000
-    nOutR = 1000
-    output_atomic = FALSE
-    fixedMatrix = "P"
-    fixedBinProbs = FALSE
-    fixedDomain = "N"
-    sampleSnapshots = TRUE
-    numSnapshots = 100
-    alphaA = 0.01
-    nMaxA = 100000
-    max_gibbmass_paraA = 100.0
-    alphaP = 0.01
-    nMaxP = 100000
-    max_gibbmass_paraP = 100.0
-    # parameters for transformaiton routine
-    growth.trans="logistic"
-    time.of.sample=timeRecorded
-    condition=treatStatus
+# testings gapsTransRun
+ABins=data.frame()
+PBins=data.frame()
+# whatever initial guess is, that's your pattern 
+# we could inherit 
+FP <- matrix(0, nrow=3, ncol=ncol(D))
+nFactor <- 3
+simulation_id="simulation"
+nEquil = 1000
+nSample = 1000
+nOutR = 1000
+output_atomic = FALSE
+fixedMatrix = "P"
+fixedBinProbs = FALSE
+fixedDomain = "N"
+sampleSnapshots = TRUE
+numSnapshots = 100
+alphaA = 0.01
+nMaxA = 100000
+max_gibbmass_paraA = 100.0
+alphaP = 0.01
+nMaxP = 100000
+max_gibbmass_paraP = 100.0
+# parameters for transformaiton routine
+growth.trans="logistic"
+time.of.sample=timeRecorded
+condition=treatStatus
 
-    # pass all settings to C++ within a list
-    #    if (is.null(P)) {
-    Config = c(simulation_id, output_atomic, fixedBinProbs, fixedDomain, fixedMatrix, sampleSnapshots);
+# pass all settings to C++ within a list
+#    if (is.null(P)) {
+Config = c(simulation_id, output_atomic, fixedBinProbs, fixedDomain, fixedMatrix, sampleSnapshots);
 
-    ConfigNums = c(nFactor, nEquil, nSample, nOutR, alphaA, nMaxA, max_gibbmass_paraA,
-                   alphaP, nMaxP, max_gibbmass_paraP, numSnapshots);
+ConfigNums = c(nFactor, nEquil, nSample, nOutR, alphaA, nMaxA, max_gibbmass_paraA,
+               alphaP, nMaxP, max_gibbmass_paraP, numSnapshots);
 
-    #Begin logic error checking code
+#Begin logic error checking code
 
-    geneNames = rownames(D);
-    sampleNames = colnames(D);
+geneNames = rownames(D);
+sampleNames = colnames(D);
 
-    # label patterns as Patt N
-    patternNames = c("0");
-    for(i in 1:nFactor)
-    {
-      patternNames[i] = paste('Patt', i);
-    }
-
-    # call to C++ Rcpp code
-    cogapResult = cogapsTrans(D, 
-                              S, 
-                              FP, 
-                              ABins, 
-                              PBins, 
-                              Config, 
-                              ConfigNums,
-                              time.of.sample,
-                              condition)
+# label patterns as Patt N
+patternNames = c("0");
+for(i in 1:nFactor)
+{
+  patternNames[i] = paste('Patt', i);
 }
+
+# call to C++ Rcpp code
+cogapResult = cogapsTrans(D, S, FP, ABins, PBins, 
+                          Config, ConfigNums,
+                          time.of.sample, condition)
