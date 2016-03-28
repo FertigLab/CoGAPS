@@ -108,13 +108,13 @@ cogaps.trans <- function(D, S) {
     }
 
     # call to C++ Rcpp code
-    cogapResult = cogapsMap(D, 
-                            S, 
-                            FP, 
-                            ABins, 
-                            PBins, 
-                            Config, 
-                            ConfigNums,
-                            time.of.sample,
-                            condition)
+    cogapResult = cogapsTrans(D, 
+                              S, 
+                              FP, 
+                              ABins, 
+                              PBins, 
+                              Config, 
+                              ConfigNums,
+                              time.of.sample,
+                              condition)
 }
