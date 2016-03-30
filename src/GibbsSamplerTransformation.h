@@ -6,7 +6,7 @@
 #include <cmath>
 #include <Rcpp.h>
 
-class GibbsSamplerTransformation : public GibbsSamplerMap {
+class GibbsSamplerTransformation : public GibbsSampler {
   protected:
     // indicates which pattern is growth (will be removed most likely)
     int _whichPattern;
@@ -35,8 +35,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
                                char label_A, char label_P, char label_D, char label_S,
                                vector<vector<double> > &DVector, vector<vector<double> > &SVector,
                                const string &simulation_id,
-                               vector <vector <double> >  &parameters, char the_fixed_matrix, int whichPattern,
-                               std::vector<int> treatStatus, std::vector<double> timeRecorded);
+                               int whichPattern, std::vector<int> treatStatus, std::vector<double> timeRecorded);
 
     ~GibbsSamplerTransformation() {};
 

@@ -36,7 +36,6 @@ boost::mt19937 rng5(43);
 // [[Rcpp::export]]
 Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame, 
                        Rcpp::DataFrame SFrame,
-                       Rcpp::DataFrame FixedPatt,
                        Rcpp::DataFrame ABinsFrame,
                        Rcpp::DataFrame PBinsFrame,
                        Rcpp::CharacterVector Config,
@@ -61,34 +60,49 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     // Then we initialize A and P in both their atomic domains and
     // matrix forms.
     // ===========================================================================
+//---------------------------------------------
+//CK CODE FOR CHANGING R VARIABLES OF THE CONFIG FILE INTO C VARIABLES
+//THIS REPLACES COGAPS_PROGAM_OPTIONS
     string temp;
     double tempNumInput;
     tempNumInput = (ConfigNums[1]);
     unsigned long nEquil = (tempNumInput);
+    //For equilibration
     tempNumInput = (ConfigNums[2]);
     unsigned long nSample = (tempNumInput);
+    // For Sampling
     tempNumInput = (ConfigNums[3]);
     unsigned long nObsR = tempNumInput;
+    //How many times we output the Chi-Sq
     tempNumInput = (ConfigNums[0]);
     unsigned int nFactor = tempNumInput;
+//Number of patterns
     tempNumInput = (ConfigNums[4]);
     double alphaA = tempNumInput;
+//scale parameter A
     tempNumInput = (ConfigNums[7]);
     double alphaP = tempNumInput;
+    //scale parameter P
     tempNumInput = (ConfigNums[5]);
     double nMaxA = tempNumInput;
+    //max atoms in A domain
     tempNumInput = (ConfigNums[8]);
     double nMaxP = tempNumInput;
+    //max atoms in P domain
     string simulation_id = Rcpp::as<string>(Config[0]);
+    //Variable to name optional output files
     tempNumInput = (ConfigNums[6]);
     double max_gibbsmass_paraA = tempNumInput;
+//max atom mass in A domain
     tempNumInput = (ConfigNums[9]);
     double max_gibbsmass_paraP = tempNumInput;
+    //max atom mass in P domain
+    //Lambda Scale Factors removed and made to be constant. Can be hard coded from GibbsSampler.cpp
     temp = Rcpp::as<string>(Config[1]);
     bool Q_output_atomic;
 
     if (temp == "TRUE" || temp == "true") {
-        Q_output_atomic = true;
+        Q_output_atomic = true;    // whether to output the atomic space info to a file specified by simulation ID
 
     } else {
         Q_output_atomic = false;
@@ -98,17 +112,15 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     bool fixBinProbs;
 
     if (temp == "TRUE" || temp == "true") {
-        fixBinProbs = true;
+        fixBinProbs = true;    // whether we are allowing variable bin sizes.
 
     } else {
         fixBinProbs = false;
     }
 
-    temp = Rcpp::as<string>(Config[3]);
+    temp = Rcpp::as<string>(Config[3]); //The Domain to allow variable bin sizes for (A, P, Both or Neither)
     string fixedDomainStr = temp;
-    temp = Rcpp::as<string>(Config[4]); //The matrix letter that has fixed mass distributing (map)
-    string fixedMatrixStr = temp;
-    temp = Rcpp::as<string>(Config[5]);
+    temp = Rcpp::as<string>(Config[4]); //Whether or not to run snapshots
     bool SampleSnapshots;
 
     if (temp == "TRUE" || temp == "true") {
@@ -118,13 +130,12 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         SampleSnapshots = false;
     }
 
-    tempNumInput = (ConfigNums[10]);
+    tempNumInput = (ConfigNums[10]); //The number of snapshots saved during the Sampling (nSample/numSnapshots) increments
     int numSnapshots = tempNumInput;
     //Code to make the D and S matrices read from R into C++ vectors to make into Elana's Matrix Objects in Matrix.cpp
     //Now also allows for variable bin sizes to be created
     vector<vector<double> > DVector;
     vector<vector<double> > SVector;
-    vector<vector<double> > FPVector;
     vector<vector<double> > ABinsVector;
     vector<vector<double> > PBinsVector;
     //Code to establish the sizes and initialize the C++ vectors to pass
@@ -163,24 +174,6 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         }
     }
 
-    // Convert FixedPatt (DataFrame) to vector of vectors (double)
-    numC = FixedPatt.size();
-    tempFrameCol = FixedPatt[0];
-    numR = tempFrameCol.size() ;
-    FPVector.resize(numR);
-
-    for (int i = 0; i < numR; i++) {
-        FPVector[i].resize(numC);
-    }
-
-    for (int i = 0; i < numR; i++) {
-        for (int j = 0; j < numC; j++) {
-            tempFrameCol = FixedPatt[j];
-            tempFrameElement = tempFrameCol[i];
-            FPVector[i][j] = tempFrameElement;
-        }
-    }
-
     //--------------------END CREATING D and S C++ VECTORS
     // Parameters or structures to be calculated or constructed:
     unsigned long nIterA = 10;    // initial inner loop iterations for A
@@ -190,37 +183,68 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     char label_P = 'P';  // label for matrix P
     char label_D = 'D';  // label for matrix D
     char label_S = 'S';// label for matrix S
-    char label_FP = fixedMatrixStr[0]; //Label for the Fixed Matrix
     // ---------------------------------------------------------------------------
-    // Initialize the GibbsSampTrans.
+    // Initialize the GibbsSampler.
     //R Version
     //Now with Variable Bin capability for priors (Fixed Bins)
-    GibbsSamplerTransformation GibbsSampTrans(nEquil, nSample, nFactor, // construct GibbsSamplerTrans and
-                                              alphaA, alphaP, nMaxA, nMaxP, // Read in D and S matrices
-                                              nIterA, nIterP,
-                                              max_gibbsmass_paraA, max_gibbsmass_paraP,
-                                              atomicSize,
-                                              label_A, label_P, label_D, label_S,
-                                              DVector, SVector, simulation_id, FPVector, label_FP, 3,
-                                              condition, time_of_sample);
+    GibbsSamplerTransformation GibbsSamp(nEquil, nSample, nFactor, // construct GibbsSamplerTrans and
+                                         alphaA, alphaP, nMaxA, nMaxP, // Read in D and S matrices
+                                         nIterA, nIterP,
+                                         max_gibbsmass_paraA, max_gibbsmass_paraP,
+                                         atomicSize,
+                                         label_A, label_P, label_D, label_S,
+                                         DVector, SVector, simulation_id, 3,
+                                         condition, time_of_sample);
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.
-    GibbsSampTrans.init_AMatrix_and_PMatrix(); // initialize A and P matrices
+    GibbsSamp.init_AMatrix_and_PMatrix(); // initialize A and P matrices
     //This Section now is to handle the many possibilities for Variable Bin Sizes (Priors)
     //A for variable A bins, P for variable P Bins, B for both and N for regular uniform bin sizes
     char fixedDomain = fixedDomainStr[0];
 
-    //First check for a logic error, cannot fix the same domain as the matrix being fixed
-    if (fixedDomain == label_FP) {
-        throw logic_error("GibbsSampler: Cannot fix the same domain as the matrix being fixed!");
-    }
-
     if (fixBinProbs) {
-        Rcpp::Rcout << "Running CoGAPS Map with fixed bin probabilities with fixed domain ";
+        Rcpp::Rcout << "Running CoGAPS with fixed bin probabilities with fixed domain ";
         Rcpp::Rcout << fixedDomain << endl;
 
-        if (fixedDomain == 'A') {
+        if (fixedDomain == 'B') {
+            numC = ABinsFrame.size();
+            tempFrameCol = ABinsFrame[0];
+            numR = tempFrameCol.size();
+            ABinsVector.resize(numR);
+
+            for (int i = 0; i < numR; i++) {
+                ABinsVector[i].resize(numC);
+            }
+
+            for (int i = 0; i < numR; i++) {
+                for (int j = 0; j < numC; j++) {
+                    tempFrameCol = ABinsFrame[j];
+                    tempFrameElement = tempFrameCol[i];
+                    ABinsVector[i][j] = tempFrameElement;
+                }
+            }
+
+            numC = PBinsFrame.size();
+            tempFrameCol = PBinsFrame[0];
+            numR = tempFrameCol.size();
+            PBinsVector.resize(numR);
+
+            for (int i = 0; i < numR; i++) {
+                PBinsVector[i].resize(numC);
+            }
+
+            for (int i = 0; i < numR; i++) {
+                for (int j = 0; j < numC; j++) {
+                    tempFrameCol = PBinsFrame[j];
+                    tempFrameElement = tempFrameCol[i];
+                    PBinsVector[i][j] = tempFrameElement;
+                }
+            }
+
+            GibbsSamp.init_AAtomicdomain_and_PAtomicdomain(ABinsVector, PBinsVector);
+
+        } else if (fixedDomain == 'A') {
             numC = ABinsFrame.size();
             tempFrameCol = ABinsFrame[0];
             numR = tempFrameCol.size() ;
@@ -238,8 +262,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                 }
             }
 
-            //Calls from child class GibbsSampler
-            GibbsSampTrans.init_AAtomicdomain_and_PAtomicdomain(fixedDomain, ABinsVector);
+            GibbsSamp.init_AAtomicdomain_and_PAtomicdomain(fixedDomain, ABinsVector);
 
         } else if (fixedDomain == 'P') {
             numC = PBinsFrame.size();
@@ -259,20 +282,18 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                 }
             }
 
-            GibbsSampTrans.init_AAtomicdomain_and_PAtomicdomain(fixedDomain, PBinsVector);
+            GibbsSamp.init_AAtomicdomain_and_PAtomicdomain(fixedDomain, PBinsVector);
 
         } else {
-            throw logic_error("GibbsSampler: Invalid Specification of Fixed Domain!");
+            throw logic_error("GibbsSampler: Invalid Specification of Fixed Domain(s)!");
         }
 
     } else {
-        GibbsSampTrans.init_AAtomicdomain_and_PAtomicdomain();    // initialize atomic spaces
+        GibbsSamp.init_AAtomicdomain_and_PAtomicdomain();   // initialize atomic spaces
         // A and P
     }
 
-    GibbsSampTrans.init_Mapped_Matrix();
-    GibbsSampTrans.initialize_atomic_domain_map();
-    GibbsSampTrans.init_sysChi2(); // initialize the system chi2 value
+    GibbsSamp.init_sysChi2(); // initialize the system chi2 value
     // ===========================================================================
     // Part 2) Equilibration:
     // In this section, we let the system eqilibrate with nEquil outer loop
@@ -286,7 +307,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     double tempAtomA;
     double tempAtomP;
     int outCount = 0;
-    int numOutputs = nObsR;
+    int numOutputs = nObsR;                  //R'S OUTPUT CONTROL
     int totalChiSize = nSample + nEquil;
     Rcpp::NumericVector chiVect(totalChiSize); //INITIALIZE THE VECTOR HOLDING THE CHISQUARE.
     Rcpp::NumericVector nAEquil(nEquil);       //INITIALIZE THE VECTOR HOLDING THE ATOMS FOR EACH MATRIX FOR EACH EQUIL/SAMP
@@ -295,30 +316,30 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     Rcpp::NumericVector nPSamp(nSample);
 
     for (unsigned long ext_iter = 1; ext_iter <= nEquil; ++ext_iter) {
-        GibbsSampTrans.set_iter(ext_iter);
-        GibbsSampTrans.set_AnnealingTemperature();
+        GibbsSamp.set_iter(ext_iter);
+        GibbsSamp.set_AnnealingTemperature();
 
         for (unsigned long iterA = 1; iterA <= nIterA; ++iterA) {
-            GibbsSampTrans.mapUpdate('A');
+            GibbsSamp.update('A');
         }
 
-        GibbsSampTrans.check_atomic_matrix_consistency('A');
+        GibbsSamp.check_atomic_matrix_consistency('A');
 
         for (unsigned long iterP = 1; iterP <= nIterP; ++iterP) {
-            GibbsSampTrans.mapUpdate('P');
+            GibbsSamp.update('P');
         }
 
-        GibbsSampTrans.check_atomic_matrix_consistency('P');
+        GibbsSamp.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.update_pattern(&logit);
+        GibbsSamp.update_pattern(&logit);
 
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
-        tempChiSq = GibbsSampTrans.get_sysChi2();
+        tempChiSq = GibbsSamp.get_sysChi2();
         chiVect[(ext_iter) - 1] = tempChiSq;
         // ----------- output computing info ---------
-        tempAtomA = GibbsSampTrans.getTotNumAtoms('A');
-        tempAtomP = GibbsSampTrans.getTotNumAtoms('P');
+        tempAtomA = GibbsSamp.getTotNumAtoms('A');
+        tempAtomP = GibbsSamp.getTotNumAtoms('P');
         nAEquil[outCount] = tempAtomA;
         nPEquil[outCount] = tempAtomP;
         outCount++;
@@ -332,31 +353,34 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
 
         // -------------------------------------------
         // re-calculate nIterA and nIterP to the expected number of atoms
-        nIterA = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('A'), 10.));
-        nIterP = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('P'), 10.));
+        nIterA = (unsigned long) randgen('P', max((double) GibbsSamp.getTotNumAtoms('A'), 10.));
+        nIterP = (unsigned long) randgen('P', max((double) GibbsSamp.getTotNumAtoms('P'), 10.));
         // --------------------------------------------
     }  // end of for-block for equilibration
 
-// ===========================================================================
+    // ===========================================================================
     // Part 2.5) Equilibration Settling:
     // Allow the Equilibration to settle for 10% of the set Equilibrations
     // ===========================================================================
     int nEquilCool = floor(.1 * nEquil);
 
     for (unsigned long ext_iter = 1; ext_iter <= nEquilCool; ++ext_iter) {
-        GibbsSampTrans.set_iter(ext_iter);
+        GibbsSamp.set_iter(ext_iter);
 
         for (unsigned long iterA = 1; iterA <= nIterA; ++iterA) {
-            GibbsSampTrans.mapUpdate('A');
+            GibbsSamp.update('A');
         }
 
-        GibbsSampTrans.check_atomic_matrix_consistency('A');
+        GibbsSamp.check_atomic_matrix_consistency('A');
 
         for (unsigned long iterP = 1; iterP <= nIterP; ++iterP) {
-            GibbsSampTrans.mapUpdate('P');
+            GibbsSamp.update('P');
         }
 
-        GibbsSampTrans.check_atomic_matrix_consistency('P');
+        GibbsSamp.check_atomic_matrix_consistency('P');
+
+        // update pattern
+        GibbsSamp.update_pattern(&logit);
     }
 
     // ===========================================================================
@@ -367,7 +391,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     // we update nIterA and nIterP according to the expected number of atoms in
     // the atomic spaces of A and P respectively.
     // ===========================================================================
-    //Initialize Snapshots of A and P
+    // Initialize Snapshots of A and P
     vector <vector <vector <double> > > ASnap;
     vector <vector <vector <double> > > PSnap;
     unsigned int statindx = 0;
@@ -375,61 +399,59 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
 
     for (unsigned long i = 1; i <= nSample; ++i) {
         for (unsigned long iterA = 1; iterA <= nIterA; ++iterA) {
-            GibbsSampTrans.mapUpdate('A');
+            GibbsSamp.update('A');
         }
 
-        GibbsSampTrans.check_atomic_matrix_consistency('A');
+        GibbsSamp.check_atomic_matrix_consistency('A');
 
         for (unsigned long iterP = 1; iterP <= nIterP; ++iterP) {
-            GibbsSampTrans.mapUpdate('P');
+            GibbsSamp.update('P');
         }
 
-        GibbsSampTrans.check_atomic_matrix_consistency('P');
+        GibbsSamp.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.update_pattern(&logit);
+        GibbsSamp.update_pattern(&logit);
 
         if (Q_output_atomic == true) {
-            GibbsSampTrans.output_atomicdomain('A', i);
-            GibbsSampTrans.output_atomicdomain('P', i);
+            GibbsSamp.output_atomicdomain('A', i);
+            GibbsSamp.output_atomicdomain('P', i);
         }
 
         statindx += 1;
-        GibbsSampTrans.compute_statistics_prepare_matrices(statindx);
+        GibbsSamp.compute_statistics_prepare_matrices(statindx);
         //Do the same as above.
-        tempChiSq = GibbsSampTrans.get_sysChi2();
+        tempChiSq = GibbsSamp.get_sysChi2();
         chiVect[(nEquil + i) - 1] = tempChiSq;
         // ----------- output computing info ---------
-        tempAtomA = GibbsSampTrans.getTotNumAtoms('A');
-        tempAtomP = GibbsSampTrans.getTotNumAtoms('P');
+        tempAtomA = GibbsSamp.getTotNumAtoms('A');
+        tempAtomP = GibbsSamp.getTotNumAtoms('P');
         nASamp[outCount] = tempAtomA;
         nPSamp[outCount] = tempAtomP;
         outCount++;
 
         if (i % numOutputs == 0) {
-            //----------------------------------
             Rcpp::Rcout << "Samp: " << i << " of " << nSample <<
                         ", Atoms:" << tempAtomA << "("
                         << tempAtomP << ")" <<
-                        // " ,chi2 = " << chi2 <<
                         "  Chi2 = " << tempChiSq << endl;
 
             if (i == nSample) {
-                chi2 = 2.*GibbsSampTrans.cal_logLikelihood();
+                chi2 = 2.*GibbsSamp.cal_logLikelihood();
                 Rcpp::Rcout << " *** Check value of final chi2: " << chi2 << " **** " << endl;
             }
         }
 
         if (SampleSnapshots && (i % (nSample / numSnapshots) == 0)) {
-            vector <vector <vector <double> > > NormedMats = GibbsSampTrans.getNormedMatrices();
+            vector <vector <vector <double> > > NormedMats = GibbsSamp.getNormedMatrices();
             ASnap.push_back(NormedMats[0]);
             PSnap.push_back(NormedMats[1]);
         }
 
         // -------------------------------------------
         // re-calculate nIterA and nIterP to the expected number of atoms
-        nIterA = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('A'), 10.));
-        nIterP = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('P'), 10.));
+        nIterA = (unsigned long) randgen('P', max((double) GibbsSamp.getTotNumAtoms('A'), 10.));
+        nIterP = (unsigned long) randgen('P', max((double) GibbsSamp.getTotNumAtoms('P'), 10.));
         // --------------------------------------------
     }  // end of for-block for Sampling
 
@@ -442,8 +464,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     vector<vector <double> > AStdVector;
     vector<vector <double> > PMeanVector;
     vector<vector <double> > PStdVector;
-    GibbsSampTrans.compute_statistics(statindx,
-                                    AMeanVector, AStdVector, PMeanVector, PStdVector);          // compute statistics like mean and s.d.
+    GibbsSamp.compute_statistics(statindx,
+                                 AMeanVector, AStdVector, PMeanVector, PStdVector);          // compute statistics like mean and s.d.
     //CODE FOR CONVERTING ALL THE VECTORS FOR THE DATAFILES INTO NUMERIC VECTORS OR LISTS
     int numRow = AMeanVector.size();
     int numCol = AMeanVector[0].size() ;
@@ -524,7 +546,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                     Rcpp::Named("ASnapshots") = ASnapR, Rcpp::Named("PSnapshots") = PSnapR,
                                     Rcpp::Named("atomsAEquil") = nAEquil, Rcpp::Named("atomsASamp") = nASamp,
                                     Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect,
-                                    Rcpp::Named("beta0") = GibbsSampTrans.beta0(), Rcpp::Named("beta1") = GibbsSampTrans.beta1());
+                                    Rcpp::Named("beta0") = GibbsSamp.beta0(), Rcpp::Named("beta1") = GibbsSamp.beta1());
         return (fileContainer);
 
     } else {
@@ -536,7 +558,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                     Rcpp::Named("ASnapshots") = ASnapR, Rcpp::Named("PSnapshots") = PSnapR,
                                     Rcpp::Named("atomsAEquil") = nAEquil, Rcpp::Named("atomsASamp") = nASamp,
                                     Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect,
-                                    Rcpp::Named("beta0") = GibbsSampTrans.beta0(), Rcpp::Named("beta1") = GibbsSampTrans.beta1());
+                                    Rcpp::Named("beta0") = GibbsSamp.beta0(), Rcpp::Named("beta1") = GibbsSamp.beta1());
         return (fileContainer);
     }
+
 }

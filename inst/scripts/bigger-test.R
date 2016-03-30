@@ -61,14 +61,14 @@ ABins=data.frame()
 PBins=data.frame()
 # whatever initial guess is, that's your pattern 
 # we could inherit 
-FP <- matrix(1, nrow=3, ncol=ncol(D))
+# FP <- matrix(1, nrow=3, ncol=ncol(D))
 nFactor <- 3
 simulation_id="simulation"
 nEquil = 1000
 nSample = 1000
 nOutR = 1000
 output_atomic = FALSE
-fixedMatrix = "P"
+# fixedMatrix = "P"
 fixedBinProbs = FALSE
 fixedDomain = "N"
 sampleSnapshots = TRUE
@@ -86,7 +86,7 @@ condition=treatStatus
 
 # pass all settings to C++ within a list
 #    if (is.null(P)) {
-Config = c(simulation_id, output_atomic, fixedBinProbs, fixedDomain, fixedMatrix, sampleSnapshots);
+Config = c(simulation_id, output_atomic, fixedBinProbs, fixedDomain, sampleSnapshots);
 
 ConfigNums = c(nFactor, nEquil, nSample, nOutR, alphaA, nMaxA, max_gibbmass_paraA,
                alphaP, nMaxP, max_gibbmass_paraP, numSnapshots);
