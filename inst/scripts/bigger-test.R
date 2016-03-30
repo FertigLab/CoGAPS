@@ -104,6 +104,6 @@ for(i in 1:nFactor)
 }
 
 # call to C++ Rcpp code
-cogapResult = cogapsTrans(D, S, FP, ABins, PBins, 
+cogapResult = cogapsTrans(D, S, ABins, PBins, 
                           Config, ConfigNums,
                           time.of.sample, condition)
