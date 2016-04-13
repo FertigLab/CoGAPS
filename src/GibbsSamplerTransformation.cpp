@@ -53,7 +53,8 @@ void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformat
     for (int i = 0; i < nTreats; ++i) {
         // initialize lists of y and x for each regression
         Rcpp::NumericVector y = y_all[_treatStatus == i];
-        y = transformation(y / (Rcpp::max(y) + 1e-6));
+        //y = transformation(y / (Rcpp::max(y) + 1e-12));
+        y = transformation(y);
         Rcpp::NumericVector x = _timeRecorded[_treatStatus == i];
         Rcpp::NumericVector x_sq = Rcpp::pow(x, 2.0);
 
