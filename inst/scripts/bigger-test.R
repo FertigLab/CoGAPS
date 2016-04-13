@@ -113,3 +113,7 @@ matplot(arrayIdx, t(P.true), type='l', lwd=10, main="Truth")
 P <- cogapResult$Pmean
 arrayIdx <- 1:ncol(P)
 matplot(arrayIdx, t(P), type='l', lwd=10, main="CoGAPS Transformation")
+
+# inspect parameter estimates
+cogapResult$beta0
+cogapResult$beta1
