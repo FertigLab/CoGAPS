@@ -357,6 +357,9 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         }
 
         GibbsSampTrans.check_atomic_matrix_consistency('P');
+
+        // update pattern
+        GibbsSampTrans.update_pattern(&logit, 0);
     }
 
     // ===========================================================================
@@ -387,7 +390,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.update_pattern(&logit);
+        GibbsSampTrans.update_pattern(&logit, i-1);
 
         if (Q_output_atomic == true) {
             GibbsSampTrans.output_atomicdomain('A', i);

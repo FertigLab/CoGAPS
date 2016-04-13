@@ -22,8 +22,8 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     double _b;      // variance prior rate
 
     // current estimates
-    Rcpp::NumericVector _beta0;
-    Rcpp::NumericVector _beta1;
+    Rcpp::NumericMatrix _beta0;
+    Rcpp::NumericMatrix _beta1;
     Rcpp::NumericVector _tau;
 
   public:
@@ -40,8 +40,8 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
 
     ~GibbsSamplerTransformation() {};
 
-    Rcpp::NumericVector beta0();
-    Rcpp::NumericVector beta1();
+    Rcpp::NumericMatrix beta0();
+    Rcpp::NumericMatrix beta1();
     
     // expect that some transformation of the pattern will be linear so
     // allow for passing an a priori function that transforms the pattern
@@ -49,7 +49,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     // for example, if we expect the pattern to be logistic, we can pass a logistic
     // function to transform the data i.e.
     // GibbSampPatt.update_pattern(GibbsSampPatt::&logit);
-    void update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector));
+    void update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector), int iter=0);
 
 };
 

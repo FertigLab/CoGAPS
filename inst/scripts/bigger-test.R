@@ -115,5 +115,8 @@ arrayIdx <- 1:ncol(P)
 matplot(arrayIdx, t(P), type='l', lwd=10, main="CoGAPS Transformation")
 
 # inspect parameter estimates
-cogapResult$beta0
-cogapResult$beta1
+dim(cogapResult$beta0)
+dim(cogapResult$beta1)
+
+colMeans(cogapResult$beta1)
+apply(cogapResult$beta1, 2, sd)

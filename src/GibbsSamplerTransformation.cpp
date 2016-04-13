@@ -13,7 +13,9 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                                                        std::vector<int> treatStatus, std::vector<double> timeRecorded) :
     GibbsSamplerMap(nEquil, nSample, nFactor, alphaA, alphaP, nMaxA, nMaxP, nIterA, nIterP,
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
-                    DVector, SVector, simulation_id, parameters, the_fixed_matrix) {
+                    DVector, SVector, simulation_id, parameters, the_fixed_matrix),
+    _beta0(nSample, 2),
+    _beta1(nSample, 2) {
     // assignments for growth data
     _whichPattern = whichPattern;
     _treatStatus = treatStatus;
@@ -27,20 +29,22 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
 
     // sample from prior to initialize regression parameters
     int nTreats = Rcpp::unique(_treatStatus).size();
-    _beta0 = Rcpp::rnorm(nTreats, _mu0, sqrt(1. / _tau0));
-    _beta1 = Rcpp::rnorm(nTreats, _mu0, sqrt(1. / _tau0));
+    
+    _beta0(0, Rcpp::_) = Rcpp::rnorm(nTreats, _mu0, sqrt(1. / _tau0));
+    _beta1(0, Rcpp::_) = Rcpp::rnorm(nTreats, _mu0, sqrt(1. / _tau0));
     _tau = Rcpp::rgamma(nTreats, _a, _b);
 }
 
-Rcpp::NumericVector GibbsSamplerTransformation::beta0() {
+Rcpp::NumericMatrix GibbsSamplerTransformation::beta0() {
     return _beta0;
 }
 
-Rcpp::NumericVector GibbsSamplerTransformation::beta1() {
+Rcpp::NumericMatrix GibbsSamplerTransformation::beta1() {
     return _beta1;
 }
 
-void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector)) {
+void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector),
+                                                int iter) {
     // get current pattern data
     // maps stores fixed pattern starting from last row. Let's assume that theres only one fixed pattern
     std::vector<double> y_all_temp = _PMatrix.get_Row(_nFactor - 1);
@@ -66,12 +70,12 @@ void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformat
         // \beta_0 | x, y, \beta_1, \tau
         post_var = 1. / (_tau0 + n * _tau[i]);
         post_mean = (_tau0 * _mu0 + _tau[i] * Rcpp::sum(y - _beta1[i] * x)) * post_var;
-        _beta0[i] = Rcpp::as<double>(Rcpp::rnorm(1, post_mean, 
+        _beta0(iter, i) = Rcpp::as<double>(Rcpp::rnorm(1, post_mean, 
                                                  sqrt(post_var)));
         // \beta_1 | x, y, \beta_0, \tau
         post_var = 1. / (_tau0 + _tau[i] * Rcpp::sum(x_sq));
         post_mean = (_tau0 * _mu0 + _tau[i] * Rcpp::sum(x * (y - _beta1[i]))) * post_var;
-        _beta1[i] = Rcpp::as<double>(Rcpp::rnorm(1, post_mean, sqrt(post_var)));
+        _beta1(iter, i) = Rcpp::as<double>(Rcpp::rnorm(1, post_mean, sqrt(post_var)));
 
         // \tau | x, y, _beta0, _beta1
         post_shape = _a + n / 2.;
