@@ -34,10 +34,6 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
 # load code
 devtools::load_all("../..")
 
-# MCMC parameters
-nIter <- 5000
-nBurn <- 5000
-
 # get matrices
 patts <- logistic.pattern()
 D <- patts$D
@@ -61,11 +57,11 @@ ABins=data.frame()
 PBins=data.frame()
 # whatever initial guess is, that's your pattern 
 # we could inherit 
-FP <- matrix(1, nrow=3, ncol=ncol(D))
+FP <- matrix(P.true[3, ], nrow=1)
 nFactor <- 3
 simulation_id="simulation"
-nEquil = 1000
-nSample = 1000
+nEquil = 20000
+nSample = 5000
 nOutR = 1000
 output_atomic = FALSE
 fixedMatrix = "P"
@@ -107,3 +103,13 @@ for(i in 1:nFactor)
 cogapResult = cogapsTrans(D, S, FP, ABins, PBins, 
                           Config, ConfigNums,
                           time.of.sample, condition)
+
+# compare graphs
+par(mfrow=c(1, 2))
+
+arrayIdx <- 1:ncol(P.true)
+matplot(arrayIdx, t(P.true), type='l', lwd=10, main="Truth")
+
+P <- cogapResult$Pmean
+arrayIdx <- 1:ncol(P)
+matplot(arrayIdx, t(P), type='l', lwd=10, main="CoGAPS Transformation")
