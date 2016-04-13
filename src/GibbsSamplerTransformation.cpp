@@ -24,8 +24,8 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     // initialize priors in constructor
     _mu0 = 0.0;    // beta prior mean
     _tau0 = 0.001; // beta prior precision
-    _a = 1.0;      // variance prior shape
-    _b = 1.0;      // variance prior rate
+    _a = 0.001;      // variance prior shape
+    _b = 0.001;      // variance prior rate
 
     // sample from prior to initialize regression parameters
     int nTreats = Rcpp::unique(_treatStatus).size();
@@ -57,7 +57,7 @@ void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformat
     for (int i = 0; i < nTreats; ++i) {
         // initialize lists of y and x for each regression
         Rcpp::NumericVector y = y_all[_treatStatus == i];
-        //y = transformation(y / (Rcpp::max(y) + 1e-12));
+        //y = transformation(y / (Rcpp::max(y) + 1e-16));
         y = transformation(y);
         Rcpp::NumericVector x = _timeRecorded[_treatStatus == i];
         Rcpp::NumericVector x_sq = Rcpp::pow(x, 2.0);
