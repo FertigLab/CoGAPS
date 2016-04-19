@@ -26,6 +26,9 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     Rcpp::NumericMatrix _beta1;
     Rcpp::NumericVector _tau;
 
+    // logistic growth normalization
+    double _normalization;
+
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
                                double alphaA, double alphaP, double nMaxA, double nMaxP,

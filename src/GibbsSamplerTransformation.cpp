@@ -21,6 +21,12 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _treatStatus = treatStatus;
     _timeRecorded = timeRecorded;
 
+    // store normalization for fixed pattern
+    _normalization = 0.0;
+    for (int j = 0; j < parameters[0].size(); j++) {
+        _normalization += parameters[0][j];
+    }
+
     // initialize priors in constructor
     _mu0 = 0.0;    // beta prior mean
     _tau0 = 0.001; // beta prior precision
@@ -57,6 +63,8 @@ void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformat
     for (int i = 0; i < nTreats; ++i) {
         // initialize lists of y and x for each regression
         Rcpp::NumericVector y = y_all[_treatStatus == i];
+        // "de-normalize" data
+        y = y *  _normalization;
         //y = transformation(y / (Rcpp::max(y) + 1e-16));
         y = transformation(y);
         Rcpp::NumericVector x = _timeRecorded[_treatStatus == i];
