@@ -1,4 +1,5 @@
 #include "GibbsSamplerTransformation.h"
+#include <Rcpp.h>
 
 // ******************** CONSTRUCTOR ********************************************
 GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
@@ -58,6 +59,12 @@ void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformat
     y_all = y_all_temp;
     int nTreats = Rcpp::unique(_treatStatus).size();
 
+    // since iter defaults to zero, create a past iteration variable
+    int past_iter = 0;
+    if (iter > past_iter) {
+        past_iter = iter - 1;
+    }
+
     // http://www.cs.toronto.edu/~radford/csc2541.S11/week3.pdf
 
     for (int i = 0; i < nTreats; ++i) {
@@ -77,17 +84,17 @@ void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformat
 
         // \beta_0 | x, y, \beta_1, \tau
         post_var = 1. / (_tau0 + n * _tau[i]);
-        post_mean = (_tau0 * _mu0 + _tau[i] * Rcpp::sum(y - _beta1[i] * x)) * post_var;
+        post_mean = (_tau0 * _mu0 + _tau[i] * Rcpp::sum(y - _beta1(past_iter, i) * x)) * post_var;
         _beta0(iter, i) = Rcpp::as<double>(Rcpp::rnorm(1, post_mean, 
                                                  sqrt(post_var)));
         // \beta_1 | x, y, \beta_0, \tau
         post_var = 1. / (_tau0 + _tau[i] * Rcpp::sum(x_sq));
-        post_mean = (_tau0 * _mu0 + _tau[i] * Rcpp::sum(x * (y - _beta1[i]))) * post_var;
+        post_mean = (_tau0 * _mu0 + _tau[i] * Rcpp::sum(x * (y - _beta1(past_iter, i)))) * post_var;
         _beta1(iter, i) = Rcpp::as<double>(Rcpp::rnorm(1, post_mean, sqrt(post_var)));
 
         // \tau | x, y, _beta0, _beta1
         post_shape = _a + n / 2.;
-        post_rate = _b + Rcpp::sum(Rcpp::pow(y - _beta0[i] - _beta1[i] * x, 2.0) / 2.0);
+        post_rate = _b + Rcpp::sum(Rcpp::pow(y - _beta0(past_iter, i) - _beta1(past_iter, i) * x, 2.0) / 2.0);
         _tau[i] = Rcpp::as<double>(Rcpp::rgamma(1, post_shape, 1. / post_rate));
     }
 }
