@@ -179,3 +179,83 @@ void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformat
         _tau[i] = Rcpp::as<double>(Rcpp::rgamma(1, post_shape, 1. / post_rate));
     }
 }
+
+void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector),
+                                                int iter) {
+    // since iter defaults to zero, create a past iteration variable
+    int past_iter = 0;
+    if (iter > past_iter) {
+        past_iter = iter - 1;
+    }
+
+    // propose new parameters
+    double theta1, theta2;
+    theta1 = Rcpp::as<double>(Rcpp::rnorm(1, _beta1(past_iter, 0), 2));
+    theta2 = Rcpp::as<double>(Rcpp::rnorm(1, _beta1(past_iter, 1), 2));
+
+    // now build logistic growth
+    Rcpp::NumericVector x = _timeRecorded[_treatStatus == 0];
+    Rcpp::NumericVector patt1 = 1. / (1 + Rcpp::exp(-theta1 * x));
+
+    x = _timeRecorded[_treatStatus == 1];
+    Rcpp::NumericVector patt2 = 1. / (1 + Rcpp::exp(-theta2 * x));
+
+    // next let's get the current A and P matrices
+    Rcpp::NumericMatrix A_curr(_AMatrix.get_nRow(), _AMatrix.get_nCol());
+    Rcpp::NumericMatrix P_curr(_PMatrix.get_nRow(), _PMatrix.get_nCol());
+
+    for (int i = 0; i < A_curr.nrow(); ++i) {
+        std::vector<double> curr_row = _AMatrix.get_Row(i);
+
+        for (int j = 0; j < A_curr.ncol(); ++j) {
+            A_curr(i, j) = curr_row[j];
+        }
+    }
+
+    for (int i = 0; i < P_curr.nrow(); ++i) {
+        std::vector<double> curr_row = _PMatrix.get_Row(i);
+
+        for (int j = 0; j < P_curr.ncol(); ++j) {
+            P_curr(i, j) = curr_row[j];
+        }
+    }
+
+    // construct data matrix
+    Rcpp::NumericMatrix D(_DMatrix.get_nRow(), _DMatrix.get_nCol());
+
+    for (int i = 0; i < D.nrow(); ++i) {
+        std::vector<double> curr_row = _DMatrix.get_Row(i);
+
+        for (int j = 0; j < D.ncol(); ++j) {
+            D(i, j) = curr_row[j];
+        }
+    }
+
+    // replace last row of P_curr, one pattern at a time
+    Rcpp::NumericMatrix P1 = P_curr;
+    Rcpp::NumericMatrix P2 = P_curr;
+
+    // get elements of past logit pattern
+    Rcpp::NumericVector logit_patt_1 = Rcpp::wrap(_PMatrix.get_Row(P_curr.nrow()));
+    Rcpp::NumericVector logit_patt_2 = Rcpp::wrap(_PMatrix.get_Row(P_curr.nrow()));
+
+    // plug in current simulated values
+    for (int i = 0; i < 10; ++i) {
+        logit_patt_1[i] = patt1[i];
+        logit_patt_2[i+10] = patt2[i];
+    }
+
+    // now put the matrices back together
+    P1(2, Rcpp::_) = logit_patt_1;
+    P2(2, Rcpp::_) = logit_patt_2;
+
+    // now perform matrix multiplication
+    arma::mat D_prime1 = Rcpp::as<arma::mat>(A_curr) * Rcpp::as<arma::mat>(P1);
+    arma::mat D_prime2 = Rcpp::as<arma::mat>(A_curr) * Rcpp::as<arma::mat>(P2);
+
+    arma::mat D_diff1 = Rcpp::as<arma::mat>(D) - D_prime1;
+    arma::mat D_diff2 = Rcpp::as<arma::mat>(D) - D_prime2;
+
+    // calculate likelihoods
+    //arma::vec r1 = sub_func::dmvnorm(D_diff1, );
+}
