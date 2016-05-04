@@ -50,6 +50,51 @@ Rcpp::NumericMatrix GibbsSamplerTransformation::beta1() {
     return _beta1;
 }
 
+void GibbsSamplerTransformation::update_pattern_test(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector),
+                                                int iter) {
+    // since iter defaults to zero, create a past iteration variable
+    int past_iter = 0;
+    if (iter > past_iter) {
+        past_iter = iter - 1;
+    }
+
+    // propose new parameters
+    double theta1, theta2;
+    theta1 = Rcpp::as<double>(Rcpp::rnorm(1, _beta1(past_iter, 0), 2));
+    theta2 = Rcpp::as<double>(Rcpp::rnorm(1, _beta1(past_iter, 1), 2));
+
+    // now build logistic growth
+    Rcpp::NumericVector x = _timeRecorded[_treatStatus == 0];
+    Rcpp::NumericVector patt1 = 1. / (1 + Rcpp::exp(-theta1 * x));
+
+    x = _timeRecorded[_treatStatus == 1];
+    Rcpp::NumericVector patt2 = 1. / (1 + Rcpp::exp(-theta2 * x));
+
+    // next let's get the current A and P matrices
+    Rcpp::NumericMatrix A_curr(_AMatrix.get_nRow(), _AMatrix.get_nCol());
+    Rcpp::NumericMatrix P_curr(_PMatrix.get_nRow(), _PMatrix.get_nCol());
+
+    for (int i = 0; i < A_curr.nrow(); ++i) {
+        std::vector<double> curr_row = _AMatrix.get_Row(i);
+
+        for (int j = 0; j < A_curr.ncol(); ++j) {
+            A_curr(i, j) = curr_row[j];
+        }
+    }
+
+    for (int i = 0; i < P_curr.nrow(); ++i) {
+        std::vector<double> curr_row = _PMatrix.get_Row(i);
+
+        for (int j = 0; j < P_curr.ncol(); ++j) {
+            P_curr(i, j) = curr_row[j];
+        }
+    }
+
+    // replace last row of P_curr, one pattern at a time
+    Rcpp::NumericMatrix P1 = P_curr;
+    Rcpp::NumericMatrix P2 = P_curr;
+}
+
 void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector),
                                                 int iter) {
     // get current pattern data
