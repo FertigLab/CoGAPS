@@ -16,7 +16,7 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
     T <- seq(-5, 5, length.out = n)
 
     p3.t <- logistic.growth(T, x.0=0, L=1, k=rate.treat)
-    p3.u <- logistic.growth(T, x.0=1, L=1, k=rate.untreat)
+    p3.u <- logistic.growth(T, x.0=0, L=1, k=rate.untreat)
 
     P[3, ] <- c(p3.t, p3.u)
     M <- A %*% P
@@ -53,8 +53,8 @@ PBins=data.frame()
 # we could inherit 
 # FP <- matrix(P.true[3, ], nrow=1)
 T <- seq(-5, 5, length.out=10)
-p3.t <- logistic.growth(T, x.0=0, L=1, k=2)
-p3.u <- logistic.growth(T, x.0=0, L=1, k=1)
+p3.t <- logistic.growth(T, x.0=0, L=1, k=3.5)
+p3.u <- logistic.growth(T, x.0=0, L=1, k=2.5)
 # initial guess
 FP <- matrix(c(p3.t, p3.u), nrow=1)
 nFactor <- 3
@@ -112,6 +112,10 @@ matplot(arrayIdx, t(P.true), type='l', lwd=10, main="Truth")
 P <- cogapResult$Pmean
 arrayIdx <- 1:ncol(P)
 matplot(arrayIdx, t(P), type='l', lwd=10, main="CoGAPS Transformation")
+
+# A <- cogapResult$Amean
+# arrayIdx <- 1:nrow(A)
+# matplot(arrayIdx, (A), type='l', lwd=10, main="CoGAPS Transformation")
 
 # inspect parameter estimates
 dim(cogapResult$beta0)
