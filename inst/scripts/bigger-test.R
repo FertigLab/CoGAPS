@@ -35,7 +35,7 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
 devtools::load_all("../..")
 
 # get matrices
-patts <- logistic.pattern()
+patts <- logistic.pattern(4, 3)
 D <- patts$D
 S <- patts$S
 P.true <- patts$P
@@ -51,7 +51,12 @@ ABins=data.frame()
 PBins=data.frame()
 # whatever initial guess is, that's your pattern 
 # we could inherit 
-FP <- matrix(P.true[3, ], nrow=1)
+# FP <- matrix(P.true[3, ], nrow=1)
+T <- seq(-5, 5, length.out=10)
+p3.t <- logistic.growth(T, x.0=0, L=1, k=2)
+p3.u <- logistic.growth(T, x.0=0, L=1, k=1)
+# initial guess
+FP <- matrix(c(p3.t, p3.u), nrow=1)
 nFactor <- 3
 simulation_id="simulation"
 nEquil = 20000
