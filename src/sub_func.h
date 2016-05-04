@@ -7,6 +7,7 @@
 #include <boost/math/distributions/normal.hpp> // for normal distribution
 #include <boost/math/distributions/exponential.hpp> // for exponential distribution
 #include "randgen.h" // for generating uniformly random variates in [0,1].
+#include <RcppArmadillo.h>
 
 namespace gaps {
 
@@ -37,6 +38,8 @@ class sub_func
 
     //static double runif(double a, double b, double rng); // old form, changed into the next line.
     static double runif(double a, double b);
+
+    arma::vec dmvnorm(arma::mat x, arma::rowvec mean, arma::mat sigma);
 
 };
 
