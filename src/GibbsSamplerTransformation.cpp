@@ -181,7 +181,7 @@ void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformat
 }
 
 void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector),
-                                                int iter) {
+                                                    int iter) {
     // since iter defaults to zero, create a past iteration variable
     int past_iter = 0;
     if (iter > past_iter) {
