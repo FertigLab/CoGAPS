@@ -157,7 +157,7 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
 
     // get elements of past logit pattern
     Rcpp::NumericVector logit_patt_1 = Rcpp::wrap(_PMatrix.get_Row(P_curr.nrow()));
-    Rcpp::NumericVector logit_patt_2 = Rcpp::wrap(_PMatrix.get_Row(P_curr.nrow()));
+    Rcpp::NumericVector logit_patt_2 = logit_patt_2;
 
     // plug in current simulated values
     for (int i = 0; i < 10; ++i) {
