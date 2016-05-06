@@ -54,7 +54,6 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     // GibbSampPatt.update_pattern(GibbsSampPatt::&logit);
     void update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector), int iter=0);
 
-    void update_pattern_test(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector), int iter=0);
     void update_pattern_abc(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector), int iter=0);
 
 };
