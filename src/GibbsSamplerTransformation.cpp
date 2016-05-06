@@ -173,8 +173,5 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
     arma::mat D_prime1 = Rcpp::as<arma::mat>(A_curr) * Rcpp::as<arma::mat>(P1);
     arma::mat D_prime2 = Rcpp::as<arma::mat>(A_curr) * Rcpp::as<arma::mat>(P2);
 
-    arma::mat D_diff1 = Rcpp::as<arma::mat>(D) - D_prime1;
-    arma::mat D_diff2 = Rcpp::as<arma::mat>(D) - D_prime2;
-
     // calculate summary statistics
 }
