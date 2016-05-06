@@ -110,8 +110,8 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
 
     // propose new parameters
     double theta1, theta2;
-    theta1 = Rcpp::as<double>(Rcpp::rnorm(1, _beta1(past_iter, 0), 2));
-    theta2 = Rcpp::as<double>(Rcpp::rnorm(1, _beta1(past_iter, 1), 2));
+    theta1 = Rcpp::as<double>(Rcpp::rnorm(1, 0, 10));
+    theta2 = Rcpp::as<double>(Rcpp::rnorm(1, 0, 10));
 
     // now build logistic growth
     Rcpp::NumericVector x = _timeRecorded[_treatStatus == 0];
