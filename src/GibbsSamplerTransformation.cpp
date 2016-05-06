@@ -176,6 +176,5 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
     arma::mat D_diff1 = Rcpp::as<arma::mat>(D) - D_prime1;
     arma::mat D_diff2 = Rcpp::as<arma::mat>(D) - D_prime2;
 
-    // calculate likelihoods
-    //arma::vec r1 = sub_func::dmvnorm(D_diff1, );
+    // calculate summary statistics
 }
