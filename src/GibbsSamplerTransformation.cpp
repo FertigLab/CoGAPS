@@ -191,8 +191,8 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
     }
 
     if (abs(d1) < 1.0) {
+        _theta[iter] = theta1;
         // accept
     } 
     // else reject
-
 }
