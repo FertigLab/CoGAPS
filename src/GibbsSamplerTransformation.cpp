@@ -12,7 +12,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                                                        vector<vector<double> > &DVector, vector<vector<double> > &SVector,
                                                        const string &simulation_id,
                                                        vector <vector <double> >  &parameters, char the_fixed_matrix, int whichPattern,
-                                                       std::vector<int> treatStatus, std::vector<double> timeRecorded) :
+                                                       std::vector<int> treatStatus, std::vector<double> timeRecorded, double tolerance) :
     GibbsSamplerMap(nEquil, nSample, nFactor, alphaA, alphaP, nMaxA, nMaxP, nIterA, nIterP,
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
@@ -29,6 +29,9 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     for (int j = 0; j < parameters[0].size(); j++) {
         _normalization += parameters[0][j];
     }
+
+    // abc tolerance
+    _tol = tolerance
 
     // initialize priors in constructor
     _mu0 = 0.0;    // beta prior mean
@@ -187,7 +190,7 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
     d1 = norm(D_diff1, 2);
     d2 = norm(D_diff2, 2);
 
-    if (abs(d1) < 1.0) {
+    if (abs(d1) < _tol) {
         _theta[iter] = theta1;
         // accept
         _PMatrix.setRow(Rcpp::as<std::vector<double> >(logit_patt_1), 2);
