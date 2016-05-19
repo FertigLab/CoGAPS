@@ -190,7 +190,7 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
     d1 = norm(D_diff1, 2);
     d2 = norm(D_diff2, 2);
 
-    if (abs(d1) < _tol) {
+    if (d1 < _tol) {
         _theta[iter] = theta1;
         // accept
         _PMatrix.setRow(Rcpp::as<std::vector<double> >(logit_patt_1), 2);
