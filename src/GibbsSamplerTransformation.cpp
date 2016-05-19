@@ -31,7 +31,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     }
 
     // abc tolerance
-    _tol = tolerance
+    _tol = tolerance;
 
     // initialize priors in constructor
     _mu0 = 0.0;    // beta prior mean
