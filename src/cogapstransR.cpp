@@ -42,7 +42,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                        Rcpp::CharacterVector Config,
                        Rcpp::NumericVector ConfigNums,
                        std::vector<double> time_of_sample,
-                       std::vector<int> condition) {
+                       std::vector<int> condition,
+                       double tolerance) {
     // ===========================================================================
     // Initialization of the random number generator.
     // Different seeding methods:
@@ -202,7 +203,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                               atomicSize,
                                               label_A, label_P, label_D, label_S,
                                               DVector, SVector, simulation_id, FPVector, label_FP, 3,
-                                              condition, time_of_sample, 0.1);
+                                              condition, time_of_sample, tolerance);
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.

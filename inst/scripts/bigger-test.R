@@ -101,7 +101,7 @@ for(i in 1:nFactor)
 # call to C++ Rcpp code
 cogapResult = cogapsTrans(D, S, FP, ABins, PBins, 
                           Config, ConfigNums,
-                          time.of.sample, condition)
+                          time.of.sample, condition, 0.1)
 
 # compare graphs
 par(mfrow=c(1, 2))
