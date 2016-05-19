@@ -17,7 +17,7 @@ cogapsTest <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNum
     .Call('CoGAPS_cogapsTest', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums)
 }
 
-cogapsTrans <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition) {
-    .Call('CoGAPS_cogapsTrans', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition)
+cogapsTrans <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, tolerance) {
+    .Call('CoGAPS_cogapsTrans', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, tolerance)
 }
 
