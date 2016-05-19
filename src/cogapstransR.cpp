@@ -311,7 +311,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.update_pattern(&logit);
+        GibbsSampTrans.update_pattern_abc(&logit);
 
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSampTrans.get_sysChi2();
@@ -359,7 +359,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.update_pattern(&logit, 0);
+        GibbsSampTrans.update_pattern_abc(&logit, 0);
     }
 
     // ===========================================================================
@@ -390,7 +390,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.update_pattern(&logit, i-1);
+        GibbsSampTrans.update_pattern_abc(&logit, i-1);
 
         if (Q_output_atomic == true) {
             GibbsSampTrans.output_atomicdomain('A', i);
@@ -527,7 +527,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                     Rcpp::Named("ASnapshots") = ASnapR, Rcpp::Named("PSnapshots") = PSnapR,
                                     Rcpp::Named("atomsAEquil") = nAEquil, Rcpp::Named("atomsASamp") = nASamp,
                                     Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect,
-                                    Rcpp::Named("beta0") = GibbsSampTrans.beta0(), Rcpp::Named("beta1") = GibbsSampTrans.beta1());
+                                    Rcpp::Named("beta0") = GibbsSampTrans.beta0(), Rcpp::Named("beta1") = GibbsSampTrans.beta1(),
+                                    Rcpp::Named("theta") = GibbsSampTrans.theta());
         return (fileContainer);
 
     } else {
@@ -539,7 +540,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                     Rcpp::Named("ASnapshots") = ASnapR, Rcpp::Named("PSnapshots") = PSnapR,
                                     Rcpp::Named("atomsAEquil") = nAEquil, Rcpp::Named("atomsASamp") = nASamp,
                                     Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect,
-                                    Rcpp::Named("beta0") = GibbsSampTrans.beta0(), Rcpp::Named("beta1") = GibbsSampTrans.beta1());
+                                    Rcpp::Named("beta0") = GibbsSampTrans.beta0(), Rcpp::Named("beta1") = GibbsSampTrans.beta1(),
+                                    Rcpp::Named("theta") = GibbsSampTrans.theta());
         return (fileContainer);
     }
 }

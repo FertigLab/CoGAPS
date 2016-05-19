@@ -52,6 +52,10 @@ Rcpp::NumericMatrix GibbsSamplerTransformation::beta1() {
     return _beta1;
 }
 
+Rcpp::NumericVector GibbsSamplerTransformation::theta() {
+    return _theta;
+}
+
 void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector),
                                                 int iter) {
     // get current pattern data
@@ -180,19 +184,13 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
     arma::mat D_diff2 = Rcpp::as<arma::mat>(D) - D_prime2;
 
     double d1, d2;
-    d1 = 0.0;
-    d2 = 0.0;
-
-    for (int i = 0; i < D_diff1.n_rows; ++i) {
-        for (int j = 0; j < D_diff1.n_cols; ++j) {
-            d1 += pow(D_diff1(i, j), 2.0);
-            //d2 += pow(D_diff2(i, j), 2.0);
-        }
-    }
+    d1 = norm(D_diff1, 2);
+    d2 = norm(D_diff2, 2);
 
     if (abs(d1) < 1.0) {
         _theta[iter] = theta1;
         // accept
+        _PMatrix.setRow(Rcpp::as<std::vector<double> >(logit_patt_1), 2);
     } 
     // else reject
 }

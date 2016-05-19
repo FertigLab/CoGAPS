@@ -54,7 +54,7 @@ PBins=data.frame()
 # FP <- matrix(P.true[3, ], nrow=1)
 T <- seq(-5, 5, length.out=10)
 p3.t <- logistic.growth(T, x.0=0, L=1, k=3.5)
-p3.u <- logistic.growth(T, x.0=0, L=1, k=2.5)
+p3.u <- logistic.growth(T, x.0=0, L=1, k=3)
 # initial guess
 FP <- matrix(c(p3.t, p3.u), nrow=1)
 nFactor <- 3
@@ -120,6 +120,9 @@ matplot(arrayIdx, t(P), type='l', lwd=10, main="CoGAPS Transformation")
 # inspect parameter estimates
 dim(cogapResult$beta0)
 dim(cogapResult$beta1)
+dim(cogapResult$theta)
 
-colMeans(cogapResult$beta1)
-apply(cogapResult$beta1, 2, sd)
+theta <- cogapResult$theta
+#
+#colMeans(cogapResult$beta1)
+#apply(cogapResult$beta1, 2, sd)
