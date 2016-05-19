@@ -34,12 +34,9 @@ using namespace std;
 using namespace gaps;
 using std::vector;
 
-boost::mt19937 rng3(43);
-
-
 // [[Rcpp::export]]
 Rcpp::List cogapsTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame,
-                      Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums) {
+                      Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed=-1) {
     // ===========================================================================
     // Initialization of the random number generator.
     // Different seeding methods:
@@ -49,7 +46,12 @@ Rcpp::List cogapsTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::Data
     //boost::random::seed_seq seq(ve);
     //rng.seed(seq);
     // --- seeded with time
-    rng.seed(static_cast<boost::uint32_t>(std::time(0)));
+    boost::mt19937 rng(43);
+    if (seed <= 0) {
+        rng.seed(static_cast<boost::uint32_t>(std::time(0)));
+    } else {
+        rng.seed(static_cast<boost::uint32_t>(seed));
+    }
     //---------------------
     // ===========================================================================
     // Part 1) Initialization:
