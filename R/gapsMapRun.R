@@ -58,7 +58,8 @@
 gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFactor = 5, simulation_id = "simulation",
                        nEquil = 1000, nSample = 1000, nOutR = 1000, output_atomic = FALSE, fixedMatrix = "P",
                        fixedBinProbs = FALSE, fixedDomain = "N", sampleSnapshots = TRUE, numSnapshots = 100, alphaA = 0.01,
-                       nMaxA = 100000, max_gibbmass_paraA = 100.0, alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0)
+                       nMaxA = 100000, max_gibbmass_paraA = 100.0, alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0,
+                       seed=-1)
 {
   #Begin data type error checking code
   charDataErrors = c(!is.character(simulation_id), !is.character(fixedDomain), !is.character(fixedMatrix))
@@ -200,7 +201,7 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
   }
 
   # call to C++ Rcpp code
-  cogapResult = cogapsMap(D, S, FP, ABins, PBins, Config, ConfigNums);
+  cogapResult = cogapsMap(D, S, FP, ABins, PBins, Config, ConfigNums, seed);
 
   # convert returned files to matrices to simplify visualization and processing
   cogapResult$Amean = as.matrix(cogapResult$Amean);
