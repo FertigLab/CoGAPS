@@ -47,6 +47,7 @@
 #'@param alphaP sparsity parameter for P domain
 #'@param nMaxP PRESENTLY UNUSED, future = limit number of atoms
 #'@param max_gibbmass_paraP limit truncated normal to max size
+#'@param seed Set seed for reproducibility. Positive values provide initial seed, negative values just use the time.
 #'@export
 
 #--CHANGES 1/20/15--
