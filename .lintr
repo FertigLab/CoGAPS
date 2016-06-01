@@ -7,6 +7,7 @@ linters: with_defaults(
     spaces_left_parentheses_linter = NULL, # 53
     single_quotes_linter = NULL, # 33
     commented_code_linter = NULL, # 6
+    commas_linter = NULL,
     NULL
   )
 exclusions: list("R/RcppExports.R", "inst/scripts/logistic-growth.R")
