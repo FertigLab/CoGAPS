@@ -1,0 +1,13 @@
+linters: with_defaults(
+    camel_case_linter = NULL, # 1066
+    assignment_linter = NULL, # 239
+    infix_spaces_linter = NULL, # 150
+    open_curly_linter = NULL, # 113
+    line_length_linter = NULL, # 111
+    spaces_left_parentheses_linter = NULL, # 53
+    single_quotes_linter = NULL, # 33
+    commented_code_linter = NULL, # 6
+    commas_linter = NULL,
+    NULL
+  )
+exclusions: list("R/RcppExports.R", "inst/scripts/logistic-growth.R")

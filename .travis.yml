@@ -1,0 +1,24 @@
+# necessary yml
+language: r
+sudo: required
+
+# use bioconductor
+bioc_required: true
+bioc_use_devel: true
+
+# before installing, lint c++ code
+#before_install:
+  #- deb http://us.archive.ubuntu.com/ubuntu precise main universe
+  #- sudo apt-get update -qq
+  #- sudo apt-get install cpplint -y
+  #- cpplint src
+
+# test code coverage
+r_github_packages:
+  - jimhester/covr
+after_success:
+  - Rscript -e 'covr::codecov()'
+
+# notification setup
+notifications:
+  slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts

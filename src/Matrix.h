@@ -14,78 +14,75 @@
 
 using namespace std;
 
-class Matrix
-{
- protected:
-  unsigned int _n_row;
-  unsigned int _n_col;
-  unsigned int _length;
-  char _label;
-  double _alpha;
-  double _lambda;
-  // ---- added to bridge to Atomic Class ----------
-  double ** _Matrix;
+class Matrix {
+  protected:
+    unsigned int _n_row;
+    unsigned int _n_col;
+    unsigned int _length;
+    char _label;
+    double _alpha;
+    double _lambda;
+    // ---- added to bridge to Atomic Class ----------
+    double **_Matrix;
 
- public:
-  Matrix(){};
+  public:
+    Matrix() {};
 
-  Matrix(unsigned int row_size,unsigned int col_size, char the_matrix_label, 
-                  double the_matrix_alpha);
-				  
-  Matrix(std::vector<std::vector<double> > &vv, char the_matrix_label);
-  
-  Matrix(const char input_file_name[],char the_matrix_label);
- 
-  ~Matrix();
+    Matrix(unsigned int row_size, unsigned int col_size, char the_matrix_label,
+           double the_matrix_alpha);
+
+    Matrix(std::vector<std::vector<double> > &vv, char the_matrix_label);
+
+    Matrix(const char input_file_name[], char the_matrix_label);
+
+    ~Matrix();
 
 // *************** METHODS *******************************************
 
-  void born_matrix(unsigned int row_size,unsigned int col_size,
-	           char the_matrix_label, double the_matrix_alpha);
+    void born_matrix(unsigned int row_size, unsigned int col_size,
+                     char the_matrix_label, double the_matrix_alpha);
 
-  void matrix_init();
+    void matrix_init();
 
-  
-  void setRow(vector <double> theRow, int RowNum);
-  
-  void setCol(vector <double> theCol, int ColNum);
 
-  double ** get_matrix() const;
-  
-  vector <double> get_Row(int rowNum);
-  
-  vector <double> get_Col(int colNum);
+    void setRow(vector <double> theRow, int RowNum);
 
-  unsigned int get_nRow() const;
+    void setCol(vector <double> theCol, int ColNum);
 
-  unsigned int get_nCol() const;
+    double **get_matrix() const;
 
-  unsigned int get_length() const;
+    vector <double> get_Row(int rowNum);
 
-  double get_max_given_row(unsigned int row_indx);
+    vector <double> get_Col(int colNum);
 
-  double get_min_given_row(unsigned int row_indx);
+    unsigned int get_nRow() const;
 
-  double get_max_given_col(unsigned int col_indx);
+    unsigned int get_nCol() const;
 
-  double get_min_given_col(unsigned int col_indx);
+    unsigned int get_length() const;
 
-  // ********************* OTHER METHODS *****************************************
-  // cal_mean calculates the mean of a matrix over all its entries.
-  double cal_mean() const;
+    double get_max_given_row(unsigned int row_indx);
 
-  double cal_totalsum() const;
+    double get_min_given_row(unsigned int row_indx);
 
-  void matrix_update(vector<vector<double> > delMatrix);
+    double get_max_given_col(unsigned int col_indx);
 
-  void matrix_Elem_update(vector<boost::tuple<unsigned int, unsigned int, double> > the_matrixElemChange,
-			  char oper_type, unsigned int nChange);
+    double get_min_given_col(unsigned int col_indx);
 
-  // ********************* DISPLAY METHODS *****************************************
+    // ********************* OTHER METHODS *****************************************
+    // cal_mean calculates the mean of a matrix over all its entries.
+    double cal_mean() const;
 
-  void display_matrix();
+    double cal_totalsum() const;
 
-  void display_matrixF(ofstream& outputFile);
+    void matrix_update(vector<vector<double> > delMatrix);
+
+    void matrix_Elem_update(vector<boost::tuple<unsigned int, unsigned int, double> > the_matrixElemChange,
+                            char oper_type, unsigned int nChange);
+
+    // ********************* DISPLAY METHODS *****************************************
+
+    void display_matrixF(ofstream &outputFile);
 
 };
 

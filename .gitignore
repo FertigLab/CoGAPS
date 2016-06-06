@@ -1,0 +1,24 @@
+# ignore R created files
+.Rprofile
+.Rhistory
+
+# ignore compiled files
+*.so
+*.o*
+*.sw?
+
+# ignore R data
+*.RDS
+
+# ignore PDFs
+*.pdf
+
+# ignore OS X files
+*.DS_Store
+.Rproj.user
+
+# ignore Rstudio files
+CoGAPS.Rproj
+
+# Bioconductor files (used for setting up remotes for `git svn`)
+update_remotes.sh
