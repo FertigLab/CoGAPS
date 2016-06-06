@@ -110,7 +110,7 @@ The algorithm returns in the results a list with
 \item[atomsPEquil]{A vector with the number of atoms in the P domain throughout the equilibration steps.}
 \item[atomsPSamp]{A vector with the number of atoms in the P domain throughout the sampling steps.}
 \item[chiSqValues]{A vector with the sample chi-squared values throughput sampling.}
-\item[meanChi2]{${\chi^2}$ value of the final mean result, i.e. $\chi^2 = frac{(D-AP)^2}{\sigma^2}$.}
+\item[meanChi2]{${\chi^2}$ value of the final mean result, i.e. $\chi^2 = \frac{(D-AP)^2}{\sigma^2}$.}
 \item[ASnapshots]{Samples of A matrices taken during sampling.}
 \item[PSnapshots]{Samples of P matrices taken during sampling.}
 \end{description}

@@ -16,7 +16,7 @@ t# plotAtoms: function to plot Rows of P with error bars
 
 
 plotAtoms<-function(gapsRes,type='sampA')  {
-    
+
     if (type=='sampA') {
         atoms <- gapsRes$atomsASamp
     } else if (type=='sampP') {

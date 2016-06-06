@@ -6,7 +6,7 @@
 # Inputs: data - data matrix
 #         unc - uncertainty matrix (std devs for chi-squared of Log Likelihood)
 #         GStoGenes - data.frame or list of gene sets
-#         nFactor - number of patterns (basis vectors, metagenes) 
+#         nFactor - number of patterns (basis vectors, metagenes)
 #         nEquil - number of iterations for burn-in
 #         nSample - number of iterations for sampling
 #         nOutR - how often to print status into R by iterations
@@ -70,9 +70,9 @@ CoGAPS <- function(data, unc, ABins = data.frame(), PBins = data.frame(), GStoGe
 
   # decompose the data
   matrixDecomp <- gapsRun(data, unc, ABins, PBins, nFactor, simulation_id,
-					nEquil, nSample, nOutR, output_atomic, fixedBinProbs, 
-					fixedDomain, sampleSnapshots, numSnapshots, alphaA,  nMaxA, max_gibbmass_paraA, 
-					alphaP, nMaxP, max_gibbmass_paraP)
+                    nEquil, nSample, nOutR, output_atomic, fixedBinProbs,
+                    fixedDomain, sampleSnapshots, numSnapshots, alphaA,  nMaxA, max_gibbmass_paraA,
+                    alphaP, nMaxP, max_gibbmass_paraP)
 
   # plot patterns and show heatmap of Anorm
   if (plot) {
@@ -87,6 +87,6 @@ CoGAPS <- function(data, unc, ABins = data.frame(), PBins = data.frame(), GStoGe
               Amean=matrixDecomp$Amean, Asd=matrixDecomp$Asd,
               Pmean=matrixDecomp$Pmean, Psd=matrixDecomp$Psd,
               GSUpreg=GSP$GSUpreg, GSDownreg=GSP$GSDownreg, GSActEst=GSP$GSActEst))
-  
-  
+
+
 }

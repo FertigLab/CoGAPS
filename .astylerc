@@ -1,0 +1,49 @@
+# options file for running astyle to "beautify" c++ code
+# run using `astyle --options=.astylerc src/*.{cc,cpp,h}`
+
+# don't create suffixes
+suffix=none
+
+# use the google style of braces
+style=google
+
+# use 4 spaces instead of tabs
+indent=spaces=4
+convert-tabs
+
+# indent 'class' and 'switch' blocks
+indent-classes
+indent-switches
+
+# empty lines around blocks, labels, class, closing headers, ...
+break-blocks=all
+
+# spaces around operator
+pad-oper
+
+# remove spaces in and around parenthesis except in front of headers
+# Example: foo ( bar, baz ); -> foo(bar, baz);
+unpad-paren
+
+# insert a space after if, while, for, etc (exception to previous rule)
+pad-header
+
+# delete empty lines not created by `break-blocks=all`
+delete-empty-lines
+
+# pointer and reference operators to name
+align-pointer=name
+
+# ALWAYS use brackets, even if the conditional is one line
+# if not and you add more code later you can have problems...
+add-brackets
+
+# use linux line-endings
+lineend=linux
+
+# why not keep the date the same?
+# although the date is modified by micro seconds to force compile
+preserve-date
+
+# restrict lines to 80 characters
+max-code-length=120
