@@ -161,34 +161,27 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
 
     // replace last row of P_curr, one pattern at a time
     Rcpp::NumericMatrix P1 = P_curr;
-    Rcpp::NumericMatrix P2 = P_curr;
 
     // get elements of past logit pattern
     Rcpp::NumericVector logit_patt_1 = Rcpp::wrap(_PMatrix.get_Row(P_curr.nrow()));
-    Rcpp::NumericVector logit_patt_2 = logit_patt_1;
 
     // plug in current simulated values
     for (int i = 0; i < 10; ++i) {
         logit_patt_1[i] = patt1[i];
-        logit_patt_2[i+10] = patt2[i];
     }
 
     // now put the matrices back together
     P1(2, Rcpp::_) = logit_patt_1;
-    P2(2, Rcpp::_) = logit_patt_2;
 
     // now perform matrix multiplication
     arma::mat D_prime1 = Rcpp::as<arma::mat>(A_curr) * Rcpp::as<arma::mat>(P1);
-    arma::mat D_prime2 = Rcpp::as<arma::mat>(A_curr) * Rcpp::as<arma::mat>(P2);
 
     // calculate summary statistics/distance
 
     arma::mat D_diff1 = Rcpp::as<arma::mat>(D) - D_prime1;
-    arma::mat D_diff2 = Rcpp::as<arma::mat>(D) - D_prime2;
 
-    double d1, d2;
+    double d1;
     d1 = norm(D_diff1, 2);
-    d2 = norm(D_diff2, 2);
 
     if (d1 < _tol) {
         _theta[iter] = theta1;
