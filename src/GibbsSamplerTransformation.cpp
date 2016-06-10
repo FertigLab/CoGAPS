@@ -117,16 +117,12 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
     }
 
     // propose new parameters
-    double theta1, theta2;
+    double theta1;
     theta1 = std::abs(Rcpp::as<double>(Rcpp::rnorm(1, 0, 10)));
-    theta2 = std::abs(Rcpp::as<double>(Rcpp::rnorm(1, 0, 10)));
 
     // now build logistic growth
     Rcpp::NumericVector x = _timeRecorded[_treatStatus == 0];
     Rcpp::NumericVector patt1 = 1. / (1 + Rcpp::exp(-theta1 * x));
-
-    x = _timeRecorded[_treatStatus == 1];
-    Rcpp::NumericVector patt2 = 1. / (1 + Rcpp::exp(-theta2 * x));
 
     // next let's get the current A and P matrices
     Rcpp::NumericMatrix A_curr(_AMatrix.get_nRow(), _AMatrix.get_nCol());
