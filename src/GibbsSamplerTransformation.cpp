@@ -158,6 +158,7 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
     // replace last row of P_curr, one pattern at a time
     Rcpp::NumericMatrix P1 = P_curr;
 
+    // SEGFAULT IS HERE
     // get elements of past logit pattern
     Rcpp::NumericVector logit_patt_1 = Rcpp::wrap(_PMatrix.get_Row(P_curr.nrow()));
 
