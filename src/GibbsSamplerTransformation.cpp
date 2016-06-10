@@ -18,7 +18,8 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
     _beta0(nSample, 2),
     _beta1(nSample, 2),
-    _theta(nSample) {
+    _theta(nSample),
+    _tolerance(nSample) {
     // assignments for growth data
     _whichPattern = whichPattern;
     _treatStatus = treatStatus;
@@ -57,6 +58,10 @@ Rcpp::NumericMatrix GibbsSamplerTransformation::beta1() {
 
 Rcpp::NumericVector GibbsSamplerTransformation::theta() {
     return _theta;
+}
+
+Rcpp::NumericVector GibbsSamplerTransformation::tolerance() {
+    return _tolerance;
 }
 
 void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector),
@@ -179,6 +184,8 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
 
     double d1;
     d1 = norm(D_diff1, 2);
+
+    _tolerance[iter] = d1;
 
     if (d1 < _tol) {
         _theta[iter] = theta1;

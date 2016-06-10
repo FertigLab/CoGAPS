@@ -30,6 +30,9 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     Rcpp::NumericVector _tau;
     Rcpp::NumericVector _theta;
 
+    // difference
+    Rcpp::NumericVector _tolerance;
+
     // logistic growth normalization
     double _normalization;
 
@@ -50,6 +53,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     Rcpp::NumericMatrix beta0();
     Rcpp::NumericMatrix beta1();
     Rcpp::NumericVector theta();
+    Rcpp::NumericVector tolerance();
     
     // expect that some transformation of the pattern will be linear so
     // allow for passing an a priori function that transforms the pattern
