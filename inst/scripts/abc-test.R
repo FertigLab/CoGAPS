@@ -151,6 +151,8 @@ for (i in 1:iters) {
     } # else keep old P
 }
 
+mean(diffs < 2)
+
 cat("\n")
 
 # now construct dataset of accepted proposals
@@ -173,5 +175,5 @@ data <- rbind(data.frame(x=proposals1, param="Treated Theta"),
 ggplot(data, aes(x=x)) +
   geom_density(aes(fill=param),
                alpha=0.25) +
-  geom_vline(xintercept=c(1.1, 3, 4),
+  geom_vline(xintercept=c(2, 3, 4),
              linetype=2)
