@@ -44,11 +44,15 @@ T <- seq(-5, 5, len=10)
 # simple ABC for treated theta, all else fixed
 set.seed(1)
 iters <- 1000
-diffs <- numeric(iters)
-proposals <- numeric(iters)
+diffs1 <- numeric(iters)
+proposals1 <- numeric(iters)
+diffs2 <- numeric(iters)
+proposals2 <- numeric(iters)
 
 for (i in 1:iters) {
+    # message bar
     cat(i, "of", iters, "\r")
+  
     # propose theta, construct data
     theta <- abs(rnorm(1, 0, 10))
     growth <- logistic.growth(T, 0, 1, theta)
@@ -67,15 +71,32 @@ for (i in 1:iters) {
     d <- norm(diff, "2")
 
     # save proposal and d for inspections
-    diffs[i] <- d
-    proposals[i] <- theta
+    diffs1[i] <- d
+    proposals1[i] <- theta
+    
+    # same for second growth parameter
+    theta <- abs(rnorm(1, 0, 10))
+    growth <- logistic.growth(T, 0, 1, theta)
+    P.prime <- P
+    P.prime[3, 11:20] <- growth
+    D.prime <- A %*% P.prime
+    diff <- D - D.prime
+    d <- norm(diff, "2")
+    diffs2[i] <- d
+    proposals2[i] <- theta
 }
 
 cat("\n")
 
 library(ggplot2)
-data <- data.frame(diffs, proposals)
+data <- rbind(data.frame(diffs=diffs1, proposals=proposals1, which="treat"),
+              data.frame(diffs=diffs2, proposals=proposals2, which="untreat"))
+
+truth <- data.frame(true=c(4, 3), which=c("treat", "untreat"))
 
 ggplot(data, aes(proposals, diffs)) +
-    geom_point() +
-    geom_vline(xintercept=4)
+    geom_point(aes(colour=which)) +
+    geom_vline(data=truth, 
+               aes(xintercept=true, 
+                   colour=which),
+               linetype=2)
