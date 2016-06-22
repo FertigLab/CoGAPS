@@ -99,9 +99,21 @@ for(i in 1:nFactor)
 }
 
 # call to C++ Rcpp code
+devtools::load_all("../..")
 cogapResult = cogapsTrans(D, S, FP, ABins, PBins, 
                           Config, ConfigNums,
                           time.of.sample, condition, 0.1)
+
+proposals <- cogapResult$proposals
+difference <- cogapResult$difference
+data <- data.frame(proposal=proposals,
+                   difference=difference)
+
+library(ggplot2)
+pdf("First-try.pdf")
+ggplot(data, aes(proposal, difference)) +
+    geom_point()
+dev.off()
 
 # compare graphs
 par(mfrow=c(1, 2))

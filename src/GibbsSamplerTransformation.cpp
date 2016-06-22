@@ -19,7 +19,8 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _beta0(nSample, 2),
     _beta1(nSample, 2),
     _theta(nSample),
-    _tolerance(nSample) {
+    _tolerance(nSample),
+    _proposals(nSample) {
     // assignments for growth data
     _whichPattern = whichPattern;
     _treatStatus = treatStatus;
@@ -62,6 +63,10 @@ Rcpp::NumericVector GibbsSamplerTransformation::theta() {
 
 Rcpp::NumericVector GibbsSamplerTransformation::tolerance() {
     return _tolerance;
+}
+
+Rcpp::NumericVector GibbsSamplerTransformation::proposals() {
+    return _proposals;
 }
 
 void GibbsSamplerTransformation::update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector),
@@ -124,6 +129,7 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
     // propose new parameters
     double theta1;
     theta1 = std::abs(Rcpp::as<double>(Rcpp::rnorm(1, 0, 10)));
+    _proposals[iter] = theta1;
 
     // now build logistic growth
     Rcpp::NumericVector x = _timeRecorded[_treatStatus == 0];
