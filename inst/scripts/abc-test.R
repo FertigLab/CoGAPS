@@ -71,5 +71,11 @@ for (i in 1:iters) {
     proposals[i] <- theta
 }
 
+cat("\n")
+
 library(ggplot2)
 data <- data.frame(diffs, proposals)
+
+ggplot(data, aes(proposals, diffs)) +
+    geom_point() +
+    geom_vline(xintercept=4)
