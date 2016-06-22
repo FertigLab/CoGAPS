@@ -39,6 +39,9 @@ S <- patts$S
 P <- patts$P
 A <- patts$A
 
+# reset P values for third pattern
+P[3, ] <- 0
+
 T <- seq(-5, 5, len=10)
 
 # simple ABC for treated theta, all else fixed
@@ -48,6 +51,8 @@ diffs1 <- numeric(iters)
 proposals1 <- numeric(iters)
 diffs2 <- numeric(iters)
 proposals2 <- numeric(iters)
+accept1 <- numeric(iters)
+accept2 <- numeric(iters)
 
 for (i in 1:iters) {
     # message bar
@@ -100,3 +105,73 @@ ggplot(data, aes(proposals, diffs)) +
                aes(xintercept=true, 
                    colour=which),
                linetype=2)
+
+# now accept/reject abc proposals
+set.seed(1)
+iters <- 10000
+diffs <- numeric(iters)
+proposals1 <- numeric(iters)
+proposals2 <- numeric(iters)
+accept1 <- numeric(iters)
+accept2 <- numeric(iters)
+
+for (i in 1:iters) {
+    # message bar
+    cat(i, "of", iters, "\r")
+  
+    # copy over current P
+    P.prime <- P
+  
+    # propose theta, construct data
+    theta1 <- abs(rnorm(1, 0, 10))
+    growth1 <- logistic.growth(T, 0, 1, theta1)
+    theta2 <- abs(rnorm(1, 0, 10))
+    growth2 <- logistic.growth(T, 0, 1, theta2)
+    
+    # copy in new growth data
+    P.prime[3, ] <- c(growth1, growth2)
+    
+    # calculate total data with proposals
+    D.prime <- A %*% P.prime
+    diff <- D - D.prime
+    
+    # calculate l2 norm
+    d <- norm(diff, "2")
+    diffs[i] <- d
+    proposals1[i] <- theta1
+    proposals2[i] <- theta2
+    
+    if (d < 2) {
+      # save P
+      P <- P.prime
+      
+      # save proposals
+      accept1[i] <- theta1
+      accept2[i] <- theta2
+    } # else keep old P
+}
+
+cat("\n")
+
+# now construct dataset of accepted proposals
+data <- rbind(data.frame(theta=accept1[accept1 != 0], which="treat"),
+              data.frame(theta=accept2[accept2 != 0], which="untreat"))
+
+ggplot(data, aes(x=theta)) +
+  geom_density(aes(fill=which),
+               alpha=0.25) +
+  geom_vline(data=truth, 
+             aes(xintercept=true, 
+                 colour=which),
+             linetype=2) +
+  scale_x_continuous(limits=c(1, 6))
+
+data <- rbind(data.frame(x=proposals1, param="Treated Theta"),
+              data.frame(x=proposals2, param="Untreated Theta"),
+              data.frame(x=diffs, param="Error"))
+
+ggplot(data, aes(x=x)) +
+  geom_density(aes(fill=param),
+               alpha=0.25) +
+  geom_vline(xintercept=c(1.1, 3, 4),
+             linetype=2)
