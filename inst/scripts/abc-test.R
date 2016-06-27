@@ -177,3 +177,42 @@ ggplot(data, aes(x=x)) +
                alpha=0.25) +
   geom_vline(xintercept=c(2, 3, 4),
              linetype=2)
+
+# ABC - MCMC
+# zero out third pattern for now
+P[3, ] <- 0
+set.seed(1)
+iters <- 1000
+epsilon <- 2
+
+# intialize by sampling theta^{(0)} ~ pi(theta)
+theta1 <- rnorm(iters, 0, 10)
+theta2 <- rnorm(iters, 0, 10)
+
+for (i in 2:iters) {
+    # message bar
+    cat(i, "of", iters, "\r")
+  
+    # 1. simulate theta' ~ K(theta|theta^{(t-1)})
+    theta1.prime <- rnorm(1, theta1[i-1], 1)
+    theta2.prime <- rnorm(1, theta2[i-1], 1)
+
+    # 2. simulate x ~ p(x | theta')
+    growth1 <- logistic.growth(T, 0, 1, theta1.prime)
+    growth2 <- logistic.growth(T, 0, 1, theta2.prime)
+    P.prime <- P
+    P.prime[3, 1:10] <- growth1
+    P.prime[3, 11:20] <- growth2
+
+    # 3. If rho(S(x), S(y)) < epsilon
+    D.prime <- A %*% P.prime
+    diff <- D - D.prime
+    rho <- norm(diff, "2")
+
+    if (rho < epsilon) {
+        # a. u ~ U(0, 1)
+        u <- runif(1, 0, 1)
+    }
+}
+
+cat("\n")
