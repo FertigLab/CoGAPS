@@ -185,17 +185,21 @@ set.seed(1)
 iters <- 1000
 epsilon <- 2
 
+prior.sd <- 10
+prior.mean <- 0
+delta <- 1
+
 # intialize by sampling theta^{(0)} ~ pi(theta)
-theta1 <- rnorm(iters, 0, 10)
-theta2 <- rnorm(iters, 0, 10)
+theta1 <- rnorm(iters, prior.mean, prior.sd)
+theta2 <- rnorm(iters, prior.mean, prior.sd)
 
 for (i in 2:iters) {
     # message bar
     cat(i, "of", iters, "\r")
   
     # 1. simulate theta' ~ K(theta|theta^{(t-1)})
-    theta1.prime <- rnorm(1, theta1[i-1], 1)
-    theta2.prime <- rnorm(1, theta2[i-1], 1)
+    theta1.prime <- rnorm(1, theta1[i-1], delta)
+    theta2.prime <- rnorm(1, theta2[i-1], delta)
 
     # 2. simulate x ~ p(x | theta')
     growth1 <- logistic.growth(T, 0, 1, theta1.prime)
@@ -211,7 +215,36 @@ for (i in 2:iters) {
 
     if (rho < epsilon) {
         # a. u ~ U(0, 1)
-        u <- runif(1, 0, 1)
+        u1 <- runif(1, 0, 1)
+        u2 <- runif(1, 0, 1)
+
+        # b. if u leq pi(theta')/pi*theta^{(t-1)} times 
+        #    K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
+        #    theta^{(t)} = theta'
+        accept.prob1 <- dnorm(theta.prime1, prior.mean, prior.sd) / 
+                        dnorm(theta1[i-1], prior.mean, prior.sd) *
+                        dnorm(theta1[i-1], theta.prime1, delta) /
+                        dnorm(theta.prime1, theta1[i-1], delta)
+
+        accept.prob2 <- dnorm(theta.prime2, prior.mean, prior.sd) / 
+                        dnorm(theta2[i-1], prior.mean, prior.sd) *
+                        dnorm(theta2[i-1], theta.prime2, delta) /
+                        dnorm(theta.prime2, theta2[i-1], delta)
+
+        if (u1 < accept.prob1) {
+            theta1[i] <- theta.prime1
+        } else {
+            theta1[i] <- theta1[i-1]
+        }
+
+        if (u2 < accept.prob2) {
+            theta2[i] <- theta.prime2
+        } else {
+            theta2[i] <- theta2[i-1]
+        }
+    } else {
+        theta1[i] <- theta1[i-1]
+        theta2[i] <- theta2[i-1]
     }
 }
 
