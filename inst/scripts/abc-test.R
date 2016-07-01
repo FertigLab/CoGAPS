@@ -182,12 +182,12 @@ ggplot(data, aes(x=x)) +
 # zero out third pattern for now
 P[3, ] <- 0
 set.seed(20)
-iters <- 1000
-epsilon <- 2
+iters <- 20000
+epsilon <- 5
 
 prior.sd <- 10
 prior.mean <- 0
-delta <- 1
+delta <- 2
 
 # intialize by sampling theta^{(0)} ~ pi(theta)
 theta1 <- rnorm(iters, prior.mean, prior.sd)
@@ -249,3 +249,7 @@ for (i in 2:iters) {
 }
 
 cat("\n")
+summary(theta1[(iters-2000):iters])
+summary(theta2[(iters-2000):iters])
+ts.plot(theta1)
+ts.plot(theta2)
