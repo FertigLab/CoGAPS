@@ -362,10 +362,12 @@ for (i in 2:iters) {
         if (u1 < accept.prob1) {
             theta1[i] <- theta1.prime
         } else {
+            # c. otherwise
             theta1[i] <- theta1[i-1]
         }
 
     } else {
+        # 4. otherwise
         theta1[i] <- theta1[i-1]
     }
 }
