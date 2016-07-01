@@ -221,24 +221,24 @@ for (i in 2:iters) {
         # b. if u leq pi(theta')/pi*theta^{(t-1)} times 
         #    K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
         #    theta^{(t)} = theta'
-        accept.prob1 <- dnorm(theta.prime1, prior.mean, prior.sd) / 
+        accept.prob1 <- dnorm(theta1.prime, prior.mean, prior.sd) / 
                         dnorm(theta1[i-1], prior.mean, prior.sd) *
-                        dnorm(theta1[i-1], theta.prime1, delta) /
-                        dnorm(theta.prime1, theta1[i-1], delta)
+                        dnorm(theta1[i-1], theta1.prime, delta) /
+                        dnorm(theta1.prime, theta1[i-1], delta)
 
-        accept.prob2 <- dnorm(theta.prime2, prior.mean, prior.sd) / 
+        accept.prob2 <- dnorm(theta2.prime, prior.mean, prior.sd) / 
                         dnorm(theta2[i-1], prior.mean, prior.sd) *
-                        dnorm(theta2[i-1], theta.prime2, delta) /
-                        dnorm(theta.prime2, theta2[i-1], delta)
+                        dnorm(theta2[i-1], theta2.prime, delta) /
+                        dnorm(theta2.prime, theta2[i-1], delta)
 
         if (u1 < accept.prob1) {
-            theta1[i] <- theta.prime1
+            theta1[i] <- theta1.prime
         } else {
             theta1[i] <- theta1[i-1]
         }
 
         if (u2 < accept.prob2) {
-            theta2[i] <- theta.prime2
+            theta2[i] <- theta2.prime
         } else {
             theta2[i] <- theta2[i-1]
         }
