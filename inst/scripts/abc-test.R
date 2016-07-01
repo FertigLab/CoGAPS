@@ -253,3 +253,63 @@ summary(theta1[(iters-2000):iters])
 summary(theta2[(iters-2000):iters])
 ts.plot(theta1)
 ts.plot(theta2)
+
+# ABC - MCMC
+# one parameter
+# zero out third pattern for now
+P <- patts$P
+P[3, 1:10] <- 0
+set.seed(20)
+iters <- 20000
+epsilon <- 5
+
+prior.sd <- 10
+prior.mean <- 0
+delta <- 2
+
+# intialize by sampling theta^{(0)} ~ pi(theta)
+theta1 <- rnorm(iters, prior.mean, prior.sd)
+
+for (i in 2:iters) {
+    # message bar
+    cat(i, "of", iters, "\r")
+  
+    # 1. simulate theta' ~ K(theta|theta^{(t-1)})
+    theta1.prime <- rnorm(1, theta1[i-1], delta)
+
+    # 2. simulate x ~ p(x | theta')
+    growth1 <- logistic.growth(T, 0, 1, theta1.prime)
+    P.prime <- P
+    P.prime[3, 1:10] <- growth1
+
+    # 3. If rho(S(x), S(y)) < epsilon
+    D.prime <- A %*% P.prime
+    diff <- D - D.prime
+    rho <- norm(diff, "2")
+
+    if (rho < epsilon) {
+        # a. u ~ U(0, 1)
+        u1 <- runif(1, 0, 1)
+
+        # b. if u leq pi(theta')/pi*theta^{(t-1)} times 
+        #    K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
+        #    theta^{(t)} = theta'
+        accept.prob1 <- dnorm(theta1.prime, prior.mean, prior.sd) / 
+                        dnorm(theta1[i-1], prior.mean, prior.sd) *
+                        dnorm(theta1[i-1], theta1.prime, delta) /
+                        dnorm(theta1.prime, theta1[i-1], delta)
+
+        if (u1 < accept.prob1) {
+            theta1[i] <- theta1.prime
+        } else {
+            theta1[i] <- theta1[i-1]
+        }
+
+    } else {
+        theta1[i] <- theta1[i-1]
+    }
+}
+
+cat("\n")
+summary(theta1[(iters-2000):iters])
+ts.plot(theta1)
