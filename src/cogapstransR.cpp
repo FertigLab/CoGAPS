@@ -312,7 +312,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.update_pattern_abc(&logit);
+        GibbsSampTrans.update_pattern_abc_mcmc(ext_iter-1, 0);
 
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSampTrans.get_sysChi2();
@@ -360,7 +360,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.update_pattern_abc(&logit, 0);
+        GibbsSampTrans.update_pattern_abc_mcmc(0, 0);
     }
 
     // ===========================================================================
@@ -391,7 +391,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.update_pattern_abc(&logit, i-1);
+        GibbsSampTrans.update_pattern_abc_mcmc(nEquil, i-1);
 
         if (Q_output_atomic == true) {
             GibbsSampTrans.output_atomicdomain('A', i);
