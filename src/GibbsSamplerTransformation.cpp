@@ -242,7 +242,7 @@ void GibbsSamplerTransformation::update_pattern_abc_mcmc(int burn, int iter) {
     }
 
     // last theta
-    Rcpp::NumericVector theta = _theta[burn + iter - 1];
+    Rcpp::NumericVector theta = _theta[max(burn + iter - 1, 0)];
 
     // 1. simulate theta' ~ K(theta|theta^{(t-1)})
     Rcpp::NumericVector theta_prime = Rcpp::rnorm(1, theta[0], _delta);
