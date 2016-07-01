@@ -33,9 +33,15 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     // difference
     Rcpp::NumericVector _tolerance;
     Rcpp::NumericVector _proposals;
+    Rcpp::NumericVector _accept_prob;
 
     // logistic growth normalization
     double _normalization;
+
+    // mcmc parameters
+    double _delta = 5.0;
+    double _prior_mean = 0.0;
+    double _prior_sd = 10.0;
 
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
@@ -56,6 +62,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     Rcpp::NumericVector theta();
     Rcpp::NumericVector tolerance();
     Rcpp::NumericVector proposals();
+    Rcpp::NumericVector accept_prob();
     
     // expect that some transformation of the pattern will be linear so
     // allow for passing an a priori function that transforms the pattern
@@ -66,6 +73,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     void update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector), int iter=0);
 
     void update_pattern_abc(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector), int iter=0);
+    void update_pattern_abc_mcmc(int burn=0, int iter=0);
 
 };
 
