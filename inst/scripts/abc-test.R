@@ -181,7 +181,7 @@ ggplot(data, aes(x=x)) +
 # ABC - MCMC
 # zero out third pattern for now
 P[3, ] <- 0
-set.seed(1)
+set.seed(20)
 iters <- 1000
 epsilon <- 2
 
