@@ -260,8 +260,8 @@ ts.plot(theta2)
 P <- patts$P
 P[3, 1:10] <- 0
 set.seed(20)
-iters <- 20000
-epsilon <- 5
+iters <- 5000
+epsilon <- 2
 
 prior.sd <- 10
 prior.mean <- 0
@@ -311,5 +311,5 @@ for (i in 2:iters) {
 }
 
 cat("\n")
-summary(theta1[(iters-2000):iters])
+summary(theta1)
 ts.plot(theta1)
