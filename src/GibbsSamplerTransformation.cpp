@@ -208,7 +208,7 @@ void GibbsSamplerTransformation::update_pattern_abc(Rcpp::NumericVector(*transfo
     // else reject
 }
 
-void GibbsSamplerTransformation::update_pattern_abc_mcmc(int burn, int iter) {
+void GibbsSamplerTransformation::update_pattern_abc_mcmc(int burn, int iter, int thin) {
     // get the A, P, D matrices
     Rcpp::NumericMatrix A_curr(_AMatrix.get_nRow(), _AMatrix.get_nCol());
     Rcpp::NumericMatrix P_curr(_PMatrix.get_nRow(), _PMatrix.get_nCol());

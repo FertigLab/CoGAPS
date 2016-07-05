@@ -73,7 +73,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     void update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector), int iter=0);
 
     void update_pattern_abc(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector), int iter=0);
-    void update_pattern_abc_mcmc(int burn=0, int iter=0);
+    void update_pattern_abc_mcmc(int burn=0, int iter=0, thin=1);
 
 };
 
