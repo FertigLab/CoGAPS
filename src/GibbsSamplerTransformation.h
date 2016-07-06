@@ -64,7 +64,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     Rcpp::NumericVector proposals();
     Rcpp::NumericVector accept_prob();
     
-    void abc_mcmc(int burn=0, int iter=0, int thin=1);
+    void abc_mcmc(int burn=0, int iter=0, int thin=1, double tolerance=5.0);
 
 };
 
