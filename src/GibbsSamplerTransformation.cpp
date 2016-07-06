@@ -112,10 +112,13 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin) {
     // last theta
     Rcpp::NumericVector theta = _theta[max(burn + iter - 1, 0)];
 
+    // initialize mcmc params
+    Rcpp::NumericVector theta_prime;
+    Rcpp::NumericVector accept; 
+
     for (int s = 0; s < thin; ++s) {
         // 1. simulate theta' ~ K(theta|theta^{(t-1)})
-        Rcpp::NumericVector theta_prime = Rcpp::rnorm(1, theta[0], _delta);
-        _proposals[burn + iter] = theta_prime[0];
+        theta_prime = Rcpp::rnorm(1, theta[0], _delta);
 
         // 2. simulate x ~ p(x | theta')
         Rcpp::NumericVector T = _timeRecorded[_treatStatus == 0];
@@ -140,22 +143,25 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin) {
             // b. if u leq pi(theta')/pi*theta^{(t-1)} times 
             //             K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
             //             theta^{(t)} = theta'
-            Rcpp::NumericVector accept = Rcpp::dnorm(theta_prime, _prior_mean, _prior_sd, true) -
-                                         Rcpp::dnorm(theta, _prior_mean, _prior_sd, true) +
-                                         Rcpp::dnorm(theta, theta_prime[0], _delta) -
-                                         Rcpp::dnorm(theta_prime, theta[0], _delta);
+            accept = Rcpp::dnorm(theta_prime, _prior_mean, _prior_sd, true) -
+                     Rcpp::dnorm(theta, _prior_mean, _prior_sd, true) +
+                     Rcpp::dnorm(theta, theta_prime[0], _delta) -
+                     Rcpp::dnorm(theta_prime, theta[0], _delta);
             accept = Rcpp::exp(accept);
-            _accept_prob[burn + iter] = accept[0];
 
             if (u[0] < accept[0]) {
-                _theta[burn + iter] = theta_prime[0];
+                theta = theta_prime;
             } else {
                 // c. otherwise
-                _theta[burn + iter] = theta[0];
+                theta = theta;
             }
         } else {
         // 4. otherwise
-            _theta[burn + iter] = theta[0];
+            theta = theta;
         }
     }
+
+    _theta[burn + iter] = theta[0];
+    _accept_prob[burn + iter] = accept[0];
+    _proposals[burn + iter] = theta_prime[0];
 }
