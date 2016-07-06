@@ -64,15 +64,6 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     Rcpp::NumericVector proposals();
     Rcpp::NumericVector accept_prob();
     
-    // expect that some transformation of the pattern will be linear so
-    // allow for passing an a priori function that transforms the pattern
-    // to a linear pattern
-    // for example, if we expect the pattern to be logistic, we can pass a logistic
-    // function to transform the data i.e.
-    // GibbSampPatt.update_pattern(GibbsSampPatt::&logit);
-    void update_pattern(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector), int iter=0);
-
-    void update_pattern_abc(Rcpp::NumericVector(*transformation)(Rcpp::NumericVector), int iter=0);
     void update_pattern_abc_mcmc(int burn=0, int iter=0, thin=1);
 
 };
