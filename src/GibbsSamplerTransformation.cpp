@@ -110,7 +110,8 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     }
 
     // last theta
-    Rcpp::NumericVector theta = _theta[max(burn + iter - 1, 0)];
+    Rcpp::NumericVector theta;
+    theta[0] = _theta[max(burn + iter - 1, 0)];
 
     // initialize mcmc params
     Rcpp::NumericVector theta_prime;
