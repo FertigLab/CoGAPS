@@ -42,6 +42,11 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _a = 0.001;      // variance prior shape
     _b = 0.001;      // variance prior rate
 
+    // mcmc parameters
+    _delta = 5.0;
+    _prior_mean = 0.0;
+    _prior_sd = 10.0;
+
     // sample from prior to initialize regression parameters
     int nTreats = Rcpp::unique(_treatStatus).size();
     
@@ -110,7 +115,7 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     }
 
     // last theta
-    Rcpp::NumericVector theta;
+    Rcpp::NumericVector theta(1);
     theta[0] = _theta[max(burn + iter - 1, 0)];
 
     // initialize mcmc params
