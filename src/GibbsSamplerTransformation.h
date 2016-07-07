@@ -39,9 +39,9 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     double _normalization;
 
     // mcmc parameters
-    double _delta = 5.0;
-    double _prior_mean = 0.0;
-    double _prior_sd = 10.0;
+    double _delta;
+    double _prior_mean;
+    double _prior_sd;
 
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
