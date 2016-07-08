@@ -103,38 +103,3 @@ devtools::load_all("../..")
 cogapResult = cogapsTrans(D, S, FP, ABins, PBins, 
                           Config, ConfigNums,
                           time.of.sample, condition, 500)
-
-proposals <- cogapResult$proposals
-difference <- cogapResult$difference
-data <- data.frame(proposal=proposals,
-                   difference=difference)
-
-library(ggplot2)
-pdf("First-try.pdf")
-ggplot(data, aes(proposal, difference)) +
-    geom_point()
-dev.off()
-
-# compare graphs
-par(mfrow=c(1, 2))
-
-arrayIdx <- 1:ncol(P.true)
-matplot(arrayIdx, t(P.true), type='l', lwd=10, main="Truth")
-
-P <- cogapResult$Pmean
-arrayIdx <- 1:ncol(P)
-matplot(arrayIdx, t(P), type='l', lwd=10, main="CoGAPS Transformation")
-
-# A <- cogapResult$Amean
-# arrayIdx <- 1:nrow(A)
-# matplot(arrayIdx, (A), type='l', lwd=10, main="CoGAPS Transformation")
-
-# inspect parameter estimates
-dim(cogapResult$beta0)
-dim(cogapResult$beta1)
-dim(cogapResult$theta)
-
-theta <- cogapResult$theta
-#
-#colMeans(cogapResult$beta1)
-#apply(cogapResult$beta1, 2, sd)
