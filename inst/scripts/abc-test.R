@@ -48,29 +48,69 @@ set.seed(20)
 iters <- 5000
 epsilon <- 2
 
-prior.sd <- 10
-prior.mean <- 0
-delta <- 5
+# A: 
+# prior: Normal(0, 10^2) 
+# proposal: Normal(theta, 5^2)
+prior.sd.a <- 10
+prior.mean.a <- 0
+delta.a <- 5
+
+# B: 
+# prior: Normal(5, 10^2) 
+# proposal: Normal(theta, 5^2)
+prior.sd.b <- 10
+prior.mean.b <- 5
+delta.b <- 5
+
+# C: 
+# prior: Gamma(0.5, 0.5)
+# proposal: Normal(theta, 5^2)
+prior.shape.c <- 0.5
+prior.rate.c <- 0.5
+delta.c <- 5
+
+# make copies of P
+P.a <- P.b <- P.c <- P
 
 # intialize by sampling theta^{(0)} ~ pi(theta)
-theta1 <- rnorm(iters, prior.mean, prior.sd)
+theta.a <- rnorm(iters, prior.mean.a, prior.sd.a)
+theta.b <- rnorm(iters, prior.mean.b, prior.sd.b)
+theta.c <- rgamma(iters, prior.shape.c, prior.rate.c)
 
 for (i in 2:iters) {
     # message bar
     cat(i, "of", iters, "\r")
   
     # 1. simulate theta' ~ K(theta|theta^{(t-1)})
-    theta1.prime <- rnorm(1, theta1[i-1], delta)
+    theta.prime.a <- rnorm(1, theta.a[i-1], delta.a)
+    theta.prime.b <- rnorm(1, theta.b[i-1], delta.b)
+    theta.prime.c <- rnorm(1, theta.c[i-1], delta.c)
 
     # 2. simulate x ~ p(x | theta')
-    growth1 <- logistic.growth(T, 0, 1, theta1.prime)
-    P.prime <- P
-    P.prime[3, 1:10] <- growth1
+    growth.a <- logistic.growth(T, 0, 1, theta.prime.a)
+    growth.b <- logistic.growth(T, 0, 1, theta.prime.b)
+    growth.c <- logistic.growth(T, 0, 1, theta.prime.c)
+
+    P.prime.a <- P.a
+    P.prime.b <- P.b
+    P.prime.c <- P.c
+
+    P.prime.a[3, 1:10] <- growth.a
+    P.prime.b[3, 1:10] <- growth.b
+    P.prime.c[3, 1:10] <- growth.c
 
     # 3. If rho(S(x), S(y)) < epsilon
-    D.prime <- A %*% P.prime
-    diff <- D - D.prime
-    rho <- norm(diff, "2")
+    D.prime.a <- A %*% P.prime.a
+    D.prime.b <- A %*% P.prime.b
+    D.prime.c <- A %*% P.prime.c
+
+    diff.a <- D - D.prime.a
+    diff.b <- D - D.prime.b
+    diff.c <- D - D.prime.c
+
+    rho.a <- norm(diff.a, "2")
+    rho.b <- norm(diff.b, "2")
+    rho.c <- norm(diff.c, "2")
 
     if (rho < epsilon) {
         # a. u ~ U(0, 1)
