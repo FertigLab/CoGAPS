@@ -166,4 +166,4 @@ data <- bind_rows(data_frame(x=1:iters, theta=theta.a, method="a"),
                   data_frame(x=1:iters, theta=theta.c, method="c"))
 
 ggplot(data, aes(x=x, y=theta)) +
-  geom_line()
+  geom_line(aes(colour=method))
