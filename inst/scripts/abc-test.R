@@ -111,33 +111,51 @@ for (i in 2:iters) {
     rho.a <- norm(diff.a, "2")
     rho.b <- norm(diff.b, "2")
     rho.c <- norm(diff.c, "2")
+    
+    rho.a.accept <- rho.a < epsilon
+    rho.b.accept <- rho.b < epsilon
+    rho.c.accept <- rho.c < epsilon
 
-    if (rho < epsilon) {
-        # a. u ~ U(0, 1)
-        u1 <- runif(1, 0, 1)
+    # a. u ~ U(0, 1)
+    u.a <- runif(1, 0, 1) / rho.a.accept
+    u.b <- runif(1, 0, 1) / rho.b.accept
+    u.c <- runif(1, 0, 1) / rho.c.accept
 
-        # b. if u leq pi(theta')/pi*theta^{(t-1)} times 
-        #    K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
-        #    theta^{(t)} = theta'
-        accept.prob1 <- dnorm(theta1.prime, prior.mean, prior.sd, TRUE) - 
-                        dnorm(theta1[i-1], prior.mean, prior.sd, TRUE) +
-                        dnorm(theta1[i-1], theta1.prime, delta, TRUE) -
-                        dnorm(theta1.prime, theta1[i-1], delta, TRUE)
-        accept.prob1 <- exp(accept.prob1)
-
-        if (u1 < accept.prob1) {
-            theta1[i] <- theta1.prime
-        } else {
-            # c. otherwise
-            theta1[i] <- theta1[i-1]
-        }
-
-    } else {
-        # 4. otherwise
-        theta1[i] <- theta1[i-1]
-    }
+    # b. if u leq pi(theta')/pi*theta^{(t-1)} times 
+    #    K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
+    #    theta^{(t)} = theta'
+    accept.prob.a <- dnorm(theta.prime.a, prior.mean.a, prior.sd.a, TRUE) - 
+                     dnorm(theta.a[i-1], prior.mean.a, prior.sd.a, TRUE) +
+                     dnorm(theta.a[i-1], theta.prime.a, delta.a, TRUE) -
+                     dnorm(theta.prime.a, theta.a[i-1], delta.a, TRUE)
+    accept.prob.b <- dnorm(theta.prime.b, prior.mean.b, prior.sd.b, TRUE) - 
+                     dnorm(theta.b[i-1], prior.mean.b, prior.sd.b, TRUE) +
+                     dnorm(theta.b[i-1], theta.prime.b, delta.b, TRUE) -
+                     dnorm(theta.prime.b, theta.b[i-1], delta.b, TRUE)
+    accept.prob.c <- dgamma(theta.prime.c, prior.shape.c, prior.rate.c, TRUE) - 
+                     dgamma(theta.c[i-1], prior.shape.c, prior.rate.c, TRUE) +
+                     dnorm(theta.c[i-1], theta.prime.c, delta.c, TRUE) -
+                     dnorm(theta.prime.c, theta.c[i-1], delta.c, TRUE)
+    
+    accept.prob.a <- exp(accept.prob.a)
+    accept.prob.b <- exp(accept.prob.b)
+    accept.prob.c <- exp(accept.prob.c)
+    
+    # if u < accept.prob 1 else 0
+    # also, if rho >= epsilon then 0
+    accept.a <- u.a < accept.prob.a
+    accept.b <- u.b < accept.prob.b
+    accept.c <- u.c < accept.prob.c
+    
+    # 3b, 3c, 4
+    theta.a[i] <- theta.prime.a * accept.a + theta.a[i-1] * (1-accept.a)
+    theta.b[i] <- theta.prime.b * accept.b + theta.b[i-1] * (1-accept.b)
+    theta.c[i] <- theta.prime.c * accept.c + theta.c[i-1] * (1-accept.c)
 }
 
 cat("\n")
-summary(theta1)
-ts.plot(theta1)
+
+par(mfrow=c(3, 1))
+ts.plot(theta.a)
+ts.plot(theta.b)
+ts.plot(theta.c)
