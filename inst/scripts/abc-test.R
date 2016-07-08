@@ -157,7 +157,13 @@ for (i in 2:iters) {
 
 cat("\n")
 
-par(mfrow=c(3, 1))
-ts.plot(theta.a)
-ts.plot(theta.b)
-ts.plot(theta.c)
+library(ggplot2)
+library(dplyr)
+theme_set(theme_classic())
+
+data <- bind_rows(data_frame(x=1:iters, theta=theta.a, method="a"),
+                  data_frame(x=1:iters, theta=theta.b, method="b"),
+                  data_frame(x=1:iters, theta=theta.c, method="c"))
+
+ggplot(data, aes(x=x, y=theta)) +
+  geom_line()
