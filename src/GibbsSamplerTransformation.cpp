@@ -134,7 +134,6 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
         for (int i = 0; i < 10; ++i) {
             P_prime(2, i) = growth[i];
         }
-        Rcpp::Rcout << "assign P_prime\n";
 
         // 3. If rho(S(x), S(y)) < epsilon
         arma::mat D_prime = Rcpp::as<arma::mat>(A_curr) * Rcpp::as<arma::mat>(P_prime);
@@ -155,7 +154,6 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
                      Rcpp::dnorm(theta, theta_prime[0], _delta) -
                      Rcpp::dnorm(theta_prime, theta[0], _delta);
             accept = Rcpp::exp(accept);
-            Rcpp::Rcout << "assign accept\n";
 
             if (u[0] < accept[0]) {
                 theta = theta_prime;
@@ -170,7 +168,6 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     }
 
     _theta[burn + iter] = theta[0];
-    Rcpp::Rcout << "assign _theta\n";
     // _accept_prob[burn + iter] = accept[0];
     // _proposals[burn + iter] = theta_prime[0];
 }
