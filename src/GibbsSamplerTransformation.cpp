@@ -20,7 +20,6 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _beta1(nSample, 2),
     _theta(nSample + _nEquil),
     _tolerance(nSample + _nEquil),
-    _proposals(nSample),
     _accept_prob(nSample + _nEquil) {
     // assignments for growth data
     _whichPattern = whichPattern;
@@ -71,10 +70,6 @@ Rcpp::NumericVector GibbsSamplerTransformation::theta() {
 
 Rcpp::NumericVector GibbsSamplerTransformation::tolerance() {
     return _tolerance;
-}
-
-Rcpp::NumericVector GibbsSamplerTransformation::proposals() {
-    return _proposals;
 }
 
 Rcpp::NumericVector GibbsSamplerTransformation::accept_prob() {
@@ -140,7 +135,7 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
         arma::mat diff = Rcpp::as<arma::mat>(D) - D_prime;
         double rho = norm(diff, 2);
 
-        // _tolerance[burn + iter] = rho;
+        _tolerance[burn + iter] = rho;
 
         if (rho < _tol) {
             // a. u ~ U(0, 1)
@@ -168,6 +163,5 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     }
 
     _theta[burn + iter] = theta[0];
-    // _accept_prob[burn + iter] = accept[0];
-    // _proposals[burn + iter] = theta_prime[0];
+    _accept_prob[burn + iter] = accept[0];
 }

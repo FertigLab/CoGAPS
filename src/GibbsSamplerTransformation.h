@@ -32,7 +32,6 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
 
     // difference
     Rcpp::NumericVector _tolerance;
-    Rcpp::NumericVector _proposals;
     Rcpp::NumericVector _accept_prob;
 
     // logistic growth normalization
@@ -61,7 +60,6 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     Rcpp::NumericMatrix beta1();
     Rcpp::NumericVector theta();
     Rcpp::NumericVector tolerance();
-    Rcpp::NumericVector proposals();
     Rcpp::NumericVector accept_prob();
     
     void abc_mcmc(int burn=0, int iter=0, int thin=1, double tolerance=5.0);
