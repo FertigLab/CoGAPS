@@ -132,8 +132,10 @@ for (i in 2:iters) {
                      dnorm(theta.b[i-1], prior.mean.b, prior.sd.b, TRUE) +
                      dnorm(theta.b[i-1], theta.prime.b, delta.b, TRUE) -
                      dnorm(theta.prime.b, theta.b[i-1], delta.b, TRUE)
-    accept.prob.c <- dgamma(theta.prime.c, prior.shape.c, prior.rate.c, TRUE) - 
-                     dgamma(theta.c[i-1], prior.shape.c, prior.rate.c, TRUE) +
+    accept.prob.c <- dgamma(theta.prime.c, prior.shape.c, prior.rate.c, 
+                            log=TRUE) - 
+                     dgamma(theta.c[i-1], prior.shape.c, prior.rate.c, 
+                            log=TRUE) +
                      dnorm(theta.c[i-1], theta.prime.c, delta.c, TRUE) -
                      dnorm(theta.prime.c, theta.c[i-1], delta.c, TRUE)
     
