@@ -161,9 +161,18 @@ library(ggplot2)
 library(dplyr)
 theme_set(theme_classic())
 
-data <- bind_rows(data_frame(x=1:iters, theta=theta.a, method="a"),
-                  data_frame(x=1:iters, theta=theta.b, method="b"),
-                  data_frame(x=1:iters, theta=theta.c, method="c"))
+data <- bind_rows(data_frame(x=1:iters, theta=theta.a, prior="Normal(0, 10^2)"),
+                  data_frame(x=1:iters, theta=theta.b, prior="Normal(5, 10^2)"),
+                  data_frame(x=1:iters, theta=theta.c, prior="Gamma(0.5, 0.5)"))
 
+pdf("~/../Downloads/Prior_comparison.pdf")
 ggplot(data, aes(x=x, y=theta)) +
-  geom_line(aes(colour=method))
+  geom_line(aes(colour=prior),
+            alpha=0.5) +
+  geom_smooth(aes(colour=prior),
+              se=FALSE) +
+  geom_hline(yintercept=4) +
+  xlab("MCMC Iteration") +
+  ylab(expression(theta)) +
+  ggtitle("Comparison of priors with A and P fixed\nOne of two growth parameters estimated")
+dev.off()
