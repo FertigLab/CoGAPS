@@ -15,8 +15,7 @@ class Abc {
         Rcpp::NumericVector _theta;
 
         // data
-        Rcpp::NumericVector _timeRecorded;
-        Rcpp::NumericVector _treatStatus;
+        Rcpp::NumericVector _T;
         Rcpp::NumericMatrix _D;
 
     public:
