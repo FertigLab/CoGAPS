@@ -12,7 +12,12 @@ class Abc {
         double _epsilon;
 
         // value 
-        Rcpp::NumericVector _theta(1);
+        Rcpp::NumericVector _theta;
+
+        // data
+        Rcpp::NumericVector _timeRecorded;
+        Rcpp::NumericVector _treatStatus;
+        Rcpp::NumericMatrix _D;
 
     public:
         // propose new theta
