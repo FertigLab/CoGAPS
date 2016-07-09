@@ -2,6 +2,7 @@
 #define _ABC_H_
 
 #include <Rcpp.h>
+#include <RcppArmadillo.h>
 
 class Abc {
     private:
