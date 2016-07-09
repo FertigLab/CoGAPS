@@ -21,7 +21,7 @@ class Abc {
 
     public:
         // propose new theta
-        void propose();
+        void propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P);
 
         // get theta
         Rcpp::NumericVector theta();
