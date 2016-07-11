@@ -76,10 +76,10 @@ prior.shape.d <- 1
 prior.rate.d <- 1
 delta.d <- 3
 
-# C: 
-# prior: Gamma(0.1, 0.1)
+# E: 
+# prior: Gamma(1, 0.1)
 # proposal: Gamma(theta^2 / delta^2, theta / delta^2)
-prior.shape.e <- 0.1
+prior.shape.e <- 1
 prior.rate.e <- 0.1
 delta.e <- 3
 
@@ -226,16 +226,22 @@ data <- bind_rows(data_frame(x=1:iters, theta=theta.a, prior="Normal(0, 10^2)"),
                   data_frame(x=1:iters, theta=theta.b, prior="Normal(5, 10^2)"),
                   data_frame(x=1:iters, theta=theta.c, prior="Gamma(0.5, 0.5)"),
                   data_frame(x=1:iters, theta=theta.d, prior="Gamma(1, 1)"),
-                  data_frame(x=1:iters, theta=theta.c, prior="Gamma(0.1, 0.1)"))
+                  data_frame(x=1:iters, theta=theta.c, prior="Gamma(1, 0.1)"))
 
 pdf("~/../Downloads/Prior_comparison.pdf")
 ggplot(data, aes(x=x, y=theta)) +
   geom_line(aes(colour=prior, linetype=prior),
             alpha=0.5) +
-  geom_smooth(aes(colour=prior),
+  geom_smooth(aes(colour=prior, linetype=prior),
               se=FALSE) +
   geom_hline(yintercept=4) +
   xlab("MCMC Iteration") +
   ylab(expression(theta)) +
   ggtitle("Comparison of priors with A and P fixed\nOne of two growth parameters estimated")
+ggplot(filter(data, x >= 1000), aes(x=theta)) +
+  geom_density(aes(fill=prior, linetype=prior), alpha=0.5) + 
+  geom_vline(xintercept=4, linetype=2) +
+  xlab(expression(theta)) +
+  xlim(0, 8) +
+  ggtitle("Comparison of priors with A and P fixed\nDensities with first 1,000 iters removed")
 dev.off()
