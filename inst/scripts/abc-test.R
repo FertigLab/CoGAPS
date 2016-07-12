@@ -44,13 +44,13 @@ A <- patts$A
 T <- seq(-5, 5, len=10)
 set.seed(20)
 iters <- 5000
-epsilon <- 4
+epsilon <- 2
 
 # prior: Gamma(1, 0.1)
 # proposal: Gamma(theta^2 / delta^2, theta / delta^2)
 prior.shape <- 1
 prior.rate <- 0.1
-delta <- 5
+delta <- 10
 
 # intialize by sampling theta^{(0)} ~ pi(theta)
 theta <- rgamma(iters, prior.shape, prior.rate)
