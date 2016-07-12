@@ -44,7 +44,7 @@ A <- patts$A
 T <- seq(-5, 5, len=10)
 set.seed(20)
 iters <- 5000
-epsilon <- 2
+epsilon <- 3
 
 # prior: Gamma(1, 0.1)
 # proposal: Gamma(theta^2 / delta^2, theta / delta^2)
@@ -59,46 +59,34 @@ for (i in 2:iters) {
     # message bar
     cat(i, "of", iters, "\r")
   
-    # 1. simulate theta' ~ K(theta|theta^{(t-1)})
+    # simulate theta' ~ K(theta|theta^{(t-1)})
     theta.prime <- rgamma(1, theta[i-1] ^ 2 / delta^2, 
                             theta[i-1] / delta^2)
 
-    # 2. simulate x ~ p(x | theta')
+    # simulate x ~ p(x | theta')
     growth <- logistic.growth(T, 0, 1, theta.prime)
-
     P[3, 1:10] <- growth
-
-    # 3. If rho(S(x), S(y)) < epsilon
     D.prime <- A %*% P
 
+    # calculate rho(S(x), S(y))
     diff <- D - D.prime
-
     rho <- norm(diff, "2")
     
-    rho.accept <- rho < epsilon
-
-    # a. u ~ U(0, 1)
-    u <- runif(1, 0, 1) / rho.accept
-
-    # b. if u leq pi(theta')/pi*theta^{(t-1)} times 
-    #    K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
-    #    theta^{(t)} = theta'
-    accept.prob <- dgamma(theta.prime, prior.shape, prior.rate, 
-                            log=TRUE) - 
-                     dgamma(theta[i-1], prior.shape, prior.rate, 
-                            log=TRUE) +
-                     dgamma(theta[i-1], theta.prime ^ 2 / delta ^2, 
-                            theta.prime / delta  ^ 2, log=TRUE) -
-                     dgamma(theta.prime, theta[i-1] ^ 2 / delta ^ 2, 
-                            theta[i-1] / delta ^ 2, log=TRUE)
+    # calculate acceptance probability
+    alpha <- dgamma(theta.prime, prior.shape, prior.rate, 
+                    log=TRUE) - 
+             dgamma(theta[i-1], prior.shape, prior.rate, 
+                    log=TRUE) +
+             dgamma(theta[i-1], theta.prime ^ 2 / delta ^2, 
+                    theta.prime / delta  ^ 2, log=TRUE) -
+             dgamma(theta.prime, theta[i-1] ^ 2 / delta ^ 2, 
+                    theta[i-1] / delta ^ 2, log=TRUE)
     
-    accept.prob <- exp(accept.prob)
+    alpha <- exp(alpha)
+    alpha <- min(1, alpha * (rho < epsilon))
     
-    # if u < accept.prob 1 else 0
-    # also, if rho >= epsilon then 0
-    accept <- u < accept.prob
-    
-    # 3b, 3c, 4
+    # accept with probability alpha
+    accept <- runif(1) < alpha
     theta[i] <- theta.prime * accept + theta[i-1] * (1-accept)
 }
 
