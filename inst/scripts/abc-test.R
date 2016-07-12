@@ -52,16 +52,14 @@ prior.shape <- 1
 prior.rate <- 0.1
 delta <- 10
 
-# param: theta
-# prior: Gamma(1, 0.1)
-# proposal: Gamma(theta^2 / delta^2, theta / delta^2)
-shape <- 0.1
-rate <- 0.1
-delta.eps <- 10
+# param: epsilon
+# prior: Exponential(1/3)
+# proposal: Exponential(1/epsilon_{i-1})
+rate <- 1 / 3
 
 # intialize by sampling theta^{(0)} ~ pi(theta)
 theta <- rgamma(iters, prior.shape, prior.rate)
-epsilon <- rgamma(iters, shape, rate)
+epsilon <- rexp(iters, rate)
 
 for (i in 2:iters) {
     # message bar
@@ -71,10 +69,9 @@ for (i in 2:iters) {
     theta.prime <- rgamma(1, theta[i-1] ^ 2 / delta^2, 
                           theta[i-1] / delta^2)
     # simulate epsilon' ~ K(epsilon|epsilon^{(t-1)})
-    eps.prime <- rgamma(1, epsilon[i-1] ^ 2 / delta.eps^2, 
-                        epsilon[i-1] / delta.eps^2)
-    # don't allow epsilons less than 0.5
-    eps.prime <- max(eps.prime, 0.5)
+    eps.prime <- rexp(1, 1 / epsilon[i-1])
+    # don't allow epsilons less than 0.25
+    eps.prime <- max(eps.prime, 0.25)
 
     # simulate x ~ p(x | theta')
     growth <- logistic.growth(T, 0, 1, theta.prime)
@@ -87,17 +84,15 @@ for (i in 2:iters) {
     
     # calculate acceptance probability
     alpha <- dgamma(theta.prime, prior.shape, prior.rate, log=TRUE) + 
-             dgamma(eps.prime, shape, rate, log=TRUE) + 
+             dexp(eps.prime, rate, log=TRUE) + 
              dgamma(theta[i-1], theta.prime ^ 2 / delta ^2, 
                     theta.prime / delta  ^ 2, log=TRUE) +
-             dgamma(epsilon[i-1], eps.prime ^ 2 / delta.eps ^2, 
-                    eps.prime / delta.eps  ^ 2, log=TRUE) -
+             dexp(epsilon[i-1], 1 / eps.prime, log=TRUE) -
              dgamma(theta[i-1], prior.shape, prior.rate, log=TRUE) - 
-             dgamma(epsilon[i-1], shape, rate, log=TRUE) - 
+             dexp(epsilon[i-1], rate, log=TRUE) - 
              dgamma(theta.prime, theta[i-1] ^ 2 / delta ^ 2, 
                     theta[i-1] / delta  ^ 2, log=TRUE) -
-             dgamma(eps.prime, epsilon[i-1] ^ 2 / delta.eps ^2, 
-                    epsilon[i-1] / delta.eps  ^ 2, log=TRUE)
+             dexp(eps.prime, 1 / epsilon[i-1], log=TRUE)
       
     alpha <- exp(alpha)
     alpha <- min(1, alpha * (rho < eps.prime))
@@ -110,3 +105,5 @@ for (i in 2:iters) {
 
 ts.plot(epsilon)
 ts.plot(theta)
+# just view the theta's where epsilon is a good range
+ts.plot(theta[epsilon < 3])
