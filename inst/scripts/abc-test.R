@@ -245,3 +245,334 @@ ggplot(filter(data, x >= 1000), aes(x=theta)) +
   xlim(0, 8) +
   ggtitle("Comparison of priors with A and P fixed\nDensities with first 1,000 iters removed")
 dev.off()
+
+# ABC - MCMC
+# two parameter
+T <- seq(-5, 5, len=10)
+set.seed(20)
+iters <- 100000
+epsilon <- 10
+
+# prior: Gamma(1, 0.1)
+# proposal: Gamma(theta^2 / delta^2, theta / delta^2)
+prior.shape <- 1
+prior.rate <- 0.1
+delta <- 3
+
+# make copies of P
+P <- patts$P
+
+# intialize by sampling theta^{(0)} ~ pi(theta)
+theta.1 <- rgamma(iters, prior.shape.e, prior.rate.e)
+theta.2 <- rgamma(iters, prior.shape.e, prior.rate.e)
+growth <- logistic.growth(T, 0, 1, theta.1[1])
+P[3, 1:10] <- growth
+growth <- logistic.growth(T, 0, 1, theta.2[1])
+P[3, 11:20] <- growth
+
+for (i in 2:iters) {
+    # message bar
+    cat(i, "of", iters, "\r")
+  
+    # 1. simulate theta' ~ K(theta|theta^{(t-1)})
+    theta.prime <- rgamma(1, theta.1[i-1] ^ 2 / delta^2, 
+                          theta.1[i-1] / delta^2)
+
+    # 2. simulate x ~ p(x | theta')
+    growth <- logistic.growth(T, 0, 1, theta.prime)
+    P.prime <- P
+    P.prime[3, 1:10] <- growth
+
+    # 3. If rho(S(x), S(y)) < epsilon
+    D.prime <- A %*% P.prime
+    diff <- D - D.prime
+    rho <- norm(diff, "2")
+    rho.accept <- rho < epsilon
+
+    # a. u ~ U(0, 1)
+    u <- runif(1, 0, 1) / rho.accept
+
+    # b. if u leq pi(theta')/pi*theta^{(t-1)} times 
+    #    K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
+    #    theta^{(t)} = theta'
+    accept.prob <- dgamma(theta.prime, prior.shape, prior.rate, 
+                          log=TRUE) - 
+                   dgamma(theta.1[i-1], prior.shape, prior.rate, 
+                          log=TRUE) +
+                   dgamma(theta.1[i-1], theta.prime ^ 2 / delta ^2, 
+                          theta.prime / delta  ^ 2, log=TRUE) -
+                   dgamma(theta.prime, theta.1[i-1] ^ 2 / delta ^ 2, 
+                          theta.1[i-1] / delta ^ 2, log=TRUE)
+    
+    accept.prob <- exp(accept.prob)
+    
+    # if u < accept.prob 1 else 0
+    # also, if rho >= epsilon then 0
+    accept <- u < accept.prob
+    
+    # 3b, 3c, 4
+    theta.1[i] <- theta.prime * accept + theta.1[i-1] * (1-accept)
+    P <- P.prime * accept + P * (1-accept)
+    
+    # 1. simulate theta' ~ K(theta|theta^{(t-1)})
+    theta.prime <- rgamma(1, theta.2[i-1] ^ 2 / delta^2, 
+                          theta.2[i-1] / delta^2)
+
+    # 2. simulate x ~ p(x | theta')
+    growth <- logistic.growth(T, 0, 1, theta.prime)
+    P.prime <- P
+    P.prime[3, 11:20] <- growth
+
+    # 3. If rho(S(x), S(y)) < epsilon
+    D.prime <- A %*% P.prime
+    diff <- D - D.prime
+    rho <- norm(diff, "2")
+    rho.accept <- rho < epsilon
+
+    # a. u ~ U(0, 1)
+    u <- runif(1, 0, 1) / rho.accept
+
+    # b. if u leq pi(theta')/pi*theta^{(t-1)} times 
+    #    K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
+    #    theta^{(t)} = theta'
+    accept.prob <- dgamma(theta.prime, prior.shape, prior.rate, 
+                          log=TRUE) - 
+                   dgamma(theta.2[i-1], prior.shape, prior.rate, 
+                          log=TRUE) +
+                   dgamma(theta.2[i-1], theta.prime ^ 2 / delta ^2, 
+                          theta.prime / delta  ^ 2, log=TRUE) -
+                   dgamma(theta.prime, theta.2[i-1] ^ 2 / delta ^ 2, 
+                          theta.2[i-1] / delta ^ 2, log=TRUE)
+    
+    accept.prob <- exp(accept.prob)
+    
+    # if u < accept.prob 1 else 0
+    # also, if rho >= epsilon then 0
+    accept <- u < accept.prob
+    
+    # 3b, 3c, 4
+    theta.2[i] <- theta.prime * accept + theta.2[i-1] * (1-accept)
+    P <- P.prime * accept + P * (1-accept)
+}
+
+cat("\n")
+
+library(ggplot2)
+library(dplyr)
+theme_set(theme_classic())
+
+data <- bind_rows(data_frame(x=1:iters, theta=theta.1, param="theta1"),
+                  data_frame(x=1:iters, theta=theta.2, param="theta2"))
+
+ggplot(data, aes(x=x, y=theta)) +
+  geom_line(aes(colour=param, linetype=param),
+            alpha=0.5) +
+  geom_smooth(aes(colour=param, linetype=param),
+              se=FALSE) +
+  #geom_hline(yintercept=4) +
+  xlab("MCMC Iteration") +
+  ylab(expression(theta)) +
+  ggtitle("Comparison of priors with A and P fixed\nBoth growth parameters estimated")
+
+# ABC - MCMC
+# one parameter with epsilon parameters
+T <- seq(-5, 5, len=10)
+set.seed(20)
+iters <- 20000
+
+# parameter theta
+# prior: Gamma(1, 0.1)
+# proposal: Gamma(theta^2 / delta^2, theta / delta^2)
+prior.shape <- 1
+prior.rate <- 0.1
+delta <- 10
+
+# parameter epsilon
+# prior: Gamma(1, 0.1)
+# proposal: Gamma(epsilon^2 / delta^2, epsilon / delta^2)
+prior.shape.eps <- 1
+prior.rate.eps <- 0.1
+delta.eps <- 10
+
+# make copies of P
+P <- patts$P
+
+# LFA1 Intialize (theta_0, epsilon_0), i=0
+theta.1 <- rgamma(iters, prior.shape, prior.rate)
+eps.1 <- rgamma(iters, prior.shape.eps, prior.rate.eps)
+eps.1 <- rep(3, iters)
+
+for (i in 2:iters) {
+    # message bar
+    cat(i, "of", iters, "\r")
+  
+    # LFA2 Propose (theta*, epsilon*) according to 
+    # transition density q((theta_i, epsilon_i)->(theta*, epsilon*))
+    theta.prime <- rgamma(1, theta.1[i-1] ^ 2 / delta^2, 
+                          theta.1[i-1] / delta^2)
+    eps.prime <- rgamma(1, eps.1[i-1] ^ 2 / delta.eps^2, 
+                        eps.1[i-1] / delta.eps^2)
+    
+    # don't allow proposals of 0
+    #theta.prime <- max(theta.prime, 0.01)
+    eps.prime <- 3
+
+    # LFA3 Generate y* ~ f(y|theta*)
+    growth <- logistic.growth(T, 0, 1, theta.prime)
+    P.prime <- P
+    P.prime[3, 1:10] <- growth
+
+    # LFA4
+    D.prime <- A %*% P.prime
+    diff <- D - D.prime
+    rho <- norm(diff, "2")
+
+    u <- runif(1, 0, 1)
+    # numerator
+    alpha <- dgamma(theta.prime, prior.shape, prior.rate, log=TRUE) +
+             #dgamma(eps.prime, prior.shape.eps, prior.rate.eps, log=TRUE) +
+             dgamma(theta.1[i-1], theta.prime ^ 2 / delta ^2, 
+                    theta.prime / delta  ^ 2, log=TRUE) +
+             #dgamma(eps.1[i-1], eps.prime ^ 2 / delta.eps ^2, 
+             #       eps.prime / delta.eps ^ 2, log=TRUE) -
+    # denominator
+             dgamma(theta.1[i-1], prior.shape, prior.rate, log=TRUE) -
+             #dgamma(eps.1[i-1], prior.shape.eps, prior.rate.eps, log=TRUE) -
+             dgamma(theta.prime, theta.1[i-1] ^ 2 / delta ^ 2, 
+                    theta.1[i-1] / delta ^ 2, log=TRUE) #-
+             #dgamma(eps.prime, eps.1[i-1] ^ 2 / delta.eps ^2, 
+             #       eps.1[i-1] / delta.eps ^ 2, log=TRUE)
+    
+    alpha <- exp(alpha)
+    alpha <- min(1, alpha * (rho < eps.prime))
+    accept <- u < accept.prob
+    
+    theta.1[i] <- theta.prime * accept + theta.1[i-1] * (1-accept)
+    eps.1[i] <- eps.prime * accept + eps.1[i-1] * (1-accept)
+}
+
+cat("\n")
+
+library(ggplot2)
+library(dplyr)
+theme_set(theme_classic())
+
+data <- bind_rows(data_frame(x=1:iters, theta=theta.1, param="theta1"),
+                  data_frame(x=1:iters, theta=eps.1, param="eps1"))
+
+ggplot(data, aes(x=x, y=theta)) +
+  geom_line(aes(colour=param, linetype=param),
+            alpha=0.5) +
+  facet_wrap(~param) +
+  xlab("MCMC Iteration") +
+  ylab(expression(theta))
+
+# ABC - MCMC
+# two parameter
+T <- seq(-5, 5, len=10)
+set.seed(20)
+iters <- 100000
+epsilon <- 10
+
+# prior: Gamma(1, 0.1)
+# proposal: Gamma(theta^2 / delta^2, theta / delta^2)
+prior.shape <- 1
+prior.rate <- 0.1
+delta <- 3
+
+# make copies of P
+P <- patts$P
+
+# intialize by sampling theta^{(0)} ~ pi(theta)
+theta.1 <- rgamma(iters, prior.shape.e, prior.rate.e)
+theta.2 <- rgamma(iters, prior.shape.e, prior.rate.e)
+growth <- logistic.growth(T, 0, 1, theta.1[1])
+P[3, 1:10] <- growth
+growth <- logistic.growth(T, 0, 1, theta.2[1])
+P[3, 11:20] <- growth
+
+for (i in 2:iters) {
+    # message bar
+    cat(i, "of", iters, "\r")
+  
+    # 1. simulate theta' ~ K(theta|theta^{(t-1)})
+    theta.prime.1 <- rgamma(1, theta.1[i-1] ^ 2 / delta^2, 
+                            theta.1[i-1] / delta^2)
+    theta.prime.2 <- rgamma(1, theta.2[i-1] ^ 2 / delta^2, 
+                            theta.2[i-1] / delta^2)
+
+    # 2. simulate x ~ p(x | theta')
+    growth <- c(logistic.growth(T, 0, 1, theta.prime.1),
+                logistic.growth(T, 0, 1, theta.prime.2))
+
+    # 3. If rho(S(x), S(y)) < epsilon
+    D.prime <- A %*% P.prime
+    diff <- D - D.prime
+    rho <- norm(diff, "2")
+    rho.accept <- rho < epsilon
+
+    # a. u ~ U(0, 1)
+    u <- runif(1, 0, 1) / rho.accept
+
+    # b. if u leq pi(theta')/pi*theta^{(t-1)} times 
+    #    K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
+    #    theta^{(t)} = theta'
+    accept.prob <- dgamma(theta.prime, prior.shape, prior.rate, 
+                          log=TRUE) - 
+                   dgamma(theta.1[i-1], prior.shape, prior.rate, 
+                          log=TRUE) +
+                   dgamma(theta.1[i-1], theta.prime ^ 2 / delta ^2, 
+                          theta.prime / delta  ^ 2, log=TRUE) -
+                   dgamma(theta.prime, theta.1[i-1] ^ 2 / delta ^ 2, 
+                          theta.1[i-1] / delta ^ 2, log=TRUE)
+    
+    accept.prob <- exp(accept.prob)
+    
+    # if u < accept.prob 1 else 0
+    # also, if rho >= epsilon then 0
+    accept <- u < accept.prob
+    
+    # 3b, 3c, 4
+    theta.1[i] <- theta.prime * accept + theta.1[i-1] * (1-accept)
+    P <- P.prime * accept + P * (1-accept)
+    
+    # 1. simulate theta' ~ K(theta|theta^{(t-1)})
+    theta.prime <- rgamma(1, theta.2[i-1] ^ 2 / delta^2, 
+                          theta.2[i-1] / delta^2)
+
+    # 2. simulate x ~ p(x | theta')
+    growth <- logistic.growth(T, 0, 1, theta.prime)
+    P.prime <- P
+    P.prime[3, 11:20] <- growth
+
+    # 3. If rho(S(x), S(y)) < epsilon
+    D.prime <- A %*% P.prime
+    diff <- D - D.prime
+    rho <- norm(diff, "2")
+    rho.accept <- rho < epsilon
+
+    # a. u ~ U(0, 1)
+    u <- runif(1, 0, 1) / rho.accept
+
+    # b. if u leq pi(theta')/pi*theta^{(t-1)} times 
+    #    K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
+    #    theta^{(t)} = theta'
+    accept.prob <- dgamma(theta.prime, prior.shape, prior.rate, 
+                          log=TRUE) - 
+                   dgamma(theta.2[i-1], prior.shape, prior.rate, 
+                          log=TRUE) +
+                   dgamma(theta.2[i-1], theta.prime ^ 2 / delta ^2, 
+                          theta.prime / delta  ^ 2, log=TRUE) -
+                   dgamma(theta.prime, theta.2[i-1] ^ 2 / delta ^ 2, 
+                          theta.2[i-1] / delta ^ 2, log=TRUE)
+    
+    accept.prob <- exp(accept.prob)
+    
+    # if u < accept.prob 1 else 0
+    # also, if rho >= epsilon then 0
+    accept <- u < accept.prob
+    
+    # 3b, 3c, 4
+    theta.2[i] <- theta.prime * accept + theta.2[i-1] * (1-accept)
+    P <- P.prime * accept + P * (1-accept)
+}
