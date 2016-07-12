@@ -2,3 +2,5 @@
 ^appveyor\.yml$
 ^\.lintr$
 ^\.astylerc$
+^.*\.Rproj$
+^\.Rproj\.user$
