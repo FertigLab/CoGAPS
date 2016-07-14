@@ -27,7 +27,7 @@ gelman.rubin <- function(param) {
 
 data(SimpSim)
 nIter <- 10000
-nBurn <- 300000
+nBurn <- 30000
 chains <- 3 # num of MCMC chains
 patterns <- 3
 a <- p <- c <- matrix(NA, nrow=nIter, ncol=chains)           # empty matrix to store values from each chain
@@ -42,12 +42,34 @@ for (i in 1:3) {
     P.mean[, , i] <- results$Pmean
 }
 
+library(ggplot2)
+theme_set(theme_classic())
+
 x <- a[, 1]
 qplot(x, geom="density")
-d = rbind(data.frame(t=1:10000, x=a[, 1], chain="1"),
-          data.frame(t=1:10000, x=a[, 2], chain="2"),
-          data.frame(t=1:10000, x=a[, 3], chain="3"))
-ggplot(d, aes(x=t, y=x)) + geom_point(aes(colour=chain))
+d = rbind(data.frame(t=1:10000, x=a[, 1], chain="1", m="A"),
+          data.frame(t=1:10000, x=a[, 2], chain="2", m="A"),
+          data.frame(t=1:10000, x=a[, 3], chain="3", m="A"))
+e = rbind(data.frame(t=1:10000, x=p[, 1], chain="1", m="P"),
+          data.frame(t=1:10000, x=p[, 2], chain="2", m="P"),
+          data.frame(t=1:10000, x=p[, 3], chain="3", m="P"))
+data <- rbind(d, e)
+ggplot(data, aes(x=t, y=x)) + geom_point(aes(colour=chain)) +
+    facet_wrap(~m)
+
+library(dplyr)
+library(tidyr)
+data2 <- data %>%
+    group_by(chain, t) %>%
+    summarise(a.plus.p=sum(x),
+              a.times.p=prod(x),
+              sum.sq.op=sum(x^2),
+              sq.sum.sq=sqrt(sum(x^2))) %>%
+    gather(operation, value, a.plus.p:sq.sum.sq)
+
+ggplot(data2, aes(x=t, y=value)) + 
+    geom_point(aes(colour=chain)) +
+    facet_wrap(~operation, scales="free_y")
 
 s <- list(a=a, p=p, c=c)
 
@@ -55,5 +77,12 @@ s <- list(a=a, p=p, c=c)
 a.Rhat <- round(gelman.rubin(a), 3)
 p.Rhat <- round(gelman.rubin(p), 3)
 c.Rhat <- round(gelman.rubin(c), 3)
+
+a.Rhat
+p.Rhat
+c.Rhat
+
+gelman.rubin(a * p)
+gelman.rubin(a + p)
 
 message("A atoms: ", a.Rhat, " P atoms ", p.Rhat,  " chiSq ", c.Rhat)
