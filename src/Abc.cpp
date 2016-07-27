@@ -53,4 +53,10 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     }
 }
 
-Abc::Abc(
+Rcpp::NumericVector Abc::theta() {
+    return _theta;
+}
+
+Rcpp::NumericVector Abc::theta() {
+    return _epsilon;
+}
