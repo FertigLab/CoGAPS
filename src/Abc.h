@@ -20,7 +20,7 @@ class Abc {
         double _prior_sd;
 
         // data
-        Rcpp::NumericVector _T;
+        // Rcpp::NumericVector _T;
         Rcpp::NumericMatrix _D;
 
     public:
