@@ -19,3 +19,4 @@
 # Bioconductor files (used for setting up remotes for `git svn`)
 update_remotes.sh
 .Rproj.user
+*.Rproj
