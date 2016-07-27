@@ -15,6 +15,10 @@ class Abc {
         // value 
         Rcpp::NumericVector _theta;
 
+        // priors
+        double _prior_mean;
+        double _prior_sd;
+
         // data
         Rcpp::NumericVector _T;
         Rcpp::NumericMatrix _D;
