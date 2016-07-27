@@ -1,4 +1,15 @@
 #include "Abc.h"
+Abc::Abc(Rcpp::NumericMatrix data, 
+         double delta=10.0,
+         double epsilon=100.0,
+         double prior_mean=0.0,
+         double prior_sd=10.0) :
+    Rcpp::NumericVector _theta(1) {
+    _delta=delta;
+    _epsilon=epsilon;
+    _prior_mean=prior_mean;
+    _prior_sd=prior_sd;
+}
 
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     // 1. simulate theta' ~ K(theta|theta^{(t-1)})
@@ -41,3 +52,5 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         _theta = _theta;
     }
 }
+
+Abc::Abc(

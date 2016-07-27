@@ -24,6 +24,13 @@ class Abc {
         Rcpp::NumericMatrix _D;
 
     public:
+        // constructor
+        Abc::Abc(Rcpp::NumericMatrix data, 
+                 double delta=10.0,
+                 double epsilon=100.0,
+                 double prior_mean=0.0,
+                 double prior_sd=10.0);
+
         // propose new theta
         void propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P);
 
