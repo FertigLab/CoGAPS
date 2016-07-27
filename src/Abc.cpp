@@ -12,4 +12,33 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         P_prime(2, i) = growth[i];
     }
 
+    // 3. If rho(S(x), S(y)) < epsilon
+    arma::mat D_prime = Rcpp::as<arma::mat>(A) * Rcpp::as<arma::mat>(P_prime);
+    arma::mat diff = Rcpp::as<arma::mat>(_D) - D_prime;
+    double rho = norm(diff, 2);
+
+    if (rho < _tol) {
+        // a. u ~ U(0, 1)
+        Rcpp::NumericVector u = Rcpp::runif(1, 0, 1);
+
+        // b. if u leq pi(theta')/pi*theta^{(t-1)} times 
+        //             K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
+        //             theta^{(t)} = theta'
+        accept = Rcpp::dnorm(theta_prime, _prior_mean, _prior_sd, true) -
+                 Rcpp::dnorm(_theta, _prior_mean, _prior_sd, true) +
+                 Rcpp::dnorm(_theta, theta_prime[0], _delta) -
+                 Rcpp::dnorm(theta_prime, _theta[0], _delta);
+        accept = Rcpp::exp(accept);
+
+        if (u[0] < accept[0]) {
+            _theta = theta_prime;
+        } else {
+            // c. otherwise
+            _theta = _theta;
+        }
+    } else {
+    // 4. otherwise
+        _theta = _theta;
+    }
+}
 }
