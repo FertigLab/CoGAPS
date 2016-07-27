@@ -41,4 +41,3 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         _theta = _theta;
     }
 }
-}
