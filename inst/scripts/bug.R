@@ -1,0 +1,5 @@
+library('CoGAPS')
+data('SimpSim')
+x <- gapsRun(SimpSim.D,SimpSim.S,nFactor = 3)
+summary(x$ASnapshots[[1]] - x$ASnapshots[[100]])
+summary(x$PSnapshots[[1]] - x$PSnapshots[[100]])
