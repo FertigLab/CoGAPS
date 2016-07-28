@@ -10,37 +10,21 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
   protected:
     // indicates which pattern is growth (will be removed most likely)
     int _whichPattern;
+
     // vector of case status (assume 0 is non-case) i.e. {0, 0, 0, 1, 1, 1}
     Rcpp::IntegerVector _treatStatus;
+
     // vector of time recordings
     Rcpp::NumericVector _timeRecorded;
 
-    // abc tolerance
-    double _tol;
-
-    // priors for Gibbs Sampling of regression coefficients
-    double _mu0;    // beta prior mean
-    double _tau0; // beta prior precision
-    double _a;      // variance prior shape
-    double _b;      // variance prior rate
-
     // current estimates
-    Rcpp::NumericMatrix _beta0;
-    Rcpp::NumericMatrix _beta1;
-    Rcpp::NumericVector _tau;
     Rcpp::NumericVector _theta;
 
     // difference
     Rcpp::NumericVector _tolerance;
-    Rcpp::NumericVector _accept_prob;
 
     // logistic growth normalization
     double _normalization;
-
-    // mcmc parameters
-    double _delta;
-    double _prior_mean;
-    double _prior_sd;
 
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
@@ -56,11 +40,8 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
 
     ~GibbsSamplerTransformation() {};
 
-    Rcpp::NumericMatrix beta0();
-    Rcpp::NumericMatrix beta1();
     Rcpp::NumericVector theta();
     Rcpp::NumericVector tolerance();
-    Rcpp::NumericVector accept_prob();
     
     void abc_mcmc(int burn=0, int iter=0, int thin=1, double tolerance=5.0);
 

@@ -39,10 +39,6 @@ Rcpp::NumericVector GibbsSamplerTransformation::tolerance() {
     return _tolerance;
 }
 
-Rcpp::NumericVector GibbsSamplerTransformation::accept_prob() {
-    return _accept_prob;
-}
-
 void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double tolerance) {
     // get the A, P, D matrices
     Rcpp::NumericMatrix A_curr(_AMatrix.get_nRow(), _AMatrix.get_nCol());
@@ -70,5 +66,4 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     }
 
     _theta[burn + iter] = theta[0];
-    _accept_prob[burn + iter] = accept[0];
 }
