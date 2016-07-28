@@ -67,5 +67,9 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
         _growth.propose(A_curr, P_curr);
     }
 
+    // save the theta's
     _theta[burn + iter] =_growth.theta()[0];
+
+    // update the P matrix
+    _PMatrix.setRow(_growth.pattern(), 2);
 }
