@@ -2,7 +2,6 @@
 #define _ABC_H_
 
 #include <vector>
-#include <Rcpp.h>
 #include <RcppArmadillo.h>
 
 class Abc {
@@ -27,7 +26,7 @@ class Abc {
     public:
         // constructor
         Abc(std::vector<std::vector<double> >& data, 
-            Rcpp::NumericVector timeRecorded,
+            std::vector<double> timeRecorded,
             double delta=10.0,
             double epsilon=100.0,
             double prior_mean=0.0,

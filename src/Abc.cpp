@@ -1,6 +1,6 @@
 #include "Abc.h"
 Abc::Abc(std::vector<std::vector<double> >& data, 
-         Rcpp::NumericVector timeRecorded,
+         std::vector<double> timeRecorded,
          double delta,
          double epsilon,
          double prior_mean,
