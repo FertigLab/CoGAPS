@@ -32,6 +32,7 @@ class Abc {
         // constructor
         Abc(std::vector<std::vector<double> >& data, 
             std::vector<double> timeRecorded,
+            std::string prior="normal",
             double delta=10.0,
             double epsilon=100.0,
             double prior_mean=0.0,
