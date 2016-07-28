@@ -1,5 +1,5 @@
 #include "Abc.h"
-Abc::Abc(std::vector<std::vector<double> > data, 
+Abc::Abc(std::vector<std::vector<double> >& data, 
          Rcpp::NumericVector timeRecorded,
          double delta,
          double epsilon,
