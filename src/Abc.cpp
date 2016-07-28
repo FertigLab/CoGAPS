@@ -31,6 +31,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     if (rho < _epsilon) {
         // a. u ~ U(0, 1)
         Rcpp::NumericVector u = Rcpp::runif(1, 0, 1);
+        Rcpp::NumericVector accept;
 
         // b. if u leq pi(theta')/pi*theta^{(t-1)} times 
         //             K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
