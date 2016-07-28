@@ -28,7 +28,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     arma::mat diff = Rcpp::as<arma::mat>(_D) - D_prime;
     double rho = norm(diff, 2);
 
-    if (rho < _tol) {
+    if (rho < _epsilon) {
         // a. u ~ U(0, 1)
         Rcpp::NumericVector u = Rcpp::runif(1, 0, 1);
 
