@@ -3,6 +3,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
          std::vector<double> timeRecorded,
          std::string prior,
          std::string proposal,
+         bool epsilon_mcmc,
          double delta,
          double epsilon,
          double prior_mean,
@@ -19,6 +20,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     _T=timeRecorded,
     _prior_choice = prior;
     _proposal_choice = proposal;
+    _epsilon_mcmc = epsilon_mcmc;
     _delta=delta;
     _epsilon=epsilon;
     _prior_mean=prior_mean;
@@ -59,6 +61,15 @@ Rcpp::NumericVector _proposal(Rcpp::NumericVector param1,
         double b = a * (1.0 / param2 - 1.0);
         return Rcpp::dgamma(param1, a, b, true);
     }
+}
+
+double _epsilon() {
+    return(Rcpp::rexp(1, 1 / _epsilon));
+}
+
+Rcpp::NumericVector _epsilon(double param1,  
+                             double param2) {
+    Rcpp::dexp(Rcpp::wrap(param1), 1.0 / param2, log=true)
 }
 
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {

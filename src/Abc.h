@@ -35,12 +35,19 @@ class Abc {
         Rcpp::NumericVector _proposal(Rcpp::NumericVector param1, // density
                                       Rcpp::NumericVector param2);
 
+        // epsilon mcmc per Bortot et al 2007
+        bool _epsilon_mcmc;
+        double _epsilon(); // draw new epsilon
+        Rcpp::NumericVector _epsilon(double param1,  // density of epsilon
+                                     double param2);
+
     public:
         // constructor
         Abc(std::vector<std::vector<double> >& data, 
             std::vector<double> timeRecorded,
             std::string prior="normal",
             std::string proposal="normal",
+            bool epsilon_mcmc=false,
             double delta=10.0,
             double epsilon=100.0,
             double prior_mean=0.0,
