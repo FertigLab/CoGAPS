@@ -21,6 +21,17 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     _prior_sd=prior_sd;
 }
 
+Rcpp::NumericVector _prior(Rcpp::NumericVector param) {
+    if (_prior_choice == "normal") {
+        return Rcpp::dnorm(param, _prior_mean, _prior_sd, true);
+    } else if (_prior_choice == "gamma") {
+        double a = ((1.0 - _prior_mean) / pow(_prior_sd, 2.0) - 
+                    1.0 / _prior_mean) * pow(_prior_mean, 2.0);
+        double b = a * (1.0 / _prior_mean - 1.0);
+        return Rcpp::dgamma(param, a, b, true);
+    }
+}
+
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     // 1. simulate theta' ~ K(theta|theta^{(t-1)})
     Rcpp::NumericVector theta_prime = Rcpp::rnorm(1, _theta[0], _delta);
@@ -46,8 +57,8 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         // b. if u leq pi(theta')/pi*theta^{(t-1)} times 
         //             K(theta^{(t-1)}|theta')/K(theta'|theta^{(t-1)})
         //             theta^{(t)} = theta'
-        accept = Rcpp::dnorm(theta_prime, _prior_mean, _prior_sd, true) -
-                 Rcpp::dnorm(_theta, _prior_mean, _prior_sd, true) +
+        accept = _prior(theta_prime) -
+                 _prior(_theta) +
                  Rcpp::dnorm(_theta, theta_prime[0], _delta) -
                  Rcpp::dnorm(theta_prime, _theta[0], _delta);
         accept = Rcpp::exp(accept);

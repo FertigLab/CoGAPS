@@ -2,6 +2,7 @@
 #define _ABC_H_
 
 #include <vector>
+#include <string>
 #include <RcppArmadillo.h>
 
 class Abc {
@@ -22,6 +23,10 @@ class Abc {
         // data
         Rcpp::NumericVector _T; // time of recording
         Rcpp::NumericMatrix _D; // data
+
+        // prior density
+        std::string _prior_choice;
+        Rcpp::NumericVector _prior(Rcpp::NumericVector param);
 
     public:
         // constructor
