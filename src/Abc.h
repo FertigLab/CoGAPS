@@ -28,11 +28,18 @@ class Abc {
         std::string _prior_choice;
         Rcpp::NumericVector _prior(Rcpp::NumericVector param);
 
+        // proposal distribution
+        std::string _proposal_choice;
+        Rcpp::NumericVector _proposal(); // draw from proposal
+        Rcpp::NumericVector _proposal(Rcpp::NumericVector param1, // density
+                                      Rcpp::NumericVector param2);
+
     public:
         // constructor
         Abc(std::vector<std::vector<double> >& data, 
             std::vector<double> timeRecorded,
             std::string prior="normal",
+            std::string proposal="normal",
             double delta=10.0,
             double epsilon=100.0,
             double prior_mean=0.0,

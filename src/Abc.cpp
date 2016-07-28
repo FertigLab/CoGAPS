@@ -2,6 +2,7 @@
 Abc::Abc(std::vector<std::vector<double> >& data, 
          std::vector<double> timeRecorded,
          std::string prior="normal",
+         std::string proposal,
          double delta,
          double epsilon,
          double prior_mean,
@@ -17,6 +18,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
 
     _T=timeRecorded,
     _prior_choice = prior;
+    _proposal_choice = proposal;
     _delta=delta;
     _epsilon=epsilon;
     _prior_mean=prior_mean;
@@ -34,9 +36,34 @@ Rcpp::NumericVector _prior(Rcpp::NumericVector param) {
     }
 }
 
+Rcpp::NumericVector _proposal() {
+    if (_proposal_choice == "normal") {
+        return Rcpp::rnorm(1, _theta[0], _delta);
+    } else if (_proposal_choice == "gamma") {
+        double a = ((1.0 - _theta[0]) / pow(_delta, 2.0) - 
+                    1.0 / _theta[0]) * pow(_theta[0], 2.0);
+        double b = a * (1.0 / _theta[0] - 1.0);
+        return Rcpp::rgamma(1, a, b);
+    }
+}
+
+Rcpp::NumericVector _proposal(Rcpp::NumericVector param1,
+                              Rcpp::NumericVector param2) {
+    if (_proposal_choice == "normal") {
+        // symmetric proposal distribution, so we can ignore it
+        // just return additive identity for log scale
+        return Rcpp::wrap(0);
+    } else if (_proposal_choice == "gamma") {
+        double a = ((1.0 - param2) / pow(_delta, 2.0) - 
+                    1.0 / param2) * pow(param2, 2.0);
+        double b = a * (1.0 / param2 - 1.0);
+        return Rcpp::dgamma(param1, a, b, true);
+    }
+}
+
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     // 1. simulate theta' ~ K(theta|theta^{(t-1)})
-    Rcpp::NumericVector theta_prime = Rcpp::rnorm(1, _theta[0], _delta);
+    Rcpp::NumericVector theta_prime = _proposal();
 
     // 2. simulate x ~ p(x | theta')
     Rcpp::NumericVector growth = 1. / (1 + Rcpp::exp(-theta_prime * _T));
@@ -61,8 +88,8 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         //             theta^{(t)} = theta'
         accept = _prior(theta_prime) -
                  _prior(_theta) +
-                 Rcpp::dnorm(_theta, theta_prime[0], _delta, true) -
-                 Rcpp::dnorm(theta_prime, _theta[0], _delta, true);
+                 _proposal(_theta, theta_prime) -
+                 _proposal(theta_prime, _theta);
         accept = Rcpp::exp(accept);
 
         if (u[0] < accept[0]) {
