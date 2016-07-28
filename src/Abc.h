@@ -20,12 +20,13 @@ class Abc {
         double _prior_sd;
 
         // data
-        // Rcpp::NumericVector _T;
-        Rcpp::NumericMatrix _D;
+        Rcpp::NumericVector _T; // time of recording
+        Rcpp::NumericMatrix _D; // data
 
     public:
         // constructor
         Abc(Rcpp::NumericMatrix data, 
+            Rcpp::NumericVector timeRecorded,
             double delta=10.0,
             double epsilon=100.0,
             double prior_mean=0.0,
