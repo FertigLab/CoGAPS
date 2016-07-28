@@ -18,8 +18,8 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
     _growth(&DVector, timeRecorded),
     _theta(nSample + _nEquil),
-    _tolerance(nSample + _nEquil),
-    _accept_prob(nSample + _nEquil) {
+    _tolerance(nSample + _nEquil) {
+
     // assignments for growth data
     _whichPattern = whichPattern;
     _treatStatus = treatStatus;
