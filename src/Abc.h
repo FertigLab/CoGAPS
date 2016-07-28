@@ -26,7 +26,7 @@ class Abc {
 
     public:
         // constructor
-        Abc(std::vector<std::vector<double> > &data, 
+        Abc(std::vector<std::vector<double> > data, 
             Rcpp::NumericVector timeRecorded,
             double delta=10.0,
             double epsilon=100.0,
