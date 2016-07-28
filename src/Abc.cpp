@@ -1,7 +1,7 @@
 #include "Abc.h"
 Abc::Abc(std::vector<std::vector<double> >& data, 
          std::vector<double> timeRecorded,
-         std::string prior="normal",
+         std::string prior,
          std::string proposal,
          double delta,
          double epsilon,
