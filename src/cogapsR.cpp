@@ -498,7 +498,8 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
     int numSnaps = numSnapshots; //Arbitrary to keep convention
 
     if (SampleSnapshots == true) {
-        Rcpp::List ASnapR(numSnaps);
+        Rcpp::NumericVector ASnapR(Rcpp::Dimension(numSnaps, numRow, numCol));
+        //Rcpp::List ASnapR(numSnaps);
         Rcpp::List PSnapR(numSnaps);
         numRow = AMeanVector.size();
         numCol = AMeanVector[0].size() ;
@@ -507,11 +508,12 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
         for (int k = 0; k < numSnaps; k++) {
             for (int i = 0; i < numRow; i++) {
                 for (int j = 0; j < numCol; j++) {
-                    tempASnapMatrix(i, j) = ASnap[k][i][j] ;
+                    //tempASnapMatrix(i, j) = ASnap[k][i][j] ;
+                    //ASnapR(k, i, j) = ASnap[k][i][j];
                 }
             }
 
-            ASnapR[k] = (tempASnapMatrix);
+            //ASnapR.push_back(tempASnapMatrix);
         }
 
         numRow = PMeanVector.size();
