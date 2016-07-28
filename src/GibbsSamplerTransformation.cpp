@@ -64,7 +64,8 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     }
 
     for (int s = 0; s < thin; ++s) {
+        _growth.propose(A_curr, P_curr);
     }
 
-    _theta[burn + iter] = theta[0];
+    _theta[burn + iter] =_growth.theta()[0];
 }
