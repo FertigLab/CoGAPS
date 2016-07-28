@@ -5,6 +5,7 @@
 #include <vector>
 #include <cmath>
 #include <Rcpp.h>
+#include "Abc.h"
 
 class GibbsSamplerTransformation : public GibbsSamplerMap {
   protected:
@@ -25,6 +26,9 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
 
     // logistic growth normalization
     double _normalization;
+
+    // ABC-MCMC updated parameters
+    Abc _growth;
 
   public:
     GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,

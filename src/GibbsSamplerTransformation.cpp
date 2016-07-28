@@ -16,6 +16,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     GibbsSamplerMap(nEquil, nSample, nFactor, alphaA, alphaP, nMaxA, nMaxP, nIterA, nIterP,
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
+    _growth(&DVector, timeRecorded),
     _theta(nSample + _nEquil),
     _tolerance(nSample + _nEquil),
     _accept_prob(nSample + _nEquil) {
