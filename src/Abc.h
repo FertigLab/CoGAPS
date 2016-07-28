@@ -1,6 +1,7 @@
 #ifndef _ABC_H_
 #define _ABC_H_
 
+#include <vector>
 #include <Rcpp.h>
 #include <RcppArmadillo.h>
 
@@ -25,7 +26,7 @@ class Abc {
 
     public:
         // constructor
-        Abc(Rcpp::NumericMatrix data, 
+        Abc(std::vector<std::vector<double> > &data, 
             Rcpp::NumericVector timeRecorded,
             double delta=10.0,
             double epsilon=100.0,

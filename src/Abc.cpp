@@ -1,12 +1,19 @@
 #include "Abc.h"
-Abc::Abc(Rcpp::NumericMatrix data, 
+Abc::Abc(std::vector<std::vector<double> > &data, 
          Rcpp::NumericVector timeRecorded,
          double delta,
          double epsilon,
          double prior_mean,
          double prior_sd) :
-    _theta(1) {
-    _D=data,
+    _theta(1),
+    _D(data.size(), timeRecorded.size()) {
+    // convert data to Rcpp::NumericMatrix form
+    for (int i = 0; i < data.size(); ++i) {
+        for (int j = 0; j < timeRecorded.size(); ++j) {
+            _D(i, j) = data[i][j];
+        }
+    }
+
     _T=timeRecorded,
     _delta=delta;
     _epsilon=epsilon;
