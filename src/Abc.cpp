@@ -1,10 +1,10 @@
 #include "Abc.h"
 Abc::Abc(Rcpp::NumericMatrix data, 
-         double delta=10.0,
-         double epsilon=100.0,
-         double prior_mean=0.0,
-         double prior_sd=10.0) :
-    Rcpp::NumericVector _theta(1) {
+         double delta,
+         double epsilon,
+         double prior_mean,
+         double prior_sd) :
+    _theta(1) {
     _delta=delta;
     _epsilon=epsilon;
     _prior_mean=prior_mean;
