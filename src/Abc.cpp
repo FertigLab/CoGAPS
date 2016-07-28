@@ -59,8 +59,8 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         //             theta^{(t)} = theta'
         accept = _prior(theta_prime) -
                  _prior(_theta) +
-                 Rcpp::dnorm(_theta, theta_prime[0], _delta) -
-                 Rcpp::dnorm(theta_prime, _theta[0], _delta);
+                 Rcpp::dnorm(_theta, theta_prime[0], _delta, true) -
+                 Rcpp::dnorm(theta_prime, _theta[0], _delta, true);
         accept = Rcpp::exp(accept);
 
         if (u[0] < accept[0]) {
