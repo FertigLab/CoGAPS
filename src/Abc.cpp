@@ -64,6 +64,12 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     }
 }
 
+std::vector<double> Abc::pattern() {
+    Rcpp::NumericVector growth = 1. / (1 + Rcpp::exp(_theta * _T));
+
+    return Rcpp::as<std::vector<double> >(growth);
+}
+
 Rcpp::NumericVector Abc::theta() {
     return _theta;
 }

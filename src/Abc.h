@@ -35,6 +35,9 @@ class Abc {
         // propose new theta
         void propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P);
 
+        // get new pattern
+        std::vector<double> pattern();
+
         // get parameters
         Rcpp::NumericVector theta();
         Rcpp::NumericVector epsilon();
