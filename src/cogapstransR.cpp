@@ -204,6 +204,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                               label_A, label_P, label_D, label_S,
                                               DVector, SVector, simulation_id, FPVector, label_FP, 3,
                                               condition, time_of_sample, tolerance);
+    int thin = 1;
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.
@@ -312,7 +313,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.abc_mcmc(ext_iter, 0, 20);
+        GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
 
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSampTrans.get_sysChi2();
@@ -360,7 +361,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.abc_mcmc(0, 0, 20);
+        GibbsSampTrans.abc_mcmc(0, 0, thin);
     }
 
     // ===========================================================================
@@ -391,7 +392,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.abc_mcmc(nEquil, i, 20);
+        GibbsSampTrans.abc_mcmc(nEquil, i, thin);
 
         if (Q_output_atomic == true) {
             GibbsSampTrans.output_atomicdomain('A', i);
