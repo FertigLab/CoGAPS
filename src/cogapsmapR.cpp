@@ -476,34 +476,28 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
     int numSnaps = numSnapshots; //Arbitrary to keep convention
 
     if (SampleSnapshots == true) {
-        Rcpp::List ASnapR(numSnaps);
-        Rcpp::List PSnapR(numSnaps);
         numRow = AMeanVector.size();
         numCol = AMeanVector[0].size() ;
-        Rcpp::NumericMatrix tempASnapMatrix(numRow, numCol);
+        arma::cube ASnapR(numRow, numCol, numSnaps);
 
         for (int k = 0; k < numSnaps; k++) {
             for (int i = 0; i < numRow; i++) {
                 for (int j = 0; j < numCol; j++) {
-                    tempASnapMatrix(i, j) = ASnap[k][i][j] ;
+                    ASnapR(i, j, k) = ASnap[k][i][j];
                 }
             }
-
-            ASnapR[k] = (tempASnapMatrix);
         }
 
         numRow = PMeanVector.size();
         numCol = PMeanVector[0].size() ;
-        Rcpp::NumericMatrix tempPSnapMatrix(numRow, numCol);
+        arma::cube PSnapR(numRow, numCol, numSnaps);
 
         for (int k = 0; k < numSnaps; k++) {
             for (int i = 0; i < numRow; i++) {
                 for (int j = 0; j < numCol; j++) {
-                    tempPSnapMatrix(i, j) = PSnap[k][i][j] ;
+                    PSnapR(i, j, k) = PSnap[k][i][j];
                 }
             }
-
-            PSnapR[k] = (tempPSnapMatrix);
         }
 
         Rcpp::List fileContainer =  Rcpp::List::create(Rcpp::Named("Amean") = AMeanMatrix,
