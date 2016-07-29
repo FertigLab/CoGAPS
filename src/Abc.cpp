@@ -73,10 +73,14 @@ Rcpp::NumericVector _epsilon(double param1,
 }
 
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
-    // 1. simulate theta' ~ K(theta|theta^{(t-1)})
+    // simulate theta' ~ K(theta|theta^{(t-1)})
     Rcpp::NumericVector theta_prime = _proposal();
 
-    // 2. simulate x ~ p(x | theta')
+    // simulate epsilon' ~ K(epsilon|epsilon^{(t-1)})
+    double eps_prime = _epsilon();
+    eps_prime = max(eps_prime, 0.25);
+
+    // simulate x ~ p(x | theta')
     Rcpp::NumericVector growth = 1. / (1 + Rcpp::exp(-theta_prime * _T));
     Rcpp::NumericMatrix P_prime = P;
 
@@ -84,12 +88,14 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         P_prime(2, i) = growth[i];
     }
 
-    // 3. If rho(S(x), S(y)) < epsilon
     arma::mat D_prime = Rcpp::as<arma::mat>(A) * Rcpp::as<arma::mat>(P_prime);
+
+    // calculate rho(S(x), S(y))
     arma::mat diff = Rcpp::as<arma::mat>(_D) - D_prime;
     double rho = norm(diff, 2);
 
-    if (rho < _epsilon) {
+    // calculate acceptance probability
+    if (rho < eps_prime) {
         // a. u ~ U(0, 1)
         Rcpp::NumericVector u = Rcpp::runif(1, 0, 1);
         Rcpp::NumericVector accept;
