@@ -5,7 +5,7 @@ test_that("Same seed, same output with GAPS Simple Simulation", {
     data(SimpSim)
 
     # number of burn-ins and posterior samples
-    nIter <- 5000
+    nIter <- 1000
 
     # two runs with same seed
     results1 <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3,
