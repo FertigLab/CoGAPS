@@ -33,7 +33,8 @@ using std::vector;
 
 // [[Rcpp::export]]
 Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt,
-                     Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed=-1) {
+                     Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed=-1,
+                     bool messages=false) {
     // ===========================================================================
     // Initialization of the random number generator.
     // Different seeding methods:
@@ -211,8 +212,10 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
     }
 
     if (fixBinProbs) {
-        Rcpp::Rcout << "Running CoGAPS Map with fixed bin probabilities with fixed domain ";
-        Rcpp::Rcout << fixedDomain << endl;
+        if (messages) {
+            Rcpp::Rcout << "Running CoGAPS Map with fixed bin probabilities with fixed domain ";
+            Rcpp::Rcout << fixedDomain << endl;
+        }
 
         if (fixedDomain == 'A') {
             numC = ABinsFrame.size();
@@ -314,10 +317,12 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
         outCount++;
 
         if (ext_iter % numOutputs == 0) {
-            Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil <<
-                        ", Atoms:" << tempAtomA << "("
-                        << tempAtomP << ")" <<
-                        "  Chi2 = " << tempChiSq << endl;
+            if (messages) {
+                Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil <<
+                            ", Atoms:" << tempAtomA << "("
+                            << tempAtomP << ")" <<
+                            "  Chi2 = " << tempChiSq << endl;
+            }
         }
 
         // -------------------------------------------
@@ -395,15 +400,17 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
 
         if (i % numOutputs == 0) {
             //----------------------------------
-            Rcpp::Rcout << "Samp: " << i << " of " << nSample <<
-                        ", Atoms:" << tempAtomA << "("
-                        << tempAtomP << ")" <<
-                        // " ,chi2 = " << chi2 <<
-                        "  Chi2 = " << tempChiSq << endl;
+            if (messages) {
+                Rcpp::Rcout << "Samp: " << i << " of " << nSample <<
+                            ", Atoms:" << tempAtomA << "("
+                            << tempAtomP << ")" <<
+                            // " ,chi2 = " << chi2 <<
+                            "  Chi2 = " << tempChiSq << endl;
 
-            if (i == nSample) {
-                chi2 = 2.*GibbsSampMap.cal_logLikelihood();
-                Rcpp::Rcout << " *** Check value of final chi2: " << chi2 << " **** " << endl;
+                if (i == nSample) {
+                    chi2 = 2.*GibbsSampMap.cal_logLikelihood();
+                    Rcpp::Rcout << " *** Check value of final chi2: " << chi2 << " **** " << endl;
+                }
             }
         }
 
