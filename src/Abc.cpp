@@ -66,20 +66,36 @@ Rcpp::NumericVector _proposal(Rcpp::NumericVector param1,
 }
 
 double _epsilon_prior() {
-    return Rcpp::rexp(1, 1.0 / _epsilon_rate);
+    if (_epsilon_mcmc) {
+        return Rcpp::rexp(1, 1.0 / _epsilon_rate);
+    } else {
+        return _epsilon;
+    }
 }
 
 Rcpp::NumericVector _epsilon_prior(double param) {
-    return Rcpp::dexp(param, 1.0 / _epsilon_rate);
+    if (_epsilon_mcmc) {
+        return Rcpp::dexp(param, 1.0 / _epsilon_rate, log=true);
+    } else {
+        return Rcpp::wrap(0.0);
+    }
 }
 
 double _epsilon() {
-    return Rcpp::rexp(1, 1 / _epsilon);
+    if (_epsilon_mcmc) {
+        return Rcpp::rexp(1, 1 / _epsilon)[0];
+    } else {
+        return _epsilon;
+    }
 }
 
 Rcpp::NumericVector _epsilon(double param1,  
                              double param2) {
-    Rcpp::dexp(Rcpp::wrap(param1), 1.0 / param2, log=true)
+    if (_epsilon_mcmc) {
+        Rcpp::dexp(Rcpp::wrap(param1), 1.0 / param2, log=true)
+    } else {
+        return Rcpp::wrap(0.0);
+    }
 }
 
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
