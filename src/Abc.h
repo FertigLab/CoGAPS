@@ -52,6 +52,7 @@ class Abc {
             bool epsilon_mcmc=false,
             double delta=10.0,
             double epsilon=100.0,
+            double epsilon_prior=3.0,
             double prior_mean=0.0,
             double prior_sd=10.0);
 

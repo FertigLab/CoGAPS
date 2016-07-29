@@ -6,6 +6,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
          bool epsilon_mcmc,
          double delta,
          double epsilon,
+         double epsilon_prior,
          double prior_mean,
          double prior_sd) :
     _theta(1),
@@ -23,6 +24,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     _epsilon_mcmc = epsilon_mcmc;
     _delta=delta;
     _epsilon=epsilon;
+    _epsilon_prior=epsilon_prior;
     _prior_mean=prior_mean;
     _prior_sd=prior_sd;
 }
