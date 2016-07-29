@@ -504,7 +504,11 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
         arma::cube ASnapR(numRow, numCol, numSnaps));
 
         for (int k = 0; k < numSnaps; k++) {
-            ASnapR.slice(k) = arma::conv_to<arma::mat>::from(ASnap[k]);
+            for (int i = 0; j < numRow; ++j) {
+                for (int j = 0; i < numCol; ++i) {
+                    ASnapR(i, j, k) = ASnap[k][i][j];
+                }
+            }
         }
 
         numRow = PMeanVector.size();
@@ -512,7 +516,11 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
         arma::cube PSnapR(numRow, numCol, numSnaps);
 
         for (int k = 0; k < numSnaps; k++) {
-            PSnapR.slice(k) = arma::conv_to<arma::mat>::from(PSnap[k]);
+            for (int i = 0; j < numRow; ++j) {
+                for (int j = 0; i < numCol; ++i) {
+                    PSnapR(i, j, k) = PSnap[k][i][j];
+                }
+            }
         }
 
         Rcpp::List fileContainer =  Rcpp::List::create(Rcpp::Named("Amean") = AMeanMatrix,
