@@ -498,7 +498,6 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
     int numSnaps = numSnapshots; //Arbitrary to keep convention
 
     if (SampleSnapshots == true) {
-        // http://stackoverflow.com/questions/30592738/how-to-convert-stl-vector-of-vector-to-armadillo-mat
         numRow = AMeanVector.size();
         numCol = AMeanVector[0].size() ;
         arma::cube ASnapR(numRow, numCol, numSnaps);
