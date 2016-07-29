@@ -4,7 +4,7 @@ test_that("GAPS Simple Simulation", {
     data(SimpSim)
     nIter <- 1000
     results <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3,
-            nEquil=nIter, nSample=nIter)
+            nEquil=nIter, nSample=nIter, messages=FALSE)
 })
 
 test_that("GAPSmap Simple Simulation", {
