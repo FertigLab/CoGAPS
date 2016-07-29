@@ -63,6 +63,14 @@ Rcpp::NumericVector _proposal(Rcpp::NumericVector param1,
     }
 }
 
+double _epsilon_prior() {
+    return Rcpp::rexp(1, _epsilon_rate);
+}
+
+Rcpp::NumericVector _epsilon_prior(double param) {
+    return Rcpp::dexp(param, _epsilon_rate);
+}
+
 double _epsilon() {
     return Rcpp::rexp(1, 1 / _epsilon);
 }

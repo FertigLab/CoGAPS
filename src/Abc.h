@@ -37,6 +37,8 @@ class Abc {
 
         // epsilon mcmc per Bortot et al 2007
         bool _epsilon_mcmc;
+        double _epsilon_prior();
+        Rcpp::NumericVector _epsilon_prior(double param);
         double _epsilon(); // draw new epsilon
         Rcpp::NumericVector _epsilon(double param1,  // density of epsilon
                                      double param2);
