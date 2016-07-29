@@ -501,11 +501,11 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
         // http://stackoverflow.com/questions/30592738/how-to-convert-stl-vector-of-vector-to-armadillo-mat
         numRow = AMeanVector.size();
         numCol = AMeanVector[0].size() ;
-        arma::cube ASnapR(numRow, numCol, numSnaps));
+        arma::cube ASnapR(numRow, numCol, numSnaps);
 
         for (int k = 0; k < numSnaps; k++) {
-            for (int i = 0; j < numRow; ++j) {
-                for (int j = 0; i < numCol; ++i) {
+            for (int i = 0; i < numRow; ++i) {
+                for (int j = 0; j < numCol; ++j) {
                     ASnapR(i, j, k) = ASnap[k][i][j];
                 }
             }
@@ -516,8 +516,8 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
         arma::cube PSnapR(numRow, numCol, numSnaps);
 
         for (int k = 0; k < numSnaps; k++) {
-            for (int i = 0; j < numRow; ++j) {
-                for (int j = 0; i < numCol; ++i) {
+            for (int i = 0; i < numRow; ++i) {
+                for (int j = 0; j < numCol; ++j) {
                     PSnapR(i, j, k) = PSnap[k][i][j];
                 }
             }
