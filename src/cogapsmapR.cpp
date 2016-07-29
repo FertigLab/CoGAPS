@@ -24,7 +24,7 @@
 // does all the atomic space to matrix conversion
 // and sampling actions.
 #include "GibbsSamplerMap.h"
-#include <Rcpp.h>
+#include <RcppArmadillo.h>
 // ------------------------------------------------------
 
 using namespace std;
