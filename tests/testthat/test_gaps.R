@@ -12,5 +12,5 @@ test_that("GAPSmap Simple Simulation", {
     FP <- matrix(SimpSim.P[3, ], nrow=1)
     nIter <- 1000
     results <- gapsMapRun(SimpSim.D, SimpSim.S, FP, nFactor=3,
-                          nEquil=nIter, nSample=nIter)
+                          nEquil=nIter, nSample=nIter, messages=FALSE)
 })
