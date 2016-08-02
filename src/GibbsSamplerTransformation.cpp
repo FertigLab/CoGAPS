@@ -17,8 +17,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
     _growth(DVector, timeRecorded),
-    _theta(nSample + _nEquil),
-    _tolerance(nSample + _nEquil) {
+    _theta(nSample + _nEquil) {
 
     // assignments for growth data
     _whichPattern = whichPattern;
@@ -34,10 +33,6 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
 
 Rcpp::NumericVector GibbsSamplerTransformation::theta() {
     return _theta;
-}
-
-Rcpp::NumericVector GibbsSamplerTransformation::tolerance() {
-    return _tolerance;
 }
 
 void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double tolerance) {

@@ -45,7 +45,6 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     ~GibbsSamplerTransformation() {};
 
     Rcpp::NumericVector theta();
-    Rcpp::NumericVector tolerance();
     
     void abc_mcmc(int burn=0, int iter=0, int thin=1, double tolerance=5.0);
 
