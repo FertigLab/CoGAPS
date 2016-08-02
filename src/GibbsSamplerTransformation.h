@@ -40,8 +40,10 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
                                vector<vector<double> > &DVector, vector<vector<double> > &SVector,
                                const string &simulation_id,
                                vector <vector <double> >  &parameters, char the_fixed_matrix, int whichPattern,
-                               std::vector<int> treatStatus, std::vector<double> timeRecorded, double tolerance);
-
+                               std::vector<int> treatStatus, std::vector<double> timeRecorded, 
+                               std::string prior="normal", std::string proposal="normal",
+                               bool epsilon_mcmc=false, double delta=0.0, double epsilon=100.0,
+                               double epsilon_prior=3.0, double prior_mean=0.0, double prior_sd=10.0);
     ~GibbsSamplerTransformation() {};
 
     Rcpp::NumericVector theta();

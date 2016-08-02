@@ -12,7 +12,11 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                                                        vector<vector<double> > &DVector, vector<vector<double> > &SVector,
                                                        const string &simulation_id,
                                                        vector <vector <double> >  &parameters, char the_fixed_matrix, int whichPattern,
-                                                       std::vector<int> treatStatus, std::vector<double> timeRecorded, double tolerance) :
+                                                       std::vector<int> treatStatus, std::vector<double> timeRecorded, 
+                                                       std::string prior, std::string proposal,
+                                                       bool epsilon_mcmc, double delta, 
+                                                       double epsilon, double epsilon_prior, 
+                                                       double prior_mean, double prior_sd):
     GibbsSamplerMap(nEquil, nSample, nFactor, alphaA, alphaP, nMaxA, nMaxP, nIterA, nIterP,
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
