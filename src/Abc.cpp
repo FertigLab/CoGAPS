@@ -81,7 +81,7 @@ Rcpp::NumericVector _epsilon_prior(double param) {
     }
 }
 
-double _epsilon() {
+double _epsilon_propose() {
     if (_epsilon_mcmc) {
         return Rcpp::rexp(1, 1 / _epsilon)[0];
     } else {
@@ -89,8 +89,7 @@ double _epsilon() {
     }
 }
 
-Rcpp::NumericVector _epsilon(double param1,  
-                             double param2) {
+Rcpp::NumericVector _epsilon_propose(double param1, double param2) {
     if (_epsilon_mcmc) {
         Rcpp::dexp(Rcpp::wrap(param1), 1.0 / param2, log=true)
     } else {
@@ -103,7 +102,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     Rcpp::NumericVector theta_prime = _proposal();
 
     // simulate epsilon' ~ K(epsilon|epsilon^{(t-1)})
-    double eps_prime = _epsilon();
+    double eps_prime = _epsilon_propose();
     eps_prime = max(eps_prime, 0.25);
 
     // simulate x ~ p(x | theta')

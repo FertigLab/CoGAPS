@@ -39,9 +39,9 @@ class Abc {
         bool _epsilon_mcmc;
         double _epsilon_prior();
         Rcpp::NumericVector _epsilon_prior(double param);
-        double _epsilon(); // draw new epsilon
-        Rcpp::NumericVector _epsilon(double param1,  // density of epsilon
-                                     double param2);
+        double _epsilon_propose(); // draw new epsilon
+        Rcpp::NumericVector _epsilon_propose(double param1,  // density of epsilon
+                                             double param2);
 
     public:
         // constructor
