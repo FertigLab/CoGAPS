@@ -12,8 +12,8 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     _theta(1),
     _D(data.size(), timeRecorded.size()) {
     // convert data to Rcpp::NumericMatrix form
-    for (int i = 0; i < data.size(); ++i) {
-        for (int j = 0; j < timeRecorded.size(); ++j) {
+    for (unsigned int i = 0; i < data.size(); ++i) {
+        for (unsigned int j = 0; j < timeRecorded.size(); ++j) {
             _D(i, j) = data[i][j];
         }
     }
