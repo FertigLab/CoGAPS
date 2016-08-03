@@ -92,7 +92,7 @@ Rcpp::NumericVector Abc::_epsilon_prior(double param) {
 
 double Abc::_epsilon_propose() {
     if (_epsilon_mcmc) {
-        return Rcpp::rexp(1, 1 / _epsilon)[0];
+        return Rcpp::rexp(1, _epsilon)[0];
     } 
 
     return _epsilon;
@@ -100,7 +100,7 @@ double Abc::_epsilon_propose() {
 
 Rcpp::NumericVector Abc::_epsilon_propose(double param1, double param2) {
     if (_epsilon_mcmc) {
-        Rcpp::dexp(Rcpp::wrap(param1), 1.0 / param2, log=true)
+        Rcpp::dexp(Rcpp::wrap(param1), param2, log=true)
     } 
 
     return Rcpp::wrap(0.0);
