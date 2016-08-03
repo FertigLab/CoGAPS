@@ -73,8 +73,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cogapsTrans
-Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, std::vector<double> time_of_sample, std::vector<int> condition, double tolerance);
-RcppExport SEXP CoGAPS_cogapsTrans(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP time_of_sampleSEXP, SEXP conditionSEXP, SEXP toleranceSEXP) {
+Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, std::vector<double> time_of_sample, std::vector<int> condition, std::string prior, std::string proposal, bool epsilon_mcmc, double delta, double epsilon, double epsilon_prior, double prior_mean, double prior_sd);
+RcppExport SEXP CoGAPS_cogapsTrans(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP time_of_sampleSEXP, SEXP conditionSEXP, SEXP priorSEXP, SEXP proposalSEXP, SEXP epsilon_mcmcSEXP, SEXP deltaSEXP, SEXP epsilonSEXP, SEXP epsilon_priorSEXP, SEXP prior_meanSEXP, SEXP prior_sdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -87,8 +87,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
     Rcpp::traits::input_parameter< std::vector<double> >::type time_of_sample(time_of_sampleSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type condition(conditionSEXP);
-    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
-    __result = Rcpp::wrap(cogapsTrans(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, tolerance));
+    Rcpp::traits::input_parameter< std::string >::type prior(priorSEXP);
+    Rcpp::traits::input_parameter< std::string >::type proposal(proposalSEXP);
+    Rcpp::traits::input_parameter< bool >::type epsilon_mcmc(epsilon_mcmcSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
+    Rcpp::traits::input_parameter< double >::type epsilon_prior(epsilon_priorSEXP);
+    Rcpp::traits::input_parameter< double >::type prior_mean(prior_meanSEXP);
+    Rcpp::traits::input_parameter< double >::type prior_sd(prior_sdSEXP);
+    __result = Rcpp::wrap(cogapsTrans(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, prior, proposal, epsilon_mcmc, delta, epsilon, epsilon_prior, prior_mean, prior_sd));
     return __result;
 END_RCPP
 }
