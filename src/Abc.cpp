@@ -29,7 +29,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     _prior_sd=prior_sd;
 }
 
-Rcpp::NumericVector _prior(Rcpp::NumericVector param) {
+Rcpp::NumericVector Abc::_prior(Rcpp::NumericVector param) {
     if (_prior_choice == "normal") {
         return Rcpp::dnorm(param, _prior_mean, _prior_sd, true);
     } else if (_prior_choice == "gamma") {
@@ -40,7 +40,7 @@ Rcpp::NumericVector _prior(Rcpp::NumericVector param) {
     }
 }
 
-Rcpp::NumericVector _proposal() {
+Rcpp::NumericVector Abc::_proposal() {
     if (_proposal_choice == "normal") {
         return Rcpp::rnorm(1, _theta[0], _delta);
     } else if (_proposal_choice == "gamma") {
@@ -51,7 +51,7 @@ Rcpp::NumericVector _proposal() {
     }
 }
 
-Rcpp::NumericVector _proposal(Rcpp::NumericVector param1,
+Rcpp::NumericVector Abc::_proposal(Rcpp::NumericVector param1,
                               Rcpp::NumericVector param2) {
     if (_proposal_choice == "normal") {
         // symmetric proposal distribution, so we can ignore it
@@ -65,7 +65,7 @@ Rcpp::NumericVector _proposal(Rcpp::NumericVector param1,
     }
 }
 
-double _epsilon_prior() {
+double Abc::_epsilon_prior() {
     if (_epsilon_mcmc) {
         return Rcpp::rexp(1, 1.0 / _epsilon_rate);
     } else {
@@ -73,7 +73,7 @@ double _epsilon_prior() {
     }
 }
 
-Rcpp::NumericVector _epsilon_prior(double param) {
+Rcpp::NumericVector Abc::_epsilon_prior(double param) {
     if (_epsilon_mcmc) {
         return Rcpp::dexp(param, 1.0 / _epsilon_rate, log=true);
     } else {
@@ -81,7 +81,7 @@ Rcpp::NumericVector _epsilon_prior(double param) {
     }
 }
 
-double _epsilon_propose() {
+double Abc::_epsilon_propose() {
     if (_epsilon_mcmc) {
         return Rcpp::rexp(1, 1 / _epsilon)[0];
     } else {
@@ -89,7 +89,7 @@ double _epsilon_propose() {
     }
 }
 
-Rcpp::NumericVector _epsilon_propose(double param1, double param2) {
+Rcpp::NumericVector Abc::_epsilon_propose(double param1, double param2) {
     if (_epsilon_mcmc) {
         Rcpp::dexp(Rcpp::wrap(param1), 1.0 / param2, log=true)
     } else {
