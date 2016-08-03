@@ -5,6 +5,7 @@
 #include <string>
 #include <algorithm>
 #include <RcppArmadillo.h>
+#include <stdexcept>
 
 class Abc {
     private:

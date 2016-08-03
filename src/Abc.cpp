@@ -37,6 +37,9 @@ Rcpp::NumericVector Abc::_prior(Rcpp::NumericVector param) {
                     1.0 / _prior_mean) * pow(_prior_mean, 2.0);
         double b = a * (1.0 / _prior_mean - 1.0);
         return Rcpp::dgamma(param, a, b, true);
+    } else {
+        throw std::logic_error("Invalid prior choice");
+        return 1;
     }
 }
 
@@ -48,6 +51,9 @@ Rcpp::NumericVector Abc::_proposal() {
                     1.0 / _theta[0]) * pow(_theta[0], 2.0);
         double b = a * (1.0 / _theta[0] - 1.0);
         return Rcpp::rgamma(1, a, b);
+    } else {
+        throw std::logic_error("Invalid proposal choice");
+        return 1;
     }
 }
 
@@ -62,39 +68,42 @@ Rcpp::NumericVector Abc::_proposal(Rcpp::NumericVector param1,
                     1.0 / param2[0]) * pow(param2[0], 2.0);
         double b = a * (1.0 / param2[0] - 1.0);
         return Rcpp::dgamma(param1, a, b, true);
+    } else {
+        throw std::logic_error("Invalid proposal choice");
+        return 1;
     }
 }
 
 double Abc::_epsilon_prior() {
     if (_epsilon_mcmc) {
         return Rcpp::rexp(1, _epsilon_rate);
-    } else {
-        return _epsilon;
-    }
+    } 
+
+    return _epsilon;
 }
 
 Rcpp::NumericVector Abc::_epsilon_prior(double param) {
     if (_epsilon_mcmc) {
         return Rcpp::dexp(param, _epsilon_rate, log=true);
-    } else {
-        return Rcpp::wrap(0.0);
-    }
+    } 
+
+    return Rcpp::wrap(0.0);
 }
 
 double Abc::_epsilon_propose() {
     if (_epsilon_mcmc) {
         return Rcpp::rexp(1, 1 / _epsilon)[0];
-    } else {
-        return _epsilon;
-    }
+    } 
+
+    return _epsilon;
 }
 
 Rcpp::NumericVector Abc::_epsilon_propose(double param1, double param2) {
     if (_epsilon_mcmc) {
         Rcpp::dexp(Rcpp::wrap(param1), 1.0 / param2, log=true)
-    } else {
-        return Rcpp::wrap(0.0);
-    }
+    } 
+
+    return Rcpp::wrap(0.0);
 }
 
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
