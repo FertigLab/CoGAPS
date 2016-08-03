@@ -58,9 +58,9 @@ Rcpp::NumericVector Abc::_proposal(Rcpp::NumericVector param1,
         // just return additive identity for log scale
         return Rcpp::wrap(0);
     } else if (_proposal_choice == "gamma") {
-        double a = ((1.0 - param2) / pow(_delta, 2.0) - 
-                    1.0 / param2) * pow(param2, 2.0);
-        double b = a * (1.0 / param2 - 1.0);
+        double a = ((1.0 - param2[0]) / pow(_delta, 2.0) - 
+                    1.0 / param2[0]) * pow(param2[0], 2.0);
+        double b = a * (1.0 / param2[0] - 1.0);
         return Rcpp::dgamma(param1, a, b, true);
     }
 }
