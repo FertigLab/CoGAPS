@@ -37,6 +37,7 @@ class Abc {
 
         // epsilon mcmc per Bortot et al 2007
         bool _epsilon_mcmc;
+        double _epsilon_rate;
         double _epsilon_prior();
         Rcpp::NumericVector _epsilon_prior(double param);
         double _epsilon_propose(); // draw new epsilon
@@ -52,7 +53,7 @@ class Abc {
             bool epsilon_mcmc=false,
             double delta=10.0,
             double epsilon=100.0,
-            double epsilon_prior=3.0,
+            double epsilon_rate=3.0,
             double prior_mean=0.0,
             double prior_sd=10.0);
 
