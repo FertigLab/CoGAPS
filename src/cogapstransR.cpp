@@ -351,7 +351,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     // ===========================================================================
     int nEquilCool = floor(.1 * nEquil);
 
-    for (unsigned long ext_iter = 1; ext_iter <= nEquilCool; ++ext_iter) {
+    for (long ext_iter = 1; ext_iter <= nEquilCool; ++ext_iter) {
         GibbsSampTrans.set_iter(ext_iter);
 
         for (unsigned long iterA = 1; iterA <= nIterA; ++iterA) {
