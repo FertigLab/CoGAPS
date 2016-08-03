@@ -206,10 +206,10 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                               label_A, label_P, label_D, label_S,
                                               DVector, SVector, simulation_id, FPVector, label_FP, 3,
                                               condition, time_of_sample,
-                                              std::string prior, std::string proposal,
-                                              bool epsilon_mcmc, double delta, 
-                                              double epsilon, double epsilon_prior, 
-                                              double prior_mean, double prior_sd);
+                                              prior, proposal,
+                                              epsilon_mcmc, delta, 
+                                              epsilon, epsilon_prior, 
+                                              prior_mean, prior_sd);
     int thin = 5;
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
