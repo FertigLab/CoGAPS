@@ -103,7 +103,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 
     // simulate epsilon' ~ K(epsilon|epsilon^{(t-1)})
     double eps_prime = _epsilon_propose();
-    eps_prime = max(eps_prime, 0.25);
+    eps_prime = std::max(eps_prime, 0.25);
 
     // simulate x ~ p(x | theta')
     Rcpp::NumericVector growth = 1. / (1 + Rcpp::exp(-theta_prime * _T));

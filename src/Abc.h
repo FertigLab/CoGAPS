@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include <cmath>
+#include <algorithm>
 #include <RcppArmadillo.h>
 
 class Abc {
