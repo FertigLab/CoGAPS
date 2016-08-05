@@ -17,7 +17,7 @@ cogapsTest <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNum
     .Call('CoGAPS_cogapsTest', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums)
 }
 
-cogapsTrans <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, prior = "normal", proposal = "normal", epsilon_mcmc = FALSE, delta = 10.0, epsilon = 100.0, epsilon_prior = 3.0, prior_mean = 0.0, prior_sd = 10.0) {
-    .Call('CoGAPS_cogapsTrans', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, prior, proposal, epsilon_mcmc, delta, epsilon, epsilon_prior, prior_mean, prior_sd)
+cogapsTrans <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, thin = 1L, prior = "normal", proposal = "normal", epsilon_mcmc = FALSE, delta = 10.0, epsilon = 100.0, epsilon_prior = 3.0, prior_mean = 0.0, prior_sd = 10.0) {
+    .Call('CoGAPS_cogapsTrans', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, thin, prior, proposal, epsilon_mcmc, delta, epsilon, epsilon_prior, prior_mean, prior_sd)
 }
 
