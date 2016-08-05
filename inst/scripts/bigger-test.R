@@ -102,4 +102,5 @@ for(i in 1:nFactor)
 devtools::load_all("../..")
 cogapResult = cogapsTrans(D, S, FP, ABins, PBins, 
                           Config, ConfigNums,
-                          time.of.sample, condition, 500)
+                          time.of.sample, condition, 
+                          thin=2, epsilon=500)
