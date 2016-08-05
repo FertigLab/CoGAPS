@@ -61,7 +61,7 @@ nFactor <- 3
 simulation_id="simulation"
 nEquil = 20000
 nSample = 5000
-nOutR = 1000
+nOutR = 1
 output_atomic = FALSE
 fixedMatrix = "P"
 fixedBinProbs = FALSE
@@ -100,7 +100,4 @@ for(i in 1:nFactor)
 
 # call to C++ Rcpp code
 devtools::load_all("../..")
-cogapResult = cogapsTrans(D, S, FP, ABins, PBins, 
-                          Config, ConfigNums,
-                          time.of.sample, condition, 
-                          thin=2, epsilon=500)
+cogapResult = cogapsTrans(D, S, FP, ABins, PBins, Config, ConfigNums, time.of.sample, condition, thin=2, epsilon=4)
