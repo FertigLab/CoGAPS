@@ -17,6 +17,7 @@ class Abc {
 
         // value 
         Rcpp::NumericVector _theta;
+        std::vector<double> _pattern;
 
         // priors
         double _prior_mean;
