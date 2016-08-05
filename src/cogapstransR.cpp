@@ -43,6 +43,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                        Rcpp::NumericVector ConfigNums,
                        std::vector<double> time_of_sample,
                        std::vector<int> condition,
+                       int thin=1,
                        std::string prior="normal", std::string proposal="normal",
                        bool epsilon_mcmc=false, double delta=10.0, double epsilon=100.0,
                        double epsilon_prior=3.0, double prior_mean=0.0, double prior_sd=10.0) {
@@ -210,7 +211,6 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                               epsilon_mcmc, delta, 
                                               epsilon, epsilon_prior, 
                                               prior_mean, prior_sd);
-    int thin = 5;
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.
