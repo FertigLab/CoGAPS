@@ -1,6 +1,4 @@
 #include "GibbsSamplerTransformation.h"
-#include <Rcpp.h>
-#include <RcppArmadillo.h>
 
 // ******************** CONSTRUCTOR ********************************************
 GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
@@ -71,5 +69,6 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     _theta[burn + iter] =_growth.theta()[0];
 
     // update the P matrix
-    _PMatrix.setRow(_growth.pattern(), 2);
+    std::vector<double> growth_pattern(_growth.pattern().begin(), _growth.pattern().end());
+    _PMatrix.setRow(growth_pattern, 2);
 }
