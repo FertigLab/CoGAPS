@@ -69,6 +69,10 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     _theta[burn + iter] =_growth.theta()[0];
 
     // update the P matrix
-    std::vector<double> growth_pattern(_growth.pattern().begin(), _growth.pattern().end());
+    std::vector<double> growth_pattern(_PMatrix.get_Row(2));
+    for (int i = 0; i < 10; ++i) {
+        growth_pattern[i] = _growth.pattern()[i];
+    }
+    
     _PMatrix.setRow(growth_pattern, 2);
 }
