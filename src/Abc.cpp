@@ -153,6 +153,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         } else {
             // c. otherwise
             _theta = _theta;
+            //std::fill(_pattern.begin(), _pattern.end(), P(2, Rcpp::_));
             for (unsigned int i = 0; i < P_prime.cols(); ++i) {
                 _pattern[i] = P(2, i);
             }
