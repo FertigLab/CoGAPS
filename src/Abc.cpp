@@ -18,6 +18,9 @@ Abc::Abc(std::vector<std::vector<double> >& data,
         }
     }
 
+    // initialize _theta to a reasonable value
+    // should be parameterized later
+    _theta[0] = 4.5;
     _T=timeRecorded,
     _prior_choice = prior;
     _proposal_choice = proposal;
