@@ -10,6 +10,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
          double prior_mean,
          double prior_sd) :
     _theta(1),
+    _pattern(data[0].size()),
     _D(data.size(), timeRecorded.size()) {
     // convert data to Rcpp::NumericMatrix form
     for (unsigned int i = 0; i < data.size(); ++i) {
