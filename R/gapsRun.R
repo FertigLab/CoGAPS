@@ -153,7 +153,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   #Check for negative or zero arguments
   if(any(ConfigNums <= 0))
   {
-    stop("Error in gapsRun: Numeric Arguments cannot be non-zero!")
+    stop("Error in gapsRun: Numeric Arguments must be strictly positive.")
   }
 
   #Check for nonsensical inputs (such as numSnapshots < nEquil or nSample)
