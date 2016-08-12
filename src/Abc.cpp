@@ -156,10 +156,8 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 
         if (u[0] < accept[0]) {
             _theta = theta_prime;
-            _sum = 0;
             for (unsigned int i = 0; i < P_prime.cols(); ++i) {
                 _pattern[i] = P_prime(2, i);
-                _sum += P_prime(2, i);
             }
         } else {
             // c. otherwise
@@ -179,9 +177,16 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 }
 
 std::vector<double> Abc::pattern() {
+    double PatSum = 0;
+
+    for (int j = 0; j < _pattern.size(); j++) {
+        PatSum += _pattern[j];
+    }
+
     std::vector<double> pattern_tmp(_pattern);
+
     for (int i = 0; i < _pattern.size(); ++i) {
-        pattern_tmp[i] /= _sum;
+        pattern_tmp[i] /= PatSum;
     }
 
     return pattern_tmp;
