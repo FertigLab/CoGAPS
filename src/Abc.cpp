@@ -22,6 +22,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     // initialize _theta to a reasonable value
     // should be parameterized later
     _theta[0] = 4.0;
+    _sum = 1.0; // initialize to identity
     _T=timeRecorded,
     _prior_choice = prior;
     _proposal_choice = proposal;
@@ -155,8 +156,10 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 
         if (u[0] < accept[0]) {
             _theta = theta_prime;
+            _sum = 0;
             for (unsigned int i = 0; i < P_prime.cols(); ++i) {
                 _pattern[i] = P_prime(2, i);
+                _sum += P_prime(2, i);
             }
         } else {
             // c. otherwise
@@ -176,7 +179,12 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 }
 
 std::vector<double> Abc::pattern() {
-    return _pattern;
+    std::vector<double> pattern_tmp(_pattern);
+    for (int i = 0; i < _pattern.size(); ++i) {
+        pattern_tmp[i] /= _sum;
+    }
+
+    return pattern_tmp;
 }
 
 Rcpp::NumericVector Abc::theta() {
