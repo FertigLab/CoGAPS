@@ -21,7 +21,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
 
     // initialize _theta to a reasonable value
     // should be parameterized later
-    _theta[0] = 4.5;
+    _theta[0] = 4.0;
     _T=timeRecorded,
     _prior_choice = prior;
     _proposal_choice = proposal;
@@ -145,6 +145,10 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         //             theta^{(t)} = theta'
         accept = _prior(theta_prime) -
                  _prior(_theta) +
+                 _epsilon_prior(eps_prime) -
+                 _epsilon_prior(_epsilon) +
+                 _epsilon_propose(_epsilon, eps_prime) -
+                 _epsilon_propose(eps_prime, _epsilon) +
                  _proposal(_theta, theta_prime) -
                  _proposal(theta_prime, _theta);
         accept = Rcpp::exp(accept);
