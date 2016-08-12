@@ -1,4 +1,5 @@
 #include "GibbsSampler.h"
+#include <Rcpp.h>
 
 // ************* METHODS FOR COMPUTING LIKELIHOOD FUNCTIONS ******************
 // ---------------------------------------------------------------------------
