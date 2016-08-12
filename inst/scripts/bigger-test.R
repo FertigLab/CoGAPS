@@ -62,7 +62,7 @@ nFactor <- 3
 simulation_id="simulation"
 nEquil = 20000
 nSample = 5000
-nOutR = 1
+nOutR = 1000
 output_atomic = FALSE
 fixedMatrix = "P"
 fixedBinProbs = FALSE
