@@ -101,4 +101,6 @@ for(i in 1:nFactor)
 
 # call to C++ Rcpp code
 devtools::load_all("../..")
-cogapResult = cogapsTrans(D, S, FP, ABins, PBins, Config, ConfigNums, time.of.sample, condition, thin=2, epsilon=4)
+cogapResult = cogapsTrans(D, S, FP, ABins, PBins, Config, ConfigNums, time.of.sample, condition, thin=2, epsilon=4,
+                          prior="normal", proposal="normal",
+                          epsilon_mcmc=TRUE)
