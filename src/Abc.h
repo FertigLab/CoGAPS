@@ -2,6 +2,7 @@
 #define _ABC_H_
 
 #include <vector>
+#include <cmath>
 #include <string>
 #include <algorithm>
 #include <RcppArmadillo.h>
