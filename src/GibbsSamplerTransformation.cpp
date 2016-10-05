@@ -19,6 +19,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
     _theta(nSample + _nEquil),
+    _epsilon(nSample + _nEquil),
     _growth(DVector, timeRecorded, prior, proposal, epsilon_mcmc, delta,
             epsilon, epsilon_prior, prior_mean, prior_sd) {
 
@@ -36,6 +37,10 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
 
 Rcpp::NumericVector GibbsSamplerTransformation::theta() {
     return _theta;
+}
+
+Rcpp::NumericVector GibbsSamplerTransformation::epsilon() {
+    return _epsilon;
 }
 
 void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double tolerance) {
@@ -67,6 +72,9 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
 
     // save the theta's
     _theta[burn + iter] =_growth.theta()[0];
+    
+    // save the epsilon's
+    _epsilon[burn + iter] =_growth.epsilon()[0];
 
     // update the P matrix
     _PMatrix.setRow(_growth.pattern(), 2);

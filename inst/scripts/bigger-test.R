@@ -32,7 +32,7 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
 }
 
 # load code
-devtools::load_all("../..")
+devtools::load_all()
 
 # get matrices
 patts <- logistic.pattern(4, 3)
@@ -60,8 +60,8 @@ FP <- matrix(c(p3.t, p3.u), nrow=1)
 FP <- FP / sum(FP) # normalize
 nFactor <- 3
 simulation_id="simulation"
-nEquil = 20000
-nSample = 5000
+nEquil = 1000
+nSample = 1000
 nOutR = 1000
 output_atomic = FALSE
 fixedMatrix = "P"
@@ -100,7 +100,7 @@ for(i in 1:nFactor)
 }
 
 # call to C++ Rcpp code
-devtools::load_all("../..")
-cogapResult = cogapsTrans(D, S, FP, ABins, PBins, Config, ConfigNums, time.of.sample, condition, thin=2, epsilon=125,
+devtools::load_all()
+cogapResult = cogapsTrans(D, S, FP, ABins, PBins, Config, ConfigNums, time.of.sample, condition, thin=2, epsilon=75,
                           prior="normal", proposal="normal",
-                          epsilon_mcmc=FALSE)
+                          epsilon_mcmc=TRUE)
