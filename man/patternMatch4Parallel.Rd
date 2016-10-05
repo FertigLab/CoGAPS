@@ -33,7 +33,7 @@ concensus pattern is also returned.
 patternMatch4Parallel
 }
 \examples{
-dontrun{
+\dontrun{
 matchedPs<-PatternsMatch4Parallel(Ptot=PBySet,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=FALSE)
 }
 
