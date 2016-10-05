@@ -15,7 +15,7 @@
 #' @export
 #' @seealso \code{\link{hclust}}
 #'
-#' @examples \dontrun{
+#' @examples dontrun{
 #'matchedPs<-PatternsMatch4Parallel(Ptot=PBySet,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=FALSE)
 #' }
 #'
