@@ -36,7 +36,7 @@ The Markov chain Monte Carlo (MCMC) matrix factorization that infers patterns al
 \cite{Fertig2012} EJ Fertig, AV Favorov, and MF Ochs (2012) Identifying context-specific transcription factor targets from prior knowledge and gene expression data. \textit{2012 IEEE International Conference on Bioinformatics and Biomedicine}, B310, \textit{in press}.
 
 \par To site GWCoGAPS or the PatternMarkers statistic use:
-\cite{Stein-O'Brien2016} GL Stein-O'Brien, JL Carey, W Lee, M Considine, AV Favorov, E Flam, D Gaykalova, T Guo, L Li, T Sherman, S Sivy, R McKay, MF Ochs, C Colantuoni, and EJ Fertig (2016) PatternMarkers and Genome-Wide CoGAPS in Analysis in Parallel Sets (GWCoGAPS) for data-driven detection of novel biomarkers via whole transcriptome Non-negative matrix factorization (NMF). \textit{Bioinformatics} \textit{in press}.
+\cite{Stein-O’Brien2016} GL Stein-O’Brien, JL Carey, W Lee, M Considine, AV Favorov, E Flam, D Gaykalova, T Guo, L Li, T Sherman, S Sivy, R McKay, MF Ochs, C Colantuoni, and EJ Fertig (2016) PatternMarkers and Genome-Wide CoGAPS in Analysis in Parallel Sets (GWCoGAPS) for data-driven detection of novel biomarkers via whole transcriptome Non-negative matrix factorization (NMF). \textit{Bioinformatics} \textit{in press}.
 
 
 \par Please contact Elana J. Fertig \url{ejfertig@jhmi.edu} or Michael F. Ochs \url{ochsm@tcnj.edu} for assistance.
