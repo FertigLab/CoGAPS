@@ -4,10 +4,10 @@
 \alias{GWCoGAPS}
 \title{GWCoGAPS}
 \usage{
-GWCoGAPS(D, S, nFactor, nSets, nCores = NA, 
-  saveBySetResults = FALSE, fname = "GWCoGAPS.out",
-  PatternsMatchFN = patternMatch4Parallel,
-  Cut = NA, minNS = NA, ...)
+GWCoGAPS(D, S, nFactor, nSets, nCores = NA, saveBySetResults = FALSE,
+  fname = "GWCoGAPS.out", PatternsMatchFN = postCoGAPSPatternMatch,
+  manualMatch = FALSE, Cut = NA, minNS = NA,
+  numSnapshots = numSnapshots, ...)
 }
 \arguments{
 \item{D}{data matrix}
@@ -19,11 +19,11 @@ greater than or equal to the number of rows of FP}
 
 \item{nSets}{number of sets for parallelization}
 
-\item{nCores}{number of cores for parallelization. If left to the default NA, nCores = nSets. }
+\item{nCores}{number of cores for parallelization. If left to the default NA, nCores = nSets.}
 
 \item{saveBySetResults}{logical indicating whether to save by intermediary by set results. Default is FALSE.}
 
-\item{fname}{character string used to label file output. Default is "GWCoGAPS.out"} 
+\item{fname}{character string used to label file output. Default is "GWCoGAPS.out"}
 
 \item{PatternsMatchFN}{function to use for pattern matching across sets}
 
@@ -32,8 +32,6 @@ greater than or equal to the number of rows of FP}
 \item{minNS}{minimum of individual set contributions a cluster must contain}
 
 \item{numSnapshots}{the number of individual samples to capture}
-
-\item{FP}{data.frame with rows giving fixed patterns for P}
 
 \item{ABins}{a matrix of same size as A which gives relative
 probability of that element being non-zero}

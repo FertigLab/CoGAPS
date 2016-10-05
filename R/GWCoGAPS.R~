@@ -12,9 +12,9 @@
 #'@param nCores number of cores for parallelization. If left to the default NA, nCores = nSets.
 #'@param saveBySetResults logical indicating whether to save by intermediary by set results. Default is FALSE.
 #'@param fname character string used to label file output. Default is "GWCoGAPS.out"
-#'@param PatternsMatchFN function to use for pattern matching across sets
-#'@param Cut number of branches at which to cut dendrogram used in patternMatch4Parallel
-#'@param minNS minimum of individual set contributions a cluster must contain
+#'@paramPatternsMatchFN function to use for pattern matching across sets
+#'@paramCut number of branches at which to cut dendrogram used in patternMatch4Parallel
+#'@paramminNS minimum of individual set contributions a cluster must contain
 #'@param ABins a matrix of same size as A which gives relative
 #' probability of that element being non-zero
 #'@param PBins a matrix of same size as P which gives relative

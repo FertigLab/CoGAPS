@@ -22,7 +22,10 @@ Imports:
     cluster,
     shiny,
     stats,
-    utils
+    utils,
+    doParallel,
+    ggplot2,
+    reshape2
 Suggests: 
     testthat,
     lintr

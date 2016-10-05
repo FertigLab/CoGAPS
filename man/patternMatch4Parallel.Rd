@@ -34,7 +34,7 @@ patternMatch4Parallel
 }
 \examples{
 dontrun{
-matchedPs<-PatternsMatchFN(Ptot=PBySet,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=FALSE)
+matchedPs<-PatternsMatch4Parallel(Ptot=PBySet,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=FALSE)
 }
 
 
