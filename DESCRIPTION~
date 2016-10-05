@@ -2,7 +2,7 @@ Package: CoGAPS
 Version: 2.5.2
 Date: 2014-08-23
 Title: Coordinated Gene Activity in Pattern Sets
-Author: Elana J. Fertig, Genevieve Stein-O’Brien, Michael F. Ochs
+Author: Elana J. Fertig, Genevieve Stein-O'Brien, Michael F. Ochs
 Description: Coordinated Gene Activity in Pattern Sets (CoGAPS)
     implements a Bayesian MCMC matrix factorization algorithm,
     GAPS, and links it to gene set statistic methods to infer biological
@@ -19,6 +19,8 @@ Imports:
     graphics,
     grDevices,
     methods,
+    cluster,
+    shiny,
     stats,
     utils
 Suggests: 
