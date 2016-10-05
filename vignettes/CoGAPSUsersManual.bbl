@@ -1,0 +1,42 @@
+\begin{thebibliography}{1}
+
+\bibitem{Fertig2010}
+EJ~Fertig, J~Ding, AV~Favorov, G~Parmigiani, and MF~Ochs.
+\newblock {CoGAPS: an R/C++ package to identify patterns and biological process
+  activity in transcriptomic data}.
+\newblock {\em Bioinformatics}, 26(21):2792--3, Nov 2010.
+
+\bibitem{Fertig2012}
+EJ~Fertig, AV~Favorov, and MF~Ochs.
+\newblock Identifying context-specific transcription factor targets from prior
+  knowledge and gene expression data.
+\newblock In {\em IEEE International Conference on Bioinformatics and
+  Biomedicine}, number B310, Philadelphia, PA, USA, 2012.
+
+\bibitem{Ochs2003}
+MF~Ochs.
+\newblock Bayesian decomposition.
+\newblock In G~Parmigiani, E~Garrett, R~Irizarry, and S~Zeger, editors, {\em
+  The Analysis of Gene Expression Data: Methods and Software}. Springer-Verlag,
+  New York, 2003.
+
+\bibitem{Ochs2006}
+M.F. Ochs.
+\newblock {\em The Analysis of Gene Expression Data The Analysis of Gene
+  Expression Data: Methods and Software}, pages 388--408.
+\newblock Statistics for Biology and Health. Springer-Verlag, London, 2006.
+
+\bibitem{Ochs2009}
+M.F. Ochs, L.~Rink, C.~Tarn, S.~Mburu, T.~Taguchi, B.~Eisenberg, and A.K.
+  Godwin.
+\newblock Detection of treatment-induced changes in signaling pathways in
+  gastrointestinal stromal tumors using transcriptomic data.
+\newblock {\em Cancer Res}, 69(23):9125--9132, 2009.
+
+\bibitem{Sibisi1997}
+S.~Sibisi and J.~Skilling.
+\newblock Prior distributions on measure space.
+\newblock {\em Journal of the Royal Statistical Society, B}, 59(1):217--235,
+  1997.
+
+\end{thebibliography}

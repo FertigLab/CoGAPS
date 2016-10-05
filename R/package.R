@@ -30,5 +30,10 @@
 #' @importFrom utils read.table write.table
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom stats cor loess
+#' @import cluster
+#' @import doParallel
+#' @import shiny
+#' @import reshape2
+#' @import ggplot2
 #' @useDynLib CoGAPS
 NULL

@@ -7,8 +7,9 @@
 \author{Elana J. Fertig (\texttt{ejfertig@jhmi.edu}) and Michael F. Ochs (\texttt{ochsm@tcnj.edu})}
 \title{GAPS/CoGAPS Users Manual}
 
+\usepackage{Sweave}
 \begin{document}
-\SweaveOpts{concordance=TRUE}
+\input{CoGAPSUsersManual-concordance}
 
 \maketitle
 \tableofcontents
@@ -147,15 +148,36 @@ will create a plot of just the rows of the $mathbf{P}$ matrix with standard erro
 
 \par In this example, we have simulated data in SimpSim (\texttt{SimpSim.D}) with three known patterns (\texttt{SimpSim.P}) and corresponding amplitude (\texttt{SimpSim.A}) with specified activity in two gene sets (GSets).  In this data set, each gene set is overexpressed in one the simulated patterns and underexpressed in one.
 
-<<label=GAPSSimpSim, echo=TRUE>>=
-library('CoGAPS')
-data('SimpSim')
-nIter <- 5000
-results <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3,
-		nEquil=nIter, nSample=nIter)
-plotGAPS(results$Amean, results$Pmean, 'ModSimFigs')
-@
-Figure \ref{fig:ModSim} shows the results from plotting the GAPS estimates of ${\bf{A}}$ and ${\bf{P}}$ using \texttt{plotGAPS}, which has a fit to ${\bf{D}}$ of $\chi^{2}=\Sexpr{results[['meanChi2']]}$.
+\begin{Schunk}
+\begin{Sinput}
+> library('CoGAPS')
+> data('SimpSim')
+> nIter <- 5000
+> results <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3,
++ 		nEquil=nIter, nSample=nIter)
+\end{Sinput}
+\begin{Soutput}
+Equil:1000 of 5000, Atoms:82(53)  Chi2 = 6903.69
+Equil:2000 of 5000, Atoms:89(74)  Chi2 = 1557.9
+Equil:3000 of 5000, Atoms:87(71)  Chi2 = 1481.69
+Equil:4000 of 5000, Atoms:86(67)  Chi2 = 1511.34
+Equil:5000 of 5000, Atoms:82(70)  Chi2 = 1492.74
+Samp: 1000 of 5000, Atoms:76(71)  Chi2 = 1514.08
+Samp: 2000 of 5000, Atoms:82(67)  Chi2 = 1499.49
+Samp: 3000 of 5000, Atoms:79(66)  Chi2 = 1479.62
+Samp: 4000 of 5000, Atoms:86(76)  Chi2 = 1482.75
+Samp: 5000 of 5000, Atoms:73(81)  Chi2 = 1459.52
+ *** Check value of final chi2: 1459.52 **** 
+\end{Soutput}
+\begin{Sinput}
+> plotGAPS(results$Amean, results$Pmean, 'ModSimFigs')
+\end{Sinput}
+\begin{Soutput}
+null device 
+          1 
+\end{Soutput}
+\end{Schunk}
+Figure \ref{fig:ModSim} shows the results from plotting the GAPS estimates of ${\bf{A}}$ and ${\bf{P}}$ using \texttt{plotGAPS}, which has a fit to ${\bf{D}}$ of $\chi^{2}=1381.45613920421$.
 \begin{figure}[ht]
   \begin{center}
     \subfigure[Inferred amplitude matrix]{
@@ -171,10 +193,7 @@ Figure \ref{fig:ModSim} shows the results from plotting the GAPS estimates of ${
 Figure \ref{fig:ModSimPtrue} displays the true patterns used to create the SimpSim data, stored in \texttt{SimpSim.P}.
 \begin{figure}[ht]
   \begin{center}
-<<label=ModSimPtrue, fig=TRUE, echo=FALSE>>=
-arrayIdx <- 1:ncol(SimpSim.P)
-matplot(arrayIdx, t(SimpSim.P), type='l', lwd=10)
-@
+\includegraphics{CoGAPSUsersManual-ModSimPtrue}
   \end{center}
   \caption{Known true patterns used to generate SimpSim data.}
   \label{fig:ModSimPtrue}
@@ -236,17 +255,38 @@ The input arguments for \texttt{calcCoGAPSStat} are as described in the previous
 
 \par In this example, we have simulated data in SimpSim with three known patterns (SimpSim.P) and corresponding amplitude (SimpSim.A) with specified activity in two gene sets (GSets).  In this data set, each gene set is overexpressed in two of the simulated patterns and underexpressed in one.
 
-<<label=SimCoGAPS,echo=TRUE>>=
-library('CoGAPS')
-data('SimpSim')
-nIter <- 5000
-results <- CoGAPS(data=SimpSim.D, unc=SimpSim.S,
-		  GStoGenes=GSets,
-                  nFactor=3,
-                  nEquil=nIter, nSample=nIter,
-                  plot=FALSE)
-plotGAPS(results$Amean, results$Pmean, 'GSFigs')
-@
+\begin{Schunk}
+\begin{Sinput}
+> library('CoGAPS')
+> data('SimpSim')
+> nIter <- 5000
+> results <- CoGAPS(data=SimpSim.D, unc=SimpSim.S,
++ 		  GStoGenes=GSets,
++                   nFactor=3,
++                   nEquil=nIter, nSample=nIter,
++                   plot=FALSE)
+\end{Sinput}
+\begin{Soutput}
+Equil:1000 of 5000, Atoms:77(54)  Chi2 = 1674.14
+Equil:2000 of 5000, Atoms:76(59)  Chi2 = 1597.65
+Equil:3000 of 5000, Atoms:77(62)  Chi2 = 1499.73
+Equil:4000 of 5000, Atoms:85(76)  Chi2 = 1538.99
+Equil:5000 of 5000, Atoms:89(58)  Chi2 = 1516.86
+Samp: 1000 of 5000, Atoms:79(64)  Chi2 = 1496.5
+Samp: 2000 of 5000, Atoms:65(64)  Chi2 = 1538.2
+Samp: 3000 of 5000, Atoms:75(66)  Chi2 = 1539.65
+Samp: 4000 of 5000, Atoms:72(71)  Chi2 = 1515.51
+Samp: 5000 of 5000, Atoms:78(77)  Chi2 = 1496.59
+ *** Check value of final chi2: 1496.59 **** 
+\end{Soutput}
+\begin{Sinput}
+> plotGAPS(results$Amean, results$Pmean, 'GSFigs')
+\end{Sinput}
+\begin{Soutput}
+null device 
+          1 
+\end{Soutput}
+\end{Schunk}
 
 Figure \ref{fig:GS2} shows the results from running CoGAPS on the GIST data in \cite{Ochs2009} with the option plot set to true.
 \begin{figure}[ht]
@@ -268,17 +308,19 @@ Figure \ref{fig:GS2} shows the results from running CoGAPS on the GIST data in \
 
 \par We also provide the code that repeats the CoGAPS analysis of GIST data (GIST\_TS\_20084) with gene sets defined by transcription factors (TFGSList), as in the DESIDE analysis of \cite{Ochs2009}.  To minimize time in running the vignette, this is not done live.  However, running the code will complete the analysis and require on the order of an hour on a fast machine.
 
-<<keep.source=T, eval=FALSE>>=
-library('CoGAPS')
-data('GIST_TS_20084')
-data('TFGSList')
-nIter <- 10000
-results <- CoGAPS(GIST.D, GIST.S, tf2ugFC,
-                  nFactor=5,
-                  nEquil=nIter, nSample=nIter,
-                  plot=FALSE)
-plotGAPS(results$Amean, results$Pmean, 'GISTFigs')
-@
+\begin{Schunk}
+\begin{Sinput}
+> library('CoGAPS')
+> data('GIST_TS_20084')
+> data('TFGSList')
+> nIter <- 10000
+> results <- CoGAPS(GIST.D, GIST.S, tf2ugFC,
++                   nFactor=5,
++                   nEquil=nIter, nSample=nIter,
++                   plot=FALSE)
+> plotGAPS(results$Amean, results$Pmean, 'GISTFigs')
+\end{Sinput}
+\end{Schunk}
 
 Figure \ref{fig:GS} shows the results from running CoGAPS on the GIST data in \cite{Ochs2009} with the option plot set to true.
 \begin{figure}[ht]
@@ -329,21 +371,22 @@ where $\mbox{Pr}_{\mathcal{G}p}$ is the probability of upregulation of the genes
 
 \par This example refines transcription factor targets annotated in TRANSFAC (TFGSList) to identify context-specific targets from gene expression data (GIST\_TS\_20084)from \cite{Ochs2009}.
 
-<<eval=FALSE, keep.source=TRUE>>=
-# define transcription factors of interest based on Ochs et al. (2009)
-TFs <- c("c.Jun", 'NF.kappaB', 'Smad4', "STAT3", "Elk.1", "c.Myc", "E2F.1",
-         "AP.1", "CREB", "FOXO", "p53", "Sp1")
-
-# take the results from the previously run analysis
-# set membership statistics
-permTFStats <- list()
-for (tf in TFs) {
-     genes <- levels(tf2ugFC[,tf])
-     genes <- genes[2:length(genes)]
-     permTFStats[[tf]] <- computeGeneTFProb(Amean = results$Amean,
-                                            Asd = results$Asd, genes)
-}
-@
+\begin{Schunk}
+\begin{Sinput}
+> # define transcription factors of interest based on Ochs et al. (2009)
+> TFs <- c("c.Jun", 'NF.kappaB', 'Smad4', "STAT3", "Elk.1", "c.Myc", "E2F.1",
++          "AP.1", "CREB", "FOXO", "p53", "Sp1")
+> # take the results from the previously run analysis
+> # set membership statistics
+> permTFStats <- list()
+> for (tf in TFs) {
++      genes <- levels(tf2ugFC[,tf])
++      genes <- genes[2:length(genes)]
++      permTFStats[[tf]] <- computeGeneTFProb(Amean = results$Amean,
++                                             Asd = results$Asd, genes)
++ }
+\end{Sinput}
+\end{Schunk}
 
 
 \chapter{Executing GWCoGAPS}
@@ -424,61 +467,54 @@ Figure \ref{fig:App1} shows a screenshot of the PatternMatcher Shiny App plottin
 
 \par This example will manually generate the same result as calling the \texttt{GWCoGAPS} function as given in the example in the previous section.
 
-<<eval=FALSE>>=
-data('SimpSim')
-D<-SimpSim.D
-S<-SimpSim.S
-nFactor=3
-nSets<-2
-nCores=NA
-numSnapshots=3
-saveBySetResults=TRUE
-fname="test"
-minNS=NA
-
-# break the data into sets
-genesInSets<-createGWCoGAPSSets(data=D, nSets=nSets, keep=FALSE)
-
-#generate seeds for parallelization
-nut<-generateSeeds(chains=nSets, seed=-1)
-
-# establish the number of cores that you are able to use
-if(is.na(nCores)){nCores<-nSets}
-registerDoParallel(cores=nCores)
-
-# run CoGAPS for each set
-AP <- foreach(i=1:nSets) %dopar% {
-  D <- as.matrix(D[genesInSets[[i]],])
-  S <- as.matrix(S[genesInSets[[i]],])
-  gapsRun(D=D, S=S, nFactor=nFactor,seed=nut[i],numSnapshots=numSnapshots)
-}
-
-BySet<-reOrderBySet(AP=AP,nFactor=nFactor,nSets=nSets)
-matchedPs<-patternMatch4Parallel(Ptot=BySet$P,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=TRUE)
-
-# use shiny for pattern matching
-selectPBySet<-PatternMatcher(PBySet=matchedPs[["PBySet"]])
-library(reshape2)
-selectPBySet<-dcast(selectPBySet,  BySet ~ Samples)
-rownames(selectPBySet)<-selectPBySet$BySet
-selectPBySet<-as.matrix(selectPBySet[,-1])
-matchedPs<-patternMatch4Parallel(Ptot=selectPBySet,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=FALSE)
-
-#generate seeds for parallelization
-nut<-generateSeeds(chains=nSets, seed=-1)
-#final number of factors
-nFactorFinal<-dim(matchedPs)[1]
-
-# run fixed CoGAPS
-Fixed <- foreach(i=1:nSets) %dopar% {
-  D <- as.matrix(D[genesInSets[[i]],])
-  S <- as.matrix(S[genesInSets[[i]],])
-  AP <- gapsMapRun(D, S, FP=matchedPs, nFactor=nFactorFinal, fixedMatrix = "P",seed=nut[i],numSnapshots=numSnapshots)
-}
-
-#extract A and Asds
-As4fixPs <- postFixed(AP.fixed=Fixed,setPs=matchedPs)
-@
+\begin{Schunk}
+\begin{Sinput}
+> data('SimpSim')
+> D<-SimpSim.D
+> S<-SimpSim.S
+> nFactor=3
+> nSets<-2
+> nCores=NA
+> numSnapshots=3
+> saveBySetResults=TRUE
+> fname="test"
+> minNS=NA
+> # break the data into sets
+> genesInSets<-createGWCoGAPSSets(data=D, nSets=nSets, keep=FALSE)
+> #generate seeds for parallelization
+> nut<-generateSeeds(chains=nSets, seed=-1)
+> # establish the number of cores that you are able to use
+> if(is.na(nCores)){nCores<-nSets}
+> registerDoParallel(cores=nCores)
+> # run CoGAPS for each set
+> AP <- foreach(i=1:nSets) %dopar% {
++   D <- as.matrix(D[genesInSets[[i]],])
++   S <- as.matrix(S[genesInSets[[i]],])
++   gapsRun(D=D, S=S, nFactor=nFactor,seed=nut[i],numSnapshots=numSnapshots)
++ }
+> BySet<-reOrderBySet(AP=AP,nFactor=nFactor,nSets=nSets)
+> matchedPs<-patternMatch4Parallel(Ptot=BySet$P,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=TRUE)
+> # use shiny for pattern matching
+> selectPBySet<-PatternMatcher(PBySet=matchedPs[["PBySet"]])
+> library(reshape2)
+> selectPBySet<-dcast(selectPBySet,  BySet ~ Samples)
+> rownames(selectPBySet)<-selectPBySet$BySet
+> selectPBySet<-as.matrix(selectPBySet[,-1])
+> matchedPs<-patternMatch4Parallel(Ptot=selectPBySet,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=FALSE)
+> #generate seeds for parallelization
+> nut<-generateSeeds(chains=nSets, seed=-1)
+> #final number of factors
+> nFactorFinal<-dim(matchedPs)[1]
+> # run fixed CoGAPS
+> Fixed <- foreach(i=1:nSets) %dopar% {
++   D <- as.matrix(D[genesInSets[[i]],])
++   S <- as.matrix(S[genesInSets[[i]],])
++   AP <- gapsMapRun(D, S, FP=matchedPs, nFactor=nFactorFinal, fixedMatrix = "P",seed=nut[i],numSnapshots=numSnapshots)
++ }
+> #extract A and Asds
+> As4fixPs <- postFixed(AP.fixed=Fixed,setPs=matchedPs)
+\end{Sinput}
+\end{Schunk}
 
 
 \chapter{PatternMarkers} \label{PatternMarkers}
