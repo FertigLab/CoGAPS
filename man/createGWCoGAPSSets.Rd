@@ -8,13 +8,13 @@ createGWCoGAPSSets(data = D, nSets = nSets,
   outRDA = "GenesInCoGAPSSets.Rda", keep = TRUE)
 }
 \arguments{
+\item{data}{data matrix with unique rownames}
+
 \item{nSets}{number of sets for parallelization}
 
 \item{outRDA}{name of output file}
 
 \item{keep}{logical indicating whether or not to save gene set list. Default is TRUE.}
-
-\item{D}{data matrix with unique rownames}
 }
 \value{
 list with randomly generated sets of genes from whole genome data

@@ -23,7 +23,7 @@ patternMatch4Parallel(Ptot = BySet$P, nSets = nSets, cnt = Cut,
 
 \item{bySet}{logical indicating whether to return list of matched set solutions from \code{Ptot}}
 
-\item{...}{}
+\item{...}{additional parameters for \code{agnes}}
 }
 \value{
 a matrix of concensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
@@ -32,14 +32,7 @@ concensus pattern is also returned.
 \description{
 patternMatch4Parallel
 }
-\examples{
-\dontrun{
-matchedPs<-PatternsMatch4Parallel(Ptot=PBySet,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=FALSE)
-}
-
-
-}
 \seealso{
-\code{\link{hclust}}
+\code{\link{agnes}}
 }
 

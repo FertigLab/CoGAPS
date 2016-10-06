@@ -15,6 +15,10 @@
 #' @export
 #' @seealso \code{\link{agnes}}
 #'
+#' @examples \dontrun{
+#'matchedPs<-PatternsMatch4Parallel(Ptot=PBySet,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=FALSE)
+#' }
+#'
 #'
 
 patternMatch4Parallel <- function(Ptot=BySet$P,

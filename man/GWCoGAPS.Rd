@@ -5,9 +5,8 @@
 \title{GWCoGAPS}
 \usage{
 GWCoGAPS(D, S, nFactor, nSets, nCores = NA, saveBySetResults = FALSE,
-  fname = "GWCoGAPS.out", PatternsMatchFN = postCoGAPSPatternMatch,
-  manualMatch = FALSE, Cut = NA, minNS = NA,
-  numSnapshots = numSnapshots, ...)
+  fname = "GWCoGAPS.out", PatternsMatchFN = patternMatch4Parallel,
+  Cut = NA, minNS = NA, ...)
 }
 \arguments{
 \item{D}{data matrix}
@@ -31,38 +30,7 @@ greater than or equal to the number of rows of FP}
 
 \item{minNS}{minimum of individual set contributions a cluster must contain}
 
-\item{numSnapshots}{the number of individual samples to capture}
-
-\item{ABins}{a matrix of same size as A which gives relative
-probability of that element being non-zero}
-
-\item{PBins}{a matrix of same size as P which gives relative
-probability of that element being non-zero}
-
-\item{simulation_id}{name to attach to atoms files if created}
-
-\item{nEquil}{number of iterations for burn-in}
-
-\item{nSample}{number of iterations for sampling}
-
-\item{nOutR}{how often to print status into R by iterations}
-
-\item{output_atomic}{whether to write atom files (large)}
-
-\item{sampleSnapshots}{Boolean to indicate whether to capture
-individual samples from Markov chain during sampling}
-
-\item{alphaA}{sparsity parameter for A domain}
-
-\item{max_gibbmass_paraA}{limit truncated normal to max size}
-
-\item{alphaP}{sparsity parameter for P domain}
-
-\item{max_gibbmass_paraP}{limit truncated normal to max size}
-}
-\value{
-list with A and P matrix estimates, chi-squared and atom
-        numbers of sample by iteration, and chi-squared of mean
+\item{...}{additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}}
 }
 \description{
 \code{GWCoGAPS} calls the C++ MCMC code and performs Bayesian
@@ -77,6 +45,6 @@ PatternsMatchFN = patternMatch4Parallel,numSnapshots=numSnapshots,minNS=minNS)
 
 }
 \seealso{
-\code{\link{CoGAPS}}
+\code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
 }
 

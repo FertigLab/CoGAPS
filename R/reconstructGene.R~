@@ -7,7 +7,7 @@
 #' @return the D' estimate of a gene or set of genes
 #' @export
 #'
-reconstructGene<-function(A=NA,P=NA,genes=NA){
+reconstructGene<-function(A=AP$Amean,P=AP$Pmean,genes=NA){
   Dneu <- A%*%P
   if(!is.na(genes)){Dneu <- Dneu[genes,]}
   return(Dneu)

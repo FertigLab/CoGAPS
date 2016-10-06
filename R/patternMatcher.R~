@@ -9,7 +9,8 @@
 #' @export
 #'
 #' @examples \dontrun{
-#' PatternMatcher(PBySet,out,order,sample.color)
+#' PBySet <-reOrderBySet(AP)
+#' PatternMatcher(PBySet=PBySet,out=NULL,order=NULL, sample.color=NULL)
 #' }
 #'
 #'

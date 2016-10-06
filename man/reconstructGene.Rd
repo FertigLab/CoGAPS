@@ -4,7 +4,7 @@
 \alias{reconstructGene}
 \title{reconstruct Gene}
 \usage{
-reconstructGene(A = AP$Amean, P = AP$Pmean, genes = NA)
+reconstructGene(A = NA, P = NA, genes = NA)
 }
 \arguments{
 \item{A}{A matrix estimates}

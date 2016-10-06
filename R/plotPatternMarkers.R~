@@ -8,7 +8,7 @@
 #' @param colDenogram logical indicating whether to display sample denogram
 #' @param heatmapCol pallelet giving color scheme for heatmap
 #' @param scale character indicating if the values should be centered and scaled in either 
-#' the row direction or the column direction, or none. The default is "row". 
+the row direction or the column direction, or none. The default is "row". 
 #' @param ... additional graphical parameters to be passed to \code{heatmap.2}
 #' @export
 #' @return heatmap of the \code{data} values for the \code{patternMarkers}
