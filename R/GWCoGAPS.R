@@ -11,7 +11,7 @@
 #'@param nSets number of sets for parallelization
 #'@param nCores number of cores for parallelization. If left to the default NA, nCores = nSets.
 #'@param saveBySetResults logical indicating whether to save by intermediary by set results. Default is FALSE.
-#'@param fname character string used to label file output. Default is "GWCoGAPS.out"
+#'@param fname character string used to label file output. Default is "GWCoGAPS.AP.fixed"
 #'@param PatternsMatchFN function to use for pattern matching across sets
 #'@param Cut number of branches at which to cut dendrogram used in patternMatch4Parallel
 #'@param minNS minimum of individual set contributions a cluster must contain
@@ -25,7 +25,7 @@
 #'
 
 GWCoGAPS <- function(D, S, nFactor, nSets, nCores=NA,
-                                 saveBySetResults=FALSE, fname="GWCoGAPS.out",
+                                 saveBySetResults=FALSE, fname="GWCoGAPS.AP.fixed",
                                  PatternsMatchFN = patternMatch4Parallel,
                                  Cut=NA, minNS=NA, ...) {
 
@@ -46,7 +46,7 @@ nut<-generateSeeds(chains=nSets, seed=-1)
 AP <- foreach(i=1:nSets) %dopar% {
      D <- as.matrix(D[genesInSets[[i]],])
      S <- as.matrix(S[genesInSets[[i]],])
-     gapsRun(D=D, S=S, nFactor=nFactor,seed=nut[i],numSnapshots=numSnapshots,...)
+     gapsRun(D=D, S=S, nFactor=nFactor,seed=nut[i],...)
 }
 
 BySet<-reOrderBySet(AP=AP,nFactor=nFactor,nSets=nSets)
@@ -83,6 +83,6 @@ As4fixPs <- postFixed4Parallel(AP.fixed=Fixed,setPs=matchedPs)
 
 #save final
 AP.fixed<-list("A"=As4fixPs$A, "Asd"=As4fixPs$Asd, "P"=matchedPs,"PbySet"=PbySet)
-save(AP.fixed, file=paste("WGCoGAPS.AP.fixed.",fname,".Rda",sep=""))
-print(paste("WGCoGAPS.AP.fixed.",fname,".Rda",sep=""))
+save(AP.fixed, file=paste(fname,".Rda",sep=""))
+print(paste(fname,".Rda",sep=""))
 }

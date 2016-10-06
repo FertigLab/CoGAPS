@@ -7,13 +7,9 @@
 #' from output of parallel gapsMapRun
 #' @export
 #'
-#' @examples \dontrun{
-#' As4fixPs <- postFixed4Parallel(AP.fixed=Fixed,setPs=matchedPs)
-#' }
 #'
-#'
-postFixed4Parallel <- function(AP.fixed=AP.Fixed, # output of parallel gapsMapRun calls with same FP
-	setPs=matchedPs # data.frame with rows giving fixed patterns for P used as input for gapsMapRun
+postFixed4Parallel <- function(AP.fixed=NA, # output of parallel gapsMapRun calls with same FP
+	setPs=NA # data.frame with rows giving fixed patterns for P used as input for gapsMapRun
 ){
 
 ASummary <- do.call(rbind,lapply(AP.fixed, function(x) x$Amean))

@@ -15,17 +15,12 @@
 #' @export
 #' @seealso \code{\link{agnes}}
 #'
-#' @examples \dontrun{
-#'matchedPs<-PatternsMatch4Parallel(Ptot=PBySet,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=FALSE)
-#' }
-#'
 #'
 
-patternMatch4Parallel <- function(Ptot=BySet$P,
-  nSets=nSets, #number of sets
-  #nP=nFactors, #number of patterns (basis vectors, metagenes), which must be greater than or equal to the number of rows of FP
-  cnt=Cut, # number of branches at which to cut dendrogram
-  minNS=minNS, # minimum of sets a cluster must contain
+patternMatch4Parallel <- function(Ptot,
+  nSets, #number of sets
+  cnt, # number of branches at which to cut dendrogram
+  minNS, # minimum of sets a cluster must contain
   cluster.method="complete",
   ignore.NA=FALSE, # ignore NAs from potential over dimensionalization
   bySet=FALSE,
