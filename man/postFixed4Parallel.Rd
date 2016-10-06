@@ -4,7 +4,7 @@
 \alias{postFixed4Parallel}
 \title{postFixed4Parallel}
 \usage{
-postFixed4Parallel(AP.fixed = AP.Fixed, setPs = matchedPs)
+postFixed4Parallel(AP.fixed = NA, setPs = NA)
 }
 \arguments{
 \item{AP.fixed}{output of parallel gapsMapRun calls with same FP}
@@ -17,12 +17,5 @@ from output of parallel gapsMapRun
 }
 \description{
 postFixed4Parallel
-}
-\examples{
-\dontrun{
-As4fixPs <- postFixed4Parallel(AP.fixed=Fixed,setPs=matchedPs)
-}
-
-
 }
 

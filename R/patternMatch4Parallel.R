@@ -17,11 +17,10 @@
 #'
 #'
 
-patternMatch4Parallel <- function(Ptot=BySet$P,
-  nSets=nSets, #number of sets
-  #nP=nFactors, #number of patterns (basis vectors, metagenes), which must be greater than or equal to the number of rows of FP
-  cnt=Cut, # number of branches at which to cut dendrogram
-  minNS=minNS, # minimum of sets a cluster must contain
+patternMatch4Parallel <- function(Ptot,
+  nSets, #number of sets
+  cnt, # number of branches at which to cut dendrogram
+  minNS, # minimum of sets a cluster must contain
   cluster.method="complete",
   ignore.NA=FALSE, # ignore NAs from potential over dimensionalization
   bySet=FALSE,
@@ -45,7 +44,6 @@ cut=cutree(as.hclust(clust),k=cnt)
 #save.image(file=paste("CoGAPS.",nP,"P.",nS,"Set.CorrClustCut",cnt,".RData"))
 ####################################################################
 #drop n<4 and get weighted Avg
-#load("CorrClustCutP20.RData")
 cls=sort(unique(cut))
 cMNs=matrix(nrow=cnt,ncol=dim(Ptot)[2])
 rownames(cMNs)=cls

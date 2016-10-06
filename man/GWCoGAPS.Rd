@@ -5,7 +5,7 @@
 \title{GWCoGAPS}
 \usage{
 GWCoGAPS(D, S, nFactor, nSets, nCores = NA, saveBySetResults = FALSE,
-  fname = "GWCoGAPS.out", PatternsMatchFN = patternMatch4Parallel,
+  fname = "GWCoGAPS.AP.fixed", PatternsMatchFN = patternMatch4Parallel,
   Cut = NA, minNS = NA, ...)
 }
 \arguments{
@@ -22,7 +22,7 @@ greater than or equal to the number of rows of FP}
 
 \item{saveBySetResults}{logical indicating whether to save by intermediary by set results. Default is FALSE.}
 
-\item{fname}{character string used to label file output. Default is "GWCoGAPS.out"}
+\item{fname}{character string used to label file output. Default is "GWCoGAPS.AP.fixed"}
 
 \item{PatternsMatchFN}{function to use for pattern matching across sets}
 

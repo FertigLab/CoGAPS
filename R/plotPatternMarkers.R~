@@ -8,7 +8,7 @@
 #' @param colDenogram logical indicating whether to display sample denogram
 #' @param heatmapCol pallelet giving color scheme for heatmap
 #' @param scale character indicating if the values should be centered and scaled in either 
-the row direction or the column direction, or none. The default is "row". 
+#' the row direction or the column direction, or none. The default is "row". 
 #' @param ... additional graphical parameters to be passed to \code{heatmap.2}
 #' @export
 #' @return heatmap of the \code{data} values for the \code{patternMarkers}
@@ -19,8 +19,8 @@ the row direction or the column direction, or none. The default is "row".
 #'}
 
 plotPatternMarkers <- function(
-	data=NA,# the dataset from which the patterns where generated
-    patternMarkers=PatternMarkers,# the list of genes generated from the patternMarkers function
+    data=NA,# the dataset from which the patterns where generated
+    patternMarkers=NA,# the list of genes generated from the patternMarkers function
     patternPalette=NA,# a vector indicating what color should be used for each pattern
     sampleNames=NA,#names of the samples to use for labeling
     samplePalette=NA,# a vector indicating what color should be used for each sample
