@@ -4,7 +4,7 @@
 \alias{patternMarkers}
 \title{patternMarkers}
 \usage{
-patternMarkers(Amatrix = AP$Amean, scaledPmatrix = FALSE, Pmatrix = NA,
+patternMarkers(Amatrix = NA, scaledPmatrix = FALSE, Pmatrix = NA,
   threshold = "cut", lp = NA, full = FALSE)
 }
 \arguments{
