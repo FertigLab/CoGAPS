@@ -25,6 +25,8 @@ Imports:
     utils,
     doParallel,
     foreach,
+    iterators,
+    parallel,
     ggplot2,
     reshape2
 Suggests: 
