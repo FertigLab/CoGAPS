@@ -8,7 +8,6 @@
 \title{GAPS/CoGAPS Users Manual}
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
 
 \maketitle
 \tableofcontents
@@ -21,10 +20,10 @@ The Markov chain Monte Carlo (MCMC) matrix factorization that infers patterns al
 
 \par The GAPS algorithm is implemented in C++ and compiled and integrated into R using the Rcpp package.  GAPS is licensed under the GNU General Public License version 2.  You may freely modify and redistribute GAPS under certain conditions that are described in the top level source directory file \nolinkurl{COPYING}.
 
-\par The R package CoGAPS is designed to facilitate the corresponding analysis of microarray measurements by calling the GAPS C++ library.  With the migration to C++ code, the installation as noted in Chapter \ref{install} should now be automatic.  Running instructions for the GAPS and CoGAPS analyses are provided in Sections \ref{GAPSRun} and \ref{CoGAPSRun}, respectively.  CoGAPS and GAPS are freely available at \url{https://github.com/ejfertig/CoGAPS} and through the CoGAPS Bioconductor package.
+\par The R package CoGAPS is designed to facilitate the corresponding analysis of microarray measurements by calling the GAPS C++ library.  With the migration to C++ code, the installation as noted in Chapter \ref{install} should now be automatic.  Running instructions for the GAPS and CoGAPS analyses are provided in Sections \ref{GAPSRun} and \ref{CoGAPSRun}, respectively.  CoGAPS and GAPS are freely available at \url{https://github.com/ejfertig/CoGAPS} and through the CoGAPS Bioconductor package.  
 
 \par If you use the \texttt{CoGAPS} package for your analysis please cite:
-\cite{Fertig2010} EJ Fertig, J Ding, AV Favorov, G Parmigiani, and MF Ochs (2010) CoGAPS: an R/C++ package to identify patterns and biological process activity in transcriptomic data. \textit{Bioinformatics} \textbf{26}: 2792-2793.
+\cite{Fertig2010} EJ Fertig, J Ding, AV Favorov, G Parmigiani, and MF Ochs (2010) CoGAPS: an R/C++ package to identify patterns and biological process activity in transcriptomic data. \textit{Bioinformatics} \textbf{26}: 2792-2793. 
 
 \par To cite the CoGAPS algorithm use:
 \cite{Ochs2003} MF Ochs (2003) Bayesian Decomposition in \textit{The Analysis of Gene Expression Data: Methods and Software} G Parmigiani, E Garrett, R Irizarry, and S Zeger, ed. New York: Springer Verlag.
@@ -35,11 +34,11 @@ The Markov chain Monte Carlo (MCMC) matrix factorization that infers patterns al
 \par To site the set-membership refinement statistic use:
 \cite{Fertig2012} EJ Fertig, AV Favorov, and MF Ochs (2012) Identifying context-specific transcription factor targets from prior knowledge and gene expression data. \textit{2012 IEEE International Conference on Bioinformatics and Biomedicine}, B310, \textit{in press}.
 
-\par Please contact Elana J. Fertig \url{ejfertig@jhmi.edu} or Michael F. Ochs \url{ochsm@tcnj.edu} for assistance.
+\par Please contact Elana J. Fertig \url{ejfertig@jhmi.edu} or Michael F. Ochs \url{ochsm@tcnj.edu} for assistance. 
 
 \chapter{Installation Instructions} \label{install}
 
-\par The GAPS, CoGAPS, and GWCoGAPS algorithms are implemented in an open source C++ software and an R package to facilitate analysis, visualization, and integration with other R tools (CoGAPS, available through Bioconductor).
+\par The GAPS and CoGAPS algorithms are implemented in an open source C++ software and an R package to facilitate analysis, visualization, and integration with other R tools (CoGAPS, available through Bioconductor).   
 
 \par With this version of CoGAPS, installation should be automatically completed through Bioconductor package installation:
 \begin{verbatim}
@@ -47,11 +46,11 @@ source("http://www.bioconductor.org/biocLite.R")
 biocLite("CoGAPS")
 \end{verbatim}
 
-\par The C++ software will be automatically compiled, linking to required boost libraries distributed as part of the CRAN \texttt{BH} package (\url{http://cran.r-project.org/web/packages/BH/index.html}) and Rcpp (\url{http://cran.r-project.org/web/packages/Rcpp/index.html}).
+\par The C++ software will be automatically compiled, linking to required boost libraries distributed as part of the CRAN \texttt{BH} package (\url{http://cran.r-project.org/web/packages/BH/index.html}) and Rcpp (\url{http://cran.r-project.org/web/packages/Rcpp/index.html}). 
 
 \chapter{Executing CoGAPS}
 
-\par In this chapter, we describe how to run both the GAPS and CoGAPS algorithms.
+\par In this chapter, we describe how to run both the GAPS and CoGAPS algorithms.  
 
 \section{GAPS} \label{GAPSRun}
 
@@ -70,7 +69,7 @@ The number of rows in ${\bf{P}}$ (columns in ${\bf{A}}$) defines the number of b
           simulation_id = "simulation", nEquil = 1000, nSample = 1000,
           nOutR = 1000, output_atomic = "FALSE", fixedBinProbs = "FALSE",
           fixedDomain = "N", sampleSnapshots = "TRUE", numSnapshots = 100,
-          alphaA = 0.01, nMaxA = 1e+05, max_gibbmass_paraA = 100,
+          alphaA = 0.01, nMaxA = 1e+05, max_gibbmass_paraA = 100, 
           alphaP = 0.01, nMaxP = 1e+05, max_gibbmass_paraP = 100)
 \end{verbatim}
 
@@ -115,7 +114,7 @@ The algorithm returns in the results a list with
 \item[ASnapshots]{Samples of A matrices taken during sampling.}
 \item[PSnapshots]{Samples of P matrices taken during sampling.}
 \end{description}
-
+  
 \par Once the GAPS algorithm has been run, the inferred patterns and corresponding amplitude can be displayed using the \texttt{plotGAPS} function as follows:
 \begin{verbatim}
 > plotGAPS(Amean, Pmean, outputPDF="")
@@ -150,8 +149,8 @@ nIter <- 5000
 results <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3,
 		nEquil=nIter, nSample=nIter)
 plotGAPS(results$Amean, results$Pmean, 'ModSimFigs')
-@
-Figure \ref{fig:ModSim} shows the results from plotting the GAPS estimates of ${\bf{A}}$ and ${\bf{P}}$ using \texttt{plotGAPS}, which has a fit to ${\bf{D}}$ of $\chi^{2}=\Sexpr{results[['meanChi2']]}$.
+@ 
+Figure \ref{fig:ModSim} shows the results from plotting the GAPS estimates of ${\bf{A}}$ and ${\bf{P}}$ using \texttt{plotGAPS}, which has a fit to ${\bf{D}}$ of $\chi^{2}=\Sexpr{results[['meanChi2']]}$.  
 \begin{figure}[ht]
   \begin{center}
     \subfigure[Inferred amplitude matrix]{
@@ -170,13 +169,13 @@ Figure \ref{fig:ModSimPtrue} displays the true patterns used to create the SimpS
 <<label=ModSimPtrue, fig=TRUE, echo=FALSE>>=
 arrayIdx <- 1:ncol(SimpSim.P)
 matplot(arrayIdx, t(SimpSim.P), type='l', lwd=10)
-@
+@ 
   \end{center}
   \caption{Known true patterns used to generate SimpSim data.}
   \label{fig:ModSimPtrue}
 \end{figure}
 
-Figure \ref{fig:GS} shows the results from running CoGAPS on the SimpSim data.
+Figure \ref{fig:GS} shows the results from running CoGAPS on the SimpSim data.  
 
 \section{CoGAPS} \label{CoGAPSRun}
 
@@ -192,14 +191,14 @@ where $g$ indexes the genes in the set and ${\bf{Asd}}_{gp}$ is the standard dev
 
 \par The CoGAPS algorithm is run by calling the \texttt{CoGAPS} function in the CoGAPS R package as follows:
 \begin{verbatim}
-> results <- CoGAPS(data, unc, ABins = data.frame(), PBins = data.frame(),
-                                   GStoGenes, nFactor = 7, simulation_id = "simulation",
-                                   nEquil = 1000, nSample = 1000, nOutR = 1000,
-                                   output_atomic = FALSE, fixedBinProbs = FALSE,
+> results <- CoGAPS(data, unc, ABins = data.frame(), PBins = data.frame(), 
+                                   GStoGenes, nFactor = 7, simulation_id = "simulation", 
+                                   nEquil = 1000, nSample = 1000, nOutR = 1000, 
+                                   output_atomic = FALSE, fixedBinProbs = FALSE, 
                                    fixedDomain = "N", sampleSnapshots = TRUE,
-                                   numSnapshots = 100, plot = TRUE, nPerm = 500,
-                                   alphaA = 0.01, nMaxA = 1e+05,
-                                   max_gibbmass_paraA = 100, alphaP = 0.01,
+                                   numSnapshots = 100, plot = TRUE, nPerm = 500, 
+                                   alphaA = 0.01, nMaxA = 1e+05, 
+                                   max_gibbmass_paraA = 100, alphaP = 0.01, 
                                    nMaxP = 1e+05, max_gibbmass_paraP = 100)
 
 \end{verbatim}
@@ -211,7 +210,7 @@ where $g$ indexes the genes in the set and ${\bf{Asd}}_{gp}$ is the standard dev
 \item[nPerm]{Number of permutations used for the null distribution in the gene set statistic. (optional; default=500).}
 \item[plot]{Use \texttt{plotGAPS} to plot results from the run of \texttt{GAPS} within \texttt{CoGAPS}.}
 \end{description}
-
+  
 \par \noindent \textbf{\underline{List Items in Function Output}}
 \begin{description}
 \item[$\ldots$]{Output list from GAPS except vectors of sample atom numbers and individual $\chi^2$ values.}
@@ -235,8 +234,8 @@ The input arguments for \texttt{calcCoGAPSStat} are as described in the previous
 <<label=SimCoGAPS,echo=TRUE>>=
 library('CoGAPS')
 data('SimpSim')
-nIter <- 5000
-results <- CoGAPS(data=SimpSim.D, unc=SimpSim.S,
+nIter <- 5000 
+results <- CoGAPS(data=SimpSim.D, unc=SimpSim.S, 
 		  GStoGenes=GSets,
                   nFactor=3,
                   nEquil=nIter, nSample=nIter,
@@ -268,13 +267,13 @@ Figure \ref{fig:GS2} shows the results from running CoGAPS on the GIST data in \
 library('CoGAPS')
 data('GIST_TS_20084')
 data('TFGSList')
-nIter <- 10000
+nIter <- 10000 
 results <- CoGAPS(GIST.D, GIST.S, tf2ugFC,
                   nFactor=5,
                   nEquil=nIter, nSample=nIter,
                   plot=FALSE)
 plotGAPS(results$Amean, results$Pmean, 'GISTFigs')
-@
+@  
 
 Figure \ref{fig:GS} shows the results from running CoGAPS on the GIST data in \cite{Ochs2009} with the option plot set to true.
 \begin{figure}[ht]
@@ -299,7 +298,7 @@ Figure \ref{fig:GS} shows the results from running CoGAPS on the GIST data in \c
 S_{g,\mathcal{G}} = \frac{\sum_{p} -log\left(\mbox{Pr}_{\mathcal{G}p}\right){\bf{A}}_{gp}/{\bf{Asd}}_{gp}}{\sum_{p} -log\left(\mbox{Pr}_{\mathcal{G}p}\right)},
 \label{eq:summaryGSStat}
 \end{equation}
-where $\mbox{Pr}_{\mathcal{G}p}$ is the probability of upregulation of the geneset, returned from \texttt{calcCoGAPSStat} as \texttt{GSActEst} based upon eq.~(\ref{eq:avgZ}).  Similar to the gene set statistics, p-values for the set membership are computed with permutation tests that compare the value of $S_{g,\mathcal{G}}$ from eq.~(\ref{eq:summaryGSStat}) to the statistic formulated for a random gene set of the same size that also contains gene $g$.
+where $\mbox{Pr}_{\mathcal{G}p}$ is the probability of upregulation of the geneset, returned from \texttt{calcCoGAPSStat} as \texttt{GSActEst} based upon eq.~(\ref{eq:avgZ}).  Similar to the gene set statistics, p-values for the set membership are computed with permutation tests that compare the value of $S_{g,\mathcal{G}}$ from eq.~(\ref{eq:summaryGSStat}) to the statistic formulated for a random gene set of the same size that also contains gene $g$.  
 
 \par The set membership statistic is computed from the results from the GAPS matrix factorization, computed with either the \texttt{GAPS} function described in Section \ref{GAPSR un} or the \texttt{CoGAPS} function described in Section \ref{CoGAPSRun} as follows:
 \begin{verbatim}
@@ -313,7 +312,7 @@ where $\mbox{Pr}_{\mathcal{G}p}$ is the probability of upregulation of the genes
 \item[GStoGenes]{List or data frame containing the genes in each gene set. If a list, gene set names are the list names and corresponding elements are the names of genes contained in each set. If a data frame, gene set names are in the first column and corresponding gene names are listed in rows beneath each gene set name.}
 \item[nPerm]{Number of permutations used for the null distribution in the gene set and set membership statistics. (optional; default=500).}
 \end{description}
-
+  
 \par \noindent \textbf{\underline{Function Output}}
 \begin{description}
 \item p-value of set membership for each gene specified in \texttt{GStoGenes}.
@@ -323,9 +322,10 @@ where $\mbox{Pr}_{\mathcal{G}p}$ is the probability of upregulation of the genes
 
 \par Although not run in the interest of installation time, the following examples were used to generate some of the results in \cite{Fertig2012}, with the complete analysis code available from \url{http://astor.som.jhmi.edu/~ejfertig/ejfertig/Publications.html}.
 
-\par This example refines transcription factor targets annotated in TRANSFAC (TFGSList) to identify context-specific targets from gene expression data (GIST\_TS\_20084)from \cite{Ochs2009}.
+\par This example refines transcription factor targets annotated in TRANSFAC (TFGSList) to identify context-specific targets from gene expression data (GIST\_TS\_20084)from \cite{Ochs2009}.  
 
 <<eval=FALSE, keep.source=TRUE>>=
+
 # define transcription factors of interest based on Ochs et al. (2009)
 TFs <- c("c.Jun", 'NF.kappaB', 'Smad4', "STAT3", "Elk.1", "c.Myc", "E2F.1",
          "AP.1", "CREB", "FOXO", "p53", "Sp1")
@@ -341,8 +341,6 @@ for (tf in TFs) {
 }
 @
 
-
-
 \chapter{Feedback}
 
 \par Please send feedback to Elana Fertig \texttt{ejfertig@jhmi.edu} or Michael Ochs \texttt{ochsm@tcnj.edu}.
@@ -353,7 +351,7 @@ for (tf in TFs) {
 
 \par This new version of CoGAPS relies on extensive recoding by Waishing Lee in C++ and work for C++ streamlining and R integration by Ondrej Maxian and Conor Kelton.  John Stansfield provided additional R code for visualization. Special thanks to paper co-authors Jie Ding, Alexander V. Favorov, and Giovanni Parmigiani for statistical advice in developing the GAPS / CoGAPS algorithms.  Additional thanks to Simina M. Boca, Ludmila V. Danilova, Genevieve Stein-O'Brien, Jeffrey Leek, and Svitlana Tyekcheva for their useful feedback.
 
-\par This work was funded by NIH/NLM R21LM009382, NIH/NLM R01LM011000, NIH/NCI K25CA141053, and NSF Grant 0342111.
+\par This work was funded by NIH/NLM R21LM009382, NIH/NLM R01LM011000, NIH/NCI K25CA141053, and NSF Grant 0342111. 
 
 \bibliographystyle{plain}
 \bibliography{AppNote}
