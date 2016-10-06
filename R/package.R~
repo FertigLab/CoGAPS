@@ -27,14 +27,13 @@
 #' @importFrom graphics matplot title abline close.screen hist legend lines mtext par plot points screen split.screen
 #' @importFrom grDevices dev.new dev.off pdf colorRampPalette rainbow
 #' @importFrom methods is
-#' @importFrom utils read.table write.table str
+#' @importFrom utils read.table write.table
 #' @importFrom RColorBrewer brewer.pal
-#' @importFrom stats cor loess as.dist cutree
-#' @import foreach
-#' @importFrom cluster agnes 
+#' @importFrom stats cor loess
+#' @import cluster
 #' @import doParallel
 #' @import shiny
-#' @importFrom reshape2 melt
+#' @import reshape2
 #' @import ggplot2
 #' @useDynLib CoGAPS
 NULL

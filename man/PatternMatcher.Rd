@@ -24,8 +24,7 @@ PatternMatcher Shiny Ap
 }
 \examples{
 \dontrun{
-PBySet <-reOrderBySet(AP)
-PatternMatcher(PBySet=PBySet,out=NULL,order=NULL, sample.color=NULL)
+PatternMatcher(PBySet,out,order,sample.color)
 }
 
 

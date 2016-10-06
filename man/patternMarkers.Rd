@@ -5,7 +5,7 @@
 \title{patternMarkers}
 \usage{
 patternMarkers(Amatrix = AP$Amean, scaledPmatrix = FALSE, Pmatrix = NA,
-  threshold = "cut", lp = NA, full = FALSE, ...)
+  threshold = "cut", lp = NA, full = FALSE)
 }
 \arguments{
 \item{Amatrix}{A matrix of genes by weights resulting from CoGAPS or other NMF decomposition}
@@ -19,8 +19,6 @@ patternMarkers(Amatrix = AP$Amean, scaledPmatrix = FALSE, Pmatrix = NA,
 \item{lp}{a vector of weights for each pattern to be used for finding markers. If NA markers for each pattern of the A matrix will be used.}
 
 \item{full}{logical indicating whether to return the ranks of each gene for each pattern}
-
-\item{...}{}
 }
 \value{
 By default a non-overlapping list of genes associated with each \code{lp}. If \code{full=TRUE} a data.frame of

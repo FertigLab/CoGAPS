@@ -4,14 +4,12 @@
 \alias{postFixed4Parallel}
 \title{postFixed4Parallel}
 \usage{
-postFixed4Parallel(AP.fixed = AP.Fixed, setPs = matchedPs, ...)
+postFixed4Parallel(AP.fixed = AP.Fixed, setPs = matchedPs)
 }
 \arguments{
 \item{AP.fixed}{output of parallel gapsMapRun calls with same FP}
 
 \item{setPs}{data.frame with rows giving fixed patterns for P used as input for gapsMapRun}
-
-\item{...}{}
 }
 \value{
 list of two data.frames containing the A matrix estimates or their corresponding standard deviations
