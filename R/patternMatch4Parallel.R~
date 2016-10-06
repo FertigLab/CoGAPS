@@ -44,7 +44,6 @@ cut=cutree(as.hclust(clust),k=cnt)
 #save.image(file=paste("CoGAPS.",nP,"P.",nS,"Set.CorrClustCut",cnt,".RData"))
 ####################################################################
 #drop n<4 and get weighted Avg
-#load("CorrClustCutP20.RData")
 cls=sort(unique(cut))
 cMNs=matrix(nrow=cnt,ncol=dim(Ptot)[2])
 rownames(cMNs)=cls

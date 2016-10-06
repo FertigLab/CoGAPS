@@ -93,7 +93,6 @@ for(j in 1:length(PByClustDrop)){
   if(dim(PByClustDrop[[j]])[1]>=minNS+nSets){
     corr.distPBCD=cor(t(PByClustDrop[[j]]))
     corr.distPBCD=1-corr.distPBCD
-    library(cluster)
     clustPBCD=agnes(x=corr.distPBCD,diss=T,method="complete")
     cutPBCD=cutree(as.hclust(clustPBCD),k=2)
     g1 <- PByClustDrop[[j]][cutPBCD==1,]
