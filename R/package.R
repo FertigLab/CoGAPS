@@ -29,7 +29,7 @@
 #' @importFrom methods is
 #' @importFrom utils read.table write.table str
 #' @importFrom RColorBrewer brewer.pal
-#' @importFrom stats cor loess as.dist cutree
+#' @importFrom stats cor loess as.dist cutree as.hclust complete.cases D hclust weighted.mean
 #' @import foreach
 #' @importFrom cluster agnes 
 #' @import doParallel

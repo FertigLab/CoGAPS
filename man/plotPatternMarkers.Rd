@@ -4,9 +4,9 @@
 \alias{plotPatternMarkers}
 \title{plotPatternMarkers}
 \usage{
-plotPatternMarkers(data = NA, patternMarkers = PatternMarkers,
-  patternPalette = NA, sampleNames = NA, samplePalette = NA,
-  colDenogram = TRUE, heatmapCol = "bluered", scale = "row", ...)
+plotPatternMarkers(data = NA, patternMarkers = NA, patternPalette = NA,
+  sampleNames = NA, samplePalette = NA, colDenogram = TRUE,
+  heatmapCol = "bluered", scale = "row", ...)
 }
 \arguments{
 \item{data}{the dataset from which the patterns where generated}
@@ -41,6 +41,6 @@ samplePalette=pd$color,colDenogram=TRUE,heatmapCol="bluered", scale='row')
 }
 }
 \seealso{
-\code{\link{gplot}} and  \code{\link{heatmap.2}}
+\code{\link{heatmap.2}}
 }
 

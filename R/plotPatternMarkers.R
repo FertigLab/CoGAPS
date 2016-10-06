@@ -12,15 +12,15 @@
 #' @param ... additional graphical parameters to be passed to \code{heatmap.2}
 #' @export
 #' @return heatmap of the \code{data} values for the \code{patternMarkers}
-#' @seealso \code{\link{gplot}} and  \code{\link{heatmap.2}}
+#' @seealso  \code{\link{heatmap.2}}
 #' @examples \dontrun{
 #' plotPatternMarkers(data=p,patternMarkers=PatternMarkers,patternPalette=NA,sampleNames=pd$sample,
 #' samplePalette=pd$color,colDenogram=TRUE,heatmapCol="bluered", scale='row')
 #'}
 
 plotPatternMarkers <- function(
-	data=NA,# the dataset from which the patterns where generated
-    patternMarkers=PatternMarkers,# the list of genes generated from the patternMarkers function
+    data=NA,# the dataset from which the patterns where generated
+    patternMarkers=NA,# the list of genes generated from the patternMarkers function
     patternPalette=NA,# a vector indicating what color should be used for each pattern
     sampleNames=NA,#names of the samples to use for labeling
     samplePalette=NA,# a vector indicating what color should be used for each sample
