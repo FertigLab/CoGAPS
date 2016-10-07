@@ -12,7 +12,7 @@ vignette: >
 
 # Introduction
 
-Gene Association in Pattern Sets (GAPS) infers underlying patterns in a matrix of measurements that can be interpreted as arising from the multiplication of two lower dimensional matrices.  The first development of this code in R/Biocondcutor was focused on gene expression analysis, however the original concept was used in spectral imaging.  The approach is a general form of matrix factorization using a stochastic algorithm.  In this vignette, we will focus on gene expression analysis for concreteness, but the factorization is applicable more broadly.
+NMF algorithms associate gene expression changes with biological processes (e.g., time-course dynamics or disease subtypes). Compared with univariate gene associations, the relative gene weights of NMF solutions do not clearly identify gene biomarkers for these processes. Therefore, we developed a novel PatternMarkers statistic to extract genes uniquely representative of NMF patterns for enhanced visualization and subsequent biological validation. Finding unbiased gene markers with PatternMarkers requires whole-genome data. However, NMF algorithms typically do not converge for the tens of thousands of genes in genome-wide profiling. Therefore, we also developed GWCoGAPS to simultaneously cut runtime and ensure convergence for whole genome NMF with a sparse, MCMC NMF algorithm CoGAPS. The software includes a shiny application PatternMatcher to compare NMF patterns. 
 
 To site GWCoGAPS or the PatternMarkers statistic use:
 \cite{Stein-O'Brien2016} GL Stein-O'Brien, JL Carey, W Lee, M Considine, 
@@ -152,6 +152,8 @@ As4fixPs <- postFixed(AP.fixed=Fixed,setPs=matchedPs)
 
 
 # PatternMarkers
+
+In this chapter, we describe the PatternMarkers statistic.
 
 ## PatternMarkers
 
