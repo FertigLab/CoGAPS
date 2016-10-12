@@ -56,7 +56,6 @@ if(is.na(Cut)){Cut<-nFactor}
 matchedPs<-patternMatch4Parallel(Ptot=BySet$P,nP=nFactor,nSets=nSets,cnt=Cut,minNS=minNS,bySet=TRUE)
 
 #save BySet outputs
-class(AP)<-append(class(AP),"CoGAPS")
 if(saveBySetResults==TRUE){
     save(AP,BySet,matchedPs,file=sprintf('APbySet.%s.nP%d.set%d.Rda',fname, nFactor,nSets))
     print(sprintf('APbySet.%s.nP%d.set%d.Rda',fname, nFactor,nSets))
@@ -83,8 +82,7 @@ As4fixPs <- postFixed4Parallel(AP.fixed=Fixed,setPs=matchedPs)
 
 
 #save final
-AP.fixed<-list("Amean"=As4fixPs$A, "Asd"=As4fixPs$Asd, "Pmean"=matchedPs,"PbySet"=PbySet)
-class(AP.fixed)<-append(class(AP.fixed),"CoGAPS")
+AP.fixed<-list("A"=As4fixPs$A, "Asd"=As4fixPs$Asd, "P"=matchedPs,"PbySet"=PbySet)
 save(AP.fixed, file=paste(fname,".Rda",sep=""))
 print(paste(fname,".Rda",sep=""))
 }
