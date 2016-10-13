@@ -47,16 +47,21 @@ if(!is.na(lp)){
         sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
         ssranks[order(sstat),i] <- 1:length(sstat)
         ssgenes[,i]<-names(sort(sstat,decreasing=FALSE))
-} else {for(i in 1:nP){
+} else {
+    for(i in 1:nP){
         lp <- rep(0,dim(Amatrix)[2])
         lp[i] <- 1
         sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
         ssranks[order(sstat),i] <- 1:length(sstat)
         ssgenes[,i]<-names(sort(sstat,decreasing=FALSE))
-}}
+    }
+}
+print(str(ssgenes))
 if(threshold=="cut"){
         pIndx<-apply(ssranks,1,which.min)
-        ssgenes.th <- lapply(unique(pIndx),function(x) names(pIndx[pIndx==x]))
+        pIndx["WNT1"]
+        gBYp <- lapply(sort(unique(pIndx)),function(x) names(pIndx[pIndx==x]))
+        ssgenes.th <- lapply(1:nP, function(x) ssgenes[which(ssgenes[,x] %in% gBYp[[x]]),x])
 }
 if(threshold=="All"){
         geneThresh <- apply(sweep(ssranks,1,t(apply(ssranks, 1, min)),"-"),2,function(x) which(x==0))
