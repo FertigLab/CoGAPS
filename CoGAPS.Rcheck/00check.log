@@ -1,0 +1,157 @@
+* using log directory ‘/Users/Genevieve/Desktop/CoGAPS/CoGAPS.Rcheck’
+* using R version 3.3.1 (2016-06-21)
+* using platform: x86_64-apple-darwin13.4.0 (64-bit)
+* using session charset: UTF-8
+* checking for file ‘CoGAPS/DESCRIPTION’ ... OK
+* this is package ‘CoGAPS’ version ‘2.5.2’
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  .astylerc
+  .gitignore
+  .lintr
+  .travis.yml
+  .git
+These were most likely included in error. See section ‘Package
+structure’ in the ‘Writing R Extensions’ manual.
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘CoGAPS’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Checking should be performed on sources prepared by ‘R CMD build’.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... WARNING
+'library' or 'require' call not declared from: ‘cluster’
+'library' or 'require' call to ‘cluster’ in package code.
+  Please use :: or requireNamespace() instead.
+  See section 'Suggested packages' in the 'Writing R Extensions' manual.
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+GWCoGAPS: warning in createGWCoGAPSSets(data = D, nSet = nSets, keep =
+  FALSE): partial argument match of 'nSet' to 'nSets'
+GWCoGAPS: no visible binding for global variable
+  ‘postCoGAPSPatternMatch’
+GWCoGAPS: no visible global function definition for ‘%dopar%’
+GWCoGAPS: no visible global function definition for ‘foreach’
+GWCoGAPS: no visible binding for global variable ‘i’
+PatternMatcher : <anonymous>: no visible global function definition for
+  ‘str’
+PatternMatcher : <anonymous>: no visible binding for global variable
+  ‘Samples’
+PatternMatcher : <anonymous>: no visible binding for global variable
+  ‘value’
+PatternMatcher : <anonymous>: no visible binding for global variable
+  ‘BySet’
+createGWCoGAPSSets: no visible binding for global variable ‘D’
+patternMarkers: no visible binding for global variable ‘AP’
+patternMatch4Parallel: no visible binding for global variable ‘BySet’
+patternMatch4Parallel: no visible binding for global variable ‘Cut’
+patternMatch4Parallel: no visible global function definition for
+  ‘complete.cases’
+patternMatch4Parallel: no visible global function definition for
+  ‘cutree’
+patternMatch4Parallel: no visible global function definition for
+  ‘as.hclust’
+patternMatch4Parallel : <anonymous> : <anonymous>: no visible global
+  function definition for ‘weighted.mean’
+plotPatternMarkers: no visible binding for global variable
+  ‘PatternMarkers’
+plotPatternMarkers : corr.dist: no visible global function definition
+  for ‘as.dist’
+plotPatternMarkers : avg: no visible global function definition for
+  ‘hclust’
+postFixed4Parallel: no visible binding for global variable ‘AP.Fixed’
+postFixed4Parallel: no visible binding for global variable ‘matchedPs’
+reconstructGene: no visible binding for global variable ‘AP’
+Undefined global functions or variables:
+  %dopar% AP AP.Fixed BySet Cut D PatternMarkers Samples as.dist
+  as.hclust complete.cases cutree foreach hclust i matchedPs
+  postCoGAPSPatternMatch str value weighted.mean
+Consider adding
+  importFrom("stats", "D", "as.dist", "as.hclust", "complete.cases",
+             "cutree", "hclust", "weighted.mean")
+  importFrom("utils", "str")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... WARNING
+Missing link or links in documentation object 'plotPatternMarkers.Rd':
+  ‘gplot’
+
+See section 'Cross-references' in the 'Writing R Extensions' manual.
+
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'GWCoGAPS'
+  ‘manualMatch’ ‘...’
+Documented arguments not in \usage in documentation object 'GWCoGAPS':
+  ‘ABins’ ‘PBins’ ‘simulation_id’ ‘nEquil’ ‘nSample’ ‘nOutR’
+  ‘output_atomic’ ‘sampleSnapshots’ ‘alphaA’ ‘max_gibbmass_paraA’
+  ‘alphaP’ ‘max_gibbmass_paraP’
+
+Undocumented arguments in documentation object 'createGWCoGAPSSets'
+  ‘data’
+
+Undocumented arguments in documentation object 'plotPatternMarkers'
+  ‘colDenogram’ ‘heatmapCol’ ‘scale’ ‘...’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... WARNING
+Argument items with no description in Rd object 'patternMarkers':
+  ‘...’
+
+Argument items with no description in Rd object 'patternMatch4Parallel':
+  ‘...’
+
+Argument items with no description in Rd object 'postFixed4Parallel':
+  ‘...’
+
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking line endings in C/C++/Fortran sources/headers ... OK
+* checking compiled code ... OK
+* checking files in ‘vignettes’ ... NOTE
+The following files look like leftovers/mistakes:
+  ‘CoGAPSUsersManual.bbl’, ‘CoGAPSUsersManual.log’,
+  ‘CoGAPSUsersManual.toc’
+Please remove them from your package.
+* checking examples ... OK
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... OK
+  Running ‘testthat.R’
+* checking for unstated dependencies in vignettes ... OK
+* checking package vignettes in ‘inst/doc’ ... WARNING
+Package vignette without corresponding PDF/HTML:
+   ‘CoGAPSUsersManual.Rnw’
+
+* checking running R code from vignettes ... OK
+* checking re-building of vignette outputs ... OK
+* checking PDF version of manual ... OK
+* DONE
+Status: 5 WARNINGs, 4 NOTEs

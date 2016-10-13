@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>R: Coordinated Gene Activity in Pattern Sets</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body>
+<h1> Coordinated Gene Activity in Pattern Sets
+<img class="toplogo" src="../../../doc/html/Rlogo.svg" alt="[R logo]" />
+</h1>
+<hr/>
+<div style="text-align: center;">
+<a href="../../../doc/html/packages.html"><img class="arrow" src="../../../doc/html/left.jpg" alt="[Up]" /></a>
+<a href="../../../doc/html/index.html"><img class="arrow" src="../../../doc/html/up.jpg" alt="[Top]" /></a>
+</div><h2>Documentation for package &lsquo;CoGAPS&rsquo; version 2.5.2</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+<li><a href="../NEWS">Package NEWS</a>.</li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<table width="100%">
+<tr><td style="width: 25%;"><a href="CoGAPS-package.html">CoGAPS-package</a></td>
+<td>CoGAPS: Coordinated Gene Activity in Pattern Sets</td></tr>
+<tr><td style="width: 25%;"><a href="binaryA.html">binaryA</a></td>
+<td>'binaryA' creates a binarized heatmap of the A matrix in which the value is 1 if the value in Amean is greater than threshold * Asd and 0 otherwise</td></tr>
+<tr><td style="width: 25%;"><a href="calcCoGAPSStat.html">calcCoGAPSStat</a></td>
+<td>'calcCoGAPSStat' calculates the gene set statistics for each column of A using a Z-score from the elements of the A matrix, the input gene set, and permutation tests</td></tr>
+<tr><td style="width: 25%;"><a href="calcGeneGSStat.html">calcGeneGSStat</a></td>
+<td>'calcGeneGSStat' calculates the probability that a gene listed in a gene set behaves like other genes in the set within the given data set</td></tr>
+<tr><td style="width: 25%;"><a href="calcZ.html">calcZ</a></td>
+<td>'calcZ' calculates the Z-score for each element based on input mean and standard deviation matrices</td></tr>
+<tr><td style="width: 25%;"><a href="CoGAPS.html">CoGAPS</a></td>
+<td>'CoGAPS' calls the C++ MCMC code through gapsRun and performs Bayesian matrix factorization returning the two matrices that reconstruct the data matrix and then calls calcCoGAPSStat to estimate gene set activity with nPerm set to 500</td></tr>
+<tr><td style="width: 25%;"><a href="computeGeneGSProb.html">computeGeneGSProb</a></td>
+<td>CoGAPS gene membership statistic</td></tr>
+<tr><td style="width: 25%;"><a href="createGWCoGAPSSets.html">createGWCoGAPSSets</a></td>
+<td>createGWCoGAPSSets</td></tr>
+<tr><td style="width: 25%;"><a href="gapsMapRun.html">gapsMapRun</a></td>
+<td>'gapsMapRun' calls the C++ MCMC code and performs Bayesian matrix factorization returning the two matrices that reconstruct the data matrix; as opposed to gapsRun, this method takes an additional input specifying set patterns in the P matrix</td></tr>
+<tr><td style="width: 25%;"><a href="gapsMapTestRun.html">gapsMapTestRun</a></td>
+<td>'gapsMapTestRun' calls the C++ MCMC code and performs Bayesian matrix factorization returning the two matrices that reconstruct the data matrix; as opposed to gapsRun, this method takes an additional input specifying set patterns in the P matrix</td></tr>
+<tr><td style="width: 25%;"><a href="gapsRun.html">gapsRun</a></td>
+<td>'gapsRun' calls the C++ MCMC code and performs Bayesian matrix factorization returning the two matrices that reconstruct the data matrix</td></tr>
+<tr><td style="width: 25%;"><a href="gapsTestRun.html">gapsTestRun</a></td>
+<td>'gapsTestRun' calls the C++ MCMC code and performs Bayesian matrix factorization returning the two matrices that reconstruct the data matrix</td></tr>
+<tr><td style="width: 25%;"><a href="computeGeneGSProb.html">geneGSProb</a></td>
+<td>CoGAPS gene membership statistic</td></tr>
+<tr><td style="width: 25%;"><a href="generateSeeds.html">generateSeeds</a></td>
+<td>generateSeeds</td></tr>
+<tr><td style="width: 25%;"><a href="GIST.D.html">GIST.D</a></td>
+<td>Sample GIST gene expression data from Ochs et al. (2009).</td></tr>
+<tr><td style="width: 25%;"><a href="GIST.S.html">GIST.S</a></td>
+<td>Sample GIST gene expression data from Ochs et al. (2009).</td></tr>
+<tr><td style="width: 25%;"><a href="GSets.html">GSets</a></td>
+<td>Simulated dataset to quantify gene set membership.</td></tr>
+<tr><td style="width: 25%;"><a href="GWCoGAPS.html">GWCoGAPS</a></td>
+<td>GWCoGAPS</td></tr>
+<tr><td style="width: 25%;"><a href="patternMarkers.html">patternMarkers</a></td>
+<td>patternMarkers</td></tr>
+<tr><td style="width: 25%;"><a href="patternMatch4Parallel.html">patternMatch4Parallel</a></td>
+<td>patternMatch4Parallel</td></tr>
+<tr><td style="width: 25%;"><a href="PatternMatcher.html">PatternMatcher</a></td>
+<td>PatternMatcher Shiny Ap</td></tr>
+<tr><td style="width: 25%;"><a href="plotAtoms.html">plotAtoms</a></td>
+<td>'plotAtoms' a simple plot of the number of atoms from one of the vectors returned with atom numbers</td></tr>
+<tr><td style="width: 25%;"><a href="plotDiag.html">plotDiag</a></td>
+<td>'plotDiag' plots a series of diagnostic plots</td></tr>
+<tr><td style="width: 25%;"><a href="plotGAPS.html">plotGAPS</a></td>
+<td>'plotGAPS' plots the output A and P matrices as a heatmap and line plot respectively</td></tr>
+<tr><td style="width: 25%;"><a href="plotP.html">plotP</a></td>
+<td>'plotP' plots the P matrix in a line plot with error bars</td></tr>
+<tr><td style="width: 25%;"><a href="plotPatternMarkers.html">plotPatternMarkers</a></td>
+<td>plotPatternMarkers</td></tr>
+<tr><td style="width: 25%;"><a href="plotSmoothPatterns.html">plotSmoothPatterns</a></td>
+<td>'plotSmoothPatterns' plots the output A and P matrices as a heatmap and line plot respectively</td></tr>
+<tr><td style="width: 25%;"><a href="postFixed4Parallel.html">postFixed4Parallel</a></td>
+<td>postFixed4Parallel</td></tr>
+<tr><td style="width: 25%;"><a href="reconstructGene.html">reconstructGene</a></td>
+<td>reconstruct Gene</td></tr>
+<tr><td style="width: 25%;"><a href="reorderByPatternMatch.html">reorderByPatternMatch</a></td>
+<td>'reorderByPatternMatch' plots the output A and P matrices as a heatmap and line plot respectively</td></tr>
+<tr><td style="width: 25%;"><a href="reOrderBySet.html">reOrderBySet</a></td>
+<td>reOrderBySet</td></tr>
+<tr><td style="width: 25%;"><a href="residuals.html">residuals</a></td>
+<td>'residuals' calculate residuals and produce heatmap</td></tr>
+<tr><td style="width: 25%;"><a href="SimpSim.A.html">SimpSim.A</a></td>
+<td>Simulated data</td></tr>
+<tr><td style="width: 25%;"><a href="SimpSim.D.html">SimpSim.D</a></td>
+<td>Simulated data</td></tr>
+<tr><td style="width: 25%;"><a href="SimpSim.P.html">SimpSim.P</a></td>
+<td>Simulated data</td></tr>
+<tr><td style="width: 25%;"><a href="SimpSim.S.html">SimpSim.S</a></td>
+<td>Simulated data</td></tr>
+<tr><td style="width: 25%;"><a href="tf2ugFC.html">tf2ugFC</a></td>
+<td>Gene sets defined by transcription factors defined from TRANSFAC.</td></tr>
+</table>
+</body></html>
