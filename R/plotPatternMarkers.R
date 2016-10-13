@@ -32,24 +32,21 @@ plotPatternMarkers <- function(
 if(is.na(samplePalette)){samplePalette<-rep("black",dim(data)[2])}
 
 ### coloring of genes
-patternCols <- rep(NA, length(unique(unlist(patternMarkers))))
-names(patternCols) <- unique(unlist(patternMarkers))
+patternCols <- rep(NA, length(unlist(patternMarkers)))
+names(patternCols) <- unlist(patternMarkers)
 for (i in 1:length(patternMarkers)) {
     patternCols[patternMarkers[[i]]] <- patternPalette[i]
 }
 
-corr.dist = function(x) as.dist(1-cor(t(x)))
-avg = function(x) hclust(x, method="average")
-
-heatmap.2(as.matrix(data[unique(unlist(patternMarkers)),],...),
+heatmap.2(as.matrix(data[unlist(patternMarkers),],...),
           symkey=F,
           scale=scale,
           col=heatmapCol,
-          distfun=corr.dist,
-          hclustfun=avg,
+          distfun=function(x) as.dist((1-cor(t(x)))/2),
+          hclustfun=function(x) hclust(x,method="average"),
           Rowv=F,Colv=colDenogram,trace='none',
-          RowSideColors = as.character(patternCols[unique(unlist(patternMarkers))]),
-          labCol= sampleNames, labRow="", #unique(unlist(patternMarkers)),
+          RowSideColors = as.character(patternCols[unlist(patternMarkers)]),
+          labCol= sampleNames,
           cexCol=.8,
           ColSideColors = as.character(samplePalette),
           rowsep = cumsum(sapply(patternMarkers,length)))
