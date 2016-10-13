@@ -56,7 +56,6 @@ if(!is.na(lp)){
         ssgenes[,i]<-names(sort(sstat,decreasing=FALSE))
     }
 }
-print(str(ssgenes))
 if(threshold=="cut"){
         pIndx<-apply(ssranks,1,which.min)
         pIndx["WNT1"]
