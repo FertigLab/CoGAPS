@@ -9,11 +9,11 @@
 #' @export
 #'
 #' @examples \dontrun{
-#' PatternMatcher(PBySet,out,order,sample.color)
+#' patternMatcher(PBySet,out,order,sample.color)
 #' }
 #'
 #'
-PatternMatcher<-function(PBySet=NULL,out=NULL,order=NULL, sample.color=NULL) {
+patternMatcher<-function(PBySet=NULL,out=NULL,order=NULL, sample.color=NULL) {
 
 runApp(list(
   ui = pageWithSidebar(
