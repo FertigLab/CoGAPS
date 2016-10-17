@@ -14,14 +14,6 @@ vignette: >
 
 NMF algorithms associate gene expression changes with biological processes (e.g., time-course dynamics or disease subtypes). Compared with univariate gene associations, the relative gene weights of NMF solutions do not clearly identify gene biomarkers for these processes. Therefore, we developed a novel PatternMarkers statistic to extract genes uniquely representative of NMF patterns for enhanced visualization and subsequent biological validation. Finding unbiased gene markers with PatternMarkers requires whole-genome data. However, NMF algorithms typically do not converge for the tens of thousands of genes in genome-wide profiling. Therefore, we also developed GWCoGAPS to simultaneously cut runtime and ensure convergence for whole genome NMF with a sparse, MCMC NMF algorithm CoGAPS. The software includes a shiny application PatternMatcher to compare NMF patterns. 
 
-To site GWCoGAPS or the PatternMarkers statistic use:
-\cite{Stein-O'Brien2016} GL Stein-O'Brien, JL Carey, W Lee, M Considine, 
-AV Favorov, E Flam, D Gaykalova, T Guo, L Li, T Sherman, S Sivy, R McKay, 
-MF Ochs, C Colantuoni, and EJ Fertig (2016) PatternMarkers and Genome-Wide 
-CoGAPS in Analysis in Parallel Sets (GWCoGAPS) for data-driven detection of 
-novel biomarkers via whole transcriptome Non-negative matrix factorization (NMF).
-\textit{Bioinformatics} \textit{in press}.
-
 # Executing GWCoGAPS
 
 In this chapter, we describe how to run both the GWCoGAPS algorithm and a manual

@@ -13,7 +13,7 @@
 #' @export
 #'
 #' @examples \dontrun{
-#' patternMarkers(Amatrix=AP$Amean,scaledPmatrix=FALSE,Pmatrix=NA,threshold="cut")
+#' patternMarkers(Amatrix=AP$Amean,scaledPmatrix=FALSE,Pmatrix=NA,threshold="All",full=TRUE)
 #' }
 #'
 patternMarkers <- function(
@@ -58,8 +58,10 @@ if(!is.na(lp)){
     }
 }
 if(threshold=="cut"){
-        geneThresh <- apply(sweep(ssranks,1,t(apply(ssranks, 1, min)),"-"),2,function(x) which(x==0))
-        ssgenes.th <- lapply(geneThresh,names)
+        geneThresh <- sapply(1:nP,function(x) min(which(ssranks[ssgenes[,x],x] > apply(ssranks[ssgenes[,x],],1,min))))
+        ssgenes.th <- sapply(1:nP,function(x) ssgenes[1:geneThresh[x],x])
+        #geneThresh <- apply(sweep(ssranks,1,t(apply(ssranks, 1, min)),"-"),2,function(x) which(x==0))
+        #ssgenes.th <- lapply(geneThresh,names)
 }
 if(threshold=="All"){
         pIndx<-apply(ssranks,1,which.min)
