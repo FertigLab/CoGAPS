@@ -74,7 +74,7 @@ Figure \ref{fig:ModSim} shows the results from plotting the GWCoGAPS estimates o
 
 ## PatternMatcher Shiny App
 
-The PatternMatcher Shiny App can be used to compare patterns across parallel runs to increase robustness and interpretability of the patterns resulting from Genome-Wide CoGAPS Analysis in Parallel Sets. In this vignette, we will focus on patterns generated from gene expression analysis using GWCoGAPS, but the PatternMatcher Shiny App is applicable more broadly. Any list of related patterns can be input to PatternMatcher for visualization and similar analyses. Custom sets can be matched using the `r patternMatch4Parallel` function as described in manual pipeline outlined in the following section.  
+The PatternMatcher Shiny App can be used to compare patterns across parallel runs to increase robustness and interpretability of the patterns resulting from Genome-Wide CoGAPS Analysis in Parallel Sets. In this vignette, we will focus on patterns generated from gene expression analysis using GWCoGAPS, but the PatternMatcher Shiny App is applicable more broadly. Any list of related patterns can be input to PatternMatcher for visualization and similar analyses. Custom sets can be matched using the patternMatch4Parallel function as described in manual pipeline outlined in the following section.  
 
 **Input Arguments**
 The inputs that must be set each time is the PBySet. Additionally, the order and sample.color inputs are only available when calling patternMatcher in an interactive R session.
@@ -90,6 +90,45 @@ The inputs that must be set each time is the PBySet. Additionally, the order and
 
 ## Manual Pipeline
 The functions that compose the core of the GWCoGAPS algorithm are also provided in the CoGAPS R package and can be used for a manual pipeline of the same analysis or to create a custom pipeline. 
+
+### Customize runs and PatternMatcher 
+Similar to most NMF decompositions GAPS seeks a pattern matrix (${\bf{P}}$) and the corresponding distribution matrix of weights (${\bf{A}}$) whose product forms a mock data matrix (${\bf{M}}$) that represents the expression data ${\bf{D}}$ within noise limits ($\boldsymbol{\varepsilon}$).  That is,
+\begin{equation}
+{\bf{D}} = {\bf{M}} + \boldsymbol{\varepsilon} = {\bf{A}}{\bf{P}} + \boldsymbol{\varepsilon}.
+\label{eq:matrixDecomp}
+\end{equation}
+Parallelizing the GAPS using the doParallel package returns a list containing the following for each set. 
+\begin{description}
+\item[Amean]{A matrix with the sampled mean value for the amplitude matrix ${{\bf{A}}}$.}
+\item[Asd]{A matrix with the sampled standard deviation for the amplitude matrix ${{\bf{A}}}$.}
+\item[Pmean]{A matrix with the sampled mean value for the pattern matrix ${\bf{P}}$.}
+\item[Psd]{A matrix with the sampled standard deviation for the pattern matrix ${\bf{P}}$.}
+\item[atomsAEquil]{A vector with the number of atoms in the A domain throughout the equilibration steps.}
+\item[atomsASamp]{A vector with the number of atoms in the A domain throughout the sampling steps.}
+\item[atomsPEquil]{A vector with the number of atoms in the P domain throughout the equilibration steps.}
+\item[atomsPSamp]{A vector with the number of atoms in the P domain throughout the sampling steps.}
+\item[chiSqValues]{A vector with the sample chi-squared values throughput sampling.}
+\item[meanChi2]{${\chi^2}$ value of the final mean result, i.e. $\chi^2 = \frac{(D-AP)^2}{\sigma^2}$.}
+\item[ASnapshots]{Samples of A matrices taken during sampling.}
+\item[PSnapshots]{Samples of P matrices taken during sampling.}
+\end{description}
+To ease accross set pattern comparisons, the reOrderBySet function restructures this list such that all nSets sets solution for Amean, Pmean, and Asd are listed under ${\bf{A}} ,{\bf{P}}$, and ${\bf{Asd}}$, respectively. NMF solutions using the same syntax can also be imput to reOrderBySet via the AP arguement as follows:
+```{r, eval=FALSE}
+BySet<-reOrderBySet(AP=AP,nFactor=nFactor,nSets=nSets)
+```
+The resulting list of pattern matrixes, i.e. BySet$P, can serve as input for the patternMatch4Parallel function or further transformed for alternative accross set pattern matching techniques. Manual curration of pattern matching can be accomplished by iterating between the patternMatch4Parallel function and visual editting using the PatternMatcher as follows: 
+```{r , eval=FALSE}
+matchedPs<-patternMatch4Parallel(Ptot=BySet$P,nP=nFactor,nS=nSets,
+                                 cnt=nFactor,minNS=minNS,bySet=TRUE)
+selectPBySet<-PatternMatcher(PBySet=matchedPs[["PBySet"]])
+library(reshape2)
+selectPBySet<-dcast(selectPBySet,  BySet ~ Samples)
+rownames(selectPBySet)<-selectPBySet$BySet
+selectPBySet<-as.matrix(selectPBySet[,-1])
+matchedPs<-patternMatch4Parallel(Ptot=selectPBySet,nP=nFactor,nS=nSets,
+                                 cnt=nFactor,minNS=minNS,bySet=FALSE)
+```
+The output of this process, matchedPs, is a data.frame of consensus patterns which can be directly read into the FP arguement of gapsMapRun. These patterns are scaled to have a maximum of one to allow for direct accross pattern comparisions of the ${\bf{A}}$ values both within and accross parallel sets. 
 
 ### Example: Simulated data
 \par This example will manually generate the same result as calling the GWCoGAPS function as given in the example in the previous section.
