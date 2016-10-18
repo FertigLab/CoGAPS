@@ -3,7 +3,7 @@
 #' @param PBySet list of matched set solutions for the Pmatrix from an NMF algorithm
 #' @param out optional name for saving output
 #' @param order optional vector indicating order of samples for plotting. Default is NULL.
-#' @param sample.color optional vector of colors of same lenght as colnames. Default is NULL.
+#' @param sample.color optional vector of colors of same length as colnames. Default is NULL.
 #'
 #' @return either an index of selected sets' contributions or the editted \code{PBySet} object
 #' @export
