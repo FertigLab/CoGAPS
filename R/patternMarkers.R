@@ -4,7 +4,7 @@
 #' @param Amatrix A matrix of genes by weights resulting from CoGAPS or other NMF decomposition
 #' @param scaledPmatrix logical indicating whether the corresponding pattern matrix was fixed to have max 1 during decomposition
 #' @param Pmatrix the corresponding Pmatrix (patterns X samples) for the provided Amatrix (genes x patterns). This must be supplied if scaledPmatrix is FALSE.
-#' @param threshold # the type of threshold to be used. The default "All" will distribute genes into pattern with the highest ranking. The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern.
+#' @param threshold # the type of threshold to be used. The default "All" will distribute genes into pattern with the lowest ranking. The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern.
 #' @param lp a vector of weights for each pattern to be used for finding markers. If NA markers for each pattern of the A matrix will be used.
 #' @param full logical indicating whether to return the ranks of each gene for each pattern
 #'
