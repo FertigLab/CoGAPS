@@ -25,7 +25,8 @@ pipeline for genome wide NMF analysis.
 The GWCoGAPS algorithm is run by calling the GWCoGAPS function in the CoGAPS
 R package as follows:
 
-```{r, eval=FALSE}
+
+```r
 library(CoGAPS) 
 GWCoGAPS(D, S, nFactor, nSets, nCores, saveBySetResults, fname,
     PatternsMatchFN = patternMatch4Parallel, Cut, minNS, ...)
@@ -54,7 +55,8 @@ greater than or equal to the number of rows of FP}
 
 \par In this example, we use the same simulated data in SimpSim (SimpSim.D), as previously described, with three known patterns (SimpSim.P) and corresponding amplitude (SimpSim.A) with specified activity in two gene sets (GSets).
 
-```{r , eval=FALSE}
+
+```r
 library('CoGAPS')
 data('SimpSim')
 GWCoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nCores=NA, nSets=2,
@@ -62,19 +64,13 @@ GWCoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nCores=NA, nSets=2,
             sampleSnapshots = "TRUE", numSnapshots = 3)
 plotGAPS(AP.Fixed$A, AP.Fixed$P, 'ModSimFigs')
 ```
-Figure \ref{fig:ModSim} shows the results from plotting the GWCoGAPS estimates of ${\bf{A}}$ and ${\bf{P}}$ using \texttt{plotGAPS}.  
-\begin{figure}[ht]
-  \begin{center}
-      \includegraphics[width=0.45\linewidth]{ModSimFigs-Amplitude}\includegraphics[width=0.45\linewidth]{ModSimFigs-Patterns}
-  \end{center}
-  \caption{Results from GWCoGAPS on simulated data set with known true patterns.}
-  \label{fig:ModSim}
-\end{figure}
 
 
-## PatternMatcher Shiny App
+## Manual Pipeline
 
-The PatternMatcher Shiny Ap can be used to compare patterns across parallel runs to increase robustness and interpretability of the patterns resulting from Genome-Wide CoGAPS Analysis in Parallel Sets. In this vignette, we will focus on patterns generated from gene expression analysis using GWCoGAPS, but the PatternMatcher Shiny App is applicable more broadly. Any list of related patterns can be input to PatternMatcher for visualization and similar analyses. 
+The functions that compose the core of the GWCoGAPS algorithm are also provided in the CoGAPS R package and can be used for a manual pipeline of the same analysis or to create a custom pipeline. Additionally, a web based shiny application is included for visualizing and editing the pattern matching process.
+
+### PatternMatcher Shiny App
 
 **Input Arguments**
 The inputs that must be set each time is the PBySet. Additionally, the order and sample.color inputs are only available when calling patternMatcher in an interactive R session.
@@ -83,18 +79,17 @@ The inputs that must be set each time is the PBySet. Additionally, the order and
 \item[PBySet]{list of matched set solutions for the Pmatrix from an NMF algorithm}
 \item[out]{optional name for saving output}
 \item[order]{optional vector indicating order of samples for plotting. Default is NULL.}
-\item[sample.color]{optional vector of colors of same length as colnames. Default is NULL.}
+\item[sample.color]{optional vector of colors of same lenght as colnames. Default is NULL.}
 \end{description}
 
-![A screenshot of the PatternMatcher Shiny App plotting the by-set results for pattern 3 of the simulated data](ShinyApp.pdf)
+![A screenshot of the PatternMatcher Shiny App plotting the by-set results for pattern 1 of the simulated data](ShinyApp.pdf)
 
-## Manual Pipeline
-The functions that compose the core of the GWCoGAPS algorithm are also provided in the CoGAPS R package and can be used for a manual pipeline of the same analysis or to create a custom pipeline. 
+### Example: Simulated data}
 
-### Example: Simulated data
 \par This example will manually generate the same result as calling the GWCoGAPS function as given in the example in the previous section.
 
-```{r , eval=FALSE}
+
+```r
 data('SimpSim')
 D<-SimpSim.D
 S<-SimpSim.S
@@ -124,8 +119,7 @@ AP <- foreach(i=1:nSets) %dopar% {
 }
 
 BySet<-reOrderBySet(AP=AP,nFactor=nFactor,nSets=nSets)
-matchedPs<-patternMatch4Parallel(Ptot=BySet$P,nP=nFactor,nS=nSets,
-                                 cnt=nFactor,minNS=minNS,bySet=TRUE)
+matchedPs<-patternMatch4Parallel(Ptot=BySet$P,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=TRUE)
 
 # use shiny for pattern matching
 selectPBySet<-PatternMatcher(PBySet=matchedPs[["PBySet"]])
@@ -133,8 +127,7 @@ library(reshape2)
 selectPBySet<-dcast(selectPBySet,  BySet ~ Samples)
 rownames(selectPBySet)<-selectPBySet$BySet
 selectPBySet<-as.matrix(selectPBySet[,-1])
-matchedPs<-patternMatch4Parallel(Ptot=selectPBySet,nP=nFactor,nS=nSets,
-                                 cnt=nFactor,minNS=minNS,bySet=FALSE)
+matchedPs<-patternMatch4Parallel(Ptot=selectPBySet,nP=nFactor,nS=nSets,cnt=nFactor,minNS=minNS,bySet=FALSE)
 
 #generate seeds for parallelization
 nut<-generateSeeds(chains=nSets, seed=-1)
@@ -145,8 +138,7 @@ nFactorFinal<-dim(matchedPs)[1]
 Fixed <- foreach(i=1:nSets) %dopar% {
   D <- as.matrix(D[genesInSets[[i]],])
   S <- as.matrix(S[genesInSets[[i]],])
-  AP <- gapsMapRun(D, S, FP=matchedPs, nFactor=nFactorFinal, 
-                   fixedMatrix = "P",seed=nut[i],numSnapshots=numSnapshots)
+  AP <- gapsMapRun(D, S, FP=matchedPs, nFactor=nFactorFinal, fixedMatrix = "P",seed=nut[i],numSnapshots=numSnapshots)
 }
 
 #extract A and Asds
@@ -156,7 +148,7 @@ As4fixPs <- postFixed(AP.fixed=Fixed,setPs=matchedPs)
 
 # PatternMarkers
 
-The PatternMarkers statistic extracts genes representative of NMF patterns for enhanced visualization and subsequent biological validation. While first developed for CoGAPS and other NMF algorithsm, PatternMarkers can be used to find unique markers for any patterns associated with sets of continuous relative weights. 
+In this chapter, we describe the PatternMarkers statistic.
 
 ## PatternMarkers
 
@@ -167,15 +159,16 @@ The PatternMarkers statistic finds the genes most uniquely associated with a giv
 \label{eq:PatternMarkers}
 \end{equation}
 
-where  are the elements of the $\bf{A}$ matrix for the $\textit{i}^{th}$ gene scaled to have a maximum of one and \textit{l} is the $\textit{p}^{th}$ user specified norm. The genes are then ranked. In the case where \textit{l} is the identity vector, the ranking is run separately for each of the K patterns. Unique sets are generated by grouping each gene by lowest ranking pattern or thresholding using the first gene to have a lower ranking, i.e. better fit to, another patterns.
+where  are the elements of the $\bf{A}$ matrix for the $\textit{i}^{th}$ gene scaled to have a maximum of one and \textit{l} is the $\textit{p}^{th}$ user specified norm. The genes are then ranked. In the case where \textit{l} is the identity vector, the ranking is run separately for each of the K patterns. Unique sets are generated by thresholding using the first gene to have a lower ranking, i.e. better fit to, another patterns.
 
 ### Methods
 
 The PatternMarkers statistic is run by calling thepatternMarkers function in the CoGAPS R package as follows:
 
-```{r , eval=FALSE}
+
+```r
  patternMarkers(Amatrix = AP$Amean, scaledPmatrix = FALSE, Pmatrix = NA,
-  threshold = "All", lp = NA, full = FALSE, ...)
+  threshold = "cut", lp = NA, full = FALSE, ...)
 ```
 
 **Input Arguments**
@@ -183,14 +176,15 @@ The PatternMarkers statistic is run by calling thepatternMarkers function in the
 \item[Amatrix]{A matrix of genes by weights resulting from CoGAPS or other NMF decomposition}
 \item[scaledPmatrix]{logical indicating whether the corresponding pattern matrix was fixed to have max 1 during decomposition}
 \item[Pmatrix]{the corresponding Pmatrix (patterns X samples) for the provided Amatrix (genes x patterns). This must be supplied if scaledPmatrix is FALSE.}
-\item[threshold]{The default "All" will distribute genes into pattern with the highest ranking. The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern.}
+\item[threshold]{the type of threshold to be used. The default "cut" will thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern. Alternatively, threshold="all" will return all of the genes in rank order for each pattern.}
 \item[lp]{a vector of weights for each pattern to be used for finding markers. If NA markers for each pattern of the A matrix will be used.}
 \item[full]{logical indicating whether to return the ranks of each gene for each pattern}
 \end{description}
 
 Once the PatternMarkers statistic has been run, a heatmap of each markers expression level can be displayed using the plotPatternMarkers function as follows:
 
-```{r , eval=FALSE}
+
+```r
 plotPatternMarkers(data = NA, patternMarkers = PatternMarkers,
       patternPalette = NA, sampleNames = NA, samplePalette = NA,
       colDenogram = TRUE, heatmapCol = "bluered", scale = "row", ...)
@@ -207,15 +201,21 @@ plotPatternMarkers(data = NA, patternMarkers = PatternMarkers,
 
 ### Example: Simulated data
 
-```{r , eval=FALSE}
+
+```r
+# GWCoGAPS output
 PatternMarkers<-patternMarkers(Amatrix=AP.fixed$A,scaledPmatrix=TRUE,threshold="cut")
+plotPatternMarkers(data=D,patternMarkers=PatternMarkers,patternPalette=c("grey","navy","orange"))
+# manual pipeline output
+PatternMarkers<-patternMarkers(Amatrix=As4fixPs$A,scaledPmatrix=TRUE,threshold="cut")
 plotPatternMarkers(data=D,patternMarkers=PatternMarkers,patternPalette=c("grey","navy","orange"))
 ```
 
-Figure \ref{fig:PM1} shows the results from running plotPatternMarkers on the PatternMarkers generated from the the GWCoGAPS results generated from the simulated data as previously illustrated.
+Figure \ref{fig:PM1} shows the results from running plotPatternMarkers on the PatternMarkers generated from the the GWCoGAPS (left) and manual pipeline (right) results generated from the simulated data as previously illustrated.
 \begin{figure}[h]
 \begin{center}
-\includegraphics[width=0.95\linewidth]{GWCoGAPSPMs}
+\includegraphics[width=0.4\linewidth]{GWCoGAPSPMs}
+\includegraphics[width=0.4\linewidth]{ManPipePMs}
 \end{center}
 \caption{Heatmap of PatternMarkers expression levels for simulated data.}
 \label{fig:PM1}
@@ -223,7 +223,9 @@ Figure \ref{fig:PM1} shows the results from running plotPatternMarkers on the Pa
 
 # Feedback
 
-Please send feedback to Genevieve L. Stein-O'Brien \texttt{gsteinobrien@jhmi.edu}.
+Please send feedback to Genevieve L. Stein-O'Brien \texttt{gsteino1@jhmi.edu}.
+
+If you want to send a bug report, please first try to reproduce the error.  The code is stochastic and we have seen many transient errors arising in the boost libraries which rarely repeat.  Send the data and please describe what you think should have happened, and what did happen.
 
 \bibliographystyle{plain}
 \bibliography{AppNote}
