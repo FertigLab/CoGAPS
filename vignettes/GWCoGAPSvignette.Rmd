@@ -74,7 +74,7 @@ Figure \ref{fig:ModSim} shows the results from plotting the GWCoGAPS estimates o
 
 ## PatternMatcher Shiny App
 
-The PatternMatcher Shiny Ap can be used to compare patterns across parallel runs to increase robustness and interpretability of the patterns resulting from Genome-Wide CoGAPS Analysis in Parallel Sets. In this vignette, we will focus on patterns generated from gene expression analysis using GWCoGAPS, but the PatternMatcher Shiny App is applicable more broadly. Any list of related patterns can be input to PatternMatcher for visualization and similar analyses. 
+The PatternMatcher Shiny App can be used to compare patterns across parallel runs to increase robustness and interpretability of the patterns resulting from Genome-Wide CoGAPS Analysis in Parallel Sets. In this vignette, we will focus on patterns generated from gene expression analysis using GWCoGAPS, but the PatternMatcher Shiny App is applicable more broadly. Any list of related patterns can be input to PatternMatcher for visualization and similar analyses. Custom sets can be matched using the `r patternMatch4Parallel` function as described in manual pipeline outlined in the following section.  
 
 **Input Arguments**
 The inputs that must be set each time is the PBySet. Additionally, the order and sample.color inputs are only available when calling patternMatcher in an interactive R session.
