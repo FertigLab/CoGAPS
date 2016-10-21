@@ -5,7 +5,7 @@
 \title{plotPatternMarkers}
 \usage{
 plotPatternMarkers(data = NA, patternMarkers = NA, patternPalette = NA,
-  sampleNames = NA, samplePalette = NA, colDenogram = TRUE,
+  sampleNames = NA, samplePalette = NULL, colDenogram = TRUE,
   heatmapCol = "bluered", scale = "row", ...)
 }
 \arguments{
@@ -36,7 +36,7 @@ plotPatternMarkers
 }
 \examples{
 \dontrun{
-plotPatternMarkers(data=p,patternMarkers=PatternMarkers,patternPalette=NA,sampleNames=pd$sample,
+plotPatternMarkers(data=p,patternMarkers=PatternMarkers,patternPalette=NULL,sampleNames=pd$sample,
 samplePalette=pd$color,colDenogram=TRUE,heatmapCol="bluered", scale='row')
 }
 }
