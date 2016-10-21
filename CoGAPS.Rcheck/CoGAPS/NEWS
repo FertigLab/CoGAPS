@@ -1,0 +1,10 @@
+CoGAPS implements a MCMC non-negative matrix factorization algorithm and corresponding gene set statistics. As of version 2.0.1, CoGAPS is independent of JAGS, required in earlier versions. This c++ code in src is a redistribution of the source code available from GitHub (https://github.com/ejfertig/CoGAPS). If you have any questions, please comment Elana Fertig <ejfertig@jhmi.edu> or Michael Ochs <mfo@jhu.edu>.
+
+01Sep2011 - Removed dependency on rjags package on CRAN
+02Sep2011 - Included loading of jags libraries upon package loading to avoid setting the LD_LIBRARY_PATH variable
+01Aug2012 - Incorporated statistic to quantify inferred membership of each gene in a specified gene set with corresponding examples published in Fertig, Favorov, and Ochs (2012) IEEE Conference on Bioinformatics and Biomedicine (B310). 
+02Jan2013 - Updated link to software
+03Mar2013 - Added smooth plotting and utilities to do pattern matching and updated statistic from August to work with multiple contexts
+15Jul2013 - Added processed data from Colantuoni et al. (2011) Temporal dynamics and genetic control of transcription in the human prefrontal cortex. Nature, 478:519-523 used for Fertig et al. (2013) Pattern identification in time course gene expression data with the CoGAPS matrix factorization. Chapter 6 in MF Ochs (ed) Methods in Molecular Biology: Gene Function Analysis, 2nd Edition, Springer, New York.
+14Sep2014 - Removed dependency on GAPS-JAGS core to enable complete installation from Bioconductor.
+17Aug2015 - Datasets limited to those needed for simple package simulations. Added ability to have pre-determined patterns in the factorization (maps)

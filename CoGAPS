@@ -1,0 +1,6 @@
+tree d7a1da421c14d1983068d2ae65a10533fc472de3
+parent 7c39df59e9691828c6390d3614ee28c7ffe45ffe
+author Jacob Carey <JCarey@telligen.com> 1475698623 -0400
+committer Jacob Carey <JCarey@telligen.com> 1475698623 -0400
+
+Don't `lint` for now

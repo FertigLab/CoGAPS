@@ -1,0 +1,81 @@
+CoGAPS                  'CoGAPS' calls the C++ MCMC code through
+                        gapsRun and performs Bayesian matrix
+                        factorization returning the two matrices that
+                        reconstruct the data matrix and then calls
+                        calcCoGAPSStat to estimate gene set activity
+                        with nPerm set to 500
+CoGAPS-package          CoGAPS: Coordinated Gene Activity in Pattern
+                        Sets
+GIST.D                  Sample GIST gene expression data from Ochs et
+                        al. (2009).
+GIST.S                  Sample GIST gene expression data from Ochs et
+                        al. (2009).
+GSets                   Simulated dataset to quantify gene set
+                        membership.
+GWCoGAPS                GWCoGAPS
+PatternMatcher          PatternMatcher Shiny Ap
+SimpSim.A               Simulated data
+SimpSim.D               Simulated data
+SimpSim.P               Simulated data
+SimpSim.S               Simulated data
+binaryA                 'binaryA' creates a binarized heatmap of the A
+                        matrix in which the value is 1 if the value in
+                        Amean is greater than threshold * Asd and 0
+                        otherwise
+calcCoGAPSStat          'calcCoGAPSStat' calculates the gene set
+                        statistics for each column of A using a Z-score
+                        from the elements of the A matrix, the input
+                        gene set, and permutation tests
+calcGeneGSStat          'calcGeneGSStat' calculates the probability
+                        that a gene listed in a gene set behaves like
+                        other genes in the set within the given data
+                        set
+calcZ                   'calcZ' calculates the Z-score for each element
+                        based on input mean and standard deviation
+                        matrices
+computeGeneGSProb       CoGAPS gene membership statistic
+createGWCoGAPSSets      createGWCoGAPSSets
+gapsMapRun              'gapsMapRun' calls the C++ MCMC code and
+                        performs Bayesian matrix factorization
+                        returning the two matrices that reconstruct the
+                        data matrix; as opposed to gapsRun, this method
+                        takes an additional input specifying set
+                        patterns in the P matrix
+gapsMapTestRun          'gapsMapTestRun' calls the C++ MCMC code and
+                        performs Bayesian matrix factorization
+                        returning the two matrices that reconstruct the
+                        data matrix; as opposed to gapsRun, this method
+                        takes an additional input specifying set
+                        patterns in the P matrix
+gapsRun                 'gapsRun' calls the C++ MCMC code and performs
+                        Bayesian matrix factorization returning the two
+                        matrices that reconstruct the data matrix
+gapsTestRun             'gapsTestRun' calls the C++ MCMC code and
+                        performs Bayesian matrix factorization
+                        returning the two matrices that reconstruct the
+                        data matrix
+generateSeeds           generateSeeds
+patternMarkers          patternMarkers
+patternMatch4Parallel   patternMatch4Parallel
+plotAtoms               'plotAtoms' a simple plot of the number of
+                        atoms from one of the vectors returned with
+                        atom numbers
+plotDiag                'plotDiag' plots a series of diagnostic plots
+plotGAPS                'plotGAPS' plots the output A and P matrices as
+                        a heatmap and line plot respectively
+plotP                   'plotP' plots the P matrix in a line plot with
+                        error bars
+plotPatternMarkers      plotPatternMarkers
+plotSmoothPatterns      'plotSmoothPatterns' plots the output A and P
+                        matrices as a heatmap and line plot
+                        respectively
+postFixed4Parallel      postFixed4Parallel
+reOrderBySet            reOrderBySet
+reconstructGene         reconstruct Gene
+reorderByPatternMatch   'reorderByPatternMatch' plots the output A and
+                        P matrices as a heatmap and line plot
+                        respectively
+residuals               'residuals' calculate residuals and produce
+                        heatmap
+tf2ugFC                 Gene sets defined by transcription factors
+                        defined from TRANSFAC.

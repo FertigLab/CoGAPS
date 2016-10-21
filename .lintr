@@ -10,4 +10,4 @@ linters: with_defaults(
     commas_linter = NULL,
     NULL
   )
-exclusions: list("R/RcppExports.R", "inst/scripts/logistic-growth.R")
+exclusions: list("R/RcppExports.R")
