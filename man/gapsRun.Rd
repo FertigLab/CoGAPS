@@ -11,7 +11,7 @@ gapsRun(D, S, ABins = data.frame(), PBins = data.frame(), nFactor = 7,
   nOutR = 1000, output_atomic = FALSE, fixedBinProbs = FALSE,
   fixedDomain = "N", sampleSnapshots = TRUE, numSnapshots = 100,
   alphaA = 0.01, nMaxA = 1e+05, max_gibbmass_paraA = 100, alphaP = 0.01,
-  nMaxP = 1e+05, max_gibbmass_paraP = 100, seed = -1)
+  nMaxP = 1e+05, max_gibbmass_paraP = 100, seed = -1, messages = TRUE)
 }
 \arguments{
 \item{D}{data matrix}
@@ -61,6 +61,8 @@ individual samples from Markov chain during sampling}
 \item{max_gibbmass_paraP}{limit truncated normal to max size}
 
 \item{seed}{Set seed for reproducibility. Positive values provide initial seed, negative values just use the time.}
+
+\item{messages}{Display progress messages}
 }
 \description{
 \code{gapsRun} calls the C++ MCMC code and performs Bayesian

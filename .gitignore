@@ -6,6 +6,7 @@
 *.so
 *.o*
 *.sw?
+*.dll
 
 # ignore R data
 *.RDS
@@ -22,3 +23,6 @@ CoGAPS.Rproj
 
 # Bioconductor files (used for setting up remotes for `git svn`)
 update_remotes.sh
+
+# ignore emacs files
+*~
