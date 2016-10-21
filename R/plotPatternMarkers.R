@@ -23,13 +23,13 @@ plotPatternMarkers <- function(
     patternMarkers=NA,# the list of genes generated from the patternMarkers function
     patternPalette=NA,# a vector indicating what color should be used for each pattern
     sampleNames=NA,#names of the samples to use for labeling
-    samplePalette=NA,# a vector indicating what color should be used for each sample
+    samplePalette=NULL,# a vector indicating what color should be used for each sample
     colDenogram=TRUE,# logical indicating whether to
     heatmapCol="bluered",
     scale='row',
     ...){
 
-if(is.na(samplePalette)){samplePalette<-rep("black",dim(data)[2])}
+if(is.null(samplePalette)){samplePalette<-rep("black",dim(data)[2])}
 
 ### coloring of genes
 patternCols <- rep(NA, length(unlist(patternMarkers)))
