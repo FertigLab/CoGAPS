@@ -39,7 +39,7 @@ for (i in 1:length(patternMarkers)) {
 }
 
 heatmap.2(as.matrix(data[unlist(patternMarkers),],...),
-          symkey=F,
+          symkey=F,  symm=F, 
           scale=scale,
           col=heatmapCol,
           distfun=function(x) as.dist((1-cor(t(x)))/2),
