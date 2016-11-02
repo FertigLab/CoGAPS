@@ -6,6 +6,7 @@
 *.so
 *.o*
 *.sw?
+*.dll
 
 # ignore R data
 *.RDS
