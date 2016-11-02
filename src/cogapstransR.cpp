@@ -297,11 +297,52 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     int numOutputs = nObsR;
     int totalChiSize = nSample + nEquil;
     Rcpp::NumericVector chiVect(totalChiSize); //INITIALIZE THE VECTOR HOLDING THE CHISQUARE.
-    Rcpp::NumericVector nAEquil(nEquil);       //INITIALIZE THE VECTOR HOLDING THE ATOMS FOR EACH MATRIX FOR EACH EQUIL/SAMP
+    Rcpp::NumericVector nAEquil(nEquil*2);       //INITIALIZE THE VECTOR HOLDING THE ATOMS FOR EACH MATRIX FOR EACH EQUIL/SAMP
     Rcpp::NumericVector nASamp(nSample);
-    Rcpp::NumericVector nPEquil(nEquil);
+    Rcpp::NumericVector nPEquil(nEquil*2);
     Rcpp::NumericVector nPSamp(nSample);
 
+    for (unsigned long ext_iter = 1; ext_iter <= nEquil; ++ext_iter) {
+        GibbsSampTrans.set_iter(ext_iter);
+        GibbsSampTrans.set_AnnealingTemperature();
+
+        for (unsigned long iterA = 1; iterA <= nIterA; ++iterA) {
+            GibbsSampTrans.mapUpdate('A');
+        }
+
+        GibbsSampTrans.check_atomic_matrix_consistency('A');
+
+        for (unsigned long iterP = 1; iterP <= nIterP; ++iterP) {
+            GibbsSampTrans.mapUpdate('P');
+        }
+
+        GibbsSampTrans.check_atomic_matrix_consistency('P');
+
+        //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
+        tempChiSq = GibbsSampTrans.get_sysChi2();
+        chiVect[(ext_iter) - 1] = tempChiSq;
+        // ----------- output computing info ---------
+        tempAtomA = GibbsSampTrans.getTotNumAtoms('A');
+        tempAtomP = GibbsSampTrans.getTotNumAtoms('P');
+        nAEquil[outCount] = tempAtomA;
+        nPEquil[outCount] = tempAtomP;
+        outCount++;
+
+        if (ext_iter % numOutputs == 0) {
+            Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil <<
+                        ", Atoms:" << tempAtomA << "("
+                        << tempAtomP << ")" <<
+                        "  Chi2 = " << tempChiSq << endl;
+        }
+
+        // -------------------------------------------
+        // re-calculate nIterA and nIterP to the expected number of atoms
+        nIterA = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('A'), 10.));
+        nIterP = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('P'), 10.));
+        // --------------------------------------------
+    }  // end of for-block for equilibration
+    
+    // now update logistic growth parameters
     for (unsigned long ext_iter = 1; ext_iter <= nEquil; ++ext_iter) {
         GibbsSampTrans.set_iter(ext_iter);
         GibbsSampTrans.set_AnnealingTemperature();
