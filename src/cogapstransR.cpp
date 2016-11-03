@@ -297,12 +297,12 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     int numOutputs = nObsR;
     int totalChiSize = nSample + nEquil;
     Rcpp::NumericVector chiVect(totalChiSize); //INITIALIZE THE VECTOR HOLDING THE CHISQUARE.
-    Rcpp::NumericVector nAEquil(nEquil*2);       //INITIALIZE THE VECTOR HOLDING THE ATOMS FOR EACH MATRIX FOR EACH EQUIL/SAMP
+    Rcpp::NumericVector nAEquil(nEquil);       //INITIALIZE THE VECTOR HOLDING THE ATOMS FOR EACH MATRIX FOR EACH EQUIL/SAMP
     Rcpp::NumericVector nASamp(nSample);
-    Rcpp::NumericVector nPEquil(nEquil*2);
+    Rcpp::NumericVector nPEquil(nEquil);
     Rcpp::NumericVector nPSamp(nSample);
 
-    for (unsigned long ext_iter = 1; ext_iter <= nEquil; ++ext_iter) {
+    for (unsigned long ext_iter = 1; ext_iter <= nEquil / 2; ++ext_iter) {
         GibbsSampTrans.set_iter(ext_iter);
         GibbsSampTrans.set_AnnealingTemperature();
 
@@ -343,7 +343,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     }  // end of for-block for equilibration
     
     // now update logistic growth parameters
-    for (unsigned long ext_iter = 1; ext_iter <= nEquil; ++ext_iter) {
+    for (unsigned long ext_iter = nEquil / 2 + 1; ext_iter <= nEquil; ++ext_iter) {
         GibbsSampTrans.set_iter(ext_iter);
         GibbsSampTrans.set_AnnealingTemperature();
 
