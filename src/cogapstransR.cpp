@@ -360,7 +360,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        //GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
+        GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
 
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSampTrans.get_sysChi2();
@@ -372,11 +372,12 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         nPEquil[outCount] = tempAtomP;
         outCount++;
 
-        if (ext_iter % numOutputs == 0) {
+        if (ext_iter % 1 == 0) {
             Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil <<
                         ", Atoms:" << tempAtomA << "("
                         << tempAtomP << ")" <<
-                        "  Chi2 = " << tempChiSq << endl;
+                        "  Chi2 = " << tempChiSq << 
+                        " theta: " << GibbsSampTrans.theta()[ext_iter] << endl;
         }
 
         // -------------------------------------------
