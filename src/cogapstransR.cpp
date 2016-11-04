@@ -360,7 +360,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
+        //GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
 
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSampTrans.get_sysChi2();
