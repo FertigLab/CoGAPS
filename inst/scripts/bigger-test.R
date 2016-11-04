@@ -31,9 +31,6 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
     return(out)
 }
 
-# load code
-devtools::load_all()
-
 # get matrices
 patts <- logistic.pattern(4, 3)
 D <- patts$D
