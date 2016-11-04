@@ -60,7 +60,7 @@ FP <- matrix(c(p3.t, p3.u), nrow=1)
 FP <- FP / sum(FP) # normalize
 nFactor <- 3
 simulation_id="simulation"
-nEquil = 1000
+nEquil = 5000
 nSample = 1000
 nOutR = 1000
 output_atomic = FALSE
