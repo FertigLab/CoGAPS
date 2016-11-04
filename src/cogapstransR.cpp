@@ -343,7 +343,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     }  // end of for-block for equilibration
     
     // now update logistic growth parameters
-    for (unsigned long ext_iter = nEquil / 2 + 1; ext_iter <= nEquil; ++ext_iter) {
+    for (unsigned long ext_iter = (nEquil / 2 + 1); ext_iter <= nEquil; ++ext_iter) {
         GibbsSampTrans.set_iter(ext_iter);
         GibbsSampTrans.set_AnnealingTemperature();
 
