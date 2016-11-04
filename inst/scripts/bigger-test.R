@@ -53,7 +53,7 @@ PBins=data.frame()
 # we could inherit 
 # FP <- matrix(P.true[3, ], nrow=1)
 T <- seq(-5, 5, length.out=10)
-p3.t <- logistic.growth(T, x.0=0, L=1, k=4.5)
+p3.t <- logistic.growth(T, x.0=0, L=1, k=4)
 p3.u <- logistic.growth(T, x.0=0, L=1, k=3)
 # initial guess
 FP <- matrix(c(p3.t, p3.u), nrow=1)
