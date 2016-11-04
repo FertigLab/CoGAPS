@@ -43,19 +43,19 @@ A <- patts$A
 # one parameter, larger delta
 T <- seq(-5, 5, len=10)
 set.seed(20)
-iters <- 40000
+iters <- 5000
 
 # param: theta
 # prior: Gamma(1, 0.1)
 # proposal: Gamma(theta^2 / delta^2, theta / delta^2)
-prior.shape <- 1
-prior.rate <- 0.1
+prior.shape <- 2
+prior.rate <- 0.5
 delta <- 10
 
 # param: epsilon
 # prior: Exponential(1/3)
 # proposal: Exponential(1/epsilon_{i-1})
-rate <- 1 / 3
+rate <- 1 / 2
 
 # intialize by sampling theta^{(0)} ~ pi(theta)
 theta <- rgamma(iters, prior.shape, prior.rate)
@@ -103,7 +103,9 @@ for (i in 2:iters) {
     epsilon[i] <- eps.prime * accept + epsilon[i-1] * (1-accept)
 }
 
-ts.plot(epsilon)
-ts.plot(theta)
-# just view the theta's where epsilon is a good range
+plot(density(epsilon))
 ts.plot(theta[epsilon < 3])
+# just view the theta's where epsilon is a good range
+quantile(theta[epsilon < 3], c(0.025, 0.5, 0.975))
+mean(epsilon < 3)
+sum(epsilon < 3)
