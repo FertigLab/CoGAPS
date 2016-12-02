@@ -20,6 +20,7 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
     p3.u <- logistic.growth(T, x.0=0, L=1, k=rate.untreat)
 
     P[3, ] <- c(p3.t, p3.u)
+    P[3, ] <- P[3, ] / sum(P[3, ])
     M <- A %*% P
     error <- matrix(rnorm(prod(dim(M)), sd=0.1), 
                     nrow=nrow(M),
