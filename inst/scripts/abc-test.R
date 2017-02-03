@@ -21,6 +21,7 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1) {
     p3.u <- logistic.growth(T, x.0=0, L=1, k=rate.untreat)
 
     P[3, ] <- c(p3.t, p3.u)
+    #P[3, ] <- P[3, ] / sum(P[3, ])
     M <- A %*% P
     error <- matrix(rnorm(prod(dim(M)), sd=0.1), 
                     nrow=nrow(M),
@@ -48,9 +49,9 @@ iters <- 5000
 # param: theta
 # prior: Gamma(1, 0.1)
 # proposal: Gamma(theta^2 / delta^2, theta / delta^2)
-prior.shape <- 2
-prior.rate <- 0.5
-delta <- 10
+prior.shape <- 1
+prior.rate <- 0.1
+delta <- 5
 
 # param: epsilon
 # prior: Exponential(1/3)
@@ -60,6 +61,7 @@ rate <- 1 / 2
 # intialize by sampling theta^{(0)} ~ pi(theta)
 theta <- rgamma(iters, prior.shape, prior.rate)
 epsilon <- rexp(iters, rate)
+ep <- numeric(iters)
 
 for (i in 2:iters) {
     # message bar
@@ -75,12 +77,16 @@ for (i in 2:iters) {
 
     # simulate x ~ p(x | theta')
     growth <- logistic.growth(T, 0, 1, theta.prime)
-    P[3, 1:10] <- growth
+    growth2 <- logistic.growth(T, 0, 1, 3)
+    tmp <- c(growth, growth2)
+    #tmp <- tmp / sum(tmp)
+    P[3, ] <- tmp
     D.prime <- A %*% P
 
     # calculate rho(S(x), S(y))
     diff <- D - D.prime
     rho <- norm(diff, "2")
+    ep[i] <- rho
     
     # calculate acceptance probability
     alpha <- dgamma(theta.prime, prior.shape, prior.rate, log=TRUE) + 
@@ -103,9 +109,9 @@ for (i in 2:iters) {
     epsilon[i] <- eps.prime * accept + epsilon[i-1] * (1-accept)
 }
 
+thresh <- 3
 plot(density(epsilon))
-ts.plot(theta[epsilon < 3])
+ts.plot(theta[epsilon < thresh])
 # just view the theta's where epsilon is a good range
-quantile(theta[epsilon < 3], c(0.025, 0.5, 0.975))
-mean(epsilon < 3)
-sum(epsilon < 3)
+quantile(theta[epsilon < thresh], c(0.025, 0.5, 0.975))
+sum(epsilon < thresh)
