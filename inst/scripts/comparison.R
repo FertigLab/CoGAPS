@@ -24,7 +24,10 @@ logistic.pattern <- function(rate.treat=2, rate.untreat=1,
     P[3, ] <- c(p3.t, p3.u)
     
     if (normalize) {
-        P[3, ] <- P[3, ] / sum(P[3, ])
+        Pnorm <- sum(P[3,])
+		
+        P[3, ] <- P[3, ] / Pnorm
+		A[,3] <- A[,3] * Pnorm
     }
     
     M <- A %*% P
@@ -120,7 +123,7 @@ rho.unnorm <- apply(candidates, 1,
 patts <- logistic.pattern(4, 3, normalize = TRUE, noise = FALSE)
 D <- patts$D; P <- patts$P; A <- patts$A
 rho.norm <- apply(candidates, 1, 
-                  distance, A=A, P=P, D=D, normalize=FALSE)
+                  distance, A=A, P=P, D=D, normalize=TRUE)
 
 # make a plot
 library(ggplot2)
@@ -138,11 +141,13 @@ d <- bind_rows(data_frame(theta.1=candidates[, 1],
 ggplot(filter(d, type=="unnormalized"),
        aes(theta.1, theta.2)) +
   geom_tile(aes(fill=log(l2norm))) +
+  ggtitle("unnormalized") +
   theme_classic()
 
 ggplot(filter(d, type=="normalized"),
        aes(theta.1, theta.2)) +
   geom_tile(aes(fill=log(l2norm))) +
+  ggtitle("normalized") +
   theme_classic()
 
 dev.off()
