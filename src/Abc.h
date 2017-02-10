@@ -38,6 +38,10 @@ class Abc {
         Rcpp::NumericVector _proposal(Rcpp::NumericVector param1, // density
                                       Rcpp::NumericVector param2);
 
+        // updated matrices
+        Rcpp::NumericMatrix A_update;
+        Rcpp::NumericMatrix P_update;
+
         // epsilon mcmc per Bortot et al 2007
         bool _epsilon_mcmc;
         double _epsilon_rate;
