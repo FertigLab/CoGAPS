@@ -123,13 +123,19 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     // simulate x ~ p(x | theta')
     //Rcpp::NumericVector growth = 1. / (1 + Rcpp::exp(-theta_prime * _T));
     Rcpp::NumericMatrix P_prime = P;
+    Rcpp::NumericMatrix A_prime = A;
 
     for (int i = 0; i < 10; ++i) {
         double tmp = 1.0 / (1.0 + std::exp(-theta_prime[0] * _T[i]));
         P_prime(2, i) = tmp;
     }
 
-    arma::mat D_prime = Rcpp::as<arma::mat>(A) * Rcpp::as<arma::mat>(P_prime);
+    double Pnorm = Rcpp::sum(P_prime.row(2));
+
+    P_prime(2, Rcpp::_) = P_prime(2, Rcpp::_) / Pnorm;
+    A_prime(Rcpp::_, 2) = A_prime(Rcpp::_, 2) * Pnorm;
+
+    arma::mat D_prime = Rcpp::as<arma::mat>(A_prime) * Rcpp::as<arma::mat>(P_prime);
 
     // calculate rho(S(x), S(y))
     arma::mat diff = Rcpp::as<arma::mat>(_D) - D_prime;
