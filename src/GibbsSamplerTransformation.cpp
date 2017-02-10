@@ -78,4 +78,7 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
 
     // update the P matrix
     _PMatrix.setRow(_growth.pattern(), 2);
+
+    // update the A matrix
+    _AMatrix.setCol(_growth.pattern(), 2);
 }
