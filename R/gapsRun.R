@@ -76,6 +76,16 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   numericCheck = c("nFactor", "nEquil", "nSample", "nOutR", "numSnapshots", "alphaA", "nMaxA",
                    "max_gibbmass_paraA", "alphaP",    "nMaxP", "max_gibbmass_paraP")
 
+  # convert dataframes to matrices to run 
+  # correctly
+  if (is.data.frame(D)) {
+    D <- as.matrix(D)
+  }
+
+  if (is.data.frame(S)) {
+    S <- as.matrix(S)
+  }
+
   dataFrameErrors = c(!is.data.frame(D), !is.data.frame(S), !is.data.frame(ABins), !is.data.frame(PBins))
   dataFrameCheck = c("D", "S", "ABins", "PBins")
 
