@@ -24,7 +24,7 @@ PatternMatcher Shiny Ap
 }
 \examples{
 \dontrun{
-patternMatcher(PBySet,out,order,sample.color)
+patternMatcher(PBySet,out,order,sample.color)
 }
 
 

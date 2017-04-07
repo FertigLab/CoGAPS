@@ -320,7 +320,7 @@ where $\mbox{Pr}_{\mathcal{G}p}$ is the probability of upregulation of the genes
 
 \subsection{Example on GIST Data}
 
-\par Although not run in the interest of installation time, the following examples were used to generate some of the results in \cite{Fertig2012}, with the complete analysis code available from \url{http://astor.som.jhmi.edu/~ejfertig/ejfertig/Publications.html}.
+\par Although not run in the interest of installation time, the following examples were used to generate some of the results in \cite{Fertig2012}.
 
 \par This example refines transcription factor targets annotated in TRANSFAC (TFGSList) to identify context-specific targets from gene expression data (GIST\_TS\_20084)from \cite{Ochs2009}.  
 
