@@ -12,4 +12,3 @@ plotDiag(gapsRes)
 \description{
 \code{plotDiag} plots a series of diagnostic plots
 }
-

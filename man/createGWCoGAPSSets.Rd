@@ -28,4 +28,3 @@ createGWCoGAPSSet(D,nSets=nSets)
 }
 
 }
-
