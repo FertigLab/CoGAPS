@@ -36,11 +36,10 @@ plotPatternMarkers
 }
 \examples{
 \dontrun{
-plotPatternMarkers(data=p,patternMarkers=PatternMarkers,patternPalette=NULL,sampleNames=pd$sample,
+plotPatternMarkers(data=p,patternMarkers=PatternMarkers,patternPalette=NA,sampleNames=pd$sample,
 samplePalette=pd$color,colDenogram=TRUE,heatmapCol="bluered", scale='row')
 }
 }
 \seealso{
 \code{\link{heatmap.2}}
 }
-

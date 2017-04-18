@@ -34,4 +34,3 @@ plotSmoothPatterns(P, x = NULL, breaks = NULL, breakStyle = T,
 \code{plotSmoothPatterns} plots the output A and P matrices as a
 heatmap and line plot respectively
 }
-

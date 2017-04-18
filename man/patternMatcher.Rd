@@ -14,7 +14,7 @@ patternMatcher(PBySet = NULL, out = NULL, order = NULL,
 
 \item{order}{optional vector indicating order of samples for plotting. Default is NULL.}
 
-\item{sample.color}{optional vector of colors of same lenght as colnames. Default is NULL.}
+\item{sample.color}{optional vector of colors of same length as colnames. Default is NULL.}
 }
 \value{
 either an index of selected sets' contributions or the editted \code{PBySet} object
@@ -24,9 +24,8 @@ PatternMatcher Shiny Ap
 }
 \examples{
 \dontrun{
-patternMatcher(PBySet,out,order,sample.color)
+patternMatcher(PBySet,out,order,sample.color)
 }
 
 
 }
-
