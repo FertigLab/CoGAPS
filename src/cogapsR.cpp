@@ -9,6 +9,7 @@
 #include <string>         // for string processing
 #include <fstream>        // for output to files
 #include <limits>         // for extracting numerical limits of C++
+#include <ctime>
 
 
 // ------ incorporated to use Cogaps_options ------------
@@ -46,11 +47,10 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
     //boost::random::seed_seq seq(ve);
     //rng.seed(seq);
     // --- seeded with time
-    if (seed <= 0) {
-        rng.seed(static_cast<boost::uint32_t>(std::time(0)));
-    } else {
-        rng.seed(static_cast<boost::uint32_t>(seed));
-    }
+    uint32_t seedUsed = static_cast<boost::uint32_t>(seed);
+    if (seed <= 0) {seedUsed = static_cast<boost::uint32_t>(std::time(0));}
+    rng.seed(seedUsed);
+
     //---------------------
     // ===========================================================================
     // Part 1) Initialization:
@@ -533,7 +533,8 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
                                     Rcpp::Named("Asd") = AStdMatrix, Rcpp::Named("Pmean") = PMeanMatrix, Rcpp::Named("Psd") = PStdMatrix,
                                     Rcpp::Named("ASnapshots") = ASnapR, Rcpp::Named("PSnapshots") = PSnapR,
                                     Rcpp::Named("atomsAEquil") = nAEquil, Rcpp::Named("atomsASamp") = nASamp,
-                                    Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect);
+                                    Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect,
+                                    Rcpp::Named("randSeed") = seedUsed);
         return (fileContainer);
 
     } else {
@@ -544,7 +545,8 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
                                     Rcpp::Named("Asd") = AStdMatrix, Rcpp::Named("Pmean") = PMeanMatrix, Rcpp::Named("Psd") = PStdMatrix,
                                     Rcpp::Named("ASnapshots") = ASnapR, Rcpp::Named("PSnapshots") = PSnapR,
                                     Rcpp::Named("atomsAEquil") = nAEquil, Rcpp::Named("atomsASamp") = nASamp,
-                                    Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect);
+                                    Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect,
+                                    Rcpp::Named("randSeed") = seedUsed);
         return (fileContainer);
     }
 }
