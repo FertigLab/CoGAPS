@@ -183,11 +183,17 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 }
 
 std::vector<double> Abc::pattern() {
-    return P_update.row(2);
+    Rcpp::NumericVector tmp = P_update.row(2);
+    std::vector<double> tmp2(tmp.begin(), tmp.end());
+    return tmp2;
+    //return P_update.row(2);
 }
 
 std::vector<double> Abc::amplitude() {
-    return A_update.col(2);
+    Rcpp::NumericVector tmp = A_update(Rcpp::_, 2);
+    std::vector<double> tmp2(tmp.begin(), tmp.end());
+    return tmp2;
+    // return A_update.col(2);
 }
 
 Rcpp::NumericVector Abc::theta() {
