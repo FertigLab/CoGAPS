@@ -44,10 +44,12 @@ Rcpp::NumericVector GibbsSamplerTransformation::epsilon() {
 }
 
 void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double tolerance) {
+    Rcpp::Rcout << "allocate A and P\n";
     // get the A, P, D matrices
     Rcpp::NumericMatrix A_curr(_AMatrix.get_nRow(), _AMatrix.get_nCol());
     Rcpp::NumericMatrix P_curr(_PMatrix.get_nRow(), _PMatrix.get_nCol());
 
+    Rcpp::Rcout << "allocate A\n";
     //A
     for (int i = 0; i < A_curr.nrow(); ++i) {
         std::vector<double> curr_row = _AMatrix.get_Row(i);
@@ -57,6 +59,7 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
         }
     }
 
+    Rcpp::Rcout << "allocate P\n";
     //P
     for (int i = 0; i < P_curr.nrow(); ++i) {
         std::vector<double> curr_row = _PMatrix.get_Row(i);
@@ -66,7 +69,9 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
         }
     }
 
+    Rcpp::Rcout << "proposal\n";
     for (int s = 0; s < thin; ++s) {
+        Rcpp::Rcout << s << "\n";
         _growth.propose(A_curr, P_curr);
     }
 

@@ -303,6 +303,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     Rcpp::NumericVector nPSamp(nSample);
 
     for (unsigned long ext_iter = 1; ext_iter <= nEquil / 2; ++ext_iter) {
+        Rcpp::Rcout << ext_iter << "\n";
         GibbsSampTrans.set_iter(ext_iter);
         GibbsSampTrans.set_AnnealingTemperature();
 
@@ -311,12 +312,15 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         }
 
         GibbsSampTrans.check_atomic_matrix_consistency('A');
+        Rcpp::Rcout << "finish A\n";
 
         for (unsigned long iterP = 1; iterP <= nIterP; ++iterP) {
             GibbsSampTrans.mapUpdate('P');
         }
 
         GibbsSampTrans.check_atomic_matrix_consistency('P');
+
+        Rcpp::Rcout << "finish P\n";
 
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSampTrans.get_sysChi2();
@@ -340,10 +344,12 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         nIterA = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('A'), 10.));
         nIterP = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('P'), 10.));
         // --------------------------------------------
+        Rcpp::Rcout << "end\n";
     }  // end of for-block for equilibration
     
     // now update logistic growth parameters
     for (unsigned long ext_iter = (nEquil / 2 + 1); ext_iter <= nEquil; ++ext_iter) {
+        Rcpp::Rcout << ext_iter << "\n";
         GibbsSampTrans.set_iter(ext_iter);
         GibbsSampTrans.set_AnnealingTemperature();
 
@@ -353,14 +359,20 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
 
         GibbsSampTrans.check_atomic_matrix_consistency('A');
 
+        Rcpp::Rcout << "finish A\n";
+
         for (unsigned long iterP = 1; iterP <= nIterP; ++iterP) {
             GibbsSampTrans.mapUpdate('P');
         }
 
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
+        Rcpp::Rcout << "finish P\n";
+
         // update pattern
         GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
+
+        Rcpp::Rcout << "finish theta\n";
 
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSampTrans.get_sysChi2();
@@ -385,6 +397,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         nIterA = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('A'), 10.));
         nIterP = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('P'), 10.));
         // --------------------------------------------
+        Rcpp::Rcout << "end\n";
     }  // end of for-block for equilibration
 
 // ===========================================================================
