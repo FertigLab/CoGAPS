@@ -51,5 +51,5 @@ treatStatus <- rep(0:1, each=n)
 timeRecorded <- rep(seq(-5, 5, len=n), 2)
 FP <- data.frame(t(P[3, ]))
 
-out <- gapsTransRun(D, S, nFactor, FP, nFactor=3, 
+out <- gapsTransRun(D, S, nFactor=3, FP, 
                     time.of.sample=timeRecorded, condition=treatStatus)
