@@ -148,7 +148,8 @@ gapsTransRun <- function(D, S, nFactor,
     }
 
     # call to C++ Rcpp code
-    cogapResult = cogapsMap(D, S, FP, ABins, PBins, Config, ConfigNums);
+    cogapResult = cogapsTrans(D, S, FP, ABins, PBins, Config, 
+                              ConfigNums, time.of.sample, condition);
 
     # convert returned files to matrices to simplify visualization and processing
     cogapResult$Amean = as.matrix(cogapResult$Amean);
