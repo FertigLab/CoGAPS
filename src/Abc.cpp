@@ -22,6 +22,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     // initialize _theta to a reasonable value
     // should be parameterized later
     _theta[0] = 4.0;
+    _theta[1] = 3.0;
     _T=timeRecorded,
     _prior_choice = prior;
     _proposal_choice = proposal;
@@ -113,6 +114,10 @@ Rcpp::NumericVector Abc::_epsilon_propose(double param1, double param2) {
 }
 
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
+
+    // don't update at all
+    return;
+
     // simulate theta' ~ K(theta|theta^{(t-1)})
     Rcpp::NumericVector theta_prime = _proposal();
 
