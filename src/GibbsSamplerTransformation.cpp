@@ -71,9 +71,9 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
 
     Rcpp::Rcout << "proposal\n";
     for (int s = 0; s < thin; ++s) {
-        Rcpp::Rcout << s << "\n";
         _growth.propose(A_curr, P_curr);
     }
+    Rcpp::Rcout << "Done proposing\n";
 
     // save the theta's
     _theta[burn + iter] =_growth.theta()[0];
@@ -82,8 +82,8 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     _epsilon[burn + iter] =_growth.epsilon()[0];
 
     // update the P matrix
-    _PMatrix.setRow(_growth.pattern(), 2);
+    // _PMatrix.setRow(_growth.pattern(), 2);
 
     // update the A matrix
-    _AMatrix.setCol(_growth.pattern(), 2);
+    // _AMatrix.setCol(_growth.pattern(), 2);
 }
