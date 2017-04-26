@@ -52,6 +52,9 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     
     void abc_mcmc(int burn=0, int iter=0, int thin=1, double tolerance=5.0);
 
+    map <unsigned long long, double> getADomain();
+    map <unsigned long long, double> getPDomain();
+
 };
 
 #endif

@@ -492,6 +492,9 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         nIterA = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('A'), 10.));
         nIterP = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('P'), 10.));
         // --------------------------------------------
+        for(auto elem : GibbsSampTrans.getADomain()) {
+            Rcpp::Rcout << elem.first << " " << elem.second << "\n";
+        }
     }  // end of for-block for Sampling
 
     // ===========================================================================

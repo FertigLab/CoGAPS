@@ -43,6 +43,14 @@ Rcpp::NumericVector GibbsSamplerTransformation::epsilon() {
     return _epsilon;
 }
 
+map <unsigned long long, double> GibbsSamplerTransformation::getADomain() {
+    return _AAtomicdomain.getDomain();
+}
+
+map <unsigned long long, double> GibbsSamplerTransformation::getPDomain() {
+    return _AAtomicdomain.getDomain();
+}
+
 void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double tolerance) {
     Rcpp::Rcout << "allocate A and P\n";
     // get the A, P, D matrices
