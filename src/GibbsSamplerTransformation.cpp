@@ -49,7 +49,6 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     Rcpp::NumericMatrix A_curr(_AMatrix.get_nRow(), _AMatrix.get_nCol());
     Rcpp::NumericMatrix P_curr(_PMatrix.get_nRow(), _PMatrix.get_nCol());
 
-    Rcpp::Rcout << "allocate A\n";
     //A
     for (int i = 0; i < A_curr.nrow(); ++i) {
         std::vector<double> curr_row = _AMatrix.get_Row(i);
@@ -59,7 +58,6 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
         }
     }
 
-    Rcpp::Rcout << "allocate P\n";
     //P
     for (int i = 0; i < P_curr.nrow(); ++i) {
         std::vector<double> curr_row = _PMatrix.get_Row(i);
