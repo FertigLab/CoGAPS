@@ -380,7 +380,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         nPEquil[outCount] = tempAtomP;
         outCount++;
 
-        if (ext_iter % 1 == 0) {
+        if (ext_iter % numOutputs  == 0) {
             Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil <<
                         ", Atoms:" << tempAtomA << "("
                         << tempAtomP << ")" <<
