@@ -345,7 +345,6 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     
     // now update logistic growth parameters
     for (unsigned long ext_iter = (nEquil / 2 + 1); ext_iter <= nEquil; ++ext_iter) {
-        Rcpp::Rcout << ext_iter << "\n";
         GibbsSampTrans.set_iter(ext_iter);
         GibbsSampTrans.set_AnnealingTemperature();
 
