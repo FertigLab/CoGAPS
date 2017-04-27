@@ -85,15 +85,18 @@ void GibbsSamplerTransformation::getAAtomicColumn() {
     // elements mapping to the first column
     for (int i = 0; i < rows * cols; i += cols) {
         // default to every bin having atom of mass 0
-        Rcpp::Rcout << "0.0 ";
+        Rcpp::Rcout << i / 3 << " 0.0 ";
 
         // bounds on bin
         lb = bins[i];
         ub = bins[i+1];
 
         // get the mass of the atoms within the bin
-        while (it->first < ub) {
-            Rcpp::Rcout << it->second << " ";
+        while (it->first < ub & it != atoms.end()) {
+            if (it->first >= lb) {
+                Rcpp::Rcout << it->second << " ";
+            }
+
             it++;
         }
 
