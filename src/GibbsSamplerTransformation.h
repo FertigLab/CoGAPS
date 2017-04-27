@@ -5,6 +5,7 @@
 #include <vector>
 #include <cmath>
 #include <Rcpp.h>
+#include <limits>
 #include "Abc.h"
 
 class GibbsSamplerTransformation : public GibbsSamplerMap {
