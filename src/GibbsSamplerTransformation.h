@@ -63,6 +63,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     
     void getAAtomicColumn();
     void setMass(unsigned long long location, double weight);
+    void testWeight();
 
 };
 

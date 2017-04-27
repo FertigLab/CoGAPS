@@ -71,6 +71,15 @@ void GibbsSamplerTransformation::setMass(unsigned long long location, double wei
     _AtomicDomain.setMass(location, weight);
 }
 
+void GibbsSamplerTransformation::testWeight() {
+    map<unsigned long long, double>::iterator it = _AAtomicDomain.getDomain().begin();
+    unsigned long long location = it->first;
+
+    double weight = 2.0;
+
+    setMass(location, weight);
+}
+
 void GibbsSamplerTransformation::getAAtomicColumn() {
     // number of rows and columns
     unsigned int rows = _AMatrix.get_nRow();
