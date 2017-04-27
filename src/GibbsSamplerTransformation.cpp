@@ -55,13 +55,14 @@ void GibbsSamplerTransformation::setMass(unsigned long long location, double wei
     _AAtomicdomain.setMass(location, weight);
 }
 
-void GibbsSamplerTransformation::testWeight() {
-    map<unsigned long long, double>::iterator it = _AAtomicdomain.getDomain().begin();
-    unsigned long long location = it->first;
+void GibbsSamplerTransformation::testWeight(double weight) {
+    typedef map<unsigned long long, double> map_type;
+    map_type atoms = _AAtomicdomain.getDomain();
 
-    double weight = 2.0;
-
-    setMass(location, weight);
+    for (map_type::iterator it = atoms.begin(); it != atoms.end(); ++it) {
+        unsigned long long location = it->first;
+        setMass(location, weight);
+    }
 }
 
 void GibbsSamplerTransformation::getAAtomicColumn() {
