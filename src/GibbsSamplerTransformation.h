@@ -59,6 +59,8 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     map<unsigned long long, unsigned int> AlBoundaries();
     map<unsigned int, unsigned long long> PlBoundariesByBin();
     map<unsigned long long, unsigned int> PlBoundaries();
+    
+    void getAAtomicColumn();
 
 };
 

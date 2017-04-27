@@ -67,6 +67,12 @@ map<unsigned long long, unsigned int> GibbsSamplerTransformation::PlBoundaries()
     return _PAtomicdomain.lBoundaries();
 }
 
+void GibbsSamplerTransformation::getAAtomicColumn() {
+    // number of rows and columns
+    int rows _AMatrix.get_nRow();
+    int cols _AMatrix.get_nCol();
+}
+
 void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double tolerance) {
     Rcpp::Rcout << "allocate A and P\n";
     // get the A, P, D matrices
