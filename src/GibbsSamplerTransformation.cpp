@@ -71,6 +71,34 @@ void GibbsSamplerTransformation::getAAtomicColumn() {
     // number of rows and columns
     unsigned int rows = _AMatrix.get_nRow();
     unsigned int cols = _AMatrix.get_nCol();
+
+    // get atomic space for A
+    map<unsigned long long, double> atoms = _AAtomicdomain.getDomain();
+    map<unsigned int, unsigned long long> bins = _AAtomicdomain.lBoundariesByBin();
+
+    // initialize helper variables for accessing space
+    unsigned long long lb, ub;
+    map<unsigned long long, double>::iterator it = atoms.begin();
+    //unsigned long long ub = bins[1];
+
+    // iterate over the atomic space, but only look at
+    // elements mapping to the first column
+    for (int i = 0; i < rows * cols; i += cols) {
+        // default to every bin having atom of mass 0
+        Rcpp::Rcout << "0.0 ";
+
+        // bounds on bin
+        lb = bins[i];
+        ub = bins[i+1];
+
+        // get the mass of the atoms within the bin
+        while (it->first < ub) {
+            Rcpp::Rcout << it->second << " ";
+            it++;
+        }
+
+        Rcpp::Rcout << "\n";
+    }
 }
 
 void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double tolerance) {
