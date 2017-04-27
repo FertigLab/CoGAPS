@@ -51,6 +51,22 @@ map <unsigned long long, double> GibbsSamplerTransformation::getPDomain() {
     return _AAtomicdomain.getDomain();
 }
 
+map<unsigned int, unsigned long long> GibbsSamplerTransformation::AlBoundariesByBin() {
+    return _AAtomicdomain.lBoundariesByBin();
+}
+
+map<unsigned long long, unsigned int> GibbsSamplerTransformation::AlBoundaries() {
+    return _AAtomicdomain.lBoundaries();
+}
+
+map<unsigned int, unsigned long long> GibbsSamplerTransformation::PlBoundariesByBin() {
+    return _PAtomicdomain.lBoundariesByBin();
+}
+
+map<unsigned long long, unsigned int> GibbsSamplerTransformation::PlBoundaries() {
+    return _PAtomicdomain.lBoundaries();
+}
+
 void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double tolerance) {
     Rcpp::Rcout << "allocate A and P\n";
     // get the A, P, D matrices

@@ -55,6 +55,11 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     map <unsigned long long, double> getADomain();
     map <unsigned long long, double> getPDomain();
 
+    map<unsigned int, unsigned long long> AlBoundariesByBin();
+    map<unsigned long long, unsigned int> AlBoundaries();
+    map<unsigned int, unsigned long long> PlBoundariesByBin();
+    map<unsigned long long, unsigned int> PlBoundaries();
+
 };
 
 #endif
