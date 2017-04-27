@@ -495,6 +495,14 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         for(auto elem : GibbsSampTrans.getADomain()) {
             Rcpp::Rcout << elem.first << " " << elem.second << "\n";
         }
+
+        for(auto elem : GibbsSampTrans.AlBoundariesByBin()) {
+            Rcpp::Rcout << elem.first << " " << elem.second << "\n";
+        }
+
+        for(auto elem : GibbsSampTrans.AlBoundaries()) {
+            Rcpp::Rcout << elem.first << " " << elem.second << "\n";
+        }
     }  // end of for-block for Sampling
 
     // ===========================================================================
