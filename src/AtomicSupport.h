@@ -107,6 +107,7 @@ class AtomicSupport {
 
     map<unsigned int, unsigned long long> lBoundariesByBin();
     map<unsigned long long, unsigned int> lBoundaries();
+    void setMass(unsigned long long location, double weight);
 
   private:
     // storage of the atomic domain

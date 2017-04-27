@@ -67,6 +67,10 @@ map<unsigned long long, unsigned int> GibbsSamplerTransformation::PlBoundaries()
     return _PAtomicdomain.lBoundaries();
 }
 
+void GibbsSamplerTransformation::setMass(unsigned long long location, double weight) {
+    _AtomicDomain.setMass(location, weight);
+}
+
 void GibbsSamplerTransformation::getAAtomicColumn() {
     // number of rows and columns
     unsigned int rows = _AMatrix.get_nRow();

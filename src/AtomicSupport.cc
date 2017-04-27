@@ -692,5 +692,9 @@ map<unsigned long long, unsigned int> AtomicSupport::lBoundaries() {
     return _lBoundaries;
 }
 
+void AtomicSupport::setMass(unsigned long long location, double weight) {
+    _AtomicDomain[location] *= weight;
+}
+
 }
 
