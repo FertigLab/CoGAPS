@@ -69,8 +69,8 @@ map<unsigned long long, unsigned int> GibbsSamplerTransformation::PlBoundaries()
 
 void GibbsSamplerTransformation::getAAtomicColumn() {
     // number of rows and columns
-    int rows _AMatrix.get_nRow();
-    int cols _AMatrix.get_nCol();
+    unsigned int rows = _AMatrix.get_nRow();
+    unsigned int cols = _AMatrix.get_nCol();
 }
 
 void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double tolerance) {
