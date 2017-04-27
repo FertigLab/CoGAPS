@@ -68,11 +68,11 @@ map<unsigned long long, unsigned int> GibbsSamplerTransformation::PlBoundaries()
 }
 
 void GibbsSamplerTransformation::setMass(unsigned long long location, double weight) {
-    _AtomicDomain.setMass(location, weight);
+    _AAtomicdomain.setMass(location, weight);
 }
 
 void GibbsSamplerTransformation::testWeight() {
-    map<unsigned long long, double>::iterator it = _AAtomicDomain.getDomain().begin();
+    map<unsigned long long, double>::iterator it = _AAtomicdomain.getDomain().begin();
     unsigned long long location = it->first;
 
     double weight = 2.0;
