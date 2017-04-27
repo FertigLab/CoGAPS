@@ -496,6 +496,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
             Rcpp::Rcout << elem.first << " " << elem.second << "\n";
         }
 
+        Rcpp::Rcout << "\n\n";
+
         GibbsSampTrans.getAAtomicColumn();
 
     }  // end of for-block for Sampling
