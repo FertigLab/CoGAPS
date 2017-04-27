@@ -51,22 +51,6 @@ map <unsigned long long, double> GibbsSamplerTransformation::getPDomain() {
     return _AAtomicdomain.getDomain();
 }
 
-map<unsigned int, unsigned long long> GibbsSamplerTransformation::AlBoundariesByBin() {
-    return _AAtomicdomain.lBoundariesByBin();
-}
-
-map<unsigned long long, unsigned int> GibbsSamplerTransformation::AlBoundaries() {
-    return _AAtomicdomain.lBoundaries();
-}
-
-map<unsigned int, unsigned long long> GibbsSamplerTransformation::PlBoundariesByBin() {
-    return _PAtomicdomain.lBoundariesByBin();
-}
-
-map<unsigned long long, unsigned int> GibbsSamplerTransformation::PlBoundaries() {
-    return _PAtomicdomain.lBoundaries();
-}
-
 void GibbsSamplerTransformation::setMass(unsigned long long location, double weight) {
     _AAtomicdomain.setMass(location, weight);
 }
