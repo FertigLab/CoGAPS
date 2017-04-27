@@ -684,6 +684,13 @@ char AtomicSupport::get_oper_type() {
     return _oper_type;
 }
 
+map<unsigned int, unsigned long long> AtomicSupport::lBoundariesByBin() {
+    return _lBoundariesByBin;
+}
+
+map<unsigned long long, unsigned int> AtomicSupport::lBoundaries() {
+    return _lBoundaries;
+}
 
 }
 

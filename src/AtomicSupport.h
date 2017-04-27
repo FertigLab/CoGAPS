@@ -105,6 +105,8 @@ class AtomicSupport {
 
     char get_oper_type();
 
+    map<unsigned int, unsigned long long> lBoundariesByBin();
+    map<unsigned long long, unsigned int> lBoundaries();
 
   private:
     // storage of the atomic domain
