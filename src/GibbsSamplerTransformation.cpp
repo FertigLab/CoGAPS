@@ -79,25 +79,37 @@ void GibbsSamplerTransformation::getAAtomicColumn() {
     // initialize helper variables for accessing space
     unsigned long long lb, ub;
     map<unsigned long long, double>::iterator it = atoms.begin();
-    //unsigned long long ub = bins[1];
 
     // iterate over the atomic space, but only look at
     // elements mapping to the first column
-    for (int i = 0; i < rows * cols; i += cols) {
-        // default to every bin having atom of mass 0
-        Rcpp::Rcout << i / 3 << " 0.0 ";
+    for (int i = (cols - 1); i < (rows * cols); i += cols) {
+        // track atoms in cell of last column
+        int hits = 0;
+
+        // show row number
+        Rcpp::Rcout << (i - cols + 1) / 3 << " ";
 
         // bounds on bin
         lb = bins[i];
-        ub = bins[i+1];
+        if (i == (rows * cols - 1)) {
+            ub = std::numeric_limits<unsigned long long>::max();
+        } else {
+            ub = bins[i+1];
+        }
 
         // get the mass of the atoms within the bin
         while (it->first < ub & it != atoms.end()) {
             if (it->first >= lb) {
-                Rcpp::Rcout << it->second << " ";
+                hits++; // found an atom
+                Rcpp::Rcout << it->second << " "; // print mass
             }
 
             it++;
+        }
+
+        // if not atoms, print a 0
+        if (hits == 0) {
+            Rcpp::Rcout << "0.0";
         }
 
         Rcpp::Rcout << "\n";
