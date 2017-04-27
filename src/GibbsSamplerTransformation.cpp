@@ -48,7 +48,7 @@ map <unsigned long long, double> GibbsSamplerTransformation::getADomain() {
 }
 
 map <unsigned long long, double> GibbsSamplerTransformation::getPDomain() {
-    return _AAtomicdomain.getDomain();
+    return _PAtomicdomain.getDomain();
 }
 
 void GibbsSamplerTransformation::setMass(unsigned long long location, double weight) {
