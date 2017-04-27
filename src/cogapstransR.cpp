@@ -500,9 +500,6 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
             Rcpp::Rcout << elem.first << " " << elem.second << "\n";
         }
 
-        for(auto elem : GibbsSampTrans.AlBoundaries()) {
-            Rcpp::Rcout << elem.first << " " << elem.second << "\n";
-        }
     }  // end of for-block for Sampling
 
     // ===========================================================================
