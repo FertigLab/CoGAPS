@@ -497,14 +497,6 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     // check atomic space
     GibbsSampTrans.getAAtomicColumn();
 
-    // reweight first element
-    Rcpp::Rcout << "\n\n";
-    GibbsSampTrans.testWeight();
-
-    // check atomic space again
-    GibbsSampTrans.getAAtomicColumn();
-
-
     // ===========================================================================
     // Part 4) Calculate statistics:
     // In this final section, we calculate all statistics pertaining to the final
