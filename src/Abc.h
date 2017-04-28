@@ -55,6 +55,7 @@ class Abc {
         // constructor
         Abc(std::vector<std::vector<double> >& data, 
             std::vector<double> timeRecorded,
+            Rcpp::NumericVector theta_init,
             std::string prior="normal",
             std::string proposal="normal",
             bool epsilon_mcmc=false,

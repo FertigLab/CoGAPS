@@ -1,4 +1,4 @@
-gapsTransRun <- function(D, S, nFactor, 
+gapsTransRun <- function(D, S, nFactor, theta,
                          # parameters from gapsmaprun
                          FP, ABins=data.frame(), PBins=data.frame(), simulation_id="simulation",
                          nEquil = 1000, nSample = 1000, nOutR = 1000, output_atomic = FALSE, fixedMatrix = "P",
@@ -149,7 +149,7 @@ gapsTransRun <- function(D, S, nFactor,
 
     # call to C++ Rcpp code
     cogapResult = cogapsTrans(D, S, FP, ABins, PBins, Config, 
-                              ConfigNums, time.of.sample, condition);
+                              ConfigNums, time.of.sample, condition, theta);
 
     # convert returned files to matrices to simplify visualization and processing
     cogapResult$Amean = as.matrix(cogapResult$Amean);

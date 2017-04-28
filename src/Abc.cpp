@@ -1,6 +1,7 @@
 #include "Abc.h"
 Abc::Abc(std::vector<std::vector<double> >& data, 
          std::vector<double> timeRecorded,
+         Rcpp::NumericVector theta_init,
          std::string prior,
          std::string proposal,
          bool epsilon_mcmc,
@@ -9,7 +10,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
          double epsilon_rate,
          double prior_mean,
          double prior_sd) :
-    _theta(1),
+    _theta(theta_init),
     _pattern(data[0].size()),
     _D(data.size(), timeRecorded.size()) {
     // convert data to Rcpp::NumericMatrix form
@@ -21,8 +22,6 @@ Abc::Abc(std::vector<std::vector<double> >& data,
 
     // initialize _theta to a reasonable value
     // should be parameterized later
-    _theta[0] = 4.0;
-    _theta[1] = 3.0;
     _T=timeRecorded,
     _prior_choice = prior;
     _proposal_choice = proposal;

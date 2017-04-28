@@ -11,6 +11,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                                                        const string &simulation_id,
                                                        vector <vector <double> >  &parameters, char the_fixed_matrix, int whichPattern,
                                                        std::vector<int> treatStatus, std::vector<double> timeRecorded, 
+                                                       Rcpp::NumericVector theta_init,
                                                        std::string prior, std::string proposal,
                                                        bool epsilon_mcmc, double delta, 
                                                        double epsilon, double epsilon_prior, 
@@ -18,9 +19,9 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     GibbsSamplerMap(nEquil, nSample, nFactor, alphaA, alphaP, nMaxA, nMaxP, nIterA, nIterP,
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
-    _theta(nSample + _nEquil),
+    _theta(nSample + _nEquil, theta_init.length()),
     _epsilon(nSample + _nEquil),
-    _growth(DVector, timeRecorded, prior, proposal, epsilon_mcmc, delta,
+    _growth(DVector, timeRecorded, theta_init, prior, proposal, epsilon_mcmc, delta,
             epsilon, epsilon_prior, prior_mean, prior_sd) {
 
     // assignments for growth data
