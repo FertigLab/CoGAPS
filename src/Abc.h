@@ -76,6 +76,8 @@ class Abc {
         Rcpp::NumericVector theta();
         Rcpp::NumericVector epsilon();
 
+        // track weights for A column and P row
+        double old_weight, new_weight;
 };
 
 #endif

@@ -31,6 +31,10 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     _epsilon_rate=epsilon_rate;
     _prior_mean=prior_mean;
     _prior_sd=prior_sd;
+
+    // initialize weights to identity
+    old_weight = 1.0;
+    new_weight = 1.0;
 }
 
 Rcpp::NumericVector Abc::_prior(Rcpp::NumericVector param) {
