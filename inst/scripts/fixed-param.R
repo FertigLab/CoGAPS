@@ -54,6 +54,6 @@ FP <- data.frame(t(P[3, ]))
 devtools::load_all()
 out <- gapsTransRun(D, S, nFactor=3, FP, 
                     time.of.sample=timeRecorded, condition=treatStatus, 
-                    nEquil=2, nSample=1, numSnapshots=1, nOutR=1)
-out$ASnapshots[[1]]
+                    nEquil=100, nSample=1, numSnapshots=1, nOutR=1)
+print(out$ASnapshots[[1]])
 #out <- gapsMapRun(D, S, FP, nFactor=3)
