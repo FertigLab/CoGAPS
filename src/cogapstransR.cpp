@@ -495,22 +495,14 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     }  // end of for-block for Sampling
 
     // check atomic space
-    for(auto elem : GibbsSampTrans.getADomain()) {
-        Rcpp::Rcout << elem.first << " " << elem.second << "\n";
-    }
+    GibbsSampTrans.getAAtomicColumn();
 
     // reweight first element
     Rcpp::Rcout << "\n\n";
     GibbsSampTrans.testWeight();
 
     // check atomic space again
-    for(auto elem : GibbsSampTrans.getADomain()) {
-        Rcpp::Rcout << elem.first << " " << elem.second << "\n";
-    }
-
-    Rcpp::Rcout << "\n\n";
-
-    //GibbsSampTrans.getAAtomicColumn();
+    GibbsSampTrans.getAAtomicColumn();
 
 
     // ===========================================================================
