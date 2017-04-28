@@ -36,7 +36,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     }
 }
 
-Rcpp::NumericVector GibbsSamplerTransformation::theta() {
+Rcpp::NumericMatrix GibbsSamplerTransformation::theta() {
     return _theta;
 }
 
@@ -182,7 +182,7 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     Rcpp::Rcout << "Done proposing\n";
 
     // save the theta's
-    _theta[burn + iter] =_growth.theta()[0];
+    _theta(burn + iter, Rcpp::_) = _growth.theta();
     
     // save the epsilon's
     _epsilon[burn + iter] =_growth.epsilon()[0];

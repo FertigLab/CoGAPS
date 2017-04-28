@@ -49,7 +49,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
                                double epsilon_prior=3.0, double prior_mean=0.0, double prior_sd=10.0);
     ~GibbsSamplerTransformation() {};
 
-    Rcpp::NumericVector theta();
+    Rcpp::NumericMatrix theta();
     Rcpp::NumericVector epsilon();
     
     void abc_mcmc(int burn=0, int iter=0, int thin=1, double tolerance=5.0);
