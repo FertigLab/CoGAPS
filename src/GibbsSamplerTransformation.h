@@ -57,10 +57,8 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     map <unsigned long long, double> getADomain();
     map <unsigned long long, double> getPDomain();
 
-    void getAAtomicColumn();
     void weightAAtomicColumn(double weight=1.0);
     void setMass(unsigned long long location, double weight);
-    void testWeight(double weight=2.0);
     void weightAColumn(double weight=1.0);
     double calcWeight();
 
