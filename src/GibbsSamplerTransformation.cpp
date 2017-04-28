@@ -115,6 +115,22 @@ void GibbsSamplerTransformation::getAAtomicColumn() {
     }
 }
 
+double GibbsSamplerTransformation::calcWeight() {
+    return _growth.new_weight / _growth.old_weight;
+}
+
+void GibbsSamplerTransformation::weightAColumn(double weight) {
+    unsigned int col = _AMatrix.get_nCol() - 1;
+    unsigned int row = _AMatrix.get_nCol();
+    std::vector<double> col_val = _AMatrix.get_Col(col);
+
+    for (int i = 0; i < row; ++i) {
+        col_val[i] *= weight;
+    }
+
+    _AMatrix.setCol(col_val, col);
+}
+
 void GibbsSamplerTransformation::weightAAtomicColumn(double weight) {
     // number of rows and columns
     unsigned int rows = _AMatrix.get_nRow();
