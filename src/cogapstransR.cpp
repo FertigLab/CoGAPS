@@ -499,7 +499,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     }  // end of for-block for Sampling
 
     // check atomic space
-    GibbsSampTrans.getAAtomicColumn();
+    GibbsSampTrans.weightAAtomicColumn();
 
     // ===========================================================================
     // Part 4) Calculate statistics:
