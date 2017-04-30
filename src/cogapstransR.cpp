@@ -368,8 +368,10 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
 
         // update pattern
         GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
-        GibbsSampTrans.weightAAtomicColumn(GibbsSampTrans.calcWeight());
-        GibbsSampTrans.weightAColumn(GibbsSampTrans.calcWeight());
+        //GibbsSampTrans.weightAAtomicColumn(GibbsSampTrans.calcWeight());
+        //GibbsSampTrans.weightAColumn(GibbsSampTrans.calcWeight());
+        GibbsSampTrans.weightAAtomicColumn(1.0);
+        GibbsSampTrans.weightAColumn(1.0);
 
         Rcpp::Rcout << "finish theta\n";
 
