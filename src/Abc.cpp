@@ -35,6 +35,9 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     // initialize weights to identity
     old_weight = 1.0;
     new_weight = 1.0;
+
+    // initialize accepted to false
+    accepted = false;
 }
 
 Rcpp::NumericVector Abc::_prior(Rcpp::NumericVector param) {
