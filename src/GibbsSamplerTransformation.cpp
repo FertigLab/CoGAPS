@@ -72,6 +72,14 @@ void GibbsSamplerTransformation::weightAColumn(double weight) {
     _AMatrix.setCol(col_val, col);
 }
 
+void GibbsSamplerTransformation::updatePRow() {
+    if (_growth.accepted == true) {
+        Rcpp::NumericVector tmp = _growth.curve(_growth.theta());
+        std::vector<double> new_curve = Rcpp::as<std::vector<double> >(tmp);
+        _PMatrix.setRow(new_curve, _PMatrix.get_nRow());
+    }
+}
+
 void GibbsSamplerTransformation::weightAAtomicColumn(double weight) {
     // number of rows and columns
     unsigned int rows = _AMatrix.get_nRow();

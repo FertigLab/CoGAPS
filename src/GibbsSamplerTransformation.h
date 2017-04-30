@@ -60,6 +60,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     void weightAAtomicColumn(double weight=1.0);
     void setMass(unsigned long long location, double weight);
     void weightAColumn(double weight=1.0);
+    void updatePRow();
     double calcWeight();
 
     Rcpp::NumericMatrix getA();
