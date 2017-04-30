@@ -11,6 +11,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
          double prior_mean,
          double prior_sd) :
     _theta(theta_init),
+    _theta_truth(theta_init),
     _pattern(data[0].size()),
     _D(data.size(), timeRecorded.size()) {
     // convert data to Rcpp::NumericMatrix form

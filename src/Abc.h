@@ -18,6 +18,7 @@ class Abc {
 
         // value 
         Rcpp::NumericVector _theta;
+        Rcpp::NumericVector _theta_truth; // for debugging
         std::vector<double> _pattern;
 
         // priors
