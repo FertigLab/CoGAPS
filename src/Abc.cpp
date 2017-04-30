@@ -219,20 +219,6 @@ Rcpp::NumericVector Abc::curve(Rcpp::NumericVector theta_star) {
     return curve_star;
 }
 
-std::vector<double> Abc::pattern() {
-    Rcpp::NumericVector tmp = P_update.row(2);
-    std::vector<double> tmp2(tmp.begin(), tmp.end());
-    return tmp2;
-    //return P_update.row(2);
-}
-
-std::vector<double> Abc::amplitude() {
-    Rcpp::NumericVector tmp = A_update(Rcpp::_, 2);
-    std::vector<double> tmp2(tmp.begin(), tmp.end());
-    return tmp2;
-    // return A_update.col(2);
-}
-
 Rcpp::NumericVector Abc::theta() {
     return _theta;
 }

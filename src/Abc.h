@@ -72,10 +72,6 @@ class Abc {
         // calculate logistic growth curve
         Rcpp::NumericVector curve(Rcpp::NumericVector theta_star);
 
-        // get new pattern and amplitude
-        std::vector<double> pattern();
-        std::vector<double> amplitude();
-
         // get parameters
         Rcpp::NumericVector theta();
         Rcpp::NumericVector epsilon();
