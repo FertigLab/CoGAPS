@@ -128,7 +128,14 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     return;
 
     // simulate theta' ~ K(theta|theta^{(t-1)})
-    Rcpp::NumericVector theta_prime = _proposal();
+    //Rcpp::NumericVector theta_prime = _proposal();
+    Rcpp::NumericVector theta_prime(_theta_truth.length()); 
+    
+    for (int i = 0; i < _theta_truth.length(); ++i) {
+        theta_prime[i] = Rcpp::rnorm(1, _theta_truth[i], 0.01)[0];
+    }
+
+    Rf_PrintValue(theta_prime);
 
     // simulate epsilon' ~ K(epsilon|epsilon^{(t-1)})
     double eps_prime = _epsilon_propose();
