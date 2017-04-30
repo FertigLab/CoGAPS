@@ -122,6 +122,7 @@ Rcpp::NumericVector Abc::_epsilon_propose(double param1, double param2) {
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 
     Rcpp::Rcout << "start empty propose\n";
+    accepted = false;
     // don't update at all
     return;
 
@@ -172,6 +173,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         accept = Rcpp::exp(accept);
 
         if (u[0] < accept[0]) {
+            accepted = true;
             _theta = theta_prime;
             for (unsigned int i = 0; i < P_prime.cols(); ++i) {
                 _pattern[i] = P_prime(row_num - 1, i);
