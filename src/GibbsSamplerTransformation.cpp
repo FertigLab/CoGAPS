@@ -100,7 +100,7 @@ void GibbsSamplerTransformation::weightAAtomicColumn(double weight) {
         while ((it->first < ub) & it != atoms.end()) {
             if (it->first >= lb) {
                 // reweight mass
-                _AAtomicdomain.setMass(it->first, it->second * weight);
+                _AAtomicdomain.setMass(it->first, weight);
             }
 
             it++;
