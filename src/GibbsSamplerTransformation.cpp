@@ -108,6 +108,34 @@ void GibbsSamplerTransformation::weightAAtomicColumn(double weight) {
     }
 }
 
+Rcpp::NumericMatrix GibbsSamplerTransformation::getA() {
+    Rcpp::NumericMatrix A_curr(_AMatrix.get_nRow(), _AMatrix.get_nCol());
+
+    for (int i = 0; i < A_curr.nrow(); ++i) {
+        std::vector<double> curr_row = _AMatrix.get_Row(i);
+
+        for (int j = 0; j < A_curr.ncol(); ++j) {
+            A_curr(i, j) = curr_row[j];
+        }
+    }
+
+    return A_curr;
+}
+
+Rcpp::NumericMatrix GibbsSamplerTransformation::getP() {
+    Rcpp::NumericMatrix P_curr(_PMatrix.get_nRow(), _PMatrix.get_nCol());
+
+    for (int i = 0; i < P_curr.nrow(); ++i) {
+        std::vector<double> curr_row = _PMatrix.get_Row(i);
+
+        for (int j = 0; j < P_curr.ncol(); ++j) {
+            P_curr(i, j) = curr_row[j];
+        }
+    }
+
+    return P_curr;
+}
+
 void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double tolerance) {
     Rcpp::Rcout << "allocate A and P\n";
     // get the A, P, D matrices
