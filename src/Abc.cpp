@@ -137,12 +137,10 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     Rcpp::NumericMatrix P_prime = P;
     Rcpp::NumericMatrix A_prime = A;
 
-    for (int i = 0; i < 10; ++i) {
-        double tmp = 1.0 / (1.0 + std::exp(-theta_prime[0] * _T[i]));
-        P_prime(2, i) = tmp;
-    }
+    // allocate curve (assume same number of recordings for all conditions
+    P_prime(P.rows() - 1, Rcpp::_) = curve(theta_prime);
 
-    double Pnorm = Rcpp::sum(P_prime.row(2));
+    double Pnorm = Rcpp::sum(P_prime.row(P.rows()));
 
     P_prime(2, Rcpp::_) = P_prime(2, Rcpp::_) / Pnorm;
     A_prime(Rcpp::_, 2) = A_prime(Rcpp::_, 2) * Pnorm;
