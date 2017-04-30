@@ -194,6 +194,22 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     }
 }
 
+Rcpp::NumericVector Abc::curve(Rcpp::NumericVector theta_star) {
+    Rcpp::NumericVector curve_star(theta_star.length() * _T.length());
+
+    double conds = theta_star.length();
+    double recs = _T.length();
+
+    for (int i = 0; i < conds; ++i) {
+        for (int j = 0; j < recs; ++j) {
+            double tmp = 1.0 / (1.0 + std::exp(-theta_star[i] * _T[j]));
+            curve_star[(i + 1) * (j + recs) - recs] = tmp;
+        }
+    }
+
+    return curve_star;
+}
+
 std::vector<double> Abc::pattern() {
     Rcpp::NumericVector tmp = P_update.row(2);
     std::vector<double> tmp2(tmp.begin(), tmp.end());

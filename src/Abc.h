@@ -68,6 +68,9 @@ class Abc {
         // propose new theta
         void propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P);
 
+        // calculate logistic growth curve
+        Rcpp::NumericVector curve(Rcpp::NumericVector theta_star);
+
         // get new pattern and amplitude
         std::vector<double> pattern();
         std::vector<double> amplitude();
