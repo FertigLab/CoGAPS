@@ -593,7 +593,9 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                     Rcpp::Named("atomsAEquil") = nAEquil, Rcpp::Named("atomsASamp") = nASamp,
                                     Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect,
                                     Rcpp::Named("theta") = GibbsSampTrans.theta(),
-                                    Rcpp::Named("epsilon") = GibbsSampTrans.epsilon());
+                                    Rcpp::Named("epsilon") = GibbsSampTrans.epsilon(),
+                                    Rcpp::Named("ABC_accepted") = GibbsSampTrans.accepted,
+                                    Rcpp::Named("ABC_proposed") = GibbsSampTrans.proposed);
         return (fileContainer);
 
     } else {
@@ -606,7 +608,9 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                     Rcpp::Named("atomsAEquil") = nAEquil, Rcpp::Named("atomsASamp") = nASamp,
                                     Rcpp::Named("atomsPEquil") = nPEquil, Rcpp::Named("atomsPSamp") = nPSamp, Rcpp::Named("chiSqValues") = chiVect,
                                     Rcpp::Named("theta") = GibbsSampTrans.theta(),
-                                    Rcpp::Named("epsilon") = GibbsSampTrans.epsilon());
+                                    Rcpp::Named("epsilon") = GibbsSampTrans.epsilon(),
+                                    Rcpp::Named("ABC_accepted") = GibbsSampTrans.accepted,
+                                    Rcpp::Named("ABC_proposed") = GibbsSampTrans.proposed);
         return (fileContainer);
     }
 }

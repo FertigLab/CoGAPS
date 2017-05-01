@@ -66,6 +66,8 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     Rcpp::NumericMatrix getA();
     Rcpp::NumericMatrix getP();
 
+    // track acceptance and total proposals
+    unsigned int accepted, proposed;
 };
 
 #endif

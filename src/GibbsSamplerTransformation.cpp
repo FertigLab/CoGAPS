@@ -34,6 +34,9 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     for (int j = 0; j < parameters[0].size(); j++) {
         _normalization += parameters[0][j];
     }
+
+    accepted = 0;
+    proposed = 0;
 }
 
 Rcpp::NumericMatrix GibbsSamplerTransformation::theta() {
@@ -179,6 +182,13 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     
     // save the epsilon's
     _epsilon[burn + iter] =_growth.epsilon()[0];
+
+    // track acceptance rate
+    if (_growth.accepted == true) {
+        accepted++;
+    }
+
+    proposed++;
 
     // update the P matrix
     // _PMatrix.setRow(_growth.pattern(), 2);
