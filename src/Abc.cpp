@@ -12,7 +12,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
          double prior_sd) :
     _theta(theta_init),
     _theta_truth(theta_init),
-    _D(data.size(), timeRecorded.size()) {
+    _D(data.size(), timeRecorded.size() * theta_init.size()) {
     // convert data to Rcpp::NumericMatrix form
     for (unsigned int i = 0; i < data.size(); ++i) {
         for (unsigned int j = 0; j < timeRecorded.size(); ++j) {
@@ -149,7 +149,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     int row_num = P.rows();
     P_prime(row_num - 1, Rcpp::_) = curve(theta_prime);
 
-    double Pnorm = Rcpp::sum(P_prime.row(row_num));
+    double Pnorm = Rcpp::sum(curve(theta_prime));
 
     P_prime(row_num - 1, Rcpp::_) = P_prime(row_num - 1, Rcpp::_) / Pnorm;
     A_prime(Rcpp::_, row_num - 1) = A_prime(Rcpp::_, row_num - 1) * Pnorm;
@@ -159,8 +159,6 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     // calculate rho(S(x), S(y))
     arma::mat diff = Rcpp::as<arma::mat>(_D) - D_prime;
     double rho = norm(diff, 2);
-
-    Rcpp::Rcout << "finish ABC setup, begin MH\n";
 
     // calculate acceptance probability
     if (rho < eps_prime) {
