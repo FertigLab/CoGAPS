@@ -181,6 +181,9 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         if (u[0] < accept[0]) {
             accepted = true;
             _theta = theta_prime;
+
+            old_weight = new_weight;
+            new_weight = Pnorm;
         } else {
             // c. otherwise
             _theta = _theta;
