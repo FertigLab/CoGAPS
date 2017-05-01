@@ -12,7 +12,6 @@ Abc::Abc(std::vector<std::vector<double> >& data,
          double prior_sd) :
     _theta(theta_init),
     _theta_truth(theta_init),
-    _pattern(data[0].size()),
     _D(data.size(), timeRecorded.size()) {
     // convert data to Rcpp::NumericMatrix form
     for (unsigned int i = 0; i < data.size(); ++i) {
@@ -182,23 +181,13 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         if (u[0] < accept[0]) {
             accepted = true;
             _theta = theta_prime;
-            for (unsigned int i = 0; i < P_prime.cols(); ++i) {
-                _pattern[i] = P_prime(row_num - 1, i);
-            }
         } else {
             // c. otherwise
             _theta = _theta;
-            //std::fill(_pattern.begin(), _pattern.end(), P(2, Rcpp::_));
-            for (unsigned int i = 0; i < P_prime.cols(); ++i) {
-                _pattern[i] = P(row_num - 1, i);
-            }
         }
     } else {
     // 4. otherwise
         _theta = _theta;
-        for (unsigned int i = 0; i < P_prime.cols(); ++i) {
-            _pattern[i] = P(row_num - 1, i);
-        }
     }
 }
 
