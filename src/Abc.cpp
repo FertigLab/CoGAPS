@@ -13,7 +13,6 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     _theta(theta_init),
     _theta_truth(theta_init),
     _D(data.size(), timeRecorded.size()) {
-    Rcpp::Rcout << "Construct instance of Abc\n";
     // convert data to Rcpp::NumericMatrix form
     for (unsigned int i = 0; i < data.size(); ++i) {
         for (unsigned int j = 0; j < timeRecorded.size(); ++j) {
@@ -39,7 +38,6 @@ Abc::Abc(std::vector<std::vector<double> >& data,
 
     // initialize accepted to false
     accepted = false;
-    Rcpp::Rcout << "Finish construction of instance of Abc\n";
 }
 
 Rcpp::NumericVector Abc::_prior(Rcpp::NumericVector param) {
@@ -200,6 +198,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 }
 
 Rcpp::NumericVector Abc::curve(Rcpp::NumericVector theta_star) {
+    Rcpp::Rcout << "start curve\n";
     Rcpp::NumericVector curve_star(theta_star.length() * _T.length());
 
     double conds = theta_star.length();
@@ -212,6 +211,8 @@ Rcpp::NumericVector Abc::curve(Rcpp::NumericVector theta_star) {
             curve_star[ind] = tmp;
         }
     }
+
+    Rcpp::Rcout << "end curve\n";
 
     return curve_star;
 }
