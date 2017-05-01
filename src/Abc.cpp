@@ -122,7 +122,6 @@ Rcpp::NumericVector Abc::_epsilon_propose(double param1, double param2) {
 
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 
-    Rcpp::Rcout << "start empty propose\n";
     accepted = false;
     // don't update at all
     return;

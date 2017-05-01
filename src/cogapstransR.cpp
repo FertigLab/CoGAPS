@@ -356,22 +356,16 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
 
         GibbsSampTrans.check_atomic_matrix_consistency('A');
 
-        Rcpp::Rcout << "finish A\n";
-
         for (unsigned long iterP = 1; iterP <= nIterP; ++iterP) {
             GibbsSampTrans.mapUpdate('P');
         }
 
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
-        Rcpp::Rcout << "finish P\n";
-
         // update pattern
         GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
         GibbsSampTrans.weightAAtomicColumn(GibbsSampTrans.calcWeight());
         GibbsSampTrans.weightAColumn(GibbsSampTrans.calcWeight());
-
-        Rcpp::Rcout << "finish theta\n";
 
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSampTrans.get_sysChi2();
