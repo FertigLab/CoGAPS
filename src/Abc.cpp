@@ -33,9 +33,9 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     _prior_mean=prior_mean;
     _prior_sd=prior_sd;
 
-    // initialize weights to identity
-    old_weight = 1.0;
-    new_weight = 1.0;
+    // initialize weights to reflect initial thetas
+    old_weight = Rcpp::sum(curve(theta_init));
+    new_weight = Rcpp::sum(curve(theta_init));
 
     // initialize accepted to false
     accepted = false;
@@ -124,7 +124,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 
     accepted = false;
     // don't update at all
-    return;
+    //return;
 
     // simulate theta' ~ K(theta|theta^{(t-1)})
     //Rcpp::NumericVector theta_prime = _proposal();
