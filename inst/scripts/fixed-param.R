@@ -48,7 +48,7 @@ A <- patts$A
 
 n <- 10
 treatStatus <- rep(0:1, each=n)
-timeRecorded <- rep(seq(-5, 5, len=n), 2)
+timeRecorded <- seq(-5, 5, len=n)
 FP <- data.frame(t(P[3, ]))
 
 devtools::load_all()
