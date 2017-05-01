@@ -160,6 +160,11 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     arma::mat diff = Rcpp::as<arma::mat>(_D) - D_prime;
     double rho = norm(diff, 2);
 
+    Rcpp::Rcout << "rho " << rho << " eps_prime " << eps_prime << "\n";
+
+    // should be calculating eps_prime as some function of
+    // current l2norm (i.e. norm(_D - A * P, 2))
+
     // calculate acceptance probability
     if (rho < eps_prime) {
         // a. u ~ U(0, 1)
@@ -178,6 +183,9 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
                  _proposal(_theta, theta_prime) -
                  _proposal(theta_prime, _theta);
         accept = Rcpp::exp(accept);
+
+        Rf_PrintValue(theta_prime);
+        Rcpp::Rcout << "acceptance probability: " << accept << "\n";
 
         if (u[0] < accept[0]) {
             accepted = true;
