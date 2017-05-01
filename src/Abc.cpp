@@ -13,6 +13,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     _theta(theta_init),
     _theta_truth(theta_init),
     _D(data.size(), timeRecorded.size()) {
+    Rcpp::Rcout << "Construct instance of Abc\n";
     // convert data to Rcpp::NumericMatrix form
     for (unsigned int i = 0; i < data.size(); ++i) {
         for (unsigned int j = 0; j < timeRecorded.size(); ++j) {
@@ -38,6 +39,7 @@ Abc::Abc(std::vector<std::vector<double> >& data,
 
     // initialize accepted to false
     accepted = false;
+    Rcpp::Rcout << "Finish construction of instance of Abc\n";
 }
 
 Rcpp::NumericVector Abc::_prior(Rcpp::NumericVector param) {
@@ -120,6 +122,7 @@ Rcpp::NumericVector Abc::_epsilon_propose(double param1, double param2) {
 }
 
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
+    Rcpp::Rcout << "starting proposal\n";
 
     accepted = false;
     // don't update at all
@@ -158,6 +161,8 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     // calculate rho(S(x), S(y))
     arma::mat diff = Rcpp::as<arma::mat>(_D) - D_prime;
     double rho = norm(diff, 2);
+
+    Rcpp::Rcout << "finish ABC setup, begin MH\n";
 
     // calculate acceptance probability
     if (rho < eps_prime) {
@@ -203,7 +208,8 @@ Rcpp::NumericVector Abc::curve(Rcpp::NumericVector theta_star) {
     for (int i = 0; i < conds; ++i) {
         for (int j = 0; j < recs; ++j) {
             double tmp = 1.0 / (1.0 + std::exp(-theta_star[i] * _T[j]));
-            curve_star[(i + 1) * (j + recs) - recs] = tmp;
+            int ind = i * recs + j;
+            curve_star[ind] = tmp;
         }
     }
 
