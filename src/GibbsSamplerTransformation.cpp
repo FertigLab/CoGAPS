@@ -64,15 +64,17 @@ double GibbsSamplerTransformation::calcWeight() {
 }
 
 void GibbsSamplerTransformation::weightAColumn(double weight) {
-    unsigned int col = _AMatrix.get_nCol() - 1;
-    unsigned int row = _AMatrix.get_nCol();
-    std::vector<double> col_val = _AMatrix.get_Col(col);
+    if (_growth.accepted == true) {
+        unsigned int col = _AMatrix.get_nCol() - 1;
+        unsigned int row = _AMatrix.get_nCol();
+        std::vector<double> col_val = _AMatrix.get_Col(col);
 
-    for (int i = 0; i < row; ++i) {
-        col_val[i] *= weight;
+        for (int i = 0; i < row; ++i) {
+            col_val[i] *= weight;
+        }
+
+        _AMatrix.setCol(col_val, col);
     }
-
-    _AMatrix.setCol(col_val, col);
 }
 
 void GibbsSamplerTransformation::updatePRow() {
@@ -84,37 +86,39 @@ void GibbsSamplerTransformation::updatePRow() {
 }
 
 void GibbsSamplerTransformation::weightAAtomicColumn(double weight) {
-    // number of rows and columns
-    unsigned int rows = _AMatrix.get_nRow();
-    unsigned int cols = _AMatrix.get_nCol();
+    if (_growth.accepted == true) {
+        // number of rows and columns
+        unsigned int rows = _AMatrix.get_nRow();
+        unsigned int cols = _AMatrix.get_nCol();
 
-    // get atomic space for A
-    map<unsigned long long, double> atoms = _AAtomicdomain.getDomain();
-    map<unsigned int, unsigned long long> bins = _AAtomicdomain.lBoundariesByBin();
+        // get atomic space for A
+        map<unsigned long long, double> atoms = _AAtomicdomain.getDomain();
+        map<unsigned int, unsigned long long> bins = _AAtomicdomain.lBoundariesByBin();
 
-    // initialize helper variables for accessing space
-    unsigned long long lb, ub;
-    map<unsigned long long, double>::iterator it = atoms.begin();
+        // initialize helper variables for accessing space
+        unsigned long long lb, ub;
+        map<unsigned long long, double>::iterator it = atoms.begin();
 
-    // iterate over the atomic space, but only look at
-    // elements mapping to the last column
-    for (int i = (cols - 1); i < (rows * cols); i += cols) {
-        // bounds on bin
-        lb = bins[i];
-        if (i == (rows * cols - 1)) {
-            ub = std::numeric_limits<unsigned long long>::max();
-        } else {
-            ub = bins[i+1];
-        }
-
-        // get the mass of the atoms within the bin
-        while ((it->first < ub) & it != atoms.end()) {
-            if (it->first >= lb) {
-                // reweight mass
-                _AAtomicdomain.setMass(it->first, weight);
+        // iterate over the atomic space, but only look at
+        // elements mapping to the last column
+        for (int i = (cols - 1); i < (rows * cols); i += cols) {
+            // bounds on bin
+            lb = bins[i];
+            if (i == (rows * cols - 1)) {
+                ub = std::numeric_limits<unsigned long long>::max();
+            } else {
+                ub = bins[i+1];
             }
 
-            it++;
+            // get the mass of the atoms within the bin
+            while ((it->first < ub) & it != atoms.end()) {
+                if (it->first >= lb) {
+                    // reweight mass
+                    _AAtomicdomain.setMass(it->first, weight);
+                }
+
+                it++;
+            }
         }
     }
 }
@@ -172,7 +176,16 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
 
     Rcpp::Rcout << "proposal\n";
     for (int s = 0; s < thin; ++s) {
+        // propose theta
         _growth.propose(A_curr, P_curr);
+
+        // update the A matrix
+        weightAAtomicColumn(calcWeight());
+        weightAColumn(calcWeight());
+
+        // update the P matrix
+        updatePRow();
+
     }
     Rcpp::Rcout << "Done proposing\n";
 
@@ -189,9 +202,4 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
 
     proposed++;
 
-    // update the P matrix
-    // _PMatrix.setRow(_growth.pattern(), 2);
-
-    // update the A matrix
-    // _AMatrix.setCol(_growth.pattern(), 2);
 }

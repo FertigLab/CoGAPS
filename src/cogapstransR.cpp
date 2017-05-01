@@ -364,9 +364,6 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
 
         // update pattern
         GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
-        GibbsSampTrans.weightAAtomicColumn(GibbsSampTrans.calcWeight());
-        GibbsSampTrans.weightAColumn(GibbsSampTrans.calcWeight());
-        GibbsSampTrans.updatePRow();
 
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSampTrans.get_sysChi2();
