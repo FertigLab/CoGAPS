@@ -171,7 +171,8 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 
 
     // calculate acceptance probability
-    if (rho < eps_prime) {
+    //if (rho < eps_prime) {
+    if (rho < rho_thresh) {
         // a. u ~ U(0, 1)
         Rcpp::NumericVector u = Rcpp::runif(1, 0, 1);
         Rcpp::NumericVector accept;
@@ -181,15 +182,14 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         //             theta^{(t)} = theta'
         accept = _prior(theta_prime) -
                  _prior(_theta) +
-                 _epsilon_prior(eps_prime) -
-                 _epsilon_prior(_epsilon) +
-                 _epsilon_propose(_epsilon, eps_prime) -
-                 _epsilon_propose(eps_prime, _epsilon) +
+                 //_epsilon_prior(eps_prime) -
+                 //_epsilon_prior(_epsilon) +
+                 //_epsilon_propose(_epsilon, eps_prime) -
+                 //_epsilon_propose(eps_prime, _epsilon) +
                  _proposal(_theta, theta_prime) -
                  _proposal(theta_prime, _theta);
         accept = Rcpp::exp(accept);
 
-        Rf_PrintValue(theta_prime);
         Rcpp::Rcout << "acceptance probability: " << accept << "\n";
 
         if (u[0] < accept[0]) {
