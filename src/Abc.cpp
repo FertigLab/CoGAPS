@@ -134,8 +134,6 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         theta_prime[i] = Rcpp::rnorm(1, _theta_truth[i], 0.01)[0];
     }
 
-    Rf_PrintValue(theta_prime);
-
     // simulate epsilon' ~ K(epsilon|epsilon^{(t-1)})
     double eps_prime = _epsilon_propose();
     eps_prime = std::max(eps_prime, 0.25);
@@ -155,15 +153,22 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     A_prime(Rcpp::_, row_num - 1) = A_prime(Rcpp::_, row_num - 1) * Pnorm;
 
     arma::mat D_prime = Rcpp::as<arma::mat>(A_prime) * Rcpp::as<arma::mat>(P_prime);
+    arma::mat D_orig = Rcpp::as<arma::mat>(A) * Rcpp::as<arma::mat>(P);
 
     // calculate rho(S(x), S(y))
     arma::mat diff = Rcpp::as<arma::mat>(_D) - D_prime;
     double rho = norm(diff, 2);
 
-    Rcpp::Rcout << "rho " << rho << " eps_prime " << eps_prime << "\n";
-
     // should be calculating eps_prime as some function of
     // current l2norm (i.e. norm(_D - A * P, 2))
+    arma::mat orig = Rcpp::as<arma::mat>(_D) - D_orig; 
+    double rho_thresh = norm(orig, 2) * 1.05;
+
+    Rcpp::Rcout << "rho " << rho << " eps_prime " << eps_prime
+                << " rho_thresh " << rho_thresh
+                << " theta[0] " << theta_prime[0]
+                << " theta[1] " << theta_prime[1] << "\n";
+
 
     // calculate acceptance probability
     if (rho < eps_prime) {
