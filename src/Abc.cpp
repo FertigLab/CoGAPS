@@ -42,12 +42,12 @@ Abc::Abc(std::vector<std::vector<double> >& data,
 
 Rcpp::NumericVector Abc::_prior(Rcpp::NumericVector param) {
     if (_prior_choice == "normal") {
-        return Rcpp::dnorm(param, _prior_mean, _prior_sd, true);
+        return Rcpp::sum(Rcpp::dnorm(param, _prior_mean, _prior_sd, true));
     } else if (_prior_choice == "gamma") {
         double a = ((1.0 - _prior_mean) / pow(_prior_sd, 2.0) - 
                     1.0 / _prior_mean) * pow(_prior_mean, 2.0);
         double b = a * (1.0 / _prior_mean - 1.0);
-        return Rcpp::dgamma(param, a, b, true);
+        return Rcpp::sum(Rcpp::dgamma(param, a, b, true));
     } else {
         throw std::logic_error("Invalid prior choice");
         return 1;
@@ -55,34 +55,50 @@ Rcpp::NumericVector Abc::_prior(Rcpp::NumericVector param) {
 }
 
 Rcpp::NumericVector Abc::_proposal() {
+    Rcpp::NumericVector tmp(_theta.length());
     if (_proposal_choice == "normal") {
-        return Rcpp::rnorm(1, _theta[0], _delta);
+        for (int i = 0; i < _theta.length(); ++i) {
+            tmp[i] = Rcpp::rnorm(1, _theta[i], _delta);
+        }
     } else if (_proposal_choice == "gamma") {
-        double a = ((1.0 - _theta[0]) / pow(_delta, 2.0) - 
-                    1.0 / _theta[0]) * pow(_theta[0], 2.0);
-        double b = a * (1.0 / _theta[0] - 1.0);
-        return Rcpp::rgamma(1, a, b);
+        for (int i = 0; i < _theta.length(); ++i) {
+            double a = ((1.0 - _theta[i]) / pow(_delta, 2.0) - 
+                        1.0 / _theta[i]) * pow(_theta[i], 2.0);
+            double b = a * (1.0 / _theta[0] - 1.0);
+
+            tmp[i] = Rcpp::rgamma(1, a, b);
+        }
     } else {
         throw std::logic_error("Invalid proposal choice");
-        return 1;
     }
+
+    return tmp;
 }
 
 Rcpp::NumericVector Abc::_proposal(Rcpp::NumericVector param1,
                               Rcpp::NumericVector param2) {
+    Rcpp::NumericVector tmp(_theta.length());
+    for (int i = 0; i < _theta.length(); ++i) {
+        tmp[i] = 0.0;
+    }
+
     if (_proposal_choice == "normal") {
         // symmetric proposal distribution, so we can ignore it
         // just return additive identity for log scale
-        return Rcpp::wrap(0);
+        return tmp;
     } else if (_proposal_choice == "gamma") {
-        double a = ((1.0 - param2[0]) / pow(_delta, 2.0) - 
-                    1.0 / param2[0]) * pow(param2[0], 2.0);
-        double b = a * (1.0 / param2[0] - 1.0);
-        return Rcpp::dgamma(param1, a, b, true);
+        for (int i = 0; i < _theta.length(); ++i) {
+            double a = ((1.0 - param2[i]) / pow(_delta, 2.0) - 
+                        1.0 / param2[i]) * pow(param2[i], 2.0);
+            double b = a * (1.0 / param2[i] - 1.0);
+
+            return Rcpp::dgamma(param1, a, b, true);
+        }
     } else {
         throw std::logic_error("Invalid proposal choice");
-        return 1;
     }
+
+    return Rcpp::sum(tmp);
 }
 
 double Abc::_epsilon_prior() {
