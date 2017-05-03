@@ -2,6 +2,9 @@
 #include "sub_func.h"
 #include <stdexcept>
 
+#define Q_GAMMA_THRESHOLD 1E-6
+#define Q_GAMMA_MIN_VALUE 1E-12
+
 using std::logic_error;
 
 namespace gaps {
@@ -31,9 +34,13 @@ double sub_func::pgamma(double p, double shape, double scale, bool boolpara1, bo
 }
 
 double sub_func::qgamma(double q, double shape, double scale, bool boolpara1, bool boolpara2) {
-    boost::math::gamma_distribution<> gam(shape, scale);
-    double qgamma_val = quantile(gam, q);
-    return qgamma_val;
+    if (q < Q_GAMMA_THRESHOLD) {
+        return Q_GAMMA_MIN_VALUE;
+    } else {
+        boost::math::gamma_distribution<> gam(shape, scale);
+        double qgamma_val = quantile(gam, q);
+        return qgamma_val;
+    }
 }
 
 double sub_func::dnorm(double u, double mean, double sd, bool unknown) {
