@@ -409,7 +409,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
         // update pattern
-        //GibbsSampTrans.abc_mcmc(nEquil, i, thin);
+        GibbsSampTrans.abc_mcmc(nEquil, i, thin);
 
         if (Q_output_atomic == true) {
             GibbsSampTrans.output_atomicdomain('A', i);
@@ -430,15 +430,15 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
 
         if (i % numOutputs == 0) {
             //----------------------------------
-            Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil <<
+            Rcpp::Rcout << "Samp:" << i << " of " << nSample <<
                         ", Atoms:" << tempAtomA << "("
                         << tempAtomP << ")" <<
                         "  Chi2 = " << tempChiSq << 
                         " theta: ";
-            Rcpp::NumericVector tmp_theta = GibbsSampTrans.theta()(ext_iter, Rcpp::_);
+            Rcpp::NumericVector tmp_theta = GibbsSampTrans.theta()(nEquil + i - 1, Rcpp::_);
 
-            for (int i = 0; i < tmp_theta.length(); ++i) {
-                Rcpp::Rcout << tmp_theta[i] << " ";
+            for (int j = 0; j < tmp_theta.length(); ++j) {
+                Rcpp::Rcout << tmp_theta[j] << " ";
             }
 
             Rcpp::Rcout << endl;
