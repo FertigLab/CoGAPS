@@ -79,9 +79,9 @@ void GibbsSamplerTransformation::weightAColumn(double weight) {
 
 void GibbsSamplerTransformation::updatePRow() {
     if (_growth.accepted == true) {
-        Rcpp::NumericVector tmp = _growth.curve(_growth.theta());
+        Rcpp::NumericVector tmp = _growth.curve(_growth.theta()) / _growth.new_weight;
         std::vector<double> new_curve = Rcpp::as<std::vector<double> >(tmp);
-        _PMatrix.setRow(new_curve, _PMatrix.get_nRow());
+        _PMatrix.setRow(new_curve, _PMatrix.get_nRow()-1);
     }
 }
 
