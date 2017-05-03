@@ -304,49 +304,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
     Rcpp::NumericVector nPEquil(nEquil);
     Rcpp::NumericVector nPSamp(nSample);
 
-    for (unsigned long ext_iter = 1; ext_iter <= nEquil / 2; ++ext_iter) {
-        GibbsSampTrans.set_iter(ext_iter);
-        GibbsSampTrans.set_AnnealingTemperature();
-
-        for (unsigned long iterA = 1; iterA <= nIterA; ++iterA) {
-            GibbsSampTrans.mapUpdate('A');
-        }
-
-        GibbsSampTrans.check_atomic_matrix_consistency('A');
-
-        for (unsigned long iterP = 1; iterP <= nIterP; ++iterP) {
-            GibbsSampTrans.mapUpdate('P');
-        }
-
-        GibbsSampTrans.check_atomic_matrix_consistency('P');
-
-
-        //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
-        tempChiSq = GibbsSampTrans.get_sysChi2();
-        chiVect[(ext_iter) - 1] = tempChiSq;
-        // ----------- output computing info ---------
-        tempAtomA = GibbsSampTrans.getTotNumAtoms('A');
-        tempAtomP = GibbsSampTrans.getTotNumAtoms('P');
-        nAEquil[outCount] = tempAtomA;
-        nPEquil[outCount] = tempAtomP;
-        outCount++;
-
-        if (ext_iter % numOutputs == 0) {
-            Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil <<
-                        ", Atoms:" << tempAtomA << "("
-                        << tempAtomP << ")" <<
-                        "  Chi2 = " << tempChiSq << endl;
-        }
-
-        // -------------------------------------------
-        // re-calculate nIterA and nIterP to the expected number of atoms
-        nIterA = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('A'), 10.));
-        nIterP = (unsigned long) randgen('P', max((double) GibbsSampTrans.getTotNumAtoms('P'), 10.));
-        // --------------------------------------------
-    }  // end of for-block for equilibration
-    
     // now update logistic growth parameters
-    for (unsigned long ext_iter = (nEquil / 2 + 1); ext_iter <= nEquil; ++ext_iter) {
+    for (unsigned long ext_iter = 1; ext_iter <= nEquil; ++ext_iter) {
         GibbsSampTrans.set_iter(ext_iter);
         GibbsSampTrans.set_AnnealingTemperature();
 
