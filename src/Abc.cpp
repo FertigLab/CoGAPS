@@ -139,7 +139,7 @@ Rcpp::NumericVector Abc::_epsilon_propose(double param1, double param2) {
 }
 
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
-    Rcpp::Rcout << "starting proposal\n";
+    //Rcpp::Rcout << "starting proposal\n";
 
     accepted = false;
     // don't update at all
@@ -181,12 +181,12 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     // should be calculating eps_prime as some function of
     // current l2norm (i.e. norm(_D - A * P, 2))
     arma::mat orig = Rcpp::as<arma::mat>(_D) - D_orig; 
-    double rho_thresh = norm(orig, 2) * 1.05;
+    double rho_thresh = norm(orig, 2) * 1.01;
 
-    Rcpp::Rcout << "rho " << rho << " eps_prime " << eps_prime
-                << " rho_thresh " << rho_thresh
-                << " theta[0] " << theta_prime[0]
-                << " theta[1] " << theta_prime[1] << "\n";
+    //Rcpp::Rcout << "rho " << rho << " eps_prime " << eps_prime
+                //<< " rho_thresh " << rho_thresh
+                //<< " theta[0] " << theta_prime[0]
+                //<< " theta[1] " << theta_prime[1] << "\n";
 
 
     // calculate acceptance probability
@@ -210,7 +210,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
                  _proposal(theta_prime, _theta);
         accept = Rcpp::exp(accept);
 
-        Rcpp::Rcout << "acceptance probability: " << accept << "\n";
+        //Rcpp::Rcout << "acceptance probability: " << accept << "\n";
 
         if (u[0] < accept[0]) {
             accepted = true;
@@ -229,7 +229,6 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 }
 
 Rcpp::NumericVector Abc::curve(Rcpp::NumericVector theta_star) {
-    Rcpp::Rcout << "start curve\n";
     Rcpp::NumericVector curve_star(theta_star.length() * _T.length());
 
     double conds = theta_star.length();
@@ -242,8 +241,6 @@ Rcpp::NumericVector Abc::curve(Rcpp::NumericVector theta_star) {
             curve_star[ind] = tmp;
         }
     }
-
-    Rcpp::Rcout << "end curve\n";
 
     return curve_star;
 }

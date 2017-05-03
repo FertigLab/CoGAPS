@@ -174,7 +174,7 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
         }
     }
 
-    Rcpp::Rcout << "proposal\n";
+    //Rcpp::Rcout << "proposal\n";
     for (int s = 0; s < thin; ++s) {
         // propose theta
         _growth.propose(A_curr, P_curr);
@@ -187,7 +187,7 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
         updatePRow();
 
     }
-    Rcpp::Rcout << "Done proposing\n";
+    //Rcpp::Rcout << "Done proposing\n";
 
     // save the theta's
     _theta(burn + iter, Rcpp::_) = _growth.theta();
