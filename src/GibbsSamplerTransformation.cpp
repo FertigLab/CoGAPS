@@ -31,7 +31,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
 
     // store normalization for fixed pattern
     _normalization = 0.0;
-    for (int j = 0; j < parameters[0].size(); j++) {
+    for (unsigned int j = 0; j < parameters[0].size(); j++) {
         _normalization += parameters[0][j];
     }
 
@@ -69,7 +69,7 @@ void GibbsSamplerTransformation::weightAColumn(double weight) {
         unsigned int row = _AMatrix.get_nCol();
         std::vector<double> col_val = _AMatrix.get_Col(col);
 
-        for (int i = 0; i < row; ++i) {
+        for (unsigned int i = 0; i < row; ++i) {
             col_val[i] *= weight;
         }
 
@@ -101,7 +101,7 @@ void GibbsSamplerTransformation::weightAAtomicColumn(double weight) {
 
         // iterate over the atomic space, but only look at
         // elements mapping to the last column
-        for (int i = (cols - 1); i < (rows * cols); i += cols) {
+        for (unsigned int i = (cols - 1); i < (rows * cols); i += cols) {
             // bounds on bin
             lb = bins[i];
             if (i == (rows * cols - 1)) {
@@ -111,7 +111,7 @@ void GibbsSamplerTransformation::weightAAtomicColumn(double weight) {
             }
 
             // get the mass of the atoms within the bin
-            while ((it->first < ub) & it != atoms.end()) {
+            while ((it->first < ub) & (it != atoms.end())) {
                 if (it->first >= lb) {
                     // reweight mass
                     _AAtomicdomain.setMass(it->first, weight);
