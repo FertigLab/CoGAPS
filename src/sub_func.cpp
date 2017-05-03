@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 #define Q_GAMMA_THRESHOLD 1E-6
-#define Q_GAMMA_MIN_VALUE 1E-12
+#define Q_GAMMA_MIN_VALUE 0.0
 
 using std::logic_error;
 
