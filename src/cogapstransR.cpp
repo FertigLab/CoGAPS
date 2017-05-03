@@ -430,11 +430,18 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
 
         if (i % numOutputs == 0) {
             //----------------------------------
-            Rcpp::Rcout << "Samp: " << i << " of " << nSample <<
+            Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil <<
                         ", Atoms:" << tempAtomA << "("
                         << tempAtomP << ")" <<
-                        // " ,chi2 = " << chi2 <<
-                        "  Chi2 = " << tempChiSq << endl;
+                        "  Chi2 = " << tempChiSq << 
+                        " theta: ";
+            Rcpp::NumericVector tmp_theta = GibbsSampTrans.theta()(ext_iter, Rcpp::_);
+
+            for (int i = 0; i < tmp_theta.length(); ++i) {
+                Rcpp::Rcout << tmp_theta[i] << " ";
+            }
+
+            Rcpp::Rcout << endl;
 
             if (i == nSample) {
                 chi2 = 2.*GibbsSampTrans.cal_logLikelihood();
