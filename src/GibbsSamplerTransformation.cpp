@@ -190,10 +190,10 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     //Rcpp::Rcout << "Done proposing\n";
 
     // save the theta's
-    _theta(burn + iter, Rcpp::_) = _growth.theta();
+    _theta(burn + iter - 1, Rcpp::_) = _growth.theta();
     
     // save the epsilon's
-    _epsilon[burn + iter] =_growth.epsilon()[0];
+    _epsilon[burn + iter - 1] =_growth.epsilon()[0];
 
     // track acceptance rate
     if (_growth.accepted == true) {
