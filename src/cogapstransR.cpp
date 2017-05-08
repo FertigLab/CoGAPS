@@ -340,7 +340,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                         << tempAtomP << ")" <<
                         "  Chi2 = " << tempChiSq << 
                         " theta: ";
-            Rcpp::NumericVector tmp_theta = GibbsSampTrans.theta()(ext_iter, Rcpp::_);
+            Rcpp::NumericVector tmp_theta = GibbsSampTrans.theta()(ext_iter - 1, Rcpp::_);
 
             for (int i = 0; i < tmp_theta.length(); ++i) {
                 Rcpp::Rcout << tmp_theta[i] << " ";
