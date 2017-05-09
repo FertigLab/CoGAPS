@@ -46,7 +46,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                        Rcpp::NumericVector theta,
                        int thin=1,
                        std::string prior="normal", std::string proposal="normal",
-                       bool epsilon_mcmc=false, double delta=10.0, double epsilon=100.0,
+                       bool epsilon_mcmc=false, double delta=10.0, double epsilon=1.0,
                        double epsilon_prior=3.0, double prior_mean=0.0, double prior_sd=10.0) {
     // ===========================================================================
     // Initialization of the random number generator.
