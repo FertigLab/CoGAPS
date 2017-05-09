@@ -15,8 +15,6 @@ class Abc {
 
         // ABC parameters
         double _epsilon;
-        double rho;
-        double rho_thresh;
 
         // value 
         Rcpp::NumericVector _theta;
@@ -82,6 +80,10 @@ class Abc {
 
         // track acceptance
         bool accepted;
+
+        // track thresholds
+        double rho;
+        double rho_thresh;
 };
 
 #endif
