@@ -20,6 +20,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
     _theta(nSample + _nEquil, theta_init.length()),
+    _thresh(nSample + _nEquil, 2),
     _epsilon(nSample + _nEquil),
     _growth(DVector, timeRecorded, theta_init, prior, proposal, epsilon_mcmc, delta,
             epsilon, epsilon_prior, prior_mean, prior_sd) {
@@ -40,6 +41,10 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
 }
 
 Rcpp::NumericMatrix GibbsSamplerTransformation::theta() {
+    return _theta;
+}
+
+Rcpp::NumericMatrix GibbsSamplerTransformation::thresh() {
     return _theta;
 }
 
@@ -191,6 +196,8 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
 
     // save the theta's
     _theta(burn + iter - 1, Rcpp::_) = _growth.theta();
+    _thresh(burn + iter - 1, 0) = _growth.rho;
+    _thresh(burn + iter - 1, 1) = _growth.rho_thresh;
     
     // save the epsilon's
     _epsilon[burn + iter - 1] =_growth.epsilon()[0];

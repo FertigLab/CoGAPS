@@ -54,8 +54,9 @@ FP <- data.frame(t(P[3, ]))
 devtools::load_all()
 out <- gapsTransRun(D, S, nFactor=3, c(4, 3), FP, 
                     time.of.sample=timeRecorded, condition=treatStatus, 
-                    nEquil=1000, nSample=100, numSnapshots=1, nOutR=10,
-                    delta=0.1)
+                    nEquil=1000, nSample=100, numSnapshots=1, nOutR=100,
+                    delta=1, epsilon=0.1)
 print(out$ABC_proposed)
 print(out$ABC_accepted)
+apply(out$theta, 2, quantile, probs=c(0.025, 0.5, 0.975))
 #out <- gapsMapRun(D, S, FP, nFactor=3)
