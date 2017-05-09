@@ -15,6 +15,8 @@ class Abc {
 
         // ABC parameters
         double _epsilon;
+        double rho;
+        double rho_thresh;
 
         // value 
         Rcpp::NumericVector _theta;
