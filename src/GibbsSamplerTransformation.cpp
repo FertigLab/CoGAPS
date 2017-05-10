@@ -45,7 +45,7 @@ Rcpp::NumericMatrix GibbsSamplerTransformation::theta() {
 }
 
 Rcpp::NumericMatrix GibbsSamplerTransformation::thresh() {
-    return _theta;
+    return _thresh;
 }
 
 Rcpp::NumericVector GibbsSamplerTransformation::epsilon() {
