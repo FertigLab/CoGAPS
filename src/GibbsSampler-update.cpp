@@ -364,7 +364,12 @@ void GibbsSampler::init_sysChi2() {
 }
 
 void GibbsSampler::update_sysChi2(double delsysChi2) {
+    double pre;
+    pre = _sysChi2;
     _sysChi2 -= 2.*delsysChi2;
+    if (pre > 0.0 & _sysChi2 < 0.0) {
+        Rcpp::Rcout << "pre " << pre << " post " << _sysChi2 << " delsysChi2 " << delsysChi2 << "\n";
+    }
 }
 
 double GibbsSampler::get_sysChi2() {
