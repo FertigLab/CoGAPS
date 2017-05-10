@@ -200,7 +200,7 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     _thresh(burn + iter - 1, 1) = _growth.rho_thresh;
     
     // save the epsilon's
-    _epsilon[burn + iter - 1] =_growth.epsilon()[0];
+    _epsilon[burn + iter - 1] =_growth.epsilon();
 
     // track acceptance rate
     if (_growth.accepted == true) {

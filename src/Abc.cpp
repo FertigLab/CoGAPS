@@ -244,6 +244,6 @@ Rcpp::NumericVector Abc::theta() {
     return _theta;
 }
 
-Rcpp::NumericVector Abc::epsilon() {
+double Abc::epsilon() {
     return _epsilon;
 }
