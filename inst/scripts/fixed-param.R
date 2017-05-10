@@ -59,4 +59,5 @@ out <- gapsTransRun(D, S, nFactor=3, c(4, 3), FP,
 print(out$ABC_proposed)
 print(out$ABC_accepted)
 apply(out$theta, 2, quantile, probs=c(0.025, 0.5, 0.975))
+names(out)
 #out <- gapsMapRun(D, S, FP, nFactor=3)

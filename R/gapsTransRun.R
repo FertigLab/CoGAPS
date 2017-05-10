@@ -188,7 +188,7 @@ gapsTransRun <- function(D, S, nFactor, theta,
     cogapResult = c(cogapResult, calcChiSq);
 
 
-    names(cogapResult)[16] = "meanChi2";
+    names(cogapResult)[17] = "meanChi2";
 
     message(paste("Chi-Squared of Mean:",calcChiSq))
 

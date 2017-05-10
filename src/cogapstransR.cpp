@@ -559,7 +559,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                     Rcpp::Named("theta") = GibbsSampTrans.theta(),
                                     Rcpp::Named("epsilon") = GibbsSampTrans.epsilon(),
                                     Rcpp::Named("ABC_accepted") = GibbsSampTrans.accepted,
-                                    Rcpp::Named("ABC_proposed") = GibbsSampTrans.proposed);
+                                    Rcpp::Named("ABC_proposed") = GibbsSampTrans.proposed,
+                                    Rcpp::Named("threshold") = GibbsSampTrans.thresh());
         return (fileContainer);
 
     } else {
@@ -574,7 +575,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                     Rcpp::Named("theta") = GibbsSampTrans.theta(),
                                     Rcpp::Named("epsilon") = GibbsSampTrans.epsilon(),
                                     Rcpp::Named("ABC_accepted") = GibbsSampTrans.accepted,
-                                    Rcpp::Named("ABC_proposed") = GibbsSampTrans.proposed);
+                                    Rcpp::Named("ABC_proposed") = GibbsSampTrans.proposed,
+                                    Rcpp::Named("threshold") = GibbsSampTrans.thresh());
         return (fileContainer);
     }
 }
