@@ -21,6 +21,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
 
     // current estimates
     Rcpp::NumericMatrix _theta;
+    Rcpp::NumericMatrix _thresh;
     Rcpp::NumericVector _epsilon;
 
     // difference
@@ -50,6 +51,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     ~GibbsSamplerTransformation() {};
 
     Rcpp::NumericMatrix theta();
+    Rcpp::NumericMatrix thresh();
     Rcpp::NumericVector epsilon();
     
     void abc_mcmc(int burn=0, int iter=0, int thin=1, double tolerance=5.0);

@@ -176,17 +176,12 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
 
     // calculate rho(S(x), S(y))
     arma::mat diff = Rcpp::as<arma::mat>(_D) - D_prime;
-    double rho = norm(diff, 2);
+    rho = norm(diff, 2);
 
     // should be calculating eps_prime as some function of
     // current l2norm (i.e. norm(_D - A * P, 2))
     arma::mat orig = Rcpp::as<arma::mat>(_D) - D_orig; 
-    double rho_thresh = norm(orig, 2) * 1.01;
-
-    //Rcpp::Rcout << "rho " << rho << " eps_prime " << eps_prime
-                //<< " rho_thresh " << rho_thresh
-                //<< " theta[0] " << theta_prime[0]
-                //<< " theta[1] " << theta_prime[1] << "\n";
+    rho_thresh = norm(orig, 2) + eps_prime;
 
 
     // calculate acceptance probability

@@ -80,6 +80,10 @@ class Abc {
 
         // track acceptance
         bool accepted;
+
+        // track thresholds
+        double rho;
+        double rho_thresh;
 };
 
 #endif

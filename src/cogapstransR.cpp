@@ -46,7 +46,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                        Rcpp::NumericVector theta,
                        int thin=1,
                        std::string prior="normal", std::string proposal="normal",
-                       bool epsilon_mcmc=false, double delta=10.0, double epsilon=100.0,
+                       bool epsilon_mcmc=false, double delta=10.0, double epsilon=1.0,
                        double epsilon_prior=3.0, double prior_mean=0.0, double prior_sd=10.0) {
     // ===========================================================================
     // Initialization of the random number generator.
@@ -340,7 +340,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                         << tempAtomP << ")" <<
                         "  Chi2 = " << tempChiSq << 
                         " theta: ";
-            Rcpp::NumericVector tmp_theta = GibbsSampTrans.theta()(ext_iter-1, Rcpp::_);
+            Rcpp::NumericVector tmp_theta = GibbsSampTrans.theta()(ext_iter - 1, Rcpp::_);
 
             for (int i = 0; i < tmp_theta.length(); ++i) {
                 Rcpp::Rcout << tmp_theta[i] << " ";
