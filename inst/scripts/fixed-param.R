@@ -52,6 +52,8 @@ timeRecorded <- seq(-5, 5, len=n)
 FP <- data.frame(t(P[3, ]))
 
 devtools::load_all()
+burnin <- 1000
+sample <- 100
 out <- gapsTransRun(D, S, nFactor=3, c(4, 3), FP, 
                     time.of.sample=timeRecorded, condition=treatStatus, 
                     nEquil=1000, nSample=100, numSnapshots=1, nOutR=100,
@@ -60,5 +62,6 @@ out$threshold <- cbind(out$thresh, out$thresh[,2] - out$epsilon)
 print(out$ABC_proposed)
 print(out$ABC_accepted)
 apply(out$theta, 2, quantile, probs=c(0.025, 0.5, 0.975))
+apply(out$theta[(burnin+1):(burnin+sample), ], 2, quantile, probs=c(0.025, 0.5, 0.975))
 head(cbind(out$thresh, out$theta))
 #out <- gapsMapRun(D, S, FP, nFactor=3)
