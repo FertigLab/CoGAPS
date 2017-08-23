@@ -88,7 +88,7 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
     {
       if(charDataErrors[i] == TRUE)
       {
-        stop(paste("Error in gapsRun: Argument",charCheck[i],"is of the incorrect type. Please see documentation for details."))
+        stop(paste("Error in gapsMapRun: Argument",charCheck[i],"is of the incorrect type. Please see documentation for details."))
       }
     }
   }
@@ -100,7 +100,7 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
     {
       if(boolDataErrors[i] == TRUE)
       {
-        stop(paste("Error in gapsRun: Argument",boolCheck[i],"is of the incorrect type. Please see documentation for details."))
+        stop(paste("Error in gapsMapRun: Argument",boolCheck[i],"is of the incorrect type. Please see documentation for details."))
       }
     }
   }
@@ -112,7 +112,7 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
     {
       if(numericDataErrors[i] == TRUE)
       {
-        stop(paste("Error in gapsRun: Argument",numericCheck[i],"is of the incorrect type. Please see documentation for details."))
+        stop(paste("Error in gapsMapRun: Argument",numericCheck[i],"is of the incorrect type. Please see documentation for details."))
 
       }
     }
@@ -126,7 +126,7 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
     {
       if((dataFrameErrors[i] && matrixErrors[i]) == TRUE)
       {
-        stop(paste("Error in gapsRun: Argument",dataFrameCheck[i],"is not a matrix or data.frame. Please see documentation for details."))
+        stop(paste("Error in gapsMapRun: Argument",dataFrameCheck[i],"is not a matrix or data.frame. Please see documentation for details."))
 
       }
     }
@@ -153,33 +153,33 @@ gapsMapRun <- function(D, S, FP, ABins = data.frame(), PBins = data.frame(), nFa
   #Check for negative or zero arguments
   if(any(ConfigNums <= 0))
   {
-    stop("Error in gapsRun: Numeric Arguments cannot be non-zero!")
+    stop("Error in gapsMapRun: Numeric Arguments cannot be non-zero!")
   }
 
   #Check for nonsensical inputs (such as numSnapshots < nEquil or nSample)
   if((numSnapshots > nEquil) || (numSnapshots > nSample))
   {
-    stop("Error in gapsRun: Cannot have more snapshots of A and P than equilibration and/or sampling iterations.")
+    stop("Error in gapsMapRun: Cannot have more snapshots of A and P than equilibration and/or sampling iterations.")
   }
 
   if((nOutR > nEquil) || (nOutR > nSample))
   {
-    stop("Error in gapsRun: Cannot have more output steps than equilibration and/or sampling iterations.")
+    stop("Error in gapsMapRun: Cannot have more output steps than equilibration and/or sampling iterations.")
   }
 
   if(ncol(FP) != ncol(D))
   {
-    stop("Error in gapsRun: Columns of Data Matrix and Fixed Pattern Matrix do not line up. Please see documentation for details.")
+    stop("Error in gapsMapRun: Columns of Data Matrix and Fixed Pattern Matrix do not line up. Please see documentation for details.")
   }
 
   if(nFactor < (nrow(FP)))
   {
-    stop("Error in gapsRun: Number of patterns cannot be less than the rows of the patterns to fix (FP). Please see documentation for details.")
+    stop("Error in gapsMapRun: Number of patterns cannot be less than the rows of the patterns to fix (FP). Please see documentation for details.")
   }
 
   if(nFactor > (ncol(D)))
   {
-    warning("Warning in gapsRun: Number of requested patterns greater than columns of Data Matrix.")
+    warning("Warning in gapsMapRun: Number of requested patterns greater than columns of Data Matrix.")
   }
 
 
