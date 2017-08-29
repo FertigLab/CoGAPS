@@ -4,7 +4,7 @@
 #' @param Amatrix A matrix of genes by weights resulting from CoGAPS or other NMF decomposition
 #' @param scaledPmatrix logical indicating whether the corresponding pattern matrix was fixed to have max 1 during decomposition
 #' @param Pmatrix the corresponding Pmatrix (patterns X samples) for the provided Amatrix (genes x patterns). This must be supplied if scaledPmatrix is FALSE.
-#' @param threshold # the type of threshold to be used. The default "All" will distribute genes into pattern with the lowest ranking. The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern.
+#' @param threshold # the type of threshold to be used. The default "all" will distribute genes into pattern with the lowest ranking. The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern.
 #' @param lp a vector of weights for each pattern to be used for finding markers. If NA markers for each pattern of the A matrix will be used.
 #' @param full logical indicating whether to return the ranks of each gene for each pattern
 #'
@@ -20,7 +20,7 @@ patternMarkers <- function(
     Amatrix=NA, #A matrix of genes by weights resulting from CoGAPS or other NMF decomposition
     scaledPmatrix=FALSE, # logical indicating whether the corresponding pattern matrix was fixed to have max 1 during decomposition
     Pmatrix=NA, #the corresponding Pmatrix (patterns X samples) for the provided Amatrix (genes x patterns). This must be supplied if scaledPmatrix is FALSE.
-    threshold="All", # the type of threshold to be used. The default "All" will distribute genes into pattern with the highest ranking. 
+    threshold="all", # the type of threshold to be used. The default "All" will distribute genes into pattern with the highest ranking. 
    # The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern. 
     lp=NA, # a vector of weights for each pattern to be used for finding markers. If NA markers for each pattern of the A matrix will be used.
     full=FALSE #logical indicating whether to return the ranks of each gene for each pattern.
@@ -62,12 +62,12 @@ if(threshold=="cut"){
         ssgenes.th <- sapply(1:nP,function(x) ssgenes[1:geneThresh[x],x])
         #geneThresh <- apply(sweep(ssranks,1,t(apply(ssranks, 1, min)),"-"),2,function(x) which(x==0))
         #ssgenes.th <- lapply(geneThresh,names)
-}
-if(threshold=="All"){
+} else if(threshold=="all"){
         pIndx<-apply(ssranks,1,which.min)
         gBYp <- lapply(sort(unique(pIndx)),function(x) names(pIndx[pIndx==x]))
         ssgenes.th <- lapply(1:nP, function(x) ssgenes[which(ssgenes[,x] %in% gBYp[[x]]),x])
-}
+} else {stop("Threshold arguement not viable option")}
+
 if(full){return(list("PatternMarkers"=ssgenes.th,"PatternRanks"=ssranks))
 } else{return("PatternMarkers"=ssgenes.th)}
 }
