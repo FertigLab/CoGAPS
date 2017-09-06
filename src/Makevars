@@ -12,6 +12,7 @@ OBJECTS =   AtomicSupport.o \
             GibbsSamplerMap.o \
             Matrix.o \
             randgen.o \
+            RcppExports.o \
             sub_func.o \
             cpp_tests/test-runner.o \
             cpp_tests/testMatrix.o
