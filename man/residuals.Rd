@@ -18,3 +18,4 @@ residuals(AMean_Mat, PMean_Mat, D, S)
 \description{
 \code{residuals} calculate residuals and produce heatmap
 }
+

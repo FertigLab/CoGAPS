@@ -47,3 +47,4 @@ PatternsMatchFN = patternMatch4Parallel,numSnapshots=numSnapshots,minNS=minNS)
 \seealso{
 \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
 }
+

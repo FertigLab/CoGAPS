@@ -5,7 +5,7 @@
 \title{patternMarkers}
 \usage{
 patternMarkers(Amatrix = NA, scaledPmatrix = FALSE, Pmatrix = NA,
-  threshold = "All", lp = NA, full = FALSE)
+  threshold = "all", lp = NA, full = FALSE)
 }
 \arguments{
 \item{Amatrix}{A matrix of genes by weights resulting from CoGAPS or other NMF decomposition}
@@ -14,7 +14,7 @@ patternMarkers(Amatrix = NA, scaledPmatrix = FALSE, Pmatrix = NA,
 
 \item{Pmatrix}{the corresponding Pmatrix (patterns X samples) for the provided Amatrix (genes x patterns). This must be supplied if scaledPmatrix is FALSE.}
 
-\item{threshold}{# the type of threshold to be used. The default "All" will distribute genes into pattern with the lowest ranking. The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern.}
+\item{threshold}{# the type of threshold to be used. The default "all" will distribute genes into pattern with the lowest ranking. The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern.}
 
 \item{lp}{a vector of weights for each pattern to be used for finding markers. If NA markers for each pattern of the A matrix will be used.}
 
@@ -33,3 +33,4 @@ patternMarkers(Amatrix=AP$Amean,scaledPmatrix=FALSE,Pmatrix=NA,threshold="All",f
 }
 
 }
+
