@@ -67,3 +67,4 @@ matrix factorization returning the two matrices that reconstruct
 the data matrix; as opposed to gapsRun, this method takes an
 additional input specifying set patterns in the P matrix
 }
+
