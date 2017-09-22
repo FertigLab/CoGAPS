@@ -34,7 +34,7 @@ Imports:
 Suggests:
     testthat,
     lintr
-LinkingTo: Rcpp, BH, RcppArmadillo, testthat
+LinkingTo: Rcpp, BH, RcppArmadillo
 License: GPL (==2)
 biocViews: GeneExpression, Transcription, GeneSetEnrichment,
     DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray,

@@ -1,4 +1,4 @@
-PKG_CPPFLAGS = -std=c++11
+PKG_CPPFLAGS =
 OBJECTS =   AtomicSupport.o \
             cogapsmapR.o \
             cogapsmaptestR.o \
@@ -14,5 +14,5 @@ OBJECTS =   AtomicSupport.o \
             randgen.o \
             RcppExports.o \
             sub_func.o \
-            cpp_tests/test-runner.o \
+            test-runner.o \
             cpp_tests/testMatrix.o
