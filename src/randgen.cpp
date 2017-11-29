@@ -1,44 +1,77 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
+// [[Rcpp::depends(BH)]]
 
 #include "randgen.h"
+#include <boost/random.hpp>
+#include <stdint.h>
 
-using namespace std;
+static boost::random::mt19937 rng;
 
-double randgen(char rand_type, double para1, double para2) {
-    switch (rand_type) {
-        case 'U': {
-            boost::random::uniform_01<boost::mt19937 &> zeroone(rng);
-            return zeroone();
-        }
+void Random::setSeed(uint32_t newSeed)
+{
+    rng.seed(newSeed);
+}
 
-        case 'N': {
-            double mean = para1;
-            double std_dev = para2;
-            boost::normal_distribution<> nd(mean, std_dev);
-            boost::variate_generator<boost::mt19937 &, boost::normal_distribution<> > norm_rnd(rng, nd);
-            return norm_rnd();
-        }
+double Random::normal(double mean, double var)
+{
+    boost::random::normal_distribution<double> dist(mean, var);
+    return dist(rng);
+}
 
-        case 'P': {
-            double lambda = (para1 == 0 ? para2 : para1);
-            boost::poisson_distribution<> pd(lambda);
-            boost::variate_generator<boost::mt19937 &, boost::poisson_distribution<> > poisson_rnd(rng, pd);
-            return poisson_rnd();
-        }
+double Random::uniform()
+{
+    boost::random::uniform_01<boost::mt19937&> dist(rng);
+    return dist();    
+}
 
-        case 'E': {
-            double lambda = (para1 == 0 ? para2 : para1);
-            boost::exponential_distribution<> expd(lambda);
-            boost::variate_generator<boost::mt19937 &, boost::exponential_distribution<> > exp_rnd(rng, expd);
-            return exp_rnd();
-        }
+double Random::poisson(double lambda)
+{
+    boost:poisson_distribution<> dist(lambda);
+    dist(rng);
+}
 
-        default:
-            return -9999.0;
+double Random::exponential(double lambda)
+{
+    boost::exponential_distribution<> dist(lambda);
+    dist(rng);
+}
+
+uint64_t Random::uniform64()
+{
+    boost::random::uniform_int_distribution<uint64_t> dist(0,
+        std::numeric_limits<uint64_t>::max());
+    return dist(rng);
+}
+
+int Random::uniformInt(int a, int b)
+{
+    if (a > b)
+    {
+        throw std::invalid_argument("uniformInt: invalid range\n");
     }
+    else if (a == b)
+    {
+        return a;
+    }
+    else
+    {
+        boost::random::uniform_int_distribution<> dist(a,b);
+        return dist(rng);
+    }
+}
 
-    // EJF -- return dummy value to avoid warning
-    return -9999.0;
+double Random::uniform(double a, double b)
+{
+    if (a > b)
+    {
+        throw std::invalid_argument("uniform: invalid range\n");
+    }
+    else if (a == b)
+    {
+        return a;
+    }
+    else
+    {
+        boost::random::uniform_real_distribution<> dist(a,b);
+        return dist(rng);
+    }
 }

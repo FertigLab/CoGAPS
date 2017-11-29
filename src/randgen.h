@@ -1,17 +1,22 @@
 #ifndef _RANDGEN_H_
 #define _RANDGEN_H_
 
-#include <iostream>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random.hpp>
-#include <ctime>
-#include <boost/random/uniform_01.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/poisson_distribution.hpp>
-#include <boost/random/exponential_distribution.hpp>
+// wrapper class for random number generator
 
-extern boost::mt19937 rng;
+#include <stdint.h>
 
-double randgen(char rand_type, double para1 = 0, double para2 = 1);
+namespace Random
+{
+    void setSeed(uint32_t);
+
+    int uniformInt(int, int);
+    uint64_t uniform64();
+
+    double uniform();
+    double uniform(double, double);
+    double normal(double, double);
+    double poisson(double);
+    double exponential(double);
+}
 
 #endif
