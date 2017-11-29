@@ -21,5 +21,5 @@ print(runCogapsBenchmark(
     nSample=nIter,
     nFactor=7,
     seed=12345,
-    reps=10
+    reps=20
 ))
