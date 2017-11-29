@@ -4,3 +4,4 @@
 ^\.astylerc$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^inst/benchmarks/
