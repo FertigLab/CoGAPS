@@ -13,4 +13,13 @@ source(paste(sep="/", script.basename, "cogaps.R"))
 
 # run benchmarks
 data(SimpSim)
-print(runCogapsBenchmark(SimpSim.D, SimpSim.S, 3, 20))
+nIter <- 3000
+print(runCogapsBenchmark(
+    D=SimpSim.D,
+    S=SimpSim.S,
+    nEquil=nIter,
+    nSample=nIter,
+    nFactor=7,
+    seed=12345,
+    reps=10
+))
