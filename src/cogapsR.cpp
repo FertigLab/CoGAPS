@@ -50,7 +50,7 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
     uint32_t seedUsed = static_cast<boost::uint32_t>(seed);
     if (seed <= 0) {seedUsed = static_cast<boost::uint32_t>(std::time(0));}
     rng.seed(seedUsed);
-    Rcpp::Rcout << "Random Seed: " << seedUsed << endl;
+    if (messages) {Rcpp::Rcout << "Random Seed: " << seedUsed << endl;}
 
     //---------------------
     // ===========================================================================
