@@ -15,4 +15,5 @@ OBJECTS =   AtomicSupport.o \
             RcppExports.o \
             sub_func.o \
             test-runner.o \
-            cpp_tests/testMatrix.o
+            cpp_tests/testMatrix.o \
+            cpp_tests/testRandgen.o
