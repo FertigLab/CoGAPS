@@ -1,6 +1,6 @@
 // [[Rcpp::depends(BH)]]
 
-#include "randgen.h"
+#include "Random.h"
 #include <boost/random.hpp>
 #include <stdint.h>
 
