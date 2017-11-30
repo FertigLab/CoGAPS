@@ -472,7 +472,7 @@ bool GibbsSampler::death(char the_matrix_label,
     } // end of switch-block
 
     // M-H sampling to determine whether or not we can accept Gibbs
-    if (delLLnew * _annealingTemperature  < log(randgen('U', 0, 0))) {
+    if (delLLnew * _annealingTemperature  < log(Random::uniform())) {
         switch (the_matrix_label) {
             case 'A': {
                 _AAtomicdomain.rejectProposal(false);
@@ -735,7 +735,7 @@ bool GibbsSampler::move(char the_matrix_label,
 
     double tmp;
     tmp = priorLL + delLLnew * _annealingTemperature;
-    double rng = log(randgen('U', 0, 0));
+    double rng = log(Random::uniform());
 
     if (tmp < rng) {
         switch (the_matrix_label) {
@@ -977,7 +977,7 @@ bool GibbsSampler::exchange(char the_matrix_label,
         // need to retain exponential prior
         double plower = sub_func::pnorm(-mass1, mean, sd, DOUBLE_NEGINF, 0);
         double pupper = sub_func::pnorm(mass2, mean, sd, DOUBLE_NEGINF, 0);
-        double u = plower + randgen('U', 0, 0) * (pupper - plower);
+        double u = plower + Random::uniform() * (pupper - plower);
 
         // must sample from prior if the computed parameters are not good for Gibbs
         if (plower >  0.95 ||
@@ -1124,7 +1124,7 @@ bool GibbsSampler::exchange(char the_matrix_label,
         tmp = priorLL + delLLnew * _annealingTemperature;
     }
 
-    double rng = log(randgen('U', 0, 0));
+    double rng = log(Random::uniform());
 
     if (tmp  < rng) {
         switch (the_matrix_label) {

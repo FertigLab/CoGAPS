@@ -333,7 +333,7 @@ double GibbsSampler::getMass(char the_matrix_label, double origMass,
     // based upon algorithm in DistScalarRmath.cc (scalarRandomSample)
     double plower = sub_func::pnorm(0., mean, sd, DOUBLE_NEGINF, 0);
     double pupper = 1.;
-    double u = plower + randgen('U', 0, 0) * (pupper - plower);
+    double u = plower + Random::uniform() * (pupper - plower);
     // -------------------------------------------------------------
     // this line seems to be misplaced.
     // double newMass = sub_func::qnorm(u, mean, sd, DOUBLE_NEGINF, 0);

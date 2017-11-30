@@ -34,10 +34,6 @@ class sub_func
     static double qnorm(double u, double mean, double sd, double INF_Ref, double unknown);
 
     static double pnorm(double u, double mean, double sd, double INF_Ref, double unknown);
-
-    //static double runif(double a, double b, double rng); // old form, changed into the next line.
-    static double runif(double a, double b);
-
 };
 
 }

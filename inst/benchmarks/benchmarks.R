@@ -11,6 +11,9 @@ library(CoGAPS)
 # load benchmarks
 source(paste(sep="/", script.basename, "cogaps.R"))
 
+# display package version
+print(packageVersion('CoGAPS'))
+
 # run benchmarks
 data(SimpSim)
 nIter <- 3000

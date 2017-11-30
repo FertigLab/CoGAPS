@@ -49,9 +49,9 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
     //rng.seed(seq);
     // --- seeded with time
     if (seed <= 0) {
-        rng.seed(static_cast<boost::uint32_t>(std::time(0)));
+        Random::setSeed(static_cast<boost::uint32_t>(std::time(0)));
     } else {
-        rng.seed(static_cast<boost::uint32_t>(seed));
+        Random::setSeed(static_cast<boost::uint32_t>(seed));
     }
     //---------------------
     // ===========================================================================
@@ -343,8 +343,8 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 
         // -------------------------------------------
         // re-calculate nIterA and nIterP to the expected number of atoms
-        nIterA = (unsigned long) randgen('P', max((double) GibbsSampMap.getTotNumAtoms('A'), 10.));
-        nIterP = (unsigned long) randgen('P', max((double) GibbsSampMap.getTotNumAtoms('P'), 10.));
+        nIterA = (unsigned long) Random::poisson(max((double) GibbsSampMap.getTotNumAtoms('A'), 10.));
+        nIterP = (unsigned long) Random::poisson(max((double) GibbsSampMap.getTotNumAtoms('P'), 10.));
         // --------------------------------------------
     }  // end of for-block for equilibration
 
@@ -430,8 +430,8 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
 
         // -------------------------------------------
         // re-calculate nIterA and nIterP to the expected number of atoms
-        nIterA = (unsigned long) randgen('P', max((double) GibbsSampMap.getTotNumAtoms('A'), 10.));
-        nIterP = (unsigned long) randgen('P', max((double) GibbsSampMap.getTotNumAtoms('P'), 10.));
+        nIterA = (unsigned long) Random::poisson(max((double) GibbsSampMap.getTotNumAtoms('A'), 10.));
+        nIterP = (unsigned long) Random::poisson(max((double) GibbsSampMap.getTotNumAtoms('P'), 10.));
         // --------------------------------------------
     }  // end of for-block for Sampling
 

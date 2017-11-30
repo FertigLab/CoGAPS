@@ -157,11 +157,7 @@ void AtomicSupport::writeAtomicInfo(char outputFilename[], unsigned long Samp_cy
 // June 2015 - this generates a random 64 bit integer. Different
 // than the prior method which used rand()*_NAtomLength
 unsigned long long AtomicSupport::birthAtomLocation() {
-    boost::mt19937 randGen(rng);
-    boost::uniform_int<uint64_t> uInt64Dist(0, std::numeric_limits<uint64_t>::max());
-    boost::variate_generator<boost::mt19937 &, boost::uniform_int<uint64_t> > getRand(randGen, uInt64Dist);
-    uint64_t location = getRand();
-    return (location);
+    return Random::uniform64();
 }
 
 
@@ -234,7 +230,7 @@ void AtomicSupport::makeProposal() {
         maxStep = 0.75;
     }
 
-    double updateStep = sub_func::runif(minStep, maxStep);
+    double updateStep = Random::uniform(minStep, maxStep);
 
     // can only birth if there are zero atoms
     if (_nAtom == 0) {
@@ -303,7 +299,7 @@ void AtomicSupport::makeProposal() {
             }
         }
 
-        if (sub_func::runif(0., 1.) < pDelete) {
+        if (Random::uniform() < pDelete) {
             updateStep = 0.;
 
         } else  {
@@ -334,7 +330,7 @@ void AtomicSupport::ProposeDeath() {
     _oper_type = 'D';
     // delete an atom
     // select an atom at random
-    unsigned int deletionAtom = floor(sub_func::runif(0., 1.) * _nAtom);
+    unsigned int deletionAtom = floor(Random::uniform(0., 1.) * _nAtom);
     // find the proposed atom
     iter = _AtomicDomain.begin();
 
@@ -374,7 +370,7 @@ void AtomicSupport::ProposeBirth() {
     }
 
     //generate a random mass - got rid of normAtomic statement here
-    proposedMass = randgen('E', _lambda, 0);
+    proposedMass = Random::exponential(_lambda);
     // mark the change in the list of atomic changes
     _proposedAtoms.insert(pair<unsigned long long, double>
                           (proposedLocation, proposedMass));
@@ -386,7 +382,7 @@ void AtomicSupport::ProposeMove() {
     _oper_type = 'M';
     // move an atom
     // select the atom to move
-    unsigned int moveAtom = floor(sub_func::runif(0., 1.) * _nAtom);
+    unsigned int moveAtom = floor(Random::uniform(0., 1.) * _nAtom);
     unsigned long long lbound, rbound;
 
     if (moveAtom == 0) {
@@ -419,7 +415,7 @@ void AtomicSupport::ProposeMove() {
         rbound = _NatomLength - 1;
     }
 
-    double newLocation = sub_func::runif((double) lbound, (double) rbound);
+    double newLocation = Random::uniform((double) lbound, (double) rbound);
     // add to proposal
     _proposedAtoms.insert(pair<unsigned long long, double>
                           (moveLocation, -moveMass));
@@ -433,7 +429,7 @@ void AtomicSupport::ProposeExchange() {
     _oper_type = 'E';
     // exchange atoms (wlog, can always select left most atoms to exchange with
     // right neighbor, where last atom maps to first)
-    unsigned int exchangeAtom = floor(sub_func::runif(0., 1.) * (_nAtom));
+    unsigned int exchangeAtom = floor(Random::uniform() * _nAtom);
     unsigned long long atomLoc1, atomLoc2;
     double atomMass1, atomMass2;
     // find the proposed atom
@@ -470,7 +466,7 @@ void AtomicSupport::ProposeExchange() {
 
     } else {
         double pupper = sub_func::pgamma(atomMass1 + atomMass2, 2., 1. / _lambda, DOUB_NEGINF, false);
-        double newValue = sub_func::qgamma(sub_func::runif(0., pupper), 2., 1. / _lambda, DOUB_NEGINF, false);
+        double newValue = sub_func::qgamma(Random::uniform(0., pupper), 2., 1. / _lambda, DOUB_NEGINF, false);
 
         if (atomMass1 > atomMass2) {
             //swap with bias to left
