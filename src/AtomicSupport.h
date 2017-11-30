@@ -1,14 +1,13 @@
-#ifndef ATOMIC_SUPPORT_H_
-#define ATOMIC_SUPPORT_H_
+#ifndef __COGAPS_ATOMIC_SUPPORT_H__
+#define __COGAPS_ATOMIC_SUPPORT_H__
+
+#include "Random.h"
 
 #include <map>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include "sub_func.h"
-#include "randgen.h"
-
-
+#include <vector>
 
 using std::map;
 using namespace std;

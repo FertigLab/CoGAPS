@@ -7,8 +7,8 @@
 #include <vector>
 #include <algorithm>
 #include "GAPSNorm.h"
-#include "randgen.h"
-#include "sub_func.h"
+#include "Random.h"
+#include "Random.h"
 #include "Matrix.h"
 #include "AtomicSupport.h"
 #include <limits>

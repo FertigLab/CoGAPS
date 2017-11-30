@@ -975,8 +975,8 @@ bool GibbsSampler::exchange(char the_matrix_label,
     if (useGibbs == true) {
         // set newMass1
         // need to retain exponential prior
-        double plower = sub_func::pnorm(-mass1, mean, sd, DOUBLE_NEGINF, 0);
-        double pupper = sub_func::pnorm(mass2, mean, sd, DOUBLE_NEGINF, 0);
+        double plower = Random::pnorm(-mass1, mean, sd);
+        double pupper = Random::pnorm(mass2, mean, sd);
         double u = plower + Random::uniform() * (pupper - plower);
 
         // must sample from prior if the computed parameters are not good for Gibbs
@@ -992,7 +992,7 @@ bool GibbsSampler::exchange(char the_matrix_label,
         double gibbsMass1, gibbsMass2;
 
         if (useGibbs == true) {
-            gibbsMass1 = sub_func::qnorm(u, mean, sd, DOUBLE_NEGINF, 0);
+            gibbsMass1 = Random::qnorm(u, mean, sd);
 
             if (gibbsMass1 < -mass1) {
                 gibbsMass1 = -mass1;
@@ -1054,23 +1054,23 @@ bool GibbsSampler::exchange(char the_matrix_label,
 
     // Formerly the if(_oper_type == 'E') block in move_exchange
     if (mass1 > mass2) {
-        pnew = sub_func::dgamma(newMass1, 2., 1. / lambda, false);
+        pnew = Random::dgamma(newMass1, 2., 1. / lambda);
 
         if (newMass1 > newMass2) {
-            pold = sub_func::dgamma(mass1, 2., 1. / lambda, false);
+            pold = Random::dgamma(mass1, 2., 1. / lambda);
 
         } else {
-            pold = sub_func::dgamma(mass2, 2., 1. / lambda, false);
+            pold = Random::dgamma(mass2, 2., 1. / lambda);
         }
 
     } else {
-        pnew = sub_func::dgamma(newMass2, 2., 1. / lambda, false);
+        pnew = Random::dgamma(newMass2, 2., 1. / lambda);
 
         if (newMass1 > newMass2) {
-            pold = sub_func::dgamma(mass1, 2., 1. / lambda,  false);
+            pold = Random::dgamma(mass1, 2., 1. / lambda);
 
         } else {
-            pold = sub_func::dgamma(mass2, 2., 1. / lambda, false);
+            pold = Random::dgamma(mass2, 2., 1. / lambda);
         }
     }
 

@@ -11,9 +11,8 @@ OBJECTS =   AtomicSupport.o \
             GibbsSampler-util.o \
             GibbsSamplerMap.o \
             Matrix.o \
-            randgen.o \
+            Random.o \
             RcppExports.o \
-            sub_func.o \
             test-runner.o \
             cpp_tests/testMatrix.o \
-            cpp_tests/testRandgen.o
+            cpp_tests/testRandom.o
