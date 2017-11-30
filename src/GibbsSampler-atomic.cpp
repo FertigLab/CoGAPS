@@ -47,9 +47,8 @@ unsigned int GibbsSampler::getTotNumAtoms(char matrix_label) {
     return 0;
 }
 
-vector <vector <vector <double> > > GibbsSampler::getNormedMatrices() {
-    double **A = _AMatrix.get_matrix();
-    double **P = _PMatrix.get_matrix();
+vector <vector <vector <double> > > GibbsSampler::getNormedMatrices()
+{
     vector <vector <double> > AMatrixNormed;
     AMatrixNormed.resize(_nRow, vector<double>(_nFactor, 0.0));
     vector <vector <double> > PMatrixNormed;
@@ -57,27 +56,34 @@ vector <vector <vector <double> > > GibbsSampler::getNormedMatrices() {
     vector<double> k(_nFactor);  // normalized vector
 
     // compute the normalization vector
-    for (int m = 0; m < _nFactor; ++m) {
+    for (int m = 0; m < _nFactor; ++m)
+    {
         k[m] = 0.;
 
-        for (int n = 0; n < _nCol; ++n) {
-            k[m] += P[m][n];
+        for (int n = 0; n < _nCol; ++n)
+        {
+            k[m] += _PMatrix.at(m,n);
         }
 
-        if (k[m] == 0) { // when the whole row of P is zero, then don't do anything
+        if (k[m] == 0) // when the whole row of P is zero, then don't do anything
+        {
             k[m] = 1.0;
         }
     }
 
-    for (int m = 0; m < _nRow; ++m) {
-        for (int n = 0; n < _nFactor; ++n) {
-            AMatrixNormed[m][n] = A[m][n] * k[n];
+    for (int m = 0; m < _nRow; ++m)
+    {
+        for (int n = 0; n < _nFactor; ++n)
+        {
+            AMatrixNormed[m][n] = _AMatrix.at(m,n) * k[n];
         }
     }
 
-    for (int m = 0; m < _nFactor; ++m) {
-        for (int n = 0; n < _nCol; ++n) {
-            PMatrixNormed[m][n] = P[m][n] / k[m];
+    for (int m = 0; m < _nFactor; ++m)
+    {
+        for (int n = 0; n < _nCol; ++n)
+        {
+            PMatrixNormed[m][n] = _PMatrix.at(m,n) / k[m];
         }
     }
 

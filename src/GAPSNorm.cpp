@@ -16,27 +16,32 @@
 #include <iomanip>
 // -----
 
+#include "Matrix.h"
+
 using std::vector;
-using std::logic_error;
-using namespace std;
 
 namespace gaps {
 
 // ---------------------------------------------------------------------------
 // Calculation of M = A*P (matrix multiplication)
-void GAPSNorm::computeMock(double **M, double const *const *A,
-                           double const *const *P, unsigned int nRow,
-                           unsigned int nCol, unsigned int nFactor) {
-    for (unsigned int iRow = 0; iRow < nRow; iRow++) {
-        for (unsigned int iCol = 0; iCol < nCol; iCol++) {
-            M[iRow][iCol] = 0.;
+void GAPSNorm::computeMock(Matrix &M, const Matrix &A, const Matrix &P,
+unsigned int nRow, unsigned int nCol, unsigned int nFactor)
+{
+    for (unsigned int iRow = 0; iRow < nRow; ++iRow)
+    {
+        for (unsigned int iCol = 0; iCol < nCol; ++iCol)
+        {
+            M.at(iRow,iCol) = 0.;
         }
     }
 
-    for (unsigned int iRow = 0; iRow < nRow; iRow++) {
-        for (unsigned int iCol = 0; iCol < nCol; iCol++) {
-            for (unsigned int iFactor = 0; iFactor < nFactor; iFactor++) {
-                M[iRow][iCol] += A[iRow][iFactor] * P[iFactor][iCol] ;
+    for (unsigned int iRow = 0; iRow < nRow; ++iRow)
+    {
+        for (unsigned int iCol = 0; iCol < nCol; ++iCol)
+        {
+            for (unsigned int iFactor = 0; iFactor < nFactor; ++iFactor)
+            {
+                M.at(iRow,iCol) += A.at(iRow,iFactor) * P.at(iFactor,iCol);
             }
         }
     }
@@ -44,38 +49,24 @@ void GAPSNorm::computeMock(double **M, double const *const *A,
 
 // ---------------------------------------------------------------------------
 // Calculation of Chi2 = \sum_{i,j} (D_{ij}-(A*P)_{ij})/(S_{ij}^2)
-double GAPSNorm::calChi2(double const *const *D,
-                         double const *const *S,
-                         double const *const *A,
-                         double const *const *P,
-                         unsigned int nRow, unsigned int nCol,
-                         unsigned int nFactor) {
-    double **Mock;
-    Mock = new double * [nRow];
-
-    for (int m = 0; m < nRow; ++m) {
-        Mock[m] = new double [nCol];
-    }
-
+double GAPSNorm::calChi2(const Matrix &D, const Matrix &S, const Matrix &A,
+const Matrix &P, unsigned int nRow, unsigned int nCol, unsigned int nFactor)
+{
+    Matrix Mock(nrow, nCol);
     GAPSNorm::computeMock(Mock, A, P, nRow, nCol, nFactor);
     double Chi2 = 0;
 
-    for (unsigned int iRow = 0; iRow < nRow; iRow++) {
-        for (unsigned int iCol = 0; iCol < nCol; iCol++) {
-            Chi2 += (D[iRow][iCol] - Mock[iRow][iCol]) *
-                    (D[iRow][iCol] - Mock[iRow][iCol]) /
-                    (S[iRow][iCol] * S[iRow][iCol]);
+    for (unsigned int iRow = 0; iRow < nRow; iRow++)
+    {
+        for (unsigned int iCol = 0; iCol < nCol; iCol++)
+        {
+            Chi2 += (D.at(iRow,iCol) - Mock.at(iRow,iCol)) *
+                    (D.at(iRow,iCol) - Mock.at(iRow,iCol)) /
+                    (S.at(iRow,iCol) * S.at(iRow,iCol));
         }
     }
-
-    for (int m = 0; m < nRow; ++m) {
-        delete[] Mock[m];
-    }
-
-    delete[] Mock;
     return Chi2;
 }
-
 
 // ---------------------------------------------------------------------------
 // Calcuation of the change in the log-likelihood when matrix A (or P) is
@@ -85,14 +76,11 @@ double GAPSNorm::calChi2(double const *const *D,
 // Let the only change be delA_{mn}, define M = D-AP;
 // delloglikelihood = \sum_j [2*M_{mj}*(delA_{mn}*P_{nj})-(delA_{mn}*P_{nj})^2]/2
 //                          / S_{mj}^2
-
-double GAPSNorm::calcDeltaLL1E
-(char matrix_label,
- double const *const *D, double const *const *S,
- double const *const *A, double const *const *P,
- const vector<boost::tuple<unsigned int, unsigned int,
- double> >ElemChange, unsigned int nRow,
- unsigned int nCol, unsigned int nFactor) {
+double GAPSNorm::calcDeltaLL1E(char matrix_label, const Matrix &D, const Matrix &S,
+const Matrix &A, const Matrix &P, unsigned int nCol, unsigned int nFactor,
+const vector<boost::tuple<unsigned int, unsigned int, double> >ElemChange,
+unsigned int nRow)
+{
     // ------- Calculate changes in log-likelihood --------
     // Extract where and how large the change is
     unsigned int chRow, chCol;
@@ -104,44 +92,53 @@ double GAPSNorm::calcDeltaLL1E
     chCol = ElemChange[0].get<1>();    // chCol = iCol that carries a change
     delelem = ElemChange[0].get<2>();  // delelem = change in the element
 
-    switch (matrix_label) {
-        case 'A': {
+    switch (matrix_label)
+    {
+        case 'A':
+        {
             // ---- Form M = D - A*P, in particular, we need only M[chRow][]
             double M[1][nCol];
 
-            for (unsigned int iCol = 0; iCol < nCol; ++ iCol) {
-                M[0][iCol] = D[chRow][iCol];
+            for (unsigned int iCol = 0; iCol < nCol; ++ iCol)
+            {
+                M[0][iCol] = D.at(chRow, iCol);
 
-                for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                    M[0][iCol] -= A[chRow][iPattern] * P[iPattern][iCol];
+                for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern)
+                {
+                    M[0][iCol] -= A.at(chRow,iPattern) * P.at(iPattern,iCol);
                 }
             }
 
-            for (unsigned int iCol = 0; iCol < nCol; ++iCol) {
-                mockTerm = 2.*M[0][iCol] * delelem * P[chCol][iCol];
-                sqTerm = pow(delelem * P[chCol][iCol], 2);
-                delloglikelihood += (mockTerm - sqTerm) / 2. / pow(S[chRow][iCol], 2);
+            for (unsigned int iCol = 0; iCol < nCol; ++iCol)
+            {
+                mockTerm = 2.0 * M[0][iCol] * delelem * P.at(chCol,iCol);
+                sqTerm = pow(delelem * P.at(chCol,iCol), 2);
+                delloglikelihood += (mockTerm - sqTerm) / 2. / pow(S.at(chRow,iCol), 2);
             }
 
             break;
         }
 
-        case 'P': {
+        case 'P':
+        {
             // ---- Form M = D - A*P, in particular, we need only M[][chCol]
             double M[nRow][1];
 
-            for (unsigned int iRow = 0; iRow < nRow; ++ iRow) {
-                M[iRow][0] = D[iRow][chCol];
+            for (unsigned int iRow = 0; iRow < nRow; ++iRow)
+            {
+                M[iRow][0] = D.at(iRow,chCol);
 
-                for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                    M[iRow][0] -= A[iRow][iPattern] * P[iPattern][chCol];
+                for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern)
+                {
+                    M[iRow][0] -= A.at(iRow,iPattern) * P.at(iPattern,chCol);
                 }
             }
 
-            for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
-                mockTerm = 2.*M[iRow][0] * delelem * A[iRow][chRow];
-                sqTerm = pow(delelem * A[iRow][chRow], 2);
-                delloglikelihood += (mockTerm - sqTerm) / 2. / pow(S[iRow][chCol], 2);
+            for (unsigned int iRow = 0; iRow < nRow; ++iRow)
+            {
+                mockTerm = 2.0 * M[iRow][0] * delelem * A.at(iRow,chRow);
+                sqTerm = pow(delelem * A.at(iRow,chRow), 2);
+                delloglikelihood += (mockTerm - sqTerm) / 2.0 / pow(S.at(iRow,chCol), 2);
             }
 
             break;
@@ -169,11 +166,11 @@ double GAPSNorm::calcDeltaLL1E
 //          /S_{rj}^2
 //     delloglikelihood = dellog1 + dellog2
 
-double GAPSNorm::calcDeltaLL2E(char matrix_label,
-                               double const *const *D, double const *const *S,
-                               double const *const *A, double const *const *P,
-                               const vector<boost::tuple<unsigned int, unsigned int, double> > ElemChange,
-                               unsigned int nRow, unsigned int nCol, unsigned int nFactor) {
+double GAPSNorm::calcDeltaLL2E(char matrix_label, const Matrix &D, const Matrix &S,
+const Matrix &A, const Matrix &P, unsigned int nRow, unsigned int nCol,
+const vector<boost::tuple<unsigned int, unsigned int, double> > ElemChange,
+unsigned int nFactor)
+{
     // ------- Calculate changes in log-likelihood --------
     // Extract where and how much the change is.
     unsigned int chRow[2], chCol[2];
@@ -184,6 +181,7 @@ double GAPSNorm::calcDeltaLL2E(char matrix_label,
     chRow[1] = ElemChange[1].get<0>();  // chRow[1] = iRow for the second change
     chCol[1] = ElemChange[1].get<1>();  // chCol[1] = iCol for the second change
     delelem[1] = ElemChange[1].get<2>(); // delelem[1] = second change
+
     // Calculate delloglikelihood.
     double mockTerm0 = 0.; // temp variables
     double sqTerm0 = 0;    // temp variables
@@ -192,39 +190,45 @@ double GAPSNorm::calcDeltaLL2E(char matrix_label,
     unsigned int iRow, iCol, iPattern;  // loop counters
     double delloglikelihood = 0.;    // target quantity to compute
 
-    switch (matrix_label) {
-        case 'A': {
+    switch (matrix_label)
+    {
+        case 'A':
+        {
             // ---- Form M = D - A*P, in particular, we need only M[chRow[0]][]
             // and M[chRow[1]][].
             double M[2][nCol];
 
-            for (iCol = 0; iCol < nCol; ++ iCol) {
-                M[0][iCol] = D[chRow[0]][iCol];
-                M[1][iCol] = D[chRow[1]][iCol];
+            for (iCol = 0; iCol < nCol; ++ iCol)
+            {
+                M[0][iCol] = D.at(chRow[0],iCol);
+                M[1][iCol] = D.at(chRow[1],iCol);
 
-                for (iPattern = 0; iPattern < nFactor; ++iPattern) {
-                    M[0][iCol] -= A[chRow[0]][iPattern] * P[iPattern][iCol];
-                    M[1][iCol] -= A[chRow[1]][iPattern] * P[iPattern][iCol];
+                for (iPattern = 0; iPattern < nFactor; ++iPattern)
+                {
+                    M[0][iCol] -= A.at(chRow[0],iPattern) * P.at(iPattern,iCol);
+                    M[1][iCol] -= A.at(chRow[1],iPattern) * P.at(iPattern,iCol);
                 }
             }
 
             // ---- Two conditions to calculate delloglikelihood.
-            if (chRow[0] == chRow[1]) {
-                for (iCol = 0; iCol < nCol; ++iCol) {
-                    mockTerm0 = 2.*M[0][iCol] * (delelem[0] * P[chCol[0]][iCol] +
+            if (chRow[0] == chRow[1])
+            {
+                for (iCol = 0; iCol < nCol; ++iCol)
+                {
+                    mockTerm0 = 2.0 * M[0][iCol] * (delelem[0] * P.at(chCol[0],iCol) +
                                                  delelem[1] * P[chCol[1]][iCol]);
-                    sqTerm0 = pow((delelem[0] * P[chCol[0]][iCol] + delelem[1] * P[chCol[1]][iCol]), 2);
-                    delloglikelihood += (mockTerm0 - sqTerm0) / 2. / pow(S[chRow[0]][iCol], 2);
+                    sqTerm0 = pow((delelem[0] * P[chCol[0],iCol] + delelem[1] * P[chCol[1]][iCol]), 2);
+                    delloglikelihood += (mockTerm0 - sqTerm0) / 2. / pow(S[chRow[0],iCol], 2);
                 }
 
             } else {
                 for (iCol = 0; iCol < nCol; ++iCol) {
-                    mockTerm0 = 2.*M[0][iCol] * delelem[0] * P[chCol[0]][iCol];
+                    mockTerm0 = 2.*M[0][iCol] * delelem[0] * P[chCol[0],iCol];
                     sqTerm0 = pow(delelem[0] * P[chCol[0]][iCol], 2);
-                    mockTerm1 = 2.*M[1][iCol] * delelem[1] * P[chCol[1]][iCol];
-                    sqTerm1 = pow(delelem[1] * P[chCol[1]][iCol], 2);
-                    delloglikelihood += (mockTerm0 - sqTerm0) / 2. / pow(S[chRow[0]][iCol], 2) +
-                                        (mockTerm1 - sqTerm1) / 2. / pow(S[chRow[1]][iCol], 2);
+                    mockTerm1 = 2.*M[1][iCol] * delelem[1] * P[chCol[1],iCol];
+                    sqTerm1 = pow(delelem[1] * P[chCol[1],iCol], 2);
+                    delloglikelihood += (mockTerm0 - sqTerm0) / 2. / pow(S[chRow[0],iCol], 2) +
+                                        (mockTerm1 - sqTerm1) / 2. / pow(S[chRow[1],iCol], 2);
                 }
             }
 
@@ -237,32 +241,32 @@ double GAPSNorm::calcDeltaLL2E(char matrix_label,
             double M[nRow][2];
 
             for (iRow = 0; iRow < nRow; ++ iRow) {
-                M[iRow][0] = D[iRow][chCol[0]];
-                M[iRow][1] = D[iRow][chCol[1]];
+                M[iRow][0] = D[iRow,chCol[0]];
+                M[iRow][1] = D[iRow,chCol[1]];
 
                 for (iPattern = 0; iPattern < nFactor; ++iPattern) {
-                    M[iRow][0] -= A[iRow][iPattern] * P[iPattern][chCol[0]];
-                    M[iRow][1] -= A[iRow][iPattern] * P[iPattern][chCol[1]];
+                    M[iRow][0] -= A.at(iRow,iPattern) * P[iPattern,chCol[0]];
+                    M[iRow][1] -= A.at(iRow,iPattern) * P[iPattern,chCol[1]];
                 }
             }
 
             // ------ Two conditions to calculate the delloglikelihood.
             if (chCol[0] == chCol[1]) {
                 for (iRow = 0; iRow < nRow; ++iRow) {
-                    mockTerm0 = 2.*M[iRow][0] * (A[iRow][chRow[0]] * delelem[0] +
-                                                 A[iRow][chRow[1]] * delelem[1]);
-                    sqTerm0 = pow(A[iRow][chRow[0]] * delelem[0] + A[iRow][chRow[1]] * delelem[1], 2);
-                    delloglikelihood += (mockTerm0 - sqTerm0) / 2. / pow(S[iRow][chCol[0]], 2);
+                    mockTerm0 = 2.*M[iRow][0] * (A.at(iRow,chRow[0]) * delelem[0] +
+                                                 A.at(iRow,chRow[1]) * delelem[1]);
+                    sqTerm0 = pow(A.at(iRow,chRow[0]) * delelem[0] + A.at(iRow,chRow[1]) * delelem[1], 2);
+                    delloglikelihood += (mockTerm0 - sqTerm0) / 2. / pow(S[iRow,chCol[0]], 2);
                 }
 
             } else {
                 for (iRow = 0; iRow < nRow; ++iRow) {
-                    mockTerm0 = 2.*M[iRow][0] * A[iRow][chRow[0]] * delelem[0];
-                    sqTerm0 = pow(A[iRow][chRow[0]] * delelem[0], 2);
-                    mockTerm1 = 2.*M[iRow][1] * A[iRow][chRow[1]] * delelem[1];
-                    sqTerm1 = pow(A[iRow][chRow[1]] * delelem[1], 2);
-                    delloglikelihood += (mockTerm0 - sqTerm0) / 2. / pow(S[iRow][chCol[0]], 2) +
-                                        (mockTerm1 - sqTerm1) / 2. / pow(S[iRow][chCol[1]], 2);
+                    mockTerm0 = 2.*M[iRow][0] * A.at(iRow,chRow[0]) * delelem[0];
+                    sqTerm0 = pow(A.at(iRow,chRow[0]) * delelem[0], 2);
+                    mockTerm1 = 2.*M[iRow][1] * A.at(iRow,chRow[1]) * delelem[1];
+                    sqTerm1 = pow(A.at(iRow,chRow[1]) * delelem[1], 2);
+                    delloglikelihood += (mockTerm0 - sqTerm0) / 2. / pow(S[iRow,chCol[0]], 2) +
+                                        (mockTerm1 - sqTerm1) / 2. / pow(S[iRow,chCol[1]], 2);
                 }
             }
 
@@ -293,10 +297,10 @@ double GAPSNorm::calcDeltaLLGen(char matrix_label,
 
     for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
         for (unsigned int iCol = 0; iCol < nCol; ++ iCol) {
-            M[iRow][iCol] = D[iRow][iCol];
+            M[iRow][iCol] = D[iRow,iCol];
 
             for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                M[iRow][iCol] -= A[iRow][iPattern] * P[iPattern][iCol];
+                M[iRow][iCol] -= A.at(iRow,iPattern) * P.at(iPattern,iCol];
             }
         }
     }
@@ -330,7 +334,7 @@ double GAPSNorm::calcDeltaLLGen(char matrix_label,
                     delAP[iRow][iCol] = 0.;
 
                     for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                        delAP[iRow][iCol] += delA[iRow][iPattern] * P[iPattern][iCol];
+                        delAP[iRow][iCol] += delA[iRow][iPattern] * P.at(iPattern,iCol);
                     }
                 }
             }
@@ -339,7 +343,7 @@ double GAPSNorm::calcDeltaLLGen(char matrix_label,
             for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
                 for (unsigned int iCol = 0; iCol < nCol; ++iCol) {
                     delloglikelihood += (2.*M[iRow][iCol] * delAP[iRow][iCol] - pow(delAP[iRow][iCol], 2))
-                                        / 2. / pow(S[iRow][iCol], 2);
+                                        / 2. / pow(S[iRow,iCol], 2);
                 }
             }
 
@@ -374,7 +378,7 @@ double GAPSNorm::calcDeltaLLGen(char matrix_label,
                     AdelP[iRow][iCol] = 0.;
 
                     for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                        AdelP[iRow][iCol] += A[iRow][iPattern] * delP[iPattern][iCol];
+                        AdelP[iRow][iCol] += A.at(iRow,iPattern) * delP[iPattern][iCol];
                     }
                 }
             }
@@ -383,7 +387,7 @@ double GAPSNorm::calcDeltaLLGen(char matrix_label,
             for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
                 for (unsigned int iCol = 0; iCol < nCol; ++iCol) {
                     delloglikelihood += (2.*M[iRow][iCol] * AdelP[iRow][iCol] - pow(AdelP[iRow][iCol], 2))
-                                        / 2. / pow(S[iRow][iCol], 2);
+                                        / 2. / pow(S[iRow,iCol], 2);
                 }
             }
 
@@ -412,10 +416,10 @@ double GAPSNorm::calcDeltaLLMap(char matrix_label,
 
     for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
         for (unsigned int iCol = 0; iCol < nCol; ++ iCol) {
-            M[iRow][iCol] = D[iRow][iCol];
+            M[iRow][iCol] = D[iRow,iCol];
 
             for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                M[iRow][iCol] -= A[iRow][iPattern] * P[iPattern][iCol];
+                M[iRow][iCol] -= A.at(iRow,iPattern) * P.at(iPattern,iCol);
             }
         }
     }
@@ -436,7 +440,7 @@ double GAPSNorm::calcDeltaLLMap(char matrix_label,
             // the actual new row, not the change, hence the
             // adjustment.
             for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
-                delA[iRow][chPat] += (newPat.at(iRow) - A[iRow][chPat]);
+                delA[iRow][chPat] += (newPat.at(iRow) - A.at(iRow,chPat));
             }
 
             // ----- Compute delA*P ----
@@ -447,7 +451,7 @@ double GAPSNorm::calcDeltaLLMap(char matrix_label,
                     delAP[iRow][iCol] = 0.;
 
                     for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                        delAP[iRow][iCol] += delA[iRow][iPattern] * P[iPattern][iCol];
+                        delAP[iRow][iCol] += delA[iRow][iPattern] * P.at(iPattern,iCol);
                     }
                 }
             }
@@ -456,7 +460,7 @@ double GAPSNorm::calcDeltaLLMap(char matrix_label,
             for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
                 for (unsigned int iCol = 0; iCol < nCol; ++iCol) {
                     delloglikelihood += (2.*M[iRow][iCol] * delAP[iRow][iCol] - pow(delAP[iRow][iCol], 2))
-                                        / 2. / pow(S[iRow][iCol], 2);
+                                        / 2. / pow(S[iRow,iCol], 2);
                 }
             }
 
@@ -478,7 +482,7 @@ double GAPSNorm::calcDeltaLLMap(char matrix_label,
             // the actual new row, not the change, hence the
             // adjustment.
             for (unsigned int iCol = 0; iCol < nCol; ++iCol) {
-                delP[chPat][iCol] += (newPat.at(iCol) - P[chPat][iCol]);
+                delP[chPat][iCol] += (newPat.at(iCol) - P[chPat,iCol]);
             }
 
             // ----- Compute A*delP ----
@@ -489,7 +493,7 @@ double GAPSNorm::calcDeltaLLMap(char matrix_label,
                     AdelP[iRow][iCol] = 0.;
 
                     for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                        AdelP[iRow][iCol] += A[iRow][iPattern] * delP[iPattern][iCol];
+                        AdelP[iRow][iCol] += A.at(iRow,iPattern) * delP[iPattern][iCol];
                     }
                 }
             }
@@ -498,7 +502,7 @@ double GAPSNorm::calcDeltaLLMap(char matrix_label,
             for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
                 for (unsigned int iCol = 0; iCol < nCol; ++iCol) {
                     delloglikelihood += (2.*M[iRow][iCol] * AdelP[iRow][iCol] - pow(AdelP[iRow][iCol], 2))
-                                        / 2. / pow(S[iRow][iCol], 2);
+                                        / 2. / pow(S[iRow,iCol], 2);
                 }
             }
 
@@ -525,7 +529,7 @@ double GAPSNorm::calcDeltaLL2Map(char matrix_label,
             M[iRow][iCol] = D[iRow][iCol];
 
             for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                M[iRow][iCol] -= A[iRow][iPattern] * P[iPattern][iCol];
+                M[iRow][iCol] -= A.at(iRow,iPattern) * P[iPattern,iCol];
             }
         }
     }
@@ -546,8 +550,8 @@ double GAPSNorm::calcDeltaLL2Map(char matrix_label,
             // the actual new row, not the change, hence the
             // adjustment.
             for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
-                delA[iRow][chPat1] += (newPat1.at(iRow) - A[iRow][chPat1]);
-                delA[iRow][chPat2] += (newPat2.at(iRow) - A[iRow][chPat2]);
+                delA[iRow][chPat1] += (newPat1.at(iRow) - A.at(iRow,chPat1));
+                delA[iRow][chPat2] += (newPat2.at(iRow) - A.at(iRow,chPat2));
             }
 
             // ----- Compute delA*P ----
@@ -558,7 +562,7 @@ double GAPSNorm::calcDeltaLL2Map(char matrix_label,
                     delAP[iRow][iCol] = 0.;
 
                     for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                        delAP[iRow][iCol] += delA[iRow][iPattern] * P[iPattern][iCol];
+                        delAP[iRow][iCol] += delA[iRow][iPattern] * P[iPattern,iCol];
                     }
                 }
             }
@@ -567,7 +571,7 @@ double GAPSNorm::calcDeltaLL2Map(char matrix_label,
             for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
                 for (unsigned int iCol = 0; iCol < nCol; ++iCol) {
                     delloglikelihood += (2.*M[iRow][iCol] * delAP[iRow][iCol] - pow(delAP[iRow][iCol], 2))
-                                        / 2. / pow(S[iRow][iCol], 2);
+                                        / 2. / pow(S[iRow,iCol], 2);
                 }
             }
 
@@ -589,8 +593,8 @@ double GAPSNorm::calcDeltaLL2Map(char matrix_label,
             // the actual new row, not the change, hence the
             // adjustment.
             for (unsigned int iCol = 0; iCol < nCol; ++iCol) {
-                delP[chPat1][iCol] += (newPat1.at(iCol) - P[chPat1][iCol]);
-                delP[chPat2][iCol] += (newPat2.at(iCol) - P[chPat2][iCol]);
+                delP[chPat1][iCol] += (newPat1.at(iCol) - P[chPat1,iCol]);
+                delP[chPat2][iCol] += (newPat2.at(iCol) - P[chPat2,iCol]);
             }
 
             // ----- Compute A*delP ----
@@ -601,7 +605,7 @@ double GAPSNorm::calcDeltaLL2Map(char matrix_label,
                     AdelP[iRow][iCol] = 0.;
 
                     for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern) {
-                        AdelP[iRow][iCol] += A[iRow][iPattern] * delP[iPattern][iCol];
+                        AdelP[iRow][iCol] += A.at(iRow,iPattern) * delP[iPattern][iCol];
                     }
                 }
             }
@@ -610,7 +614,7 @@ double GAPSNorm::calcDeltaLL2Map(char matrix_label,
             for (unsigned int iRow = 0; iRow < nRow; ++iRow) {
                 for (unsigned int iCol = 0; iCol < nCol; ++iCol) {
                     delloglikelihood += (2.*M[iRow][iCol] * AdelP[iRow][iCol] - pow(AdelP[iRow][iCol], 2))
-                                        / 2. / pow(S[iRow][iCol], 2);
+                                        / 2. / pow(S[iRow,iCol], 2);
                 }
             }
 
@@ -658,16 +662,16 @@ pair<double, double> GAPSNorm:: calcAlphaParameters(char the_matrix_label, unsig
 
                     s += ((POrig[iPattern1][jSample] - POrig[iPattern2][jSample]) *
                           (POrig[iPattern1][jSample] - POrig[iPattern2][jSample])) /
-                         pow(S[iGene1][jSample], 2);
+                         pow(S[iGene1,jSample], 2);
                     su += mock * (POrig[iPattern1][jSample] - POrig[iPattern2][jSample]) /
-                          pow(S[iGene1][jSample], 2);
+                          pow(S[iGene1,jSample], 2);
                 }
             }  // end of case iGene1 = iGene2
 
             else  { // iGene1 != iGene2
                 for (int jSample = 0; jSample < nCol; jSample++) {
                     mock1 = D[iGene1][jSample];
-                    mock2 = D[iGene2][jSample];
+                    mock2 = D[iGene2,jSample];
 
                     for (int jPattern = 0; jPattern < nFactor; jPattern++) {
                         Aeff = AOrig[iGene1][jPattern];

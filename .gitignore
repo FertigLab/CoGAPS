@@ -26,3 +26,7 @@ update_remotes.sh
 
 # ignore emacs files
 *~
+
+# ignore valgrind/callgrind files
+callgrind.out.*
+vgcore.*
