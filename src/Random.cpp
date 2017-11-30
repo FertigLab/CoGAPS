@@ -1,7 +1,18 @@
 // [[Rcpp::depends(BH)]]
 
 #include "Random.h"
-#include <boost/random.hpp>
+
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_01.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/poisson_distribution.hpp>
+#include <boost/random/exponential_distribution.hpp>
+
+#include <boost/math/distributions/gamma.hpp>
+#include <boost/math/distributions/normal.hpp>
+#include <boost/math/distributions/exponential.hpp>
+
 #include <stdint.h>
 
 #define Q_GAMMA_THRESHOLD 1E-6
@@ -28,7 +39,7 @@ double Random::uniform()
     return dist();
 }
 
-double Random::poisson(double lambda)
+int Random::poisson(double lambda)
 {
     boost::random::poisson_distribution<> dist(lambda);
     return dist(rng);
@@ -96,7 +107,7 @@ double Random::qnorm(double q, double mean, double sd)
     return quantile(norm, q);
 }
 
-double Random::pnorm(double p, double mean, double sd);
+double Random::pnorm(double p, double mean, double sd)
 {
     boost::math::normal_distribution<> norm(mean, sd);
     return cdf(norm, p);

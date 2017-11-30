@@ -21,7 +21,7 @@
 #include <iomanip>
 #include <boost/algorithm/string.hpp>
 // ------------------------------------------------------
-#include "randgen.h"   // for incorporating a random number generator.
+#include "Random.h"   // for incorporating a random number generator.
 #include "Matrix.h"    // for incorporating a Matrix class
 #include "AtomicSupport.h"  // for incorporating an Atomic class
 #include "GAPSNorm.h"  // for incorporating calculation of statistics in cogaps.

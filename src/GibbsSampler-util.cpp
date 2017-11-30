@@ -1,5 +1,7 @@
 #include "GibbsSampler.h"
 
+#include <cstring>
+
 // clear all quantities related to the local matrix proposal
 void GibbsSampler::clear_Proposal() {
     _Row_changed.clear();
@@ -331,12 +333,12 @@ double GibbsSampler::getMass(char the_matrix_label, double origMass,
     double sd = 1. / sqrt(2 * s);
     // note: is bounded below by zero so have to use inverse sampling!
     // based upon algorithm in DistScalarRmath.cc (scalarRandomSample)
-    double plower = sub_func::pnorm(0., mean, sd, DOUBLE_NEGINF, 0);
+    double plower = Random::pnorm(0., mean, sd);
     double pupper = 1.;
     double u = plower + Random::uniform() * (pupper - plower);
     // -------------------------------------------------------------
     // this line seems to be misplaced.
-    // double newMass = sub_func::qnorm(u, mean, sd, DOUBLE_NEGINF, 0);
+    // double newMass = Random::qnorm(u, mean, sd, DOUBLE_NEGINF, 0);
     double newMass = 0;
     // ------------------
 
@@ -352,8 +354,8 @@ double GibbsSampler::getMass(char the_matrix_label, double origMass,
     } // end of first comparison
 
     else if (plower >= 0.99) {
-        double tmp1 = sub_func::dnorm(0, mean, sd, false);
-        double tmp2 = sub_func::dnorm(10 * lambda, mean, sd, false);
+        double tmp1 = Random::dnorm(0, mean, sd);
+        double tmp2 = Random::dnorm(10 * lambda, mean, sd);
 
         if ((tmp1 > epsilon) && (fabs(tmp1 - tmp2) < epsilon))   {
             if (origMass < 0) {   // death case
@@ -365,7 +367,7 @@ double GibbsSampler::getMass(char the_matrix_label, double origMass,
     } // end of second comparison
 
     else {
-        newMass = sub_func::qnorm(u, mean, sd, DOUBLE_NEGINF, 0);  // both death and birth
+        newMass = Random::qnorm(u, mean, sd);  // both death and birth
     }  // end of if-block for the remaining case
 
     // limit the mass range

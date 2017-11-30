@@ -1,8 +1,7 @@
 #include "catch.h"
-#include "../randgen.h"
-#include "../sub_func.h"
+#include "../Random.h"
 
-TEST_CASE("Test randgen.h")
+TEST_CASE("Test Random.h")
 {
     Random::setSeed(0);
 
