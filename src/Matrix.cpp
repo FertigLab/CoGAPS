@@ -45,7 +45,7 @@ Matrix::Matrix(unsigned int row_size, unsigned int col_size,
     matrix_init();
 }
 
-Matrix::Matrix(std::vector<std::vector<double> > &vv, char the_matrix_label) {
+Matrix::Matrix(const std::vector< std::vector<double> > &vv, char the_matrix_label) {
     _label = the_matrix_label;
     _n_row = vv.size();
     _n_col = vv[1].size();
@@ -138,7 +138,7 @@ void Matrix::matrix_init() {
 
 // set a row of the matrix to passed vector
 // implemented to fix rows at a time with maps
-void Matrix::setRow(vector <double> theRow, int RowNum) {
+void Matrix::setRow(const vector<double> &theRow, int RowNum) {
     for (int n = 0; n < _n_col; ++n) {
         _Matrix[RowNum][n] = theRow.at(n);
     }
@@ -146,21 +146,19 @@ void Matrix::setRow(vector <double> theRow, int RowNum) {
 
 // set a column of the matrix to passed vector
 // implemented to fix columns at a time with maps
-void Matrix:: setCol(vector <double> theCol, int ColNum) {
+void Matrix:: setCol(const vector<double> &theCol, int ColNum) {
     for (int n = 0; n < _n_row; ++n) {
         _Matrix[n][ColNum] = theCol.at(n);
     }
 }
-
-
 
 // these methods return the matrix or parameters
 double **Matrix::get_matrix() const {
     return _Matrix;
 }
 
-vector <double> Matrix::get_Row(int rowNum) {
-    vector <double> theRow;
+std::vector<double> Matrix::get_Row(int rowNum) {
+    std::vector<double> theRow;
 
     for (int iCol = 0; iCol < _n_col; iCol++) {
         theRow.push_back(_Matrix[rowNum][iCol]);
@@ -169,8 +167,8 @@ vector <double> Matrix::get_Row(int rowNum) {
     return theRow;
 }
 
-vector <double> Matrix::get_Col(int colNum) {
-    vector <double> theCol;
+std::vector<double> Matrix::get_Col(int colNum) {
+    std::vector<double> theCol;
 
     for (int iRow = 0; iRow < _n_row; iRow++) {
         theCol.push_back(_Matrix[iRow][colNum]);
@@ -250,7 +248,7 @@ double Matrix::cal_totalsum() const {
 
 
 // adds a matrix to the existing matrix
-void Matrix::matrix_update(vector<vector<double> > delMatrix) {
+void Matrix::matrix_update(const std::vector< std::vector<double> > &delMatrix) {
     for (unsigned int m = 0; m < _n_row; ++m) {
         for (unsigned int n = 0; n < _n_col; ++n) {
             _Matrix[m][n] = _Matrix[m][n] + delMatrix[m][n];
@@ -263,7 +261,7 @@ void Matrix::matrix_update(vector<vector<double> > delMatrix) {
 }
 
 // update the present matrix with the Element Changes (boost object)
-void Matrix::matrix_Elem_update(vector<boost::tuple<unsigned int, unsigned int, double> > the_matrixElemChange,
+void Matrix::matrix_Elem_update(const std::vector< boost::tuple<unsigned int, unsigned int, double> > &the_matrixElemChange,
                                 char oper_type, unsigned int nChange) {
     unsigned int chRow, chCol;
     double delelem;
@@ -281,19 +279,18 @@ void Matrix::matrix_Elem_update(vector<boost::tuple<unsigned int, unsigned int, 
 } // end of method matrix_Elem_update
 
 // ********************* DISPLAY METHODS *****************************************
-void Matrix::display_matrixF(ofstream &outputFile) {
-    outputFile << endl;
-    outputFile << "The matrix " << _label << " is: " << endl;
+void Matrix::display_matrixF(std::ofstream &outputFile) {
+    outputFile << std::endl;
+    outputFile << "The matrix " << _label << " is: " << std::endl;
 
     for (int m = 0; m < _n_row; ++m) {
         for (int n = 0; n < _n_col; ++n) {
             outputFile << std::setw(10) << std::right << _Matrix[m][n] << " ";
         }
 
-        outputFile << endl;
+        outputFile << std::endl;
     }
-
-    outputFile << endl;
+    outputFile << std::endl;
 }
 
 
