@@ -9,7 +9,7 @@
 
 class Matrix
 {
-  protected:
+protected:
 
     unsigned int _n_row;
     unsigned int _n_col;
@@ -22,7 +22,7 @@ class Matrix
     // ---- added to bridge to Atomic Class ----------
     double **_Matrix;
 
-  public:
+public:
 
     Matrix() {};
 
@@ -42,11 +42,10 @@ class Matrix
 
     void matrix_init();
 
+    double at(int r, int c);
 
     void setRow(const std::vector<double> &theRow, int RowNum);
     void setCol(const std::vector<double> &theCol, int ColNum);
-
-    double **get_matrix() const;
 
     std::vector<double> get_Row(int rowNum);
 

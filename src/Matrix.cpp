@@ -136,6 +136,11 @@ void Matrix::matrix_init() {
     }
 }
 
+double Matrix::at(int r, int c)
+{
+    return _Matrix[m][n];
+}
+
 // set a row of the matrix to passed vector
 // implemented to fix rows at a time with maps
 void Matrix::setRow(const vector<double> &theRow, int RowNum) {
@@ -146,15 +151,10 @@ void Matrix::setRow(const vector<double> &theRow, int RowNum) {
 
 // set a column of the matrix to passed vector
 // implemented to fix columns at a time with maps
-void Matrix:: setCol(const vector<double> &theCol, int ColNum) {
+void Matrix::setCol(const vector<double> &theCol, int ColNum) {
     for (int n = 0; n < _n_row; ++n) {
         _Matrix[n][ColNum] = theCol.at(n);
     }
-}
-
-// these methods return the matrix or parameters
-double **Matrix::get_matrix() const {
-    return _Matrix;
 }
 
 std::vector<double> Matrix::get_Row(int rowNum) {
