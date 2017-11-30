@@ -4,8 +4,8 @@
 #include <boost/random.hpp>
 #include <stdint.h>
 
-typedef boost::random::mt19937 RNGType;
-//typedef boost::random::mt11213b RNGType; // should be faster
+//typedef boost::random::mt19937 RNGType;
+typedef boost::random::mt11213b RNGType; // should be faster
 static RNGType rng;
 
 void Random::setSeed(uint32_t newSeed)
