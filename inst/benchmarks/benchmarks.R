@@ -15,14 +15,14 @@ source(paste(sep="/", script.basename, "cogaps.R"))
 print(packageVersion('CoGAPS'))
 
 # run benchmarks
-data(SimpSim)
+data(GIST_TS_20084)
 nIter <- 3000
 print(runCogapsBenchmark(
-    D=SimpSim.D,
-    S=SimpSim.S,
+    D=GIST.D[1:75,],
+    S=GIST.S[1:75,],
     nEquil=nIter,
     nSample=nIter,
     nFactor=7,
     seed=12345,
-    reps=20
+    reps=10
 ))
