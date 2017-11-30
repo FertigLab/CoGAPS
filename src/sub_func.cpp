@@ -61,18 +61,4 @@ double sub_func::pnorm(double p, double mean, double sd, double INF_Ref, double 
     return pnorm_val;
 }
 
-double sub_func::runif(double a, double b) {
-    if (b < a) {
-        throw logic_error("error");
-
-    } else if (a == b) {
-        return a;
-
-    } else {
-        double rng = randgen('U', 0, 0);
-        return a + (b - a) * rng; // ----- temp! used at the moment
-    }
-}
-
-
 }

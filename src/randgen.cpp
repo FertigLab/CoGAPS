@@ -4,7 +4,9 @@
 #include <boost/random.hpp>
 #include <stdint.h>
 
-static boost::random::mt19937 rng;
+typedef boost::random::mt19937 RNGType;
+//typedef boost::random::mt11213b RNGType; // should be faster
+static RNGType rng;
 
 void Random::setSeed(uint32_t newSeed)
 {
@@ -19,20 +21,20 @@ double Random::normal(double mean, double var)
 
 double Random::uniform()
 {
-    boost::random::uniform_01<boost::mt19937&> dist(rng);
-    return dist();    
+    boost::random::uniform_01<RNGType&> dist(rng); // could be moved out
+    return dist();
 }
 
 double Random::poisson(double lambda)
 {
-    boost:poisson_distribution<> dist(lambda);
-    dist(rng);
+    boost::random::poisson_distribution<> dist(lambda);
+    return dist(rng);
 }
 
 double Random::exponential(double lambda)
 {
-    boost::exponential_distribution<> dist(lambda);
-    dist(rng);
+    boost::random::exponential_distribution<> dist(lambda);
+    return dist(rng);
 }
 
 uint64_t Random::uniform64()

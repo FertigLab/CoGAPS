@@ -32,8 +32,6 @@ using namespace std;
 using namespace gaps;
 using std::vector;
 
-boost::mt19937 rng(43);
-
 // [[Rcpp::export]]
 Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame,
                   Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed=-1, 
@@ -49,7 +47,7 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
     // --- seeded with time
     uint32_t seedUsed = static_cast<boost::uint32_t>(seed);
     if (seed <= 0) {seedUsed = static_cast<boost::uint32_t>(std::time(0));}
-    rng.seed(seedUsed);
+    Random::setSeed(seedUsed);
     if (messages) {Rcpp::Rcout << "Random Seed: " << seedUsed << endl;}
 
     //---------------------
@@ -352,8 +350,8 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
 
         // -------------------------------------------
         // re-calculate nIterA and nIterP to the expected number of atoms
-        nIterA = (unsigned long) randgen('P', max((double) GibbsSamp.getTotNumAtoms('A'), 10.));
-        nIterP = (unsigned long) randgen('P', max((double) GibbsSamp.getTotNumAtoms('P'), 10.));
+        nIterA = (unsigned long) Random::poisson(max((double) GibbsSamp.getTotNumAtoms('A'), 10.));
+        nIterP = (unsigned long) Random::poisson(max((double) GibbsSamp.getTotNumAtoms('P'), 10.));
         // --------------------------------------------
     }  // end of for-block for equilibration
 
@@ -445,8 +443,8 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
 
         // -------------------------------------------
         // re-calculate nIterA and nIterP to the expected number of atoms
-        nIterA = (unsigned long) randgen('P', max((double) GibbsSamp.getTotNumAtoms('A'), 10.));
-        nIterP = (unsigned long) randgen('P', max((double) GibbsSamp.getTotNumAtoms('P'), 10.));
+        nIterA = (unsigned long) Random::poisson(max((double) GibbsSamp.getTotNumAtoms('A'), 10.));
+        nIterP = (unsigned long) Random::poisson(max((double) GibbsSamp.getTotNumAtoms('P'), 10.));
         // --------------------------------------------
     }  // end of for-block for Sampling
 
