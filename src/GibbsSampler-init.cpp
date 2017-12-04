@@ -39,16 +39,6 @@ const vector< vector<double> > &SVector, const string &simulation_id)
     _sysChi2 = 0.0; // tmp use
 }
 
-// *************** METHODS FOR INITIALIZATION, DISPLAY, OUTPUT ***********************
-/*void GibbsSampler::init_AMatrix_and_PMatrix() {
-    // extract information from D as parameters
-    _nRow = _DMatrix.nRow();
-    _nCol = _DMatrix.nCol();
-    // initialize matrices A and p
-    _AMatrix.born_matrix(_nRow, _nFactor, _label_A, _alphaA);
-    _PMatrix.born_matrix(_nFactor, _nCol, _label_P, _alphaP);
-}*/
-
 void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain() {
     // extract information from D as parameters
     _nRow = _DMatrix.nRow();
