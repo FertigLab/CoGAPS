@@ -26,3 +26,8 @@ update_remotes.sh
 
 # ignore emacs files
 *~
+
+# ignore profiling output
+inst/profiling/callgrind.out.*
+inst/profiling/vgcore.*
+inst/profiling/valgrind_out.txt
