@@ -1,6 +1,6 @@
 #!/bin/bash
 
 rm callgrind.out.*
-R -d "vallgrind --tool=callgrind" -f profile_standard.R > valgrind.out.txt
+R -d "valgrind --tool=callgrind" -f profile_standard.R > valgrind.out.txt
 
 kcachegrind callgrind.out.*
