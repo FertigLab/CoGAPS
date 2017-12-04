@@ -4,65 +4,37 @@
 
 // ************* METHODS FOR COMPUTING LIKELIHOOD FUNCTIONS ******************
 // ---------------------------------------------------------------------------
-double GibbsSampler::cal_logLikelihood() {
+double GibbsSampler::cal_logLikelihood()
+{
     return GAPSNorm::calChi2(_DMatrix, _SMatrix, _AMatrix, _PMatrix,
         _nFactor) / 2.0;
 }
 
 // -----------------------------------------------------------------------------
-double GibbsSampler::computeDeltaLL(char the_matrix_label,
-                                    const Matrix &D,
-                                    const Matrix &S,
-                                    const Matrix &A,
-                                    const Matrix &P,
-                                    unsigned int the_nChange_matrixElemChange,
-                                    const vector<ElementChange> the_matrixElemChange) {
-    double DelLL = 0.0;
-
-    switch (the_matrix_label) {
-        case 'A': {
-            if (the_nChange_matrixElemChange == 0) {
-                DelLL = 0.0;
-
-            } else if (the_nChange_matrixElemChange == 1) {
-                DelLL = GAPSNorm::calcDeltaLL1E('A', D, S, A, P,
-                    the_matrixElemChange, _nFactor);
-
-            } else if (the_nChange_matrixElemChange == 2) {
-                DelLL = GAPSNorm::calcDeltaLL2E('A', D, S, A, P,
-                    the_matrixElemChange, _nFactor);
-
-            } else {
-                DelLL = GAPSNorm::calcDeltaLLGen('A', D, S, A, P,
-                    the_matrixElemChange, _nFactor);
-            } // end of if-block according to proposal.size()
-
-            break;
-        } // end of switch-block 'A'
-
-        case 'P': {
-            if (the_nChange_matrixElemChange == 0) {
-                DelLL = 0.0;
-
-            } else if (the_nChange_matrixElemChange == 1) {
-                DelLL = GAPSNorm::calcDeltaLL1E('P', D, S, A, P,
-                    the_matrixElemChange, _nFactor);
-
-            } else if (the_nChange_matrixElemChange == 2) {
-                DelLL = GAPSNorm::calcDeltaLL2E('P', D, S, A, P,
-                    the_matrixElemChange, _nFactor);
-
-            } else {
-                DelLL = GAPSNorm::calcDeltaLLGen('P', D, S, A, P,
-                    the_matrixElemChange, _nFactor);
-            } // end of if-block according to proposal.size()
-
-            break;
-        } // end of switch-block 'P'
-    } // end of switch block
-
-    return DelLL;
-} // end of computeDeltaLL
+double GibbsSampler::computeDeltaLL(char the_matrix_label, const Matrix &D,
+const Matrix &S, const Matrix &A, const Matrix &P,
+const std::vector<ElementChange> the_matrixElemChange)
+{
+    if (the_matrixElemChange.size() == 0)
+    {
+        return 0.0;
+    }
+    else if (the_matrixElemChange.size() == 1)
+    {
+        return GAPSNorm::calcDeltaLL1E(the_matrix_label, D, S, A, P,
+            the_matrixElemChange, _nFactor);
+    }
+    else if (the_matrixElemChange.size() == 2)
+    {
+        return GAPSNorm::calcDeltaLL2E(the_matrix_label, D, S, A, P,
+            the_matrixElemChange, _nFactor);
+    }
+    else
+    {
+        return GAPSNorm::calcDeltaLLGen(the_matrix_label, D, S, A, P,
+            the_matrixElemChange, _nFactor);
+    }
+}
 
 // ----------------------------------------------------------------------------
 void GibbsSampler::extract_atomicProposal(char the_matrix_label) {
@@ -406,7 +378,7 @@ const Matrix &AOrig, const Matrix &POrig)
     // the loglikelihood.
     switch (the_matrix_label) {
         case 'A': {
-            delLL = computeDeltaLL('A', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
+            delLL = computeDeltaLL('A', D, S, AOrig, POrig, _matrixElemChange);
             _AAtomicdomain.acceptProposal(false); // "false" only means not to update _iter!
             update_sysChi2(delLL);      // update system Chi2
             _AMatrix.elemUpdate(_matrixElemChange);
@@ -414,7 +386,7 @@ const Matrix &AOrig, const Matrix &POrig)
         }
 
         case 'P': {
-            delLL = computeDeltaLL('P', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
+            delLL = computeDeltaLL('P', D, S, AOrig, POrig, _matrixElemChange);
             _PAtomicdomain.acceptProposal(false); // "false" only means not to update _iter!
             update_sysChi2(delLL);     // update system Chi2
             _PMatrix.elemUpdate(_matrixElemChange);
@@ -443,7 +415,7 @@ const Matrix &AOrig, const Matrix &POrig)
             _new_atomicProposal.insert(pair<unsigned long long, double>(location, newMass));
             extract_new_atomicProposal('A');
             _AAtomicdomain.setProposedAtomMass(_new_atomicProposal, true);
-            delLLnew = computeDeltaLL('A', D, S, AOrig, POrig, _new_nChange_matrixElemChange, _new_matrixElemChange);
+            delLLnew = computeDeltaLL('A', D, S, AOrig, POrig, _new_matrixElemChange);
             break;
         } // end of switch-block for A
 
@@ -464,7 +436,7 @@ const Matrix &AOrig, const Matrix &POrig)
             _new_atomicProposal.insert(pair<unsigned long long, double>(location, newMass));
             extract_new_atomicProposal('P');
             _PAtomicdomain.setProposedAtomMass(_new_atomicProposal, true);
-            delLLnew = computeDeltaLL('P', D, S, AOrig, POrig, _new_nChange_matrixElemChange, _new_matrixElemChange);
+            delLLnew = computeDeltaLL('P', D, S, AOrig, POrig, _new_matrixElemChange);
             break;
         } // end of switch-block for P
     } // end of switch-block
@@ -529,7 +501,7 @@ const Matrix &AOrig, const Matrix &POrig)
             // Check other matrix to see if we can use Gibbs
             if (!checkOtherMatrix('A', iRow, iCol, POrig)) {
                 _AAtomicdomain.acceptProposal(false); //accept original proposal
-                delLL = computeDeltaLL('A', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
+                delLL = computeDeltaLL('A', D, S, AOrig, POrig, _matrixElemChange);
                 update_sysChi2(delLL);  // update system Chi2
                 _new_atomicProposal.insert(pair<unsigned long long, double>(location,
                                            origMass)); //update _new_atomicProposal with original change
@@ -542,7 +514,7 @@ const Matrix &AOrig, const Matrix &POrig)
             _new_atomicProposal.insert(pair<unsigned long long, double>(location, newMass));
             extract_new_atomicProposal('A');
             _AAtomicdomain.setProposedAtomMass(_new_atomicProposal, false);
-            delLLnew = computeDeltaLL('A', D, S, AOrig, POrig, _new_nChange_matrixElemChange, _new_matrixElemChange);
+            delLLnew = computeDeltaLL('A', D, S, AOrig, POrig, _new_matrixElemChange);
             break;
         } // end of case-A block
 
@@ -555,7 +527,7 @@ const Matrix &AOrig, const Matrix &POrig)
             // Check other matrix to see if we can use Gibbs
             if (!checkOtherMatrix('P', iRow, iCol, AOrig)) {
                 _PAtomicdomain.acceptProposal(false); // accept original proposal
-                delLL = computeDeltaLL('P', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
+                delLL = computeDeltaLL('P', D, S, AOrig, POrig, _matrixElemChange);
                 update_sysChi2(delLL);  // update system Chi2
                 _new_atomicProposal.insert(pair<unsigned long long, double>(location, origMass));
                 extract_new_atomicProposal('P');
@@ -567,7 +539,7 @@ const Matrix &AOrig, const Matrix &POrig)
             _new_atomicProposal.insert(pair<unsigned long long, double>(location, newMass));
             extract_new_atomicProposal('P');
             _PAtomicdomain.setProposedAtomMass(_new_atomicProposal, false);
-            delLLnew = computeDeltaLL('P', D, S, AOrig, POrig, _new_nChange_matrixElemChange, _new_matrixElemChange);
+            delLLnew = computeDeltaLL('P', D, S, AOrig, POrig, _new_matrixElemChange);
             break;
         } // end of case-P block
     } // end of switch-block
@@ -700,12 +672,12 @@ const Matrix &AOrig, const Matrix &POrig)
 
     switch (the_matrix_label) {
         case 'A': {
-            delLLnew = computeDeltaLL('A', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
+            delLLnew = computeDeltaLL('A', D, S, AOrig, POrig, _matrixElemChange);
             break;
         }
 
         case 'P': {
-            delLLnew = computeDeltaLL('P', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
+            delLLnew = computeDeltaLL('P', D, S, AOrig, POrig, _matrixElemChange);
             break;
         }
     }
@@ -768,22 +740,24 @@ bool GibbsSampler::exchange(char the_matrix_label, const Matrix &D,
 const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
 {
     map<unsigned long long, double>::const_iterator atom;
-    double chmass1, chmass2;
-    unsigned long long loc1, loc2;
-    unsigned int bin1, bin2;
-    double mass1, mass2;
-    double newMass1, newMass2;
+    unsigned long long loc1 = 0, loc2 = 0;
+    unsigned int bin1 = 0, bin2 = 0;
+    double mass1 = 0, mass2 = 0;
+    double newMass1 = 0, newMass2 = 0;
+    
     atom = _atomicProposal.begin();
-    chmass1 = atom->second;
+    double chmass1 = atom->second;
     atom++;
-    chmass2 = atom->second;
+    double chmass2 = atom->second;
 
     // extract location, bin #, mass and changed mass corresponding to the
     // atomic proposal such that "1" refers to a positive mass change and
     // "2" a negative one.
-    switch (the_matrix_label) {
-        case 'A': {
-            if (chmass1 > chmass2) {
+    switch (the_matrix_label)
+    {
+        case 'A':
+            if (chmass1 > chmass2) 
+            {
                 atom--;
                 loc1 = atom->first;
                 bin1 = _AAtomicdomain.getBin(loc1);
@@ -794,8 +768,9 @@ const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
                 bin2 = _AAtomicdomain.getBin(loc2);
                 mass2 = _AAtomicdomain.getMass(loc2);
                 newMass2 = atom->second + mass2;
-
-            } else {
+            }
+            else
+            {
                 loc1 = atom->first;
                 bin1 = _AAtomicdomain.getBin(loc1);
                 mass1 = _AAtomicdomain.getMass(loc1);
@@ -806,12 +781,11 @@ const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
                 mass2 = _AAtomicdomain.getMass(loc2);
                 newMass2 = atom->second + mass2;
             }  // end of if-block for comparing chmass1 and chmass2
-
             break;
-        } // end of case 'A' block
 
-        case 'P': {
-            if (chmass1 > chmass2) {
+        case 'P':
+            if (chmass1 > chmass2)
+            {
                 atom--;
                 loc1 = atom->first;
                 bin1 = _PAtomicdomain.getBin(loc1);
@@ -823,7 +797,9 @@ const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
                 mass2 = _PAtomicdomain.getMass(loc2);
                 newMass2 = atom->second + mass2;
 
-            } else {
+            }
+            else
+            {
                 loc1 = atom->first;
                 bin1 = _PAtomicdomain.getBin(loc1);
                 mass1 = _PAtomicdomain.getMass(loc1);
@@ -834,137 +810,122 @@ const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
                 mass2 = _PAtomicdomain.getMass(loc2);
                 newMass2 = atom->second + mass2;
             }  // end of if-block for comparing chmass1 and chmass2
-
             break;
-        }  // end of case 'P' block
     } // end of switch-block for extracting the atomic proposal info
 
     // return nullMatrix if bin1 == bin2
-    if (bin1 == bin2) {
+    if (bin1 == bin2)
+    {
         return false;
     }
 
     // preparing quantities for possible Gibbs computation later.
     //EJF bool exchange = false;
     double priorLL = 0.;
-    unsigned int jGene, jSample;
+    unsigned int jGene = 0, jSample = 0;
     bool anyNonzero = false;
     bool useGibbs = true;
-    unsigned int iGene1, iPattern1, iGene2, iPattern2, iSample1, iSample2;
+    unsigned int iGene1 = 0, iPattern1 = 0, iGene2 = 0, iPattern2 = 0,
+        iSample1 = 0, iSample2 = 0;
 
-    switch (the_matrix_label) {
-        case 'A': {
+    switch (the_matrix_label)
+    {
+        case 'A':
             iGene1 = getRow('A', bin1);
             iPattern1 = getCol('A', bin1);
             iGene2 = getRow('A', bin2);
             iPattern2 = getCol('A', bin2);
             break;
-        }
 
-        case 'P': {
+        case 'P':
             iPattern1 = getRow('P', bin1);
             iSample1 = getCol('P', bin1);
             iPattern2 = getRow('P', bin2);
             iSample2 = getCol('P', bin2);
             break;
-        }
     }
 
     // ---------------------------------------------
-    switch (the_matrix_label) {
-        case 'A': {
-            for (jSample = 0; jSample < _nCol; jSample++) {
-                if (POrig(iPattern1,jSample) > epsilon) {
+    switch (the_matrix_label)
+    {
+        case 'A':
+            for (jSample = 0; jSample < _nCol; jSample++)
+            {
+                if (POrig(iPattern1,jSample) > epsilon)
+                {
                     anyNonzero = true;
                     break;
                 }
 
-                if (POrig(iPattern2,jSample) > epsilon) {
-                    anyNonzero = true;
-                    break;
-                }
-            }  // end of for-block to determine the existence of corresponding
-
-            // non-zero elements in P
-            if (!anyNonzero)  {  // cannot update in Gibbs way
-                useGibbs = false;
-            }
-
-            break;
-        }
-
-        case 'P': {
-            for (jGene = 0; jGene < _nRow; jGene++) {
-                if (AOrig(jGene,iPattern1) > epsilon) {
-                    anyNonzero = true;
-                    break;
-                }
-
-                if (AOrig(jGene,iPattern2) > epsilon) {
+                if (POrig(iPattern2,jSample) > epsilon)
+                {
                     anyNonzero = true;
                     break;
                 }
             }  // end of for-block to determine the existence of corresponding
 
             // non-zero elements in P
-            if (!anyNonzero)  {  // cannot update in Gibbs way
+            if (!anyNonzero) // cannot update in Gibbs way
+            {
                 useGibbs = false;
             }
-
             break;
-        }
+
+        case 'P':
+            for (jGene = 0; jGene < _nRow; jGene++)
+            {
+                if (AOrig(jGene,iPattern1) > epsilon)
+                {
+                    anyNonzero = true;
+                    break;
+                }
+
+                if (AOrig(jGene,iPattern2) > epsilon)
+                {
+                    anyNonzero = true;
+                    break;
+                }
+            }  // end of for-block to determine the existence of corresponding
+
+            // non-zero elements in P
+            if (!anyNonzero) // cannot update in Gibbs way
+            {
+                useGibbs = false;
+            }
+            break;
     }  // end of switch-block
 
     // -------------------------------------------------------------------------
     // EXCHANGE ACTION when initial useGibbs = true and check if Gibbs is usable.
-    double s = 0.0, su, mean, sd; // EJF -- MFO check
-    pair <double, double> alphaparam;
+    double s = 0, su = 0, mean = 0, sd = 0; // EJF -- MFO check
+    std::pair<double, double> alphaparam(0,0);
 
-    if (useGibbs == true) {
-        switch (the_matrix_label) {
-            // ---------- EXCHANGE ACTION WITH A ----------------------------
-            case 'A': {
-                if (_AAtomicdomain.inDomain(loc1) && _AAtomicdomain.inDomain(loc2)) {
-                    alphaparam = GAPSNorm::calcAlphaParameters('A', _nFactor, D, S, AOrig, POrig, iGene1,
-                                 iPattern1, iGene2, iPattern2, iSample1, iSample2);
-                    s = alphaparam.first;
-                    su = alphaparam.second;
-                    s = s * _annealingTemperature;
-                    su = su * _annealingTemperature;
-                    mean = su / s;
-                    sd = 1. / sqrt(s);
-                    // end of compute distribution parameters for A
-                } // end of if-block for checking whether the changes are in domain (the exchange block)
+    if (useGibbs == true)
+    {
+        if ((the_matrix_label == 'A' && _AAtomicdomain.inDomain(loc1) &&
+        _AAtomicdomain.inDomain(loc2)) || (the_matrix_label == 'P' &&
+        _PAtomicdomain.inDomain(loc1) && _PAtomicdomain.inDomain(loc2)))
+        {
+            alphaparam = GAPSNorm::calcAlphaParameters(the_matrix_label, _nFactor, D, S, AOrig, POrig, iGene1,
+                iPattern1, iGene2, iPattern2, iSample1, iSample2);
+            s = alphaparam.first;
+            su = alphaparam.second;
+            s = s * _annealingTemperature;
+            su = su * _annealingTemperature;
+            mean = su / s;
+            sd = 1. / sqrt(s);
+        }
+    }
 
-                break;
-            } // end of switch block for EXCHANGE ACTION with A
-
-            // ---------- EXCHANGE ACTION WITH P ----------------------------
-            case 'P': {
-                if (_PAtomicdomain.inDomain(loc1) && _PAtomicdomain.inDomain(loc2)) {
-                    alphaparam = GAPSNorm::calcAlphaParameters('P', _nFactor, D, S, AOrig, POrig, iGene1,
-                                 iPattern1, iGene2, iPattern2, iSample1, iSample2);
-                    s = alphaparam.first;
-                    su = alphaparam.second;
-                    s = s * _annealingTemperature;
-                    su = su * _annealingTemperature;
-                    mean = su / s;
-                    sd = 1. / sqrt(s);
-                    // end of compute distribution parameters for P
-                } // end of if-block for checking whether the changes are in domain (the exchange block)
-
-                break;
-            } // end of switch block for EXCHANGE ACTION with P
-        }// end of switch block for EXCHANGE ACTION
-    } // end of if-block for operations with possibly Gibbs sampling
-
-    if (s == 0. && su == 0.) {
+    if (s == 0.0 && su == 0.0)
+    {
         useGibbs = false;
         //cout << "Parameters aren't updated -> useGibbs = false, do M-H" << endl;
     }
 
     // -------------------------------------------------------------------------
-    if (useGibbs == true) {
+    if (useGibbs == true)
+    {
         // set newMass1
         // need to retain exponential prior
         double plower = Random::p_norm(-mass1, mean, sd);
@@ -972,55 +933,48 @@ const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
         double u = plower + Random::uniform() * (pupper - plower);
 
         // must sample from prior if the computed parameters are not good for Gibbs
-        if (plower >  0.95 ||
-                pupper < 0.05 ||
-                s < epsilon ||
-                newMass1 == DOUBLE_POSINF ||
-                newMass1 == DOUBLE_NEGINF) {
-            // do not make a change
-            useGibbs = false;
+        if (plower >  0.95 || pupper < 0.05 || s < epsilon ||
+        newMass1 == DOUBLE_POSINF || newMass1 == DOUBLE_NEGINF)
+        {
+            useGibbs = false; // do not make a change
         }
 
-        double gibbsMass1, gibbsMass2;
+        double gibbsMass1 = 0.0, gibbsMass2 = 0.0;
 
-        if (useGibbs == true) {
+        if (useGibbs == true)
+        {
             gibbsMass1 = Random::q_norm(u, mean, sd);
 
-            if (gibbsMass1 < -mass1) {
+            if (gibbsMass1 < -mass1)
+            {
                 gibbsMass1 = -mass1;
             }
 
-            if (gibbsMass1 > mass2) {
+            if (gibbsMass1 > mass2)
+            {
                 gibbsMass1 = mass2;
             }
 
             gibbsMass2 = - gibbsMass1;
             // update new masses
-            double delLLnew;
             _new_nChange_matrixElemChange = 2;
             _new_atomicProposal.insert(pair<unsigned long long, double>(loc1, gibbsMass1));
             _new_atomicProposal.insert(pair<unsigned long long, double>(loc2, gibbsMass2));
 
-            switch (the_matrix_label) {
-                case 'A': {
-                    extract_new_atomicProposal('A');
-                    delLLnew = computeDeltaLL('A', D, S, AOrig, POrig, _new_nChange_matrixElemChange, _new_matrixElemChange);
+            extract_new_atomicProposal(the_matrix_label);
+            double delLLnew = computeDeltaLL(the_matrix_label, D, S, AOrig, POrig, _new_matrixElemChange);
+            switch (the_matrix_label)
+            {
+                case 'A':
                     _AAtomicdomain.setProposedAtomMass(_new_atomicProposal, false);
                     _AAtomicdomain.acceptProposal(false);
-                    update_sysChi2(delLLnew);  // update system Chi2
                     break;
-                }
-
-                case 'P': {
-                    extract_new_atomicProposal('P');
-                    delLLnew = computeDeltaLL('P', D, S, AOrig, POrig, _new_nChange_matrixElemChange, _new_matrixElemChange);
+                case 'P':
                     _PAtomicdomain.setProposedAtomMass(_new_atomicProposal, false);
                     _PAtomicdomain.acceptProposal(false);
-                    update_sysChi2(delLLnew);  // update system Chi2
                     break;
-                }
-            }  // end of switch-block
-
+            } 
+            update_sysChi2(delLLnew);
             return true;
         } // end of inner if-block for final updating with Gibbs
     } // end of outer if-block for useGibbs == true && s > epsilon
@@ -1028,176 +982,154 @@ const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
     // ----------------------------
     // We can't use Gibbs, need
     // Metropolis-Hasting exchange action
-    double pold = 0.;
-    double pnew = 0.;
-    double lambda;
+    double pold = 0;
+    double pnew = 0;
+    double lambda = 0;
 
-    switch (the_matrix_label) {
-        case 'A': {
+    switch (the_matrix_label)
+    {
+        case 'A':
             lambda = _lambdaA;
             break;
-        }
-
-        case 'P': {
+        case 'P':
             lambda = _lambdaP;
             break;
-        }
     }
 
     // Formerly the if(_oper_type == 'E') block in move_exchange
-    if (mass1 > mass2) {
+    if (mass1 > mass2)
+    {
         pnew = Random::d_gamma(newMass1, 2., 1. / lambda);
-
-        if (newMass1 > newMass2) {
+        if (newMass1 > newMass2)
+        {
             pold = Random::d_gamma(mass1, 2., 1. / lambda);
-
-        } else {
+        }
+        else
+        {
             pold = Random::d_gamma(mass2, 2., 1. / lambda);
         }
-
-    } else {
+    }
+    else
+    {
         pnew = Random::d_gamma(newMass2, 2., 1. / lambda);
-
-        if (newMass1 > newMass2) {
+        if (newMass1 > newMass2)
+        {
             pold = Random::d_gamma(mass1, 2., 1. / lambda);
-
-        } else {
+        }
+        else
+        {
             pold = Random::d_gamma(mass2, 2., 1. / lambda);
         }
     }
 
-    if (pnew == 0. && pold == 0.) {
+    if (pnew == 0.0 && pold == 0.0)
+    {
         priorLL = 0.0;
-
-    } else if (pnew != 0. && pold == 0.) {
+    }
+    else if (pnew != 0.0 && pold == 0.0)
+    {
         priorLL = DOUBLE_POSINF;
-
-    } else {
+    }
+    else
+    {
         priorLL = log(pnew / pold);
     }
 
-    double delLLnew;
-
-    switch (the_matrix_label) {
-        case 'A': {
-            delLLnew = computeDeltaLL('A', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
-            break;
-        }
-
-        case 'P': {
-            delLLnew = computeDeltaLL('P', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
-            break;
-        }
-    }
+    double delLLnew = computeDeltaLL(the_matrix_label, D, S, AOrig, POrig, _matrixElemChange);
 
     //EJF double totalLL = priorLL + delLLnew * _annealingTemperature;
     _new_nChange_matrixElemChange = 2;
     _new_atomicProposal.insert(pair<unsigned long long, double>(loc1, newMass1 - mass1));
     _new_atomicProposal.insert(pair<unsigned long long, double>(loc2, newMass2 - mass2));
 
-    switch (the_matrix_label) {
-        case 'A': {
-            extract_new_atomicProposal('A');
-            break;
-        }
+    extract_new_atomicProposal(the_matrix_label);
 
-        case 'P': {
-            extract_new_atomicProposal('P');
-            break;
-        }
-    }
-
-    double tmp;
-
-    if (priorLL == DOUBLE_POSINF) {
+    if (priorLL == DOUBLE_POSINF)
+    {
         return true;
-
-    } else {
-        tmp = priorLL + delLLnew * _annealingTemperature;
     }
 
+    double tmp = priorLL + delLLnew * _annealingTemperature;
     double rng = log(Random::uniform());
 
-    if (tmp  < rng) {
-        switch (the_matrix_label) {
-            case 'A': {
+    if (tmp  < rng)
+    {
+        switch (the_matrix_label)
+        {
+            case 'A':
                 _AAtomicdomain.rejectProposal(false);
                 return false;
-            }
-
-            case 'P': {
+            case 'P':
                 _PAtomicdomain.rejectProposal(false);
                 return false;
-            }
-        } // end of switch-block
-
-    } else {
-        switch (the_matrix_label) {
-            case 'A': {
+        }
+    }
+    else
+    {
+        switch (the_matrix_label)
+        {
+            case 'A':
                 _AAtomicdomain.acceptProposal(false);
                 update_sysChi2(delLLnew);  // update system Chi2
                 return true;
-            }
-
-            case 'P': {
+            case 'P':
                 _PAtomicdomain.acceptProposal(false);
                 update_sysChi2(delLLnew);  // update system Chi2
                 return true;
-            }
-        } // end of switch-block
+        }
     }
-
     // end of M-H sampling
     return false;
 } // end of method exchange
 
-
 // ************ METHODS FOR LOOPING AND CONTROL *****************************
-void GibbsSampler::set_iter(unsigned long ext_iter) {
+void GibbsSampler::set_iter(unsigned long ext_iter)
+{
     _iter = ext_iter;
 }
 
 // -----------------------------------------------------------------------------
-void GibbsSampler::set_AnnealingTemperature() {
+void GibbsSampler::set_AnnealingTemperature()
+{
     double SASteps = _nEquil;
-    double SATemp = ((double) _iter + 1.) / (SASteps / 2.);
+    double SATemp = ((double) _iter + 1.0) / (SASteps / 2.0);
 
-    if (SATemp > 1.) {
+    if (SATemp > 1.0)
+    {
         SATemp = 1;
     }
 
-    if (SATemp < 0) {
-        throw logic_error("Invalid annealing temperature.");
+    if (SATemp < 0.0)
+    {
+        throw std::logic_error("Invalid annealing temperature.");
     }
-
     _annealingTemperature = SATemp;
 }
 
-
 // -----------------------------------------------------------------------------
-//
-void GibbsSampler::check_atomic_matrix_consistency(char the_matrix_label) {
+// TODO should be called internally when updated, not by the top level
+void GibbsSampler::check_atomic_matrix_consistency(char the_matrix_label)
+{
     double total_atom_mass = 0.0;
     double total_matrix_mass = 0.0;
 
-    switch (the_matrix_label) {
-        case 'A': {
+    switch (the_matrix_label)
+    {
+        case 'A':
             total_atom_mass = _AAtomicdomain.get_atomicDomain_totalmass();
             total_matrix_mass = MatAlgo::sum(_AMatrix);
             break;
-        }
-
-        case 'P': {
+        case 'P':
             total_atom_mass = _PAtomicdomain.get_atomicDomain_totalmass();
             total_matrix_mass = MatAlgo::sum(_PMatrix);
             break;
-        }
     } // end of switch-block
 
     double diff_total_mass = fabs(total_atom_mass - total_matrix_mass);
 
-    if (diff_total_mass > 0.00001) { // inconsistent since atomic domain uses doubles
-        throw logic_error("Mass inconsistency between atomic domain and matrix!");
+    if (diff_total_mass > 0.00001)
+    {
+        throw std::logic_error("Mass inconsistency between atomic domain and matrix!");
     }
 }
 
