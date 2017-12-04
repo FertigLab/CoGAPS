@@ -90,6 +90,8 @@ class GibbsSampler {
     // unsigned long _statindx_A, _statindx_P;  // counter
     Matrix _Amean, _Asd, _Pmean, _Psd;
 
+    bool mSingleCellRNASeq;
+
   public:
 
     // ******************** CONSTRUCTOR ********************************************

@@ -37,13 +37,16 @@ const vector< vector<double> > &SVector, const string &simulation_id)
     _iter = 1;  // tmp use
     _annealingTemperature = 0.4; // tmp use
     _sysChi2 = 0.0; // tmp use
+    mSingleCellRNASeq = false;
 }
 
 void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain() {
     // extract information from D as parameters
     _nRow = _DMatrix.nRow();
     _nCol = _DMatrix.nCol();
-    double D_mean = MatAlgo::mean(_DMatrix);
+    double D_mean = mSingleCellRNASeq ? MatAlgo::nonZeroMean(_DMatrix)
+        : MatAlgo::mean(_DMatrix);
+
     // calcuate #Bins and lambda for the atomic spaces
     _nBinsA = _nRow * _nFactor;
     _lambdaA = _alphaA * sqrt(_nFactor / D_mean) * _lambdaA_scale_factor;
@@ -64,7 +67,9 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, vector
     // extract information from D as parameters
     _nRow = _DMatrix.nRow();
     _nCol = _DMatrix.nCol();
-    double D_mean = MatAlgo::mean(_DMatrix);
+    double D_mean = mSingleCellRNASeq ? MatAlgo::nonZeroMean(_DMatrix)
+        : MatAlgo::mean(_DMatrix);
+
     // calcuate #Bins and lambda for the atomic spaces
     _nBinsA = _nRow * _nFactor;
     _lambdaA = _alphaA * sqrt(_nFactor / D_mean) * _lambdaA_scale_factor;
@@ -91,7 +96,9 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(vector<vector<double> > 
     // extract information from D as parameters
     _nRow = _DMatrix.nRow();
     _nCol = _DMatrix.nCol();
-    double D_mean = MatAlgo::mean(_DMatrix);
+    double D_mean = mSingleCellRNASeq ? MatAlgo::nonZeroMean(_DMatrix)
+        : MatAlgo::mean(_DMatrix);
+
     // calcuate #Bins and lambda for the atomic spaces
     _nBinsA = _nRow * _nFactor;
     _lambdaA = _alphaA * sqrt(_nFactor / D_mean) * _lambdaA_scale_factor;
@@ -104,3 +111,4 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(vector<vector<double> > 
     _AAtomicdomain.FixedBins_initializeAtomic(_nBinsA, atomicSize, _alphaA, _lambdaA, _label_A, ReadBinProbsA);
     _PAtomicdomain.FixedBins_initializeAtomic(_nBinsP, atomicSize, _alphaP, _lambdaP, _label_P, ReadBinProbsP);
 }
+
