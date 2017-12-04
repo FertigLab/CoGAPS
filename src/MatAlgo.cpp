@@ -18,6 +18,25 @@ matrix_data_t MatAlgo::sum(const RowMatrix &mat)
     return sum;
 }
 
+matrix_data_t MatAlgo::nonZeroMean(const Matrix &mat)
+{
+    matrix_data_t sum = 0.0;
+    unsigned int nNonZeros = 0;
+    for (unsigned int r = 0; r < mat.nRow(); ++r)
+    {
+        for (unsigned int c = 0; c < mat.nCol(); ++c)
+        {
+            if (mat(r,c) != 0.0)
+            {
+                nNonZeros++;
+                sum += mat(r,c);
+            }
+        }
+    }
+    return sum / nNonZeros;
+}
+
+
 void MatAlgo::matrixMultiplication(Matrix &result, const Matrix &A, const Matrix &B)
 {
     if (result.nRow() != A.nRow() ||
