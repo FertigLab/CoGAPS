@@ -1,11 +1,10 @@
 #include "catch.h"
 #include "../Matrix.h"
-#include "../MatAlgo.h"
 
 #include <algorithm>
 #include <cmath>
 
-TEST_CASE("Test Matrix.h")
+TEST_CASE("Test Matrix")
 {
     double row1[3] = { 1.0,  2.0,  3.0};
     double row2[3] = {-4.0,  5.0, -6.0};
@@ -17,7 +16,7 @@ TEST_CASE("Test Matrix.h")
     data.push_back(std::vector<double>(row3, row3 + 3));
     
     Matrix testMat (data);
-    REQUIRE(MatAlgo::mean(testMat) == 1.0);
-    REQUIRE(MatAlgo::sum(testMat) == 9.0);
+    REQUIRE(testMat.nRow() == 3);
+    REQUIRE(testMat.nCol() == 3);
 }
 
