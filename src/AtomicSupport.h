@@ -57,7 +57,7 @@ class AtomicSupport {
        distribution on number of atoms. Propose methods are
        below makeProposal.
     */
-    void makeProposal();
+    void makeProposal(); //TODO should return proposed atoms
 
     void ProposeBirth();
     void ProposeDeath();

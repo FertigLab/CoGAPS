@@ -86,14 +86,9 @@ class GibbsSampler {
     vector<double> _new_mass_changed;
     vector<ElementChange> _new_matrixElemChange;
 
-
-
     // for computing statistics with matrices A and P
     // unsigned long _statindx_A, _statindx_P;  // counter
-    double **_Amean;
-    double **_Asd;
-    double **_Pmean;
-    double **_Psd;
+    Matrix _Amean, _Asd, _Pmean, _Psd;
 
   public:
 
@@ -165,7 +160,6 @@ class GibbsSampler {
                           const Matrix &S,
                           const Matrix &A,
                           const Matrix &P,
-                          unsigned int the_nChange_matrixElemChange,
                           const vector<ElementChange> the_matrixElemChange);
     /**
       * @short Extract information of the proposal made in the atomic space.

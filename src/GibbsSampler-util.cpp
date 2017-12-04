@@ -1,9 +1,11 @@
 #include "GibbsSampler.h"
+#include "Matrix.h"
 
 #include <cstring>
 
 // clear all quantities related to the local matrix proposal
-void GibbsSampler::clear_Proposal() {
+void GibbsSampler::clear_Proposal()
+{
     _Row_changed.clear();
     _Col_changed.clear();
     _mass_changed.clear();
@@ -12,7 +14,8 @@ void GibbsSampler::clear_Proposal() {
 }
 
 // clear all quantities related to the new local matrix proposal
-void GibbsSampler::clear_new_Proposal() {
+void GibbsSampler::clear_new_Proposal()
+{
     _new_Row_changed.clear();
     _new_Col_changed.clear();
     _new_mass_changed.clear();
@@ -20,108 +23,92 @@ void GibbsSampler::clear_new_Proposal() {
     _new_matrixElemChange.clear();
 }
 
-void GibbsSampler::local_display_matrix2F(ofstream &outputFile, double **Mat_ptr,
-        unsigned int n_row, unsigned int n_col) {
-    for (unsigned int m = 0; m < n_row; ++m) {
-        for (unsigned int n = 0; n < n_col; ++n) {
+void GibbsSampler::local_display_matrix2F(std::ofstream &outputFile, double **Mat_ptr,
+unsigned int n_row, unsigned int n_col)
+{
+    for (unsigned int m = 0; m < n_row; ++m)
+    {
+        for (unsigned int n = 0; n < n_col; ++n)
+        {
             outputFile << std::setw(10) << std::right;
             outputFile << Mat_ptr[m][n] << " ";
         }
-
         outputFile << endl;
     }
 }
 
 // -----------------------------------------------------------------------------
-void GibbsSampler::output_atomicdomain(char atomic_label, unsigned long Samp_cycle) {
+void GibbsSampler::output_atomicdomain(char atomic_label, unsigned long Samp_cycle)
+{
     char outputFilename[80];
 
-    switch (atomic_label) {
-        case 'A': {
+    switch (atomic_label)
+    {
+        case 'A':
             strcpy(outputFilename, _simulation_id.c_str());
             strcat(outputFilename, "_A_atomicdomain.txt");
             _AAtomicdomain.writeAtomicInfo(outputFilename, Samp_cycle);
             break;
-        }
-
-        case 'P': {
+        case 'P':
             strcpy(outputFilename, _simulation_id.c_str());
             strcat(outputFilename, "_P_atomicdomain.txt");
             _PAtomicdomain.writeAtomicInfo(outputFilename, Samp_cycle);
             break;
-        }
     }
 }
 
 // -----------------------------------------------------------------------------
 void GibbsSampler::compute_statistics_prepare_matrices(unsigned long statindx)
 {
-    std::vector<double> k(_nFactor);  // normalized vector
+    Vector k(_nFactor);
 
     // compute the normalization vector
     for (int m = 0; m < _nFactor; ++m)
     {
-        k[m] = 0.;
+        k(m) = 0;
         for (int n = 0; n < _nCol; ++n)
         {
-            k[m] += _PMatrix(m,n);
+            k(m) += _PMatrix(m,n);
         }
 
-        if (k[m] == 0) // when the whole row of P is zero, then don't do anything
+        if (k(m) == 0.0) // when the whole row of P is zero, then don't do anything
         {
-            k[m] = 1.0;
+            k(m) = 1.0;
         }
     }
 
     // construct the mean and var matrices at statindx = 1
     if (statindx == 1)
     {
-        _Amean = new double * [_nRow];
-
-        for (int m = 0; m < _nRow ; ++m)
+        for (int m = 0; m < _nRow; ++m)
         {
-            _Amean[m] = new double [_nFactor];
-        }
-
-        for (int m = 0; m < _nRow; ++m) {
-            for (int n = 0; n < _nFactor; ++n) {
-                _Amean[m][n] = _AMatrix(m,n) * k[n];
+            for (int n = 0; n < _nFactor; ++n)
+            {
+                _Amean(m,n) = _AMatrix(m,n) * k(n);
             }
         }
 
-        _Asd = new double * [_nRow];
-
-        for (int m = 0; m < _nRow ; ++m) {
-            _Asd[m] = new double [_nFactor];
-        }
-
-        for (int m = 0; m < _nRow; ++m) {
-            for (int n = 0; n < _nFactor; ++n) {
-                _Asd[m][n] = pow(_AMatrix(m,n) * k[n], 2);
+        for (int m = 0; m < _nRow; ++m)
+        {
+            for (int n = 0; n < _nFactor; ++n)
+            {
+                _Asd(m,n) = pow(_AMatrix(m,n) * k(n), 2);
             }
         }
 
-        _Pmean = new double * [_nFactor];
-
-        for (int m = 0; m < _nFactor ; ++m) {
-            _Pmean[m] = new double [_nCol];
-        }
-
-        for (int m = 0; m < _nFactor; ++m) {
-            for (int n = 0; n < _nCol; ++n) {
-                _Pmean[m][n] = _PMatrix(m,n) / k[m];
+        for (int m = 0; m < _nFactor; ++m)
+        {
+            for (int n = 0; n < _nCol; ++n)
+            {
+                _Pmean(m,n) = _PMatrix(m,n) / k(m);
             }
         }
 
-        _Psd = new double * [_nFactor];
-
-        for (int m = 0; m < _nFactor ; ++m) {
-            _Psd[m] = new double [_nCol];
-        }
-
-        for (int m = 0; m < _nFactor; ++m) {
-            for (int n = 0; n < _nCol; ++n) {
-                _Psd[m][n] = pow(_PMatrix(m,n) / k[m] , 2);
+        for (int m = 0; m < _nFactor; ++m)
+        {
+            for (int n = 0; n < _nCol; ++n)
+            {
+                _Psd(m,n) = pow(_PMatrix(m,n) / k(m) , 2);
             }
         }
     } // end of if-block for matrix construction statindx == 1
@@ -133,7 +120,7 @@ void GibbsSampler::compute_statistics_prepare_matrices(unsigned long statindx)
         {
             for (int n = 0; n < _nFactor; ++n)
             {
-                _Amean[m][n] += _AMatrix(m,n) * k[n];
+                _Amean(m,n) += _AMatrix(m,n) * k(n);
             }
         }
 
@@ -141,7 +128,7 @@ void GibbsSampler::compute_statistics_prepare_matrices(unsigned long statindx)
         {
             for (int n = 0; n < _nFactor; ++n)
             {
-                _Asd[m][n] += pow(_AMatrix(m,n) * k[n], 2);
+                _Asd(m,n) += pow(_AMatrix(m,n) * k(n), 2);
             }
         }
 
@@ -149,7 +136,7 @@ void GibbsSampler::compute_statistics_prepare_matrices(unsigned long statindx)
         {
             for (int n = 0; n < _nCol; ++n)
             {
-                _Pmean[m][n] += _PMatrix(m,n) / k[m];
+                _Pmean(m,n) += _PMatrix(m,n) / k(m);
             }
         }
 
@@ -157,7 +144,7 @@ void GibbsSampler::compute_statistics_prepare_matrices(unsigned long statindx)
         {
             for (int n = 0; n < _nCol; ++n)
             {
-                _Psd[m][n] += pow(_PMatrix(m,n) / k[m], 2);
+                _Psd(m,n) += pow(_PMatrix(m,n) / k(m), 2);
             }
         }
     } // end of if-block for matrix incrementation statindx > 1
@@ -202,16 +189,16 @@ void GibbsSampler::compute_statistics(unsigned int Nstat,
     //Changed to compute as vectors to pass into R
     for (int m = 0; m < _nRow ; ++m) {
         for (int n = 0; n < _nFactor; ++n) {
-            tempStat = _Amean[m][n] / Nstat;
-            _Amean[m][n] = tempStat;
+            tempStat = _Amean(m,n) / Nstat;
+            _Amean(m,n) = tempStat;
             AMeanVect[m][n] = tempStat;
         }
     }
 
     for (int m = 0; m < _nRow ; ++m) {
         for (int n = 0; n < _nFactor; ++n) {
-            tempStat = sqrt((_Asd[m][n] - Nstat * pow(_Amean[m][n], 2)) / (Nstat - 1));
-            _Asd[m][n] = tempStat;
+            tempStat = sqrt((_Asd(m,n) - Nstat * pow(_Amean(m,n), 2)) / (Nstat - 1));
+            _Asd(m,n) = tempStat;
             AStdVect[m][n] = tempStat;
         }
     }
@@ -219,16 +206,16 @@ void GibbsSampler::compute_statistics(unsigned int Nstat,
     // compute statistics for P
     for (int m = 0; m < _nFactor ; ++m) {
         for (int n = 0; n < _nCol; ++n) {
-            tempStat = _Pmean[m][n] / Nstat;
-            _Pmean[m][n] = tempStat;
+            tempStat = _Pmean(m,n) / Nstat;
+            _Pmean(m,n) = tempStat;
             PMeanVect[m][n] = tempStat;
         }
     }
 
     for (int m = 0; m < _nFactor ; ++m) {
         for (int n = 0; n < _nCol; ++n) {
-            tempStat = sqrt((_Psd[m][n] - Nstat * pow(_Pmean[m][n], 2)) / (Nstat - 1));
-            _Psd[m][n] = tempStat;
+            tempStat = sqrt((_Psd(m,n) - Nstat * pow(_Pmean(m,n), 2)) / (Nstat - 1));
+            _Psd(m,n) = tempStat;
             PStdVect[m][n] = tempStat;
         }
     }
