@@ -16,8 +16,8 @@ namespace Random
     double normal(double mean, double var);
     double exponential(double lambda);
 
-    double pexp(double p, double rate);
-    double qexp(double q, double rate);
+    //double pexp(double p, double rate);
+    //double qexp(double q, double rate);
     double dgamma(double d, double shape, double scale);
     double pgamma(double p, double shape, double scale);
     double qgamma(double q, double shape, double scale);
