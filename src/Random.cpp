@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 
-#define Q_GAMMA_THRESHOLD 1E-6
+#define Q_GAMMA_THRESHOLD 0.01
 #define Q_GAMMA_MIN_VALUE 0.0
 
 //typedef boost::random::mt19937 RNGType;
