@@ -65,23 +65,34 @@ GibbsSamplerMap::GibbsSamplerMap(unsigned long nEquil, unsigned long nSample, un
 // The problem here now becomes that the matrix gets out of sync with the atomic
 // domain. As a result, we call (in main) the method initialize_atomic_domain_map
 // to correct this.
-void GibbsSamplerMap::init_Mapped_Matrix() {
-    vector <double> thefixedPat;
+void GibbsSamplerMap::init_Mapped_Matrix()
+{
+    std::vector<double> thefixedPat;
 
-    switch (_the_fixed_matrix) {
+    switch (_the_fixed_matrix)
+    {
         case 'A': {
-            for (int iCol = 0; iCol < _nFixedMaps; iCol++) {
+            for (int iCol = 0; iCol < _nFixedMaps; iCol++)
+            {
                 thefixedPat = _MapValues.at(iCol);
-                _AMatrix.setCol(thefixedPat, iCol);
+                for (unsigned r = 0; r < _AMatrix.nRow(); ++r)
+                {
+                    _AMatrix(r,iCol) = thefixedPat[r];
+                }
             }
 
             break;
         }
 
-        case 'P': {
-            for (int iRow = 0; iRow < _nFixedMaps; iRow++) {
+        case 'P':
+        {
+            for (int iRow = 0; iRow < _nFixedMaps; iRow++)
+            {
                 thefixedPat = _MapValues.at(iRow);
-                _PMatrix.setRow(thefixedPat, (_nFactor - _nFixedMaps + iRow));
+                for (unsigned c = 0; c < _PMatrix.nCol(); ++c)
+                {
+                    _PMatrix(_nFactor - _nFixedMaps + iRow,c) = thefixedPat[c];
+                }
             }
 
             break;
@@ -154,23 +165,19 @@ void GibbsSamplerMap::initialize_atomic_domain_map() {
 
 // For one pattern change (in birth and death)
 double GibbsSamplerMap::computeDeltaLLBDMap(char the_matrix_label,
-        double const *const *D,
-        double const *const *S,
-        double const *const *A,
-        double const *const *P,
-        vector <double> &newPat, unsigned int chPat) {
+const Matrix &D, const Matrix &S, const Matrix &A, const Matrix &P,
+vector <double> &newPat, unsigned int chPat)
+{
     double DelLL;
 
     switch (the_matrix_label) {
         case 'A': {
-            DelLL = GAPSNorm::calcDeltaLLMap('A', D, S, A, P, newPat, chPat, _nRow,
-                                             _nCol, _nFactor);
+            DelLL = GAPSNorm::calcDeltaLLMap('A', D, S, A, P, newPat, chPat, _nFactor);
             break;
         } // end of switch-block 'A'
 
         case 'P': {
-            DelLL = GAPSNorm::calcDeltaLLMap('P', D, S, A, P, newPat, chPat, _nRow,
-                                             _nCol, _nFactor);
+            DelLL = GAPSNorm::calcDeltaLLMap('P', D, S, A, P, newPat, chPat, _nFactor);
             break;
         } // end of switch-block 'P'
     } // end of switch block
@@ -180,24 +187,22 @@ double GibbsSamplerMap::computeDeltaLLBDMap(char the_matrix_label,
 
 // For two pattern changes (in move and exchange)
 double GibbsSamplerMap::computeDeltaLLMEMap(char the_matrix_label,
-        double const *const *D,
-        double const *const *S,
-        double const *const *A,
-        double const *const *P,
-        vector <double> &newPat1, unsigned int chPat1,
-        vector <double> &newPat2, unsigned int chPat2) {
+const Matrix &D, const Matrix &S, const Matrix &A, const Matrix &P,
+vector <double> &newPat1, unsigned int chPat1,
+vector <double> &newPat2, unsigned int chPat2)
+{
     double DelLL;
 
     switch (the_matrix_label) {
         case 'A': {
             DelLL = GAPSNorm::calcDeltaLL2Map('A', D, S, A, P, newPat1, chPat1,
-                                              newPat2, chPat2, _nRow, _nCol, _nFactor);
+                                              newPat2, chPat2, _nFactor);
             break;
         } // end of switch-block 'A'
 
         case 'P': {
             DelLL = GAPSNorm::calcDeltaLL2Map('P', D, S, A, P, newPat1, chPat1,
-                                              newPat2, chPat2, _nRow, _nCol, _nFactor);
+                                              newPat2, chPat2, _nFactor);
             break;
         } // end of switch-block 'P'
     } // end of switch block
@@ -220,10 +225,8 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label) {
         return;
     }
 
-    double **D = _DMatrix.get_matrix();
-    double **S = _SMatrix.get_matrix();
-    double **AOrig = _AMatrix.get_matrix();
-    double **POrig = _PMatrix.get_matrix();
+    Matrix AOrig(_AMatrix);
+    Matrix POrig(_PMatrix);
     bool Q_update;
 
     switch (the_matrix_label) {
@@ -263,16 +266,16 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label) {
                 }//end if (fixed pattern) block
                 else { // not a fixed pattern, call the methods from Gibbs
                     if (_oper_type == 'D') {
-                        Q_update = death('A', D, S, AOrig, POrig);
+                        Q_update = death('A', _DMatrix, _SMatrix, AOrig, POrig);
 
                     } else {
-                        Q_update = birth('A', D, S, AOrig, POrig);
+                        Q_update = birth('A', _DMatrix, _SMatrix, AOrig, POrig);
                     }
 
                     // Modify the proposal in normal Gibbs manner
                     // Update the matrix with improved update, if there are further updates
                     if (Q_update == true) {
-                        _AMatrix.matrix_Elem_update(_new_matrixElemChange, _oper_type, _new_nChange_matrixElemChange);
+                        _AMatrix.elemUpdate(_new_matrixElemChange);
                     }
                 } // end if block for fixed or not fixed patterns
             } //end of birth/death case
@@ -295,16 +298,16 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label) {
                 } // end if one or both locations in a fixed pattern
                 else if (!fixed1 && !fixed2) { //both locations not in fixed pattern, normal Gibbs */
                     if (_oper_type == 'M') {
-                        Q_update = move('A', D, S, AOrig, POrig);
+                        Q_update = move('A', _DMatrix, _SMatrix, AOrig, POrig);
 
                     } else {
-                        Q_update = exchange('A', D, S, AOrig, POrig);
+                        Q_update = exchange('A', _DMatrix, _SMatrix, AOrig, POrig);
                     }
 
                     // Modify the proposal in normal Gibbs manner
                     // Update the matrix with improved update, if there are further updates
                     if (Q_update == true) {
-                        _AMatrix.matrix_Elem_update(_new_matrixElemChange, _oper_type, _new_nChange_matrixElemChange);
+                        _AMatrix.elemUpdate(_new_matrixElemChange);
                     }
                 }
             } //end Move/Exchange cases
@@ -348,16 +351,16 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label) {
                 }//end if (fixed pattern) block
                 else { // not a fixed pattern, call the methods from Gibbs
                     if (_oper_type == 'D') {
-                        Q_update = death('P', D, S, AOrig, POrig);
+                        Q_update = death('P', _DMatrix, _SMatrix, AOrig, POrig);
 
                     } else {
-                        Q_update = birth('P', D, S, AOrig, POrig);
+                        Q_update = birth('P', _DMatrix, _SMatrix, AOrig, POrig);
                     }
 
                     // Modify the proposal in normal Gibbs manner
                     // Update the matrix with improved update, if there are further updates
                     if (Q_update == true) {
-                        _PMatrix.matrix_Elem_update(_new_matrixElemChange, _oper_type, _new_nChange_matrixElemChange);
+                        _PMatrix.elemUpdate(_new_matrixElemChange);
                     }
                 }
             } //end if birth death
@@ -380,16 +383,16 @@ void GibbsSamplerMap::mapUpdate(char the_matrix_label) {
                 } // end if one or both locations in a fixed pattern
                 else if (!fixed1 && !fixed2) { //both locations not in fixed pattern, normal Gibbs
                     if (_oper_type == 'M') {
-                        Q_update = move('P', D, S, AOrig, POrig);
+                        Q_update = move('P', _DMatrix, _SMatrix, AOrig, POrig);
 
                     } else {
-                        Q_update = exchange('P', D, S, AOrig, POrig);
+                        Q_update = exchange('P', _DMatrix, _SMatrix, AOrig, POrig);
                     }
 
                     // Modify the proposal in normal Gibbs manner
                     // Update the matrix with improved update, if there are further updates
                     if (Q_update == true) {
-                        _PMatrix.matrix_Elem_update(_new_matrixElemChange, _oper_type, _new_nChange_matrixElemChange);
+                        _PMatrix.elemUpdate(_new_matrixElemChange);
                     }
                 }
             } //end Move/Exchange cases

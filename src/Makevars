@@ -11,6 +11,7 @@ OBJECTS =   AtomicSupport.o \
             GibbsSampler-util.o \
             GibbsSamplerMap.o \
             Matrix.o \
+            MatAlgo.o \
             Random.o \
             RcppExports.o \
             test-runner.o \

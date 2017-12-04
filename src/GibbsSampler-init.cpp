@@ -1,20 +1,20 @@
 #include "GibbsSampler.h"
+#include "MatAlgo.h"
 
 // -----------------------------------------------------------------------------
 unsigned long long atomicSize = std::numeric_limits<unsigned long long>::max();
 // -----------------------------------------------------------------------------
 
 // ******************** CONSTRUCTOR ********************************************
-GibbsSampler:: GibbsSampler(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
-                            double alphaA, double alphaP, double nMaxA, double nMaxP,
-                            unsigned long nIterA, unsigned long nIterP,
-                            double max_gibbsmass_paraA, double max_gibbsmass_paraP,
-                            unsigned long long atomicSize,
-                            char label_A, char label_P, char label_D, char label_S,
-                            vector<vector<double> > &DVector, vector<vector<double> > &SVector,
-                            const string &simulation_id)
-    : _DMatrix(DVector, label_D),
-      _SMatrix(SVector, label_S) {
+GibbsSampler:: GibbsSampler(unsigned long nEquil, unsigned long nSample,
+unsigned int nFactor, double alphaA, double alphaP, double nMaxA, double nMaxP,
+unsigned long nIterA, unsigned long nIterP, double max_gibbsmass_paraA,
+double max_gibbsmass_paraP, unsigned long long atomicSize, char label_A,
+char label_P, char label_D, char label_S, const vector< vector<double> > &DVector,
+const vector< vector<double> > &SVector, const string &simulation_id)
+    : _DMatrix(DVector), _SMatrix(SVector), _AMatrix(DVector.size(), nFactor),
+    _PMatrix(nFactor, DVector[0].size())
+{
     _nEquil = nEquil;
     _nSample = nSample;
     _nFactor = nFactor;
@@ -39,20 +39,20 @@ GibbsSampler:: GibbsSampler(unsigned long nEquil, unsigned long nSample, unsigne
 
 
 // *************** METHODS FOR INITIALIZATION, DISPLAY, OUTPUT ***********************
-void GibbsSampler::init_AMatrix_and_PMatrix() {
+/*void GibbsSampler::init_AMatrix_and_PMatrix() {
     // extract information from D as parameters
-    _nRow = _DMatrix.get_nRow();
-    _nCol = _DMatrix.get_nCol();
+    _nRow = _DMatrix.nRow();
+    _nCol = _DMatrix.nCol();
     // initialize matrices A and p
     _AMatrix.born_matrix(_nRow, _nFactor, _label_A, _alphaA);
     _PMatrix.born_matrix(_nFactor, _nCol, _label_P, _alphaP);
-}
+}*/
 
 void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain() {
     // extract information from D as parameters
-    _nRow = _DMatrix.get_nRow();
-    _nCol = _DMatrix.get_nCol();
-    double D_mean = _DMatrix.cal_mean();
+    _nRow = _DMatrix.nRow();
+    _nCol = _DMatrix.nCol();
+    double D_mean = MatAlgo::mean(_DMatrix);
     // calcuate #Bins and lambda for the atomic spaces
     _nBinsA = _nRow * _nFactor;
     _lambdaA = _alphaA * sqrt(_nFactor / D_mean) * _lambdaA_scale_factor;
@@ -71,9 +71,9 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain() {
 // For fixing one domain in R
 void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, vector<vector<double> > ReadBinProbs) {
     // extract information from D as parameters
-    _nRow = _DMatrix.get_nRow();
-    _nCol = _DMatrix.get_nCol();
-    double D_mean = _DMatrix.cal_mean();
+    _nRow = _DMatrix.nRow();
+    _nCol = _DMatrix.nCol();
+    double D_mean = MatAlgo::mean(_DMatrix);
     // calcuate #Bins and lambda for the atomic spaces
     _nBinsA = _nRow * _nFactor;
     _lambdaA = _alphaA * sqrt(_nFactor / D_mean) * _lambdaA_scale_factor;
@@ -98,9 +98,9 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, vector
 void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(vector<vector<double> > ReadBinProbsA,
         vector<vector<double> > ReadBinProbsP) {
     // extract information from D as parameters
-    _nRow = _DMatrix.get_nRow();
-    _nCol = _DMatrix.get_nCol();
-    double D_mean = _DMatrix.cal_mean();
+    _nRow = _DMatrix.nRow();
+    _nCol = _DMatrix.nCol();
+    double D_mean = MatAlgo::mean(_DMatrix);
     // calcuate #Bins and lambda for the atomic spaces
     _nBinsA = _nRow * _nFactor;
     _lambdaA = _alphaA * sqrt(_nFactor / D_mean) * _lambdaA_scale_factor;

@@ -18,13 +18,14 @@
 #include <boost/algorithm/string.hpp>
 // ------------------------------------------------------
 #include "Random.h"   // for incorporating a random number generator.
+#include <RcppArmadillo.h>
 #include "Matrix.h"  // for incorporating a Matrix class
 #include "AtomicSupport.h"  // for incorporating an Atomic class
 #include "GAPSNorm.h"  // for incorporating calculation of statistics in cogaps.
 #include "GibbsSampler.h" // for incorporating the GibbsSampler which
 // does all the atomic space to matrix conversion
 // and sampling actions.
-#include <RcppArmadillo.h>
+
 // ------------------------------------------------------
 
 //namespace bpo = boost::program_options;
@@ -195,7 +196,7 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.
-    GibbsSamp.init_AMatrix_and_PMatrix(); // initialize A and P matrices
+    //GibbsSamp.init_AMatrix_and_PMatrix(); // initialize A and P matrices
     //This Section now is to handle the many possibilities for Variable Bin Sizes (Priors)
     //A for variable A bins, P for variable P Bins, B for both and N for regular uniform bin sizes
     char fixedDomain = fixedDomainStr[0];
