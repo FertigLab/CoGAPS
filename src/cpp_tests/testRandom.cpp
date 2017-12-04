@@ -106,7 +106,7 @@ TEST_CASE("Test Random.h - Random Number Generation")
 
 TEST_CASE("Test Random.h - Distribution Calculations")
 {
-    SECTION("Test p_exp")
+    /*SECTION("Test p_exp")
     {
         REQUIRE(Random::p_exp(1, 3)    == Approx(0.9502).epsilon(0.001));
         REQUIRE(Random::p_exp(2, 1)    == Approx(0.8647).epsilon(0.001));
@@ -129,7 +129,7 @@ TEST_CASE("Test Random.h - Distribution Calculations")
         REQUIRE_THROWS(Random::q_exp(-1, 1));
         REQUIRE_THROWS(Random::q_exp(1.1, 1));
         REQUIRE_THROWS(Random::q_exp(1, 1));
-    }
+    }*/
 
     SECTION("Test d_gamma")
     {
