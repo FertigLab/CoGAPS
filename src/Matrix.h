@@ -64,8 +64,8 @@ public:
     unsigned int nRow() const {return mNumRows;}
     unsigned int nCol() const {return mNumCols;}
 
-    matrix_data_t& operator()(unsigned int r, unsigned int c) {return mRows[r][c];}
-    matrix_data_t operator()(unsigned int r, unsigned int c) const {return mRows[r][c];}
+    matrix_data_t& operator()(unsigned int r, unsigned int c) {return mRows[r](c);}
+    matrix_data_t operator()(unsigned int r, unsigned int c) const {return mRows[r](c);}
 
     Vector& getRow(unsigned int row);
     const Vector& getRow(unsigned int row) const;
@@ -88,8 +88,8 @@ public:
     unsigned int nRow() const {return mNumRows;}
     unsigned int nCol() const {return mNumCols;}
 
-    matrix_data_t& operator()(unsigned int r, unsigned int c) {return mCols[c][r];}
-    matrix_data_t operator()(unsigned int r, unsigned int c) const {return mCols[c][r];}
+    matrix_data_t& operator()(unsigned int r, unsigned int c) {return mCols[c](r);}
+    matrix_data_t operator()(unsigned int r, unsigned int c) const {return mCols[c](r);}
 
     Vector& getCol(unsigned int col);
 

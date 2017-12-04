@@ -14,7 +14,7 @@ double Vector::dotProduct(const Vector &vec) const
     double sum = 0.f;
     for (unsigned int i = 0; i < vec.size(); ++i)
     {
-        sum += mValues[i] * vec[i];
+        sum += mValues[i] * vec(i);
     }
     return sum;
 }
@@ -48,7 +48,7 @@ RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
         mRows.push_back(Vector(mNumCols));
         for (unsigned j = 0; j < mNumCols; ++j)
         {
-            mRows[i][j] = rmat(i,j);
+            mRows[i](j) = rmat(i,j);
         }
     }
 }
@@ -61,7 +61,7 @@ RowMatrix::RowMatrix(const std::vector< std::vector<double> > &mat)
         mRows.push_back(Vector(mNumCols));
         for (unsigned j = 0; j < mNumCols; ++j)
         {
-            mRows[i][j] = mat[i][j];
+            mRows[i](j) = mat[i][j];
         }
     }
 }
@@ -80,7 +80,7 @@ void RowMatrix::elemUpdate(const std::vector<ElementChange> &changes)
 {
     for (unsigned i = 0; i < changes.size(); ++i)
     {
-        mRows[changes[i].row][changes[i].col] += changes[i].delta;
+        mRows[changes[i].row](changes[i].col) += changes[i].delta;
     }
 }
 
@@ -103,7 +103,7 @@ ColMatrix::ColMatrix(const Rcpp::NumericMatrix &rmat)
         mCols.push_back(Vector(mNumRows));
         for (unsigned i = 0; i < mNumRows; ++i)
         {
-            mCols[i][j] = rmat(i,j);
+            mCols[i](j) = rmat(i,j);
         }
     }
 }
@@ -117,6 +117,6 @@ void ColMatrix::elemUpdate(const std::vector<ElementChange> &changes)
 {
     for (unsigned i = 0; i < changes.size(); ++i)
     {
-        mCols[changes[i].col][changes[i].row] += changes[i].delta;
+        mCols[changes[i].col](changes[i].row) += changes[i].delta;
     }
 }
