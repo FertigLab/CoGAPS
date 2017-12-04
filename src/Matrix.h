@@ -31,7 +31,7 @@ private:
 
 public:
 
-    Vector(unsigned size) : mValues(std::vector<matrix_data_t>(size, 0.f)) {}
+    Vector(unsigned size) : mValues(std::vector<matrix_data_t>(size, 0)) {}
     Vector(const std::vector<matrix_data_t>& v) : mValues(v) {}
 
     Rcpp::NumericVector rVector() const {return Rcpp::wrap(mValues);}
