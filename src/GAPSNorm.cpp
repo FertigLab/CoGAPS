@@ -32,7 +32,7 @@ const Matrix &P, unsigned int nFactor)
     double Chi2 = 0;
     for (unsigned int iRow = 0; iRow < D.nRow(); iRow++)
     {
-        for (unsigned int iCol = 0; iCol < D.nRow(); iCol++)
+        for (unsigned int iCol = 0; iCol < D.nCol(); iCol++)
         {
             Chi2 += (D(iRow,iCol) - Mock(iRow,iCol)) *
                     (D(iRow,iCol) - Mock(iRow,iCol)) /
@@ -70,54 +70,41 @@ unsigned int nFactor)
         case 'A':
         {
             // ---- Form M = D - A*P, in particular, we need only M[chRow][]
-            double M[1][D.nCol()]; // TODO really, really bad
-
-            for (unsigned int iCol = 0; iCol < D.nCol(); ++ iCol)
-            {
-                M[0][iCol] = D(chRow, iCol);
-
-                for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern)
-                {
-                    M[0][iCol] -= A(chRow,iPattern) * P(iPattern,iCol);
-                }
-            }
+            Vector M(D.nCol());
 
             for (unsigned int iCol = 0; iCol < D.nCol(); ++iCol)
             {
-                mockTerm = 2.0 * M[0][iCol] * delelem * P(chCol,iCol);
+                M(iCol) = D(chRow, iCol);
+                for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern)
+                {
+                    M(iCol) -= A(chRow,iPattern) * P(iPattern,iCol);
+                }
+                mockTerm = 2.0 * M(iCol) * delelem * P(chCol,iCol);
                 sqTerm = pow(delelem * P(chCol,iCol), 2);
-                delloglikelihood += (mockTerm - sqTerm) / 2. / pow(S(chRow,iCol), 2);
+                delloglikelihood += (mockTerm - sqTerm) / 2.0 / pow(S(chRow,iCol), 2);
             }
-
             break;
         }
 
         case 'P':
         {
             // ---- Form M = D - A*P, in particular, we need only M[][chCol]
-            double M[D.nRow()][1];
+            Vector M(D.nRow());
 
             for (unsigned int iRow = 0; iRow < D.nRow(); ++iRow)
             {
-                M[iRow][0] = D(iRow,chCol);
-
+                M(iRow) = D(iRow,chCol);
                 for (unsigned int iPattern = 0; iPattern < nFactor; ++iPattern)
                 {
-                    M[iRow][0] -= A(iRow,iPattern) * P(iPattern,chCol);
+                    M(iRow) -= A(iRow,iPattern) * P(iPattern,chCol);
                 }
-            }
-
-            for (unsigned int iRow = 0; iRow < D.nRow(); ++iRow)
-            {
-                mockTerm = 2.0 * M[iRow][0] * delelem * A(iRow,chRow);
+                mockTerm = 2.0 * M(iRow) * delelem * A(iRow,chRow);
                 sqTerm = pow(delelem * A(iRow,chRow), 2);
                 delloglikelihood += (mockTerm - sqTerm) / 2.0 / pow(S(iRow,chCol), 2);
             }
-
             break;
         }
     }
-
     return delloglikelihood;
 }
 

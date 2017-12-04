@@ -36,8 +36,8 @@ public:
 
     Rcpp::NumericVector rVector() const {return Rcpp::wrap(mValues);}
 
-    matrix_data_t& operator[](unsigned int i) {return mValues[i];}
-    matrix_data_t operator[](unsigned int i) const {return mValues[i];}
+    matrix_data_t& operator()(unsigned int i) {return mValues[i];}
+    matrix_data_t operator()(unsigned int i) const {return mValues[i];}
     unsigned size() const {return mValues.size();}
 
     matrix_data_t dotProduct(const Vector &vec) const;
