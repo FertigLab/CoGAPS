@@ -1,85 +1,99 @@
 #ifndef __COGAPS_MATRIX_H__
 #define __COGAPS_MATRIX_H__
 
-#include <iostream>
+#include <Rcpp.h>
 #include <vector>
-#include <cmath>
-#include <boost/tuple/tuple.hpp>
-#include <algorithm>
 
-class Matrix
+// temporary: used for testing performance of float vs double
+typedef double matrix_data_t;
+
+struct ElementChange
 {
-protected:
+    unsigned int row;
+    unsigned int col;
+    matrix_data_t delta;
 
-    unsigned int _n_row;
-    unsigned int _n_col;
-    unsigned int _length;
+    ElementChange(unsigned int r, unsigned int c, matrix_data_t d)
+        : row(r), col(c), delta(d)
+    {}
+};
 
-    char _label;
-    double _alpha;
-    double _lambda;
+class Vector;
+class RowMatrix;
+class ColMatrix;
+typedef RowMatrix Matrix; // default matrix type
 
-    // ---- added to bridge to Atomic Class ----------
-    double **_Matrix;
+class Vector
+{
+private:
+
+    std::vector<matrix_data_t> mValues;
 
 public:
 
-    Matrix() {};
+    Vector(unsigned size) {mValues = std::vector<matrix_data_t>(size, 0.f);}
+    Vector(const std::vector<matrix_data_t>& v) {mValues = v;}
 
-    Matrix(unsigned int row_size, unsigned int col_size, char the_matrix_label,
-           double the_matrix_alpha);
+    Rcpp::NumericVector rVector() const {return Rcpp::wrap(mValues);}
 
-    Matrix(const std::vector< std::vector<double> > &vv, char the_matrix_label);
+    matrix_data_t& operator[](unsigned int i) {return mValues[i];}
+    matrix_data_t operator[](unsigned int i) const {return mValues[i];}
+    unsigned size() const {return mValues.size();}
 
-    Matrix(const char input_file_name[], char the_matrix_label);
+    matrix_data_t dotProduct(const Vector &vec) const;
+    matrix_data_t sum() const;
 
-    ~Matrix();
+    typedef std::vector<matrix_data_t>::iterator iterator;
+    iterator begin() {return mValues.begin();}
+    iterator end() {return mValues.end();}
+};
 
-// *************** METHODS *******************************************
+class RowMatrix
+{
+private:
 
-    void born_matrix(unsigned int row_size, unsigned int col_size,
-                     char the_matrix_label, double the_matrix_alpha);
+    std::vector<Vector> mRows;
+    unsigned int mNumRows, mNumCols;
 
-    void matrix_init();
+public:
 
-    double at(int r, int c);
+    RowMatrix(unsigned int nrow, unsigned int ncol);
+    RowMatrix(const std::vector< std::vector<matrix_data_t> > &mat);
+    RowMatrix(const Rcpp::NumericMatrix& rmat);
 
-    void setRow(const std::vector<double> &theRow, int RowNum);
-    void setCol(const std::vector<double> &theCol, int ColNum);
+    unsigned int nRow() const {return mNumRows;}
+    unsigned int nCol() const {return mNumCols;}
 
-    std::vector<double> get_Row(int rowNum);
+    matrix_data_t& operator()(unsigned int r, unsigned int c) {return mRows[r][c];}
+    matrix_data_t operator()(unsigned int r, unsigned int c) const {return mRows[r][c];}
 
-    std::vector<double> get_Col(int colNum);
+    Vector& getRow(unsigned int row);
+    const Vector& getRow(unsigned int row) const;
 
-    unsigned int get_nRow() const;
+    void elemUpdate(const std::vector<ElementChange> &changes);
+};
 
-    unsigned int get_nCol() const;
+class ColMatrix
+{
+private:
 
-    unsigned int get_length() const;
+    std::vector<Vector> mCols;
+    unsigned int mNumRows, mNumCols;
 
-    double get_max_given_row(unsigned int row_indx);
+public:
 
-    double get_min_given_row(unsigned int row_indx);
+    ColMatrix(unsigned int nrow, unsigned int ncol);
+    ColMatrix(const Rcpp::NumericMatrix& rmat);
 
-    double get_max_given_col(unsigned int col_indx);
+    unsigned int nRow() const {return mNumRows;}
+    unsigned int nCol() const {return mNumCols;}
 
-    double get_min_given_col(unsigned int col_indx);
+    matrix_data_t& operator()(unsigned int r, unsigned int c) {return mCols[c][r];}
+    matrix_data_t operator()(unsigned int r, unsigned int c) const {return mCols[c][r];}
 
-    // ********************* OTHER METHODS *****************************************
-    // cal_mean calculates the mean of a matrix over all its entries.
-    double cal_mean() const;
+    Vector& getCol(unsigned int col);
 
-    double cal_totalsum() const;
-
-    void matrix_update(const std::vector< std::vector<double> > &delMatrix);
-
-    void matrix_Elem_update(const std::vector< boost::tuple<unsigned int, unsigned int, double> > &the_matrixElemChange,
-                            char oper_type, unsigned int nChange);
-
-    // ********************* DISPLAY METHODS *****************************************
-
-    void display_matrixF(std::ofstream &outputFile);
-
+    void elemUpdate(const std::vector<ElementChange> &changes);
 };
 
 #endif

@@ -54,35 +54,38 @@ void GibbsSampler::output_atomicdomain(char atomic_label, unsigned long Samp_cyc
 }
 
 // -----------------------------------------------------------------------------
-void GibbsSampler::compute_statistics_prepare_matrices(unsigned long statindx) {
-    double **A = _AMatrix.get_matrix();
-    double **P = _PMatrix.get_matrix();
-    vector<double> k(_nFactor);  // normalized vector
+void GibbsSampler::compute_statistics_prepare_matrices(unsigned long statindx)
+{
+    std::vector<double> k(_nFactor);  // normalized vector
 
     // compute the normalization vector
-    for (int m = 0; m < _nFactor; ++m) {
+    for (int m = 0; m < _nFactor; ++m)
+    {
         k[m] = 0.;
-
-        for (int n = 0; n < _nCol; ++n) {
-            k[m] += P[m][n];
+        for (int n = 0; n < _nCol; ++n)
+        {
+            k[m] += _PMatrix(m,n);
         }
 
-        if (k[m] == 0) { // when the whole row of P is zero, then don't do anything
+        if (k[m] == 0) // when the whole row of P is zero, then don't do anything
+        {
             k[m] = 1.0;
         }
     }
 
     // construct the mean and var matrices at statindx = 1
-    if (statindx == 1) {
+    if (statindx == 1)
+    {
         _Amean = new double * [_nRow];
 
-        for (int m = 0; m < _nRow ; ++m) {
+        for (int m = 0; m < _nRow ; ++m)
+        {
             _Amean[m] = new double [_nFactor];
         }
 
         for (int m = 0; m < _nRow; ++m) {
             for (int n = 0; n < _nFactor; ++n) {
-                _Amean[m][n] = A[m][n] * k[n];
+                _Amean[m][n] = _AMatrix(m,n) * k[n];
             }
         }
 
@@ -94,7 +97,7 @@ void GibbsSampler::compute_statistics_prepare_matrices(unsigned long statindx) {
 
         for (int m = 0; m < _nRow; ++m) {
             for (int n = 0; n < _nFactor; ++n) {
-                _Asd[m][n] = pow(A[m][n] * k[n], 2);
+                _Asd[m][n] = pow(_AMatrix(m,n) * k[n], 2);
             }
         }
 
@@ -106,7 +109,7 @@ void GibbsSampler::compute_statistics_prepare_matrices(unsigned long statindx) {
 
         for (int m = 0; m < _nFactor; ++m) {
             for (int n = 0; n < _nCol; ++n) {
-                _Pmean[m][n] = P[m][n] / k[m];
+                _Pmean[m][n] = _PMatrix(m,n) / k[m];
             }
         }
 
@@ -118,34 +121,43 @@ void GibbsSampler::compute_statistics_prepare_matrices(unsigned long statindx) {
 
         for (int m = 0; m < _nFactor; ++m) {
             for (int n = 0; n < _nCol; ++n) {
-                _Psd[m][n] = pow(P[m][n] / k[m] , 2);
+                _Psd[m][n] = pow(_PMatrix(m,n) / k[m] , 2);
             }
         }
     } // end of if-block for matrix construction statindx == 1
 
     // increment the mean and var matrices at statindx != 1
-    if (statindx > 1) {
-        for (int m = 0; m < _nRow; ++m) {
-            for (int n = 0; n < _nFactor; ++n) {
-                _Amean[m][n] += A[m][n] * k[n];
+    if (statindx > 1)
+    {
+        for (int m = 0; m < _nRow; ++m)
+        {
+            for (int n = 0; n < _nFactor; ++n)
+            {
+                _Amean[m][n] += _AMatrix(m,n) * k[n];
             }
         }
 
-        for (int m = 0; m < _nRow; ++m) {
-            for (int n = 0; n < _nFactor; ++n) {
-                _Asd[m][n] += pow(A[m][n] * k[n], 2);
+        for (int m = 0; m < _nRow; ++m)
+        {
+            for (int n = 0; n < _nFactor; ++n)
+            {
+                _Asd[m][n] += pow(_AMatrix(m,n) * k[n], 2);
             }
         }
 
-        for (int m = 0; m < _nFactor; ++m) {
-            for (int n = 0; n < _nCol; ++n) {
-                _Pmean[m][n] += P[m][n] / k[m];
+        for (int m = 0; m < _nFactor; ++m)
+        {
+            for (int n = 0; n < _nCol; ++n)
+            {
+                _Pmean[m][n] += _PMatrix(m,n) / k[m];
             }
         }
 
-        for (int m = 0; m < _nFactor; ++m) {
-            for (int n = 0; n < _nCol; ++n) {
-                _Psd[m][n] += pow(P[m][n] / k[m], 2);
+        for (int m = 0; m < _nFactor; ++m)
+        {
+            for (int n = 0; n < _nCol; ++n)
+            {
+                _Psd[m][n] += pow(_PMatrix(m,n) / k[m], 2);
             }
         }
     } // end of if-block for matrix incrementation statindx > 1
@@ -225,32 +237,34 @@ void GibbsSampler::compute_statistics(unsigned int Nstat,
 // *****************************************************************************
 // Adaptation from the original code:
 
-bool GibbsSampler::checkOtherMatrix(char the_matrix_label, unsigned int iRow, unsigned int iCol,
-                                    double const *const *otherMatrix) {
+bool GibbsSampler::checkOtherMatrix(char the_matrix_label, unsigned int iRow,
+unsigned int iCol, const Matrix &otherMatrix)
+{
     unsigned int otherDim;
 
     // check that there is mass for this pattern in the P Matrix
-    if (the_matrix_label == 'A') {
-        for (otherDim = 0; otherDim < _nCol; otherDim++) {
-            if (otherMatrix[iCol][otherDim] > epsilon) {
+    if (the_matrix_label == 'A')
+    {
+        for (otherDim = 0; otherDim < _nCol; otherDim++)
+        {
+            if (otherMatrix(iCol,otherDim) > epsilon)
+            {
                 return true;
             }
         }
-
         return false;
     }
-
-    // check that there is mass for this pattern in the A Matrix
-    else {
-        for (otherDim = 0; otherDim < _nRow; otherDim++) {
-            if (otherMatrix[otherDim][iRow] > epsilon) {
+    else // check that there is mass for this pattern in the A Matrix
+    {
+        for (otherDim = 0; otherDim < _nRow; otherDim++)
+        {
+            if (otherMatrix(otherDim,iRow) > epsilon)
+            {
                 return true;
             }
         }
-
         return false;
     }
-
     return false;
 }
 
@@ -258,12 +272,10 @@ bool GibbsSampler::checkOtherMatrix(char the_matrix_label, unsigned int iRow, un
 
 //-----------------------------------------------------------------
 double GibbsSampler::getMass(char the_matrix_label, double origMass,
-                             unsigned int iRow,
-                             unsigned int iCol,
-                             double const *const *otherMatrix,
-                             double const *const *currentChainMatrix,
-                             double const *const *D, double const *const *S,
-                             double rng) {
+unsigned int iRow, unsigned int iCol, const Matrix &otherMatrix,
+const Matrix &currentChainMatrix, const Matrix &D, const Matrix &S,
+double rng)
+{
     double DOUBLE_POSINF = numeric_limits<double>::max();
     unsigned int iGene = 0;
     unsigned int iPattern = 0;
@@ -296,16 +308,16 @@ double GibbsSampler::getMass(char the_matrix_label, double origMass,
         case 'A': {
             //double Aeff;
             for (iSample = 0; iSample < _nCol; iSample++) {
-                mock = D[iGene][iSample];
+                mock = D(iGene,iSample);
 
                 for (jPattern = 0; jPattern < _nFactor; jPattern++) {
-                    mock -= currentChainMatrix[iGene][jPattern] * otherMatrix[jPattern][iSample];
+                    mock -= currentChainMatrix(iGene,jPattern) * otherMatrix(jPattern,iSample);
                 }
 
-                s += _annealingTemperature * pow(otherMatrix[iPattern][iSample], 2) /
-                     (2 * pow(S[iGene][iSample], 2));
-                su += _annealingTemperature * otherMatrix[iPattern][iSample] * mock /
-                      (2 * pow(S[iGene][iSample], 2));
+                s += _annealingTemperature * pow(otherMatrix(iPattern,iSample), 2) /
+                     (2 * pow(S(iGene,iSample), 2));
+                su += _annealingTemperature * otherMatrix(iPattern,iSample) * mock /
+                      (2 * pow(S(iGene,iSample), 2));
             }
 
             break;
@@ -313,16 +325,16 @@ double GibbsSampler::getMass(char the_matrix_label, double origMass,
 
         case 'P': {
             for (iGene = 0; iGene < _nRow; iGene++) {
-                mock = D[iGene][iSample];
+                mock = D(iGene,iSample);
 
                 for (jPattern = 0; jPattern < _nFactor; jPattern++) {
-                    mock -= otherMatrix[iGene][jPattern] * currentChainMatrix[jPattern][iSample];
+                    mock -= otherMatrix(iGene,jPattern) * currentChainMatrix(jPattern,iSample);
                 }
 
-                s += _annealingTemperature * pow(otherMatrix[iGene][iPattern], 2) /
-                     (2 * pow(S[iGene][iSample], 2));
-                su += _annealingTemperature * otherMatrix[iGene][iPattern] * mock /
-                      (2 * pow(S[iGene][iSample], 2));
+                s += _annealingTemperature * pow(otherMatrix(iGene,iPattern), 2) /
+                     (2 * pow(S(iGene,iSample), 2));
+                su += _annealingTemperature * otherMatrix(iGene,iPattern) * mock /
+                      (2 * pow(S(iGene,iSample), 2));
             }
 
             break;
@@ -333,12 +345,12 @@ double GibbsSampler::getMass(char the_matrix_label, double origMass,
     double sd = 1. / sqrt(2 * s);
     // note: is bounded below by zero so have to use inverse sampling!
     // based upon algorithm in DistScalarRmath.cc (scalarRandomSample)
-    double plower = Random::pnorm(0., mean, sd);
+    double plower = Random::p_norm(0., mean, sd);
     double pupper = 1.;
     double u = plower + Random::uniform() * (pupper - plower);
     // -------------------------------------------------------------
     // this line seems to be misplaced.
-    // double newMass = Random::qnorm(u, mean, sd, DOUBLE_NEGINF, 0);
+    // double newMass = Random::q_norm(u, mean, sd, DOUBLE_NEGINF, 0);
     double newMass = 0;
     // ------------------
 
@@ -354,8 +366,8 @@ double GibbsSampler::getMass(char the_matrix_label, double origMass,
     } // end of first comparison
 
     else if (plower >= 0.99) {
-        double tmp1 = Random::dnorm(0, mean, sd);
-        double tmp2 = Random::dnorm(10 * lambda, mean, sd);
+        double tmp1 = Random::d_norm(0, mean, sd);
+        double tmp2 = Random::d_norm(10 * lambda, mean, sd);
 
         if ((tmp1 > epsilon) && (fabs(tmp1 - tmp2) < epsilon))   {
             if (origMass < 0) {   // death case
@@ -367,7 +379,7 @@ double GibbsSampler::getMass(char the_matrix_label, double origMass,
     } // end of second comparison
 
     else {
-        newMass = Random::qnorm(u, mean, sd);  // both death and birth
+        newMass = Random::q_norm(u, mean, sd);  // both death and birth
     }  // end of if-block for the remaining case
 
     // limit the mass range

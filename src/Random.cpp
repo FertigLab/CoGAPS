@@ -58,31 +58,31 @@ uint64_t Random::uniform64()
     return dist(rng);
 }
 
-double Random::pexp(double p, double rate)
+double Random::p_exp(double p, double rate)
 {
     boost::math::exponential_distribution<> exp(rate);
     return cdf(exp, p);
 }
 
-double Random::qexp(double q, double rate)
+double Random::q_exp(double q, double rate)
 {
     boost::math::exponential_distribution<> exp(rate);
     return quantile(exp, q);
 }
 
-double Random::dgamma(double d, double shape, double scale)
+double Random::d_gamma(double d, double shape, double scale)
 {
     boost::math::gamma_distribution<> gam(shape, scale);
     return pdf(gam, d);
 }
 
-double Random::pgamma(double p, double shape, double scale)
+double Random::p_gamma(double p, double shape, double scale)
 {
     boost::math::gamma_distribution<> gam(shape, scale);
     return cdf(gam, p);
 }
 
-double Random::qgamma(double q, double shape, double scale)
+double Random::q_gamma(double q, double shape, double scale)
 {
     if (q < Q_GAMMA_THRESHOLD)
     {
@@ -95,19 +95,19 @@ double Random::qgamma(double q, double shape, double scale)
     }
 }
 
-double Random::dnorm(double d, double mean, double sd)
+double Random::d_norm(double d, double mean, double sd)
 {
     boost::math::normal_distribution<> norm(mean, sd);
     return pdf(norm, d);
 }
 
-double Random::qnorm(double q, double mean, double sd)
+double Random::q_norm(double q, double mean, double sd)
 {
     boost::math::normal_distribution<> norm(mean, sd);
     return quantile(norm, q);
 }
 
-double Random::pnorm(double p, double mean, double sd)
+double Random::p_norm(double p, double mean, double sd)
 {
     boost::math::normal_distribution<> norm(mean, sd);
     return cdf(norm, p);

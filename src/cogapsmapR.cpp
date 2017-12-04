@@ -17,6 +17,7 @@
 #include <boost/algorithm/string.hpp>
 // ------------------------------------------------------
 #include "Random.h"   // for incorporating a random number generator.
+#include <RcppArmadillo.h>
 #include "Matrix.h"    // for incorporating a Matrix class
 #include "AtomicSupport.h"  // for incorporating an Atomic class
 #include "GAPSNorm.h"  // for incorporating calculation of statistics in cogaps.
@@ -24,7 +25,7 @@
 // does all the atomic space to matrix conversion
 // and sampling actions.
 #include "GibbsSamplerMap.h"
-#include <RcppArmadillo.h>
+
 // ------------------------------------------------------
 
 using namespace std;
@@ -201,7 +202,7 @@ Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataF
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.
-    GibbsSampMap.init_AMatrix_and_PMatrix(); // initialize A and P matrices
+    //GibbsSampMap.init_AMatrix_and_PMatrix(); // initialize A and P matrices
     //This Section now is to handle the many possibilities for Variable Bin Sizes (Priors)
     //A for variable A bins, P for variable P Bins, B for both and N for regular uniform bin sizes
     char fixedDomain = fixedDomainStr[0];

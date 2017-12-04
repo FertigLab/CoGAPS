@@ -62,7 +62,7 @@ vector <vector <vector <double> > > GibbsSampler::getNormedMatrices()
 
         for (int n = 0; n < _nCol; ++n)
         {
-            k[m] += _PMatrix.at(m,n);
+            k[m] += _PMatrix(m,n);
         }
 
         if (k[m] == 0) // when the whole row of P is zero, then don't do anything
@@ -75,7 +75,7 @@ vector <vector <vector <double> > > GibbsSampler::getNormedMatrices()
     {
         for (int n = 0; n < _nFactor; ++n)
         {
-            AMatrixNormed[m][n] = _AMatrix.at(m,n) * k[n];
+            AMatrixNormed[m][n] = _AMatrix(m,n) * k[n];
         }
     }
 
@@ -83,7 +83,7 @@ vector <vector <vector <double> > > GibbsSampler::getNormedMatrices()
     {
         for (int n = 0; n < _nCol; ++n)
         {
-            PMatrixNormed[m][n] = _PMatrix.at(m,n) / k[m];
+            PMatrixNormed[m][n] = _PMatrix(m,n) / k[m];
         }
     }
 
@@ -159,12 +159,9 @@ vector <vector <double> > GibbsSampler::createSamplePMat(map <unsigned long long
 
 // Manually calculate the chi squared value based on the 2 matrices passed in
 double GibbsSampler::ManualCalcChiSqu(vector <vector <double> > SampleAMat, vector <vector <double> > SamplePMat) {
-    Matrix SampleAMatrix(SampleAMat, 'S');
-    Matrix SamplePMatrix(SamplePMat, 'S');
-    double **D = _DMatrix.get_matrix();
-    double **S = _SMatrix.get_matrix();
-    double **A = SampleAMatrix.get_matrix();
-    double **P = SamplePMatrix.get_matrix();
-    return GAPSNorm::calChi2(D, S, A, P, _nRow, _nCol, _nFactor);
+    Matrix SampleAMatrix(SampleAMat);
+    Matrix SamplePMatrix(SamplePMat);
+    return GAPSNorm::calChi2(_DMatrix, _SMatrix, SampleAMatrix,
+        SamplePMatrix, _nFactor);
 }
 

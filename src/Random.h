@@ -16,14 +16,14 @@ namespace Random
     double normal(double mean, double var);
     double exponential(double lambda);
 
-    double pexp(double p, double rate);
-    double qexp(double q, double rate);
-    double dgamma(double d, double shape, double scale);
-    double pgamma(double p, double shape, double scale);
-    double qgamma(double q, double shape, double scale);
-    double dnorm(double d, double mean, double sd);
-    double qnorm(double q, double mean, double sd);
-    double pnorm(double p, double mean, double sd);
+    double p_exp(double p, double rate);
+    double q_exp(double q, double rate);
+    double d_gamma(double d, double shape, double scale);
+    double p_gamma(double p, double shape, double scale);
+    double q_gamma(double q, double shape, double scale);
+    double d_norm(double d, double mean, double sd);
+    double q_norm(double q, double mean, double sd);
+    double p_norm(double p, double mean, double sd);
 }
 
 #endif

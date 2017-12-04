@@ -45,17 +45,17 @@ class GibbsSamplerMap : public GibbsSampler {
     // **************** METHODS FOR COMPUTING LIKELIHOOD FUNCTIONS *****************
 
     double computeDeltaLLBDMap(char the_matrix_label,
-                               double const *const *D,
-                               double const *const *S,
-                               double const *const *A,
-                               double const *const *P,
+                               const Matrix &D,
+                               const Matrix &S,
+                               const Matrix &A,
+                               const Matrix &P,
                                vector <double> &newPat, unsigned int chPat);
 
     double computeDeltaLLMEMap(char the_matrix_label,
-                               double const *const *D,
-                               double const *const *S,
-                               double const *const *A,
-                               double const *const *P,
+                               const Matrix &D,
+                               const Matrix &S,
+                               const Matrix &A,
+                               const Matrix &P,
                                vector <double> &newPat1, unsigned int chPat1,
                                vector <double> &newPat2, unsigned int chPat2);
 

@@ -75,7 +75,7 @@ class GibbsSampler {
     vector<unsigned int> _Row_changed;
     vector<unsigned int> _Col_changed;
     vector<double> _mass_changed;
-    vector<boost::tuple<unsigned int, unsigned int, double> > _matrixElemChange;
+    vector<ElementChange> _matrixElemChange;
 
     map<unsigned long long, double> _new_atomicProposal;
     unsigned int _new_nChange_atomicProposal;
@@ -84,7 +84,7 @@ class GibbsSampler {
     vector<unsigned int> _new_Row_changed;
     vector<unsigned int> _new_Col_changed;
     vector<double> _new_mass_changed;
-    vector<boost::tuple<unsigned int, unsigned int, double> > _new_matrixElemChange;
+    vector<ElementChange> _new_matrixElemChange;
 
 
 
@@ -98,7 +98,7 @@ class GibbsSampler {
   public:
 
     // ******************** CONSTRUCTOR ********************************************
-    GibbsSampler() {};
+    //GibbsSampler() {};
 
     GibbsSampler(unsigned long nEquil, unsigned long nSample, unsigned int nFactor,
                  double alphaA, double alphaP, double nMaxA, double nMaxP,
@@ -106,14 +106,14 @@ class GibbsSampler {
                  double max_gibbsmass_paraA, double max_gibbsmass_paraP,
                  unsigned long long atomicSize,
                  char label_A, char label_P, char label_D, char label_S,
-                 vector<vector<double> > &DVector, vector<vector<double> > &SVector,
+                 const vector<vector<double> > &DVector, const vector<vector<double> > &SVector,
                  const string &simulation_id);
 
     ~GibbsSampler() {};
 
 
     // *************** METHOS FOR INITIALIZATION, DISPALY, OUTPUT ***********************
-    void init_AMatrix_and_PMatrix();
+    //void init_AMatrix_and_PMatrix();
 
     void init_AAtomicdomain_and_PAtomicdomain();
 
@@ -161,12 +161,12 @@ class GibbsSampler {
     * @return the change
     */
     double computeDeltaLL(char the_matrix_label,
-                          double const *const *D,
-                          double const *const *S,
-                          double const *const *A,
-                          double const *const *P,
+                          const Matrix &D,
+                          const Matrix &S,
+                          const Matrix &A,
+                          const Matrix &P,
                           unsigned int the_nChange_matrixElemChange,
-                          const vector<boost::tuple<unsigned int, unsigned int, double> > the_matrixElemChange);
+                          const vector<ElementChange> the_matrixElemChange);
     /**
       * @short Extract information of the proposal made in the atomic space.
       *  Assuming an _atomicProposal, this method instantiates the
@@ -211,28 +211,28 @@ class GibbsSampler {
     */
 
     bool death(char the_matrix_label,
-               double const *const *D,
-               double const *const *S,
-               double **AOrig,
-               double **POrig);
+               const Matrix &D,
+               const Matrix &S,
+               const Matrix &AOrig,
+               const Matrix &POrig);
 
     bool birth(char the_matrix_label,
-               double const *const *D,
-               double const *const *S,
-               double **AOrig,
-               double **POrig);
+               const Matrix &D,
+               const Matrix &S,
+               const Matrix &AOrig,
+               const Matrix &POrig);
 
     bool move(char the_matrix_label,
-              double const *const *D,
-              double const *const *S,
-              double **AOrig,
-              double **POrig);
+              const Matrix &D,
+              const Matrix &S,
+              const Matrix &AOrig,
+              const Matrix &POrig);
 
     bool exchange(char the_matrix_label,
-                  double const *const *D,
-                  double const *const *S,
-                  double **AOrig,
-                  double **POrig);
+                  const Matrix &D,
+                  const Matrix &S,
+                  const Matrix &AOrig,
+                  const Matrix &POrig);
 
 
     // ************ METHODS FOR LOOPING AND CONTROL ********************************
@@ -276,7 +276,7 @@ class GibbsSampler {
       now consolidated to one method called checkOtherMatrix.
      */
     bool checkOtherMatrix(char the_matrix_label, unsigned int iRow, unsigned int iCol,
-                          double const *const *otherMatrix);
+                          const Matrix &otherMatrix);
 
     /**
      * @short Give the atom a mass based on Gibbs Sampling, if it can be used
@@ -285,9 +285,9 @@ class GibbsSampler {
     double getMass(char the_matrix_label, double origMass,
                    unsigned int iRow,
                    unsigned int iCol,
-                   double const *const *otherMatrix,
-                   double const *const *currentChainMatrix,
-                   double const *const *D, double const *const *S,
+                   const Matrix &otherMatrix,
+                   const Matrix &currentChainMatrix,
+                   const Matrix &D, const Matrix &S,
                    double rng);
 };
 #endif

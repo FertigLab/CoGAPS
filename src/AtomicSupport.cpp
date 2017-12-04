@@ -465,8 +465,8 @@ void AtomicSupport::ProposeExchange() {
         newMass2 = 0;
 
     } else {
-        double pupper = Random::pgamma(atomMass1 + atomMass2, 2., 1. / _lambda);
-        double newValue = Random::qgamma(Random::uniform(0., pupper), 2., 1. / _lambda);
+        double pupper = Random::p_gamma(atomMass1 + atomMass2, 2., 1. / _lambda);
+        double newValue = Random::q_gamma(Random::uniform(0., pupper), 2., 1. / _lambda);
 
         if (atomMass1 > atomMass2) {
             //swap with bias to left
