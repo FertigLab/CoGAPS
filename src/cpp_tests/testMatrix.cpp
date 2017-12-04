@@ -1,5 +1,6 @@
 #include "catch.h"
 #include "../Matrix.h"
+#include "../MatAlgo.h"
 
 #include <algorithm>
 #include <cmath>
@@ -15,8 +16,8 @@ TEST_CASE("Test Matrix.h")
     data.push_back(std::vector<double>(row2, row2 + 3));
     data.push_back(std::vector<double>(row3, row3 + 3));
     
-    Matrix testMat (data, 'A');
-    REQUIRE(testMat.cal_mean() == 1.0);
-    REQUIRE(testMat.cal_totalsum() == 9.0);
+    Matrix testMat (data);
+    REQUIRE(MatAlgo::mean(testMat) == 1.0);
+    REQUIRE(MatAlgo::sum(testMat) == 9.0);
 }
 
