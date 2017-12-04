@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 
-#define Q_GAMMA_THRESHOLD 1E-6
+#define Q_GAMMA_THRESHOLD 0.01
 #define Q_GAMMA_MIN_VALUE 0.0
 
 //typedef boost::random::mt19937 RNGType;
@@ -58,7 +58,8 @@ uint64_t Random::uniform64()
     return dist(rng);
 }
 
-double Random::p_exp(double p, double rate)
+/*double Random::p_exp(double p, double rate)
+>>>>>>> develop
 {
     boost::math::exponential_distribution<> exp(rate);
     return cdf(exp, p);
@@ -68,7 +69,7 @@ double Random::q_exp(double q, double rate)
 {
     boost::math::exponential_distribution<> exp(rate);
     return quantile(exp, q);
-}
+}*/
 
 double Random::d_gamma(double d, double shape, double scale)
 {
