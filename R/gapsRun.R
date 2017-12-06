@@ -49,6 +49,7 @@
 #'@param max_gibbmass_paraP limit truncated normal to max size
 #'@param seed Set seed for reproducibility. Positive values provide initial seed, negative values just use the time.
 #'@param messages Display progress messages
+#'@param singleCellRNASeq T/F indicating if the data is single cell RNA-seq data
 #'@export
 
 #--CHANGES 1/20/15--
@@ -61,7 +62,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                     numSnapshots = 100, alphaA = 0.01,
                     nMaxA = 100000, max_gibbmass_paraA = 100.0,
                     alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0,
-                    seed=-1, messages=TRUE)
+                    seed=-1, messages=TRUE, singleCellRNASeq=FALSE)
 {
   #Begin data type error checking code
   charDataErrors = c(!is.character(simulation_id), !is.character(fixedDomain))
@@ -192,7 +193,8 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   }
 
   # call to C++ Rcpp code
-  cogapResult = cogaps(D, S, ABins, PBins, Config, ConfigNums, seed, messages);
+  cogapResult = cogaps(D, S, ABins, PBins, Config, ConfigNums, seed, messages,
+    singleCellRNASeq);
 
   # convert returned files to matrices to simplify visualization and processing
   cogapResult$Amean = as.matrix(cogapResult$Amean);

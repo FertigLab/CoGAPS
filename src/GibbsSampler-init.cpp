@@ -6,16 +6,35 @@ unsigned long long atomicSize = std::numeric_limits<unsigned long long>::max();
 // -----------------------------------------------------------------------------
 
 // ******************** CONSTRUCTOR ********************************************
-GibbsSampler:: GibbsSampler(unsigned long nEquil, unsigned long nSample,
-unsigned int nFactor, double alphaA, double alphaP, double nMaxA, double nMaxP,
-unsigned long nIterA, unsigned long nIterP, double max_gibbsmass_paraA,
-double max_gibbsmass_paraP, unsigned long long atomicSize, char label_A,
-char label_P, char label_D, char label_S, const vector< vector<double> > &DVector,
-const vector< vector<double> > &SVector, const string &simulation_id)
-    : _DMatrix(DVector), _SMatrix(SVector), _AMatrix(DVector.size(), nFactor),
-    _PMatrix(nFactor, DVector[0].size()), _Amean(DVector.size(), nFactor),
-    _Asd(DVector.size(), nFactor), _Pmean(nFactor, DVector[0].size()),
-    _Psd(nFactor, DVector[0].size())
+GibbsSampler:: GibbsSampler(
+    unsigned long nEquil,
+    unsigned long nSample,
+    unsigned int nFactor,
+    double alphaA,
+    double alphaP,
+    double nMaxA,
+    double nMaxP,
+    unsigned long nIterA,
+    unsigned long nIterP,
+    double max_gibbsmass_paraA,
+    double max_gibbsmass_paraP,
+    unsigned long long atomicSize,
+    char label_A,
+    char label_P,
+    char label_D,
+    char label_S,
+    const vector< vector<double> > &DVector,
+    const vector< vector<double> > &SVector,
+    const string &simulation_id,
+    bool singleCellRNASeq)
+: _DMatrix(DVector),
+  _SMatrix(SVector),
+  _AMatrix(DVector.size(), nFactor),
+  _PMatrix(nFactor, DVector[0].size()),
+  _Amean(DVector.size(), nFactor),
+  _Asd(DVector.size(), nFactor),
+  _Pmean(nFactor, DVector[0].size()),
+  _Psd(nFactor, DVector[0].size())
 {
     _nEquil = nEquil;
     _nSample = nSample;
@@ -37,7 +56,7 @@ const vector< vector<double> > &SVector, const string &simulation_id)
     _iter = 1;  // tmp use
     _annealingTemperature = 0.4; // tmp use
     _sysChi2 = 0.0; // tmp use
-    mSingleCellRNASeq = false;
+    mSingleCellRNASeq = singleCellRNASeq;
 }
 
 void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain() {
@@ -63,7 +82,9 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain() {
 }
 
 // For fixing one domain in R
-void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, vector<vector<double> > ReadBinProbs) {
+void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain,
+std::vector< std::vector<double> > ReadBinProbs)
+{
     // extract information from D as parameters
     _nRow = _DMatrix.nRow();
     _nCol = _DMatrix.nCol();
@@ -91,8 +112,9 @@ void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(char fixeddomain, vector
 }
 
 // For fixing two domains in R
-void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(vector<vector<double> > ReadBinProbsA,
-        vector<vector<double> > ReadBinProbsP) {
+void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain(
+vector<vector<double> > ReadBinProbsA, vector<vector<double> > ReadBinProbsP)
+{
     // extract information from D as parameters
     _nRow = _DMatrix.nRow();
     _nCol = _DMatrix.nCol();

@@ -44,8 +44,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cogaps
-Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed, bool messages);
-RcppExport SEXP _CoGAPS_cogaps(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP seedSEXP, SEXP messagesSEXP) {
+Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed, bool messages, bool singleCellRNASeq);
+RcppExport SEXP _CoGAPS_cogaps(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP seedSEXP, SEXP messagesSEXP, SEXP singleCellRNASeqSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -57,7 +57,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
     Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< bool >::type messages(messagesSEXP);
-    rcpp_result_gen = Rcpp::wrap(cogaps(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, seed, messages));
+    Rcpp::traits::input_parameter< bool >::type singleCellRNASeq(singleCellRNASeqSEXP);
+    rcpp_result_gen = Rcpp::wrap(cogaps(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, seed, messages, singleCellRNASeq));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -92,7 +93,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_CoGAPS_cogapsMap", (DL_FUNC) &_CoGAPS_cogapsMap, 9},
     {"_CoGAPS_cogapsMapTest", (DL_FUNC) &_CoGAPS_cogapsMapTest, 8},
-    {"_CoGAPS_cogaps", (DL_FUNC) &_CoGAPS_cogaps, 8},
+    {"_CoGAPS_cogaps", (DL_FUNC) &_CoGAPS_cogaps, 9},
     {"_CoGAPS_cogapsTest", (DL_FUNC) &_CoGAPS_cogapsTest, 7},
     {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 0},
     {NULL, NULL, 0}

@@ -9,8 +9,8 @@ cogapsMapTest <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Con
     .Call('_CoGAPS_cogapsMapTest', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, seed)
 }
 
-cogaps <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, seed = -1L, messages = FALSE) {
-    .Call('_CoGAPS_cogaps', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, seed, messages)
+cogaps <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, seed = -1L, messages = FALSE, singleCellRNASeq = FALSE) {
+    .Call('_CoGAPS_cogaps', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, seed, messages, singleCellRNASeq)
 }
 
 cogapsTest <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, seed = -1L) {
