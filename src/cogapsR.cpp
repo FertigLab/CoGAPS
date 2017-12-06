@@ -34,9 +34,11 @@ using namespace gaps;
 using std::vector;
 
 // [[Rcpp::export]]
-Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame,
-                  Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed=-1, 
-                  bool messages=false) {
+Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame,
+Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame,
+Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed=-1, 
+bool messages=false, bool singleCellRNASeq=false)
+{
     // ===========================================================================
     // Initialization of the random number generator.
     // Different seeding methods:
@@ -192,7 +194,7 @@ Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFram
                            max_gibbsmass_paraA, max_gibbsmass_paraP,
                            atomicSize,
                            label_A, label_P, label_D, label_S,
-                           DVector, SVector, simulation_id);
+                           DVector, SVector, simulation_id, singleCellRNASeq);
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.

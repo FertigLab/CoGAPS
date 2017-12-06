@@ -104,7 +104,7 @@ class GibbsSampler {
                  unsigned long long atomicSize,
                  char label_A, char label_P, char label_D, char label_S,
                  const vector<vector<double> > &DVector, const vector<vector<double> > &SVector,
-                 const string &simulation_id);
+                 const string &simulation_id, bool singleCellRNASeq=false);
 
     ~GibbsSampler() {};
 
