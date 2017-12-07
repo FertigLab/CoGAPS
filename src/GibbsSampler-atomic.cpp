@@ -35,11 +35,11 @@ unsigned int GibbsSampler::getCol(char matrix_label , unsigned int iBin) {
 unsigned int GibbsSampler::getTotNumAtoms(char matrix_label) {
     switch (matrix_label) {
         case 'A': {
-            return _AAtomicdomain.getNAtom();
+            return _AAtomicdomain.numAtoms();
         }
 
         case 'P': {
-            return _PAtomicdomain.getNAtom();
+            return _PAtomicdomain.numAtoms();
         }
     }
 
@@ -96,21 +96,23 @@ vector <vector <vector <double> > > GibbsSampler::getNormedMatrices()
 // ======CoGAPS Test methods============
 
 // Get the full atomic domain from the atomic space
-map <unsigned long long, double> GibbsSampler::getAtomicDomain(char matrix_label) {
-    map <unsigned long long, double> zero;
+/*std::map <unsigned long long, double> GibbsSampler::getAtomicDomain(char matrix_label)
+{
+    std::map <uint64_t, double> zero;
 
-    if (matrix_label == 'A') {
+    if (matrix_label == 'A')
+    {
         return _AAtomicdomain.getDomain();
-
-    } else if (matrix_label == 'P') {
+    }
+    else if (matrix_label == 'P')
+    {
         return _PAtomicdomain.getDomain();
     }
-
     return zero;
-}
+}*/
 
 // Manually calculate the matrix A from the atomic space passed in.
-vector <vector <double> > GibbsSampler::createSampleAMat(map <unsigned long long, double> ADomain) {
+/*vector <vector <double> > GibbsSampler::createSampleAMat(map <unsigned long long, double> ADomain) {
     // Make that a matrix
     vector <vector <double> > SampleAMatrix;
     SampleAMatrix.resize(_nRow);
@@ -156,7 +158,7 @@ vector <vector <double> > GibbsSampler::createSamplePMat(map <unsigned long long
 
     return SamplePMatrix;
 }
-
+*/
 // Manually calculate the chi squared value based on the 2 matrices passed in
 double GibbsSampler::ManualCalcChiSqu(vector <vector <double> > SampleAMat, vector <vector <double> > SamplePMat) {
     Matrix SampleAMatrix(SampleAMat);

@@ -30,7 +30,6 @@
 
 //namespace bpo = boost::program_options;
 using namespace std;
-using namespace gaps;
 using std::vector;
 
 // [[Rcpp::export]]

@@ -29,7 +29,6 @@
 // ------------------------------------------------------
 
 using namespace std;
-using namespace gaps;
 using std::vector;
 
 // [[Rcpp::export]]

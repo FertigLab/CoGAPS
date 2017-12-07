@@ -1,28 +1,6 @@
 #include "GibbsSampler.h"
 #include "Matrix.h"
 
-#include <cstring>
-
-// clear all quantities related to the local matrix proposal
-void GibbsSampler::clear_Proposal()
-{
-    _Row_changed.clear();
-    _Col_changed.clear();
-    _mass_changed.clear();
-    _atomicProposal.clear();
-    _matrixElemChange.clear();
-}
-
-// clear all quantities related to the new local matrix proposal
-void GibbsSampler::clear_new_Proposal()
-{
-    _new_Row_changed.clear();
-    _new_Col_changed.clear();
-    _new_mass_changed.clear();
-    _new_atomicProposal.clear();
-    _new_matrixElemChange.clear();
-}
-
 void GibbsSampler::local_display_matrix2F(std::ofstream &outputFile, double **Mat_ptr,
 unsigned int n_row, unsigned int n_col)
 {
@@ -40,20 +18,13 @@ unsigned int n_row, unsigned int n_col)
 // -----------------------------------------------------------------------------
 void GibbsSampler::output_atomicdomain(char atomic_label, unsigned long Samp_cycle)
 {
-    char outputFilename[80];
-
-    switch (atomic_label)
+    if (atomic_label == 'A')
     {
-        case 'A':
-            strcpy(outputFilename, _simulation_id.c_str());
-            strcat(outputFilename, "_A_atomicdomain.txt");
-            _AAtomicdomain.writeAtomicInfo(outputFilename, Samp_cycle);
-            break;
-        case 'P':
-            strcpy(outputFilename, _simulation_id.c_str());
-            strcat(outputFilename, "_P_atomicdomain.txt");
-            _PAtomicdomain.writeAtomicInfo(outputFilename, Samp_cycle);
-            break;
+        _AAtomicdomain.write("_A_atomicdomain.txt", Samp_cycle!=1);    
+    }
+    else if (atomic_label == 'P')
+    {
+        _PAtomicdomain.write("_P_atomicdomain.txt", Samp_cycle!=1);
     }
 }
 

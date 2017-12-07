@@ -16,7 +16,6 @@
 #include <limits>
 #include <stdexcept>
 
-using namespace gaps;
 using namespace std;
 using std::vector;
 
@@ -55,39 +54,15 @@ class GibbsSampler {
     double _max_gibbsmassP;  // max gibbs mass for P
     unsigned long _atomicSize; // number of atomic points
 
-    char _label_A;  // label for matrix A
-    char _label_P;  // label for matrix P
-    char _label_D;  // label for matrix D
-    char _label_S;  // label for matrix S
-
     unsigned long _iter;
     double _annealingTemperature;
 
     AtomicSupport _AAtomicdomain, _PAtomicdomain;
     Matrix _AMatrix, _PMatrix, _DMatrix, _SMatrix;
 
-    map<unsigned long long, double> _atomicProposal;
-    unsigned int _nChange_atomicProposal;
-    char _oper_type; // label for the operation type
     double _sysChi2; // the chi2 value for the system
 
-    unsigned int _nChange_matrixElemChange;
-    vector<unsigned int> _Row_changed;
-    vector<unsigned int> _Col_changed;
-    vector<double> _mass_changed;
-    vector<ElementChange> _matrixElemChange;
-
-    map<unsigned long long, double> _new_atomicProposal;
-    unsigned int _new_nChange_atomicProposal;
-
-    unsigned int _new_nChange_matrixElemChange;
-    vector<unsigned int> _new_Row_changed;
-    vector<unsigned int> _new_Col_changed;
-    vector<double> _new_mass_changed;
-    vector<ElementChange> _new_matrixElemChange;
-
     // for computing statistics with matrices A and P
-    // unsigned long _statindx_A, _statindx_P;  // counter
     Matrix _Amean, _Asd, _Pmean, _Psd;
 
     bool mSingleCellRNASeq;
@@ -140,11 +115,11 @@ class GibbsSampler {
     vector <vector <vector <double> > > getNormedMatrices();
 
     // COGAPS TEST Methods
-    map <unsigned long long, double> getAtomicDomain(char matrix_label);
+    //std::map<uint64_t, double> getAtomicDomain(char matrix_label);
 
-    vector <vector <double> > createSampleAMat(map <unsigned long long, double> ADomain);
+    vector <vector <double> > createSampleAMat(std::map<uint64_t, double> ADomain);
 
-    vector <vector <double> > createSamplePMat(map <unsigned long long, double> PDomain);
+    vector <vector <double> > createSamplePMat(std::map<uint64_t, double> PDomain);
 
     double ManualCalcChiSqu(vector <vector <double> > SampleAMat, vector <vector <double> > SamplePMat);
 
@@ -240,7 +215,7 @@ class GibbsSampler {
     */
     void set_AnnealingTemperature();
 
-    void check_atomic_matrix_consistency(char the_matrix_label);
+    void check_atomic_matrix_consistency(char label);
 
     /**
       * @short Form the matrices _Amean, _Asd, _Pmean, _Psd. They are temporary
