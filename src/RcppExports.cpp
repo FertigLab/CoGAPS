@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // cogapsMap
 Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
-RcppExport SEXP CoGAPS_cogapsMap(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
+RcppExport SEXP _CoGAPS_cogapsMap(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,7 +25,7 @@ END_RCPP
 }
 // cogapsMapTest
 Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
-RcppExport SEXP CoGAPS_cogapsMapTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
+RcppExport SEXP _CoGAPS_cogapsMapTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,7 +42,7 @@ END_RCPP
 }
 // cogaps
 Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
-RcppExport SEXP CoGAPS_cogaps(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
+RcppExport SEXP _CoGAPS_cogaps(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -58,7 +58,7 @@ END_RCPP
 }
 // cogapsTest
 Rcpp::List cogapsTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums);
-RcppExport SEXP CoGAPS_cogapsTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
+RcppExport SEXP _CoGAPS_cogapsTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -74,7 +74,7 @@ END_RCPP
 }
 // cogapsTrans
 Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, std::vector<double> time_of_sample, std::vector<int> condition, Rcpp::NumericVector theta, int thin, std::string prior, std::string proposal, bool epsilon_mcmc, double delta, double epsilon, double epsilon_prior, double prior_mean, double prior_sd);
-RcppExport SEXP CoGAPS_cogapsTrans(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP time_of_sampleSEXP, SEXP conditionSEXP, SEXP thetaSEXP, SEXP thinSEXP, SEXP priorSEXP, SEXP proposalSEXP, SEXP epsilon_mcmcSEXP, SEXP deltaSEXP, SEXP epsilonSEXP, SEXP epsilon_priorSEXP, SEXP prior_meanSEXP, SEXP prior_sdSEXP) {
+RcppExport SEXP _CoGAPS_cogapsTrans(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP time_of_sampleSEXP, SEXP conditionSEXP, SEXP thetaSEXP, SEXP thinSEXP, SEXP priorSEXP, SEXP proposalSEXP, SEXP epsilon_mcmcSEXP, SEXP deltaSEXP, SEXP epsilonSEXP, SEXP epsilon_priorSEXP, SEXP prior_meanSEXP, SEXP prior_sdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -100,4 +100,18 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(cogapsTrans(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, theta, thin, prior, proposal, epsilon_mcmc, delta, epsilon, epsilon_prior, prior_mean, prior_sd));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_CoGAPS_cogapsMap", (DL_FUNC) &_CoGAPS_cogapsMap, 7},
+    {"_CoGAPS_cogapsMapTest", (DL_FUNC) &_CoGAPS_cogapsMapTest, 7},
+    {"_CoGAPS_cogaps", (DL_FUNC) &_CoGAPS_cogaps, 6},
+    {"_CoGAPS_cogapsTest", (DL_FUNC) &_CoGAPS_cogapsTest, 6},
+    {"_CoGAPS_cogapsTrans", (DL_FUNC) &_CoGAPS_cogapsTrans, 19},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_CoGAPS(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
