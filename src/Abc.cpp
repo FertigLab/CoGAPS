@@ -139,14 +139,10 @@ Rcpp::NumericVector Abc::_epsilon_propose(double param1, double param2) {
 }
 
 void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
-    //Rcpp::Rcout << "starting proposal\n";
 
     accepted = false;
-    // don't update at all
-    //return;
 
     // simulate theta' ~ K(theta|theta^{(t-1)})
-    //Rcpp::NumericVector theta_prime = _proposal();
     Rcpp::NumericVector theta_prime(_theta_truth.length()); 
     
     for (int i = 0; i < _theta_truth.length(); ++i) {
@@ -158,7 +154,6 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     eps_prime = std::max(eps_prime, 0.25);
 
     // simulate x ~ p(x | theta')
-    //Rcpp::NumericVector growth = 1. / (1 + Rcpp::exp(-theta_prime * _T));
     Rcpp::NumericMatrix P_prime = P;
     Rcpp::NumericMatrix A_prime = A;
 
