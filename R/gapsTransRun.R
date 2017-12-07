@@ -1,3 +1,43 @@
+#'\code{gapsTransRun} calls the C++ MCMC code and performs Bayesian
+#'matrix factorization returning the two matrices that reconstruct
+#'the data matrix. This method also fits a logistic growth with ABC
+#'
+#'@param D data matrix
+#'@param S uncertainty matrix (std devs for chi-squared of Log Likelihood)
+#'@param nFactor number of patterns (basis vectors, metagenes), which must be
+#'greater than or equal to the number of rows of FP
+#'@param Initial value for logistic growth parameter
+#'@param ABins a matrix of same size as A which gives relative
+#' probability of that element being non-zero
+#'@param PBins a matrix of same size as P which gives relative
+#' probability of that element being non-zero
+#'@param  simulation_id name to attach to atoms files if created
+#'@param  nEquil number of iterations for burn-in
+#'@param  nSample number of iterations for sampling
+#'@param  nOutR how often to print status into R by iterations
+#'@param  output_atomic whether to write atom files (large)
+#'@param fixedBinProbs Boolean for using relative probabilities
+#' given in Abins and Pbins
+#'@param fixedDomain character to indicate whether A or P is
+#' domain for relative probabilities
+#'@param sampleSnapshots Boolean to indicate whether to capture
+#' individual samples from Markov chain during sampling
+#'@param numSnapshots the number of individual samples to capture
+#'@param alphaA sparsity parameter for A domain
+#'@param nMaxA PRESENTLY UNUSED, future = limit number of atoms
+#'@param max_gibbmass_paraA limit truncated normal to max size
+#'@param alphaP sparsity parameter for P domain
+#'@param nMaxP PRESENTLY UNUSED, future = limit number of atoms
+#'@param max_gibbmass_paraP limit truncated normal to max size
+#'@param growth.trans Growth function, currently unused
+#'@param time.of.sample Time (z-normalized) of sample recording
+#'@param condition Status of measurement (e.g. treated vs untreated). currently unused
+#'@param thin Number of thinning intervals for ABC update
+#'@param delta standard deviation of metropolis proposal distribution
+#'@param prior.mean prior mean on ABC parameters
+#'@param prior.sd prior sd on ABC parameters
+#'@param epsilon Acceptance criteria for ABC
+#'@export
 gapsTransRun <- function(D, S, nFactor, theta,
                          # parameters from gapsmaprun
                          FP, ABins=data.frame(), PBins=data.frame(), simulation_id="simulation",

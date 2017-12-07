@@ -2,22 +2,22 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 cogapsMap <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums) {
-    .Call('CoGAPS_cogapsMap', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums)
+    .Call('_CoGAPS_cogapsMap', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums)
 }
 
 cogapsMapTest <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums) {
-    .Call('CoGAPS_cogapsMapTest', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums)
+    .Call('_CoGAPS_cogapsMapTest', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums)
 }
 
 cogaps <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums) {
-    .Call('CoGAPS_cogaps', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums)
+    .Call('_CoGAPS_cogaps', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums)
 }
 
 cogapsTest <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums) {
-    .Call('CoGAPS_cogapsTest', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums)
+    .Call('_CoGAPS_cogapsTest', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums)
 }
 
 cogapsTrans <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, theta, thin = 1L, prior = "normal", proposal = "normal", epsilon_mcmc = FALSE, delta = 10.0, epsilon = 1.0, epsilon_prior = 3.0, prior_mean = 0.0, prior_sd = 10.0) {
-    .Call('CoGAPS_cogapsTrans', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, theta, thin, prior, proposal, epsilon_mcmc, delta, epsilon, epsilon_prior, prior_mean, prior_sd)
+    .Call('_CoGAPS_cogapsTrans', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, theta, thin, prior, proposal, epsilon_mcmc, delta, epsilon, epsilon_prior, prior_mean, prior_sd)
 }
 
