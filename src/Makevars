@@ -1,9 +1,7 @@
 PKG_CPPFLAGS =
 OBJECTS =   AtomicSupport.o \
             cogapsmapR.o \
-            cogapsmaptestR.o \
             cogapsR.o \
-            cogapstestR.o \
             GAPSNorm.o \
             GibbsSampler-atomic.o \
             GibbsSampler-init.o \

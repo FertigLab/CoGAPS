@@ -10,6 +10,7 @@ namespace Random
     int poisson(double lambda);
     int uniformInt(int a, int b);
     uint64_t uniform64();
+    uint64_t uniform64(uint64_t a, uint64_t b);
 
     double uniform();
     double uniform(double a, double b);

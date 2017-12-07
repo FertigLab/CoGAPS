@@ -34,7 +34,9 @@ GibbsSampler:: GibbsSampler(
   _Amean(DVector.size(), nFactor),
   _Asd(DVector.size(), nFactor),
   _Pmean(nFactor, DVector[0].size()),
-  _Psd(nFactor, DVector[0].size())
+  _Psd(nFactor, DVector[0].size()),
+  _AAtomicdomain(DVector.size(), nFactor),
+  _PAtomicdomain(nFactor, DVector[0].size())
 {
     _nEquil = nEquil;
     _nSample = nSample;
@@ -59,7 +61,7 @@ GibbsSampler:: GibbsSampler(
     mSingleCellRNASeq = singleCellRNASeq;
 }
 
-void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain() {
+/*void GibbsSampler::init_AAtomicdomain_and_PAtomicdomain() {
     // extract information from D as parameters
     _nRow = _DMatrix.nRow();
     _nCol = _DMatrix.nCol();
@@ -134,3 +136,4 @@ vector<vector<double> > ReadBinProbsA, vector<vector<double> > ReadBinProbsP)
     _PAtomicdomain.FixedBins_initializeAtomic(_nBinsP, atomicSize, _alphaP, _lambdaP, _label_P, ReadBinProbsP);
 }
 
+*/

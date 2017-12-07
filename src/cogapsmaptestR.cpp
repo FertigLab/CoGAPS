@@ -33,7 +33,6 @@
 // ------------------------------------------------------
 
 using namespace std;
-using namespace gaps;
 using std::vector;
 
 // [[Rcpp::export]]
@@ -174,13 +173,13 @@ Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::D
     unsigned long nIterP = 10;    // initial inner loop iterations for P
     unsigned long atomicSize = 0; // number of atomic points
     // TestGAPS structures
-    vector <map <unsigned long long, double> > EquilAAtomicDomains;
+    vector <map <uint64_t, double> > EquilAAtomicDomains;
     // atomic domains of matrix A during equilibration
-    vector <map <unsigned long long, double> > EquilPAtomicDomains;
+    vector <map <uint64_t, double> > EquilPAtomicDomains;
     // atomic domains of matrix P during equilibration
-    vector <map <unsigned long long, double> > SampleAAtomicDomains;
+    vector <map <uint64_t, double> > SampleAAtomicDomains;
     // atomic domains of matrix A during sampling
-    vector <map <unsigned long long, double> > SamplePAtomicDomains;
+    vector <map <uint64_t, double> > SamplePAtomicDomains;
     // atomic domains of matrix P during sampling
     vector <vector <vector <double> > > AMatsbyEquil;
     // list of A matrices during equilibration (calculated

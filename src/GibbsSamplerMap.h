@@ -9,8 +9,6 @@
 #include "GibbsSampler.h"
 #include<limits>
 
-using namespace gaps;
-
 class GibbsSamplerMap : public GibbsSampler {
   protected:
 
@@ -73,13 +71,13 @@ class GibbsSamplerMap : public GibbsSampler {
 
     vector <vector <double> > createSamplePMatMap(map <unsigned long long, double> PDomain);
 
-    unsigned int getBin(unsigned long long location, char matrix_label) {
+    /*unsigned int getBin(unsigned long long location, char matrix_label) {
         if (matrix_label == 'A') {
             return _AAtomicdomain.getBin(location);
 
         } else {
             return _PAtomicdomain.getBin(location);
         }
-    }
+    }*/
 };
 #endif
