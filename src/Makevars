@@ -1,13 +1,8 @@
 PKG_CPPFLAGS =
 OBJECTS =   AtomicSupport.o \
-            cogapsmapR.o \
-            cogapsR.o \
+            CogapsR.o \
             GAPSNorm.o \
-            GibbsSampler-atomic.o \
-            GibbsSampler-init.o \
-            GibbsSampler-update.o \
-            GibbsSampler-util.o \
-            GibbsSamplerMap.o \
+            GibbsSampler.o \
             Matrix.o \
             MatAlgo.o \
             Random.o \

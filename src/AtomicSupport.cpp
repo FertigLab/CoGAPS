@@ -38,14 +38,14 @@ uint64_t AtomicSupport::randomFreePosition() const
     uint64_t pos = 0;
     do
     {
-        pos = Random::uniform64();
+        pos = gaps::random::uniform64();
     } while (mAtomicDomain.count(pos));
     return pos;
 }
 
 uint64_t AtomicSupport::randomAtomPosition() const
 {
-    uint64_t num = Random::uniform64(0, mNumAtoms - 1);
+    uint64_t num = gaps::random::uniform64(0, mNumAtoms - 1);
     std::map<uint64_t, double>::const_iterator it = mAtomicDomain.begin();
     std::advance(it, num);
     return it->first;
@@ -61,7 +61,7 @@ AtomicProposal AtomicSupport::proposeDeath() const
 AtomicProposal AtomicSupport::proposeBirth() const
 {
     uint64_t location = randomFreePosition();
-    uint64_t mass = Random::exponential(mLambda);
+    uint64_t mass = gaps::random::exponential(mLambda);
     return AtomicProposal('B', location, mass);
 }
 
@@ -80,7 +80,7 @@ AtomicProposal AtomicSupport::proposeMove() const
         --it;
     uint64_t right = it->first;
 
-    uint64_t newLocation = Random::uniform64(left, right);
+    uint64_t newLocation = gaps::random::uniform64(left, right);
 
     return AtomicProposal('M', location, -mass, newLocation, mass);
 }
@@ -105,9 +105,9 @@ AtomicProposal AtomicSupport::proposeExchange() const
     double mass2 = it->second;
 
     // calculate new mass
-    double pupper = Random::p_gamma(mass1 + mass2, 2.0, 1.0 / mLambda);
-    double newMass = Random::q_gamma(Random::uniform(0.0, pupper), 2.0,
-        1.0 / mLambda);
+    double pupper = gaps::random::p_gamma(mass1 + mass2, 2.0, 1.0 / mLambda);
+    double newMass = gaps::random::q_gamma(gaps::random::uniform(0.0, pupper),
+        2.0, 1.0 / mLambda);
 
     // preserve total mass
     return mass1 > mass2 ?
@@ -145,7 +145,7 @@ AtomicProposal AtomicSupport::makeProposal() const
         return proposeBirth();
     }
 
-    double unif = Random::uniform();
+    double unif = gaps::random::uniform();
     if (mNumAtoms < 2 && unif <= 0.6667 || unif <= 0.5) // birth/death
     {
         if (mNumAtoms >= mMaxNumAtoms)
@@ -162,30 +162,32 @@ AtomicProposal AtomicSupport::makeProposal() const
         {
             pDelete = 1 + GEOM_F(mNumAtoms) / GEOM_F(-mAlpha * mNumBins);
         }
-        return Random::uniform() < pDelete ? proposeDeath() : proposeBirth();
+        return gaps::random::uniform() < pDelete ? proposeDeath() : proposeBirth();
     }
     return mNumAtoms < 2 || unif <= 0.75 ? proposeMove() : proposeExchange();
 }
 
 void AtomicSupport::acceptProposal(const AtomicProposal &prop)
 {
-    updateAtomMass(prop.pos1, prop.deltaMass1);
+    updateAtomMass(prop.pos1, prop.delta1);
     if (prop.nChanges > 1)
     {
-        updateAtomMass(prop.pos2, prop.deltaMass2);
+        updateAtomMass(prop.pos2, prop.delta2);
     }
 }
 
-std::vector<ElementChange> AtomicSupport::getElementChange(const AtomicProposal &prop) const
+MatrixChange AtomicSupport::getMatrixChange(const AtomicProposal &prop) const
 {
-    std::vector<ElementChange> vec;
-    vec.push_back(ElementChange(getRow(prop.pos1), getCol(prop.pos1), prop.deltaMass1));
-
     if (prop.nChanges > 1)
     {
-        vec.push_back(ElementChange(getRow(prop.pos2), getCol(prop.pos2), prop.deltaMass2));
+        return MatrixChange(prop.type, getRow(prop.pos1), getCol(prop.pos1),
+            prop.delta1, getRow(prop.pos2), getCol(prop.pos2), prop.delta2);
     }
-    return vec;
+    else
+    {   
+        return MatrixChange(prop.type, getRow(prop.pos1), getCol(prop.pos1),
+            prop.delta1);
+    }
 }
 
 void AtomicSupport::write(const std::string &path, bool append) const

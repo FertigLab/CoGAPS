@@ -58,19 +58,6 @@ uint64_t Random::uniform64()
     return dist(rng);
 }
 
-/*double Random::p_exp(double p, double rate)
->>>>>>> develop
-{
-    boost::math::exponential_distribution<> exp(rate);
-    return cdf(exp, p);
-}
-
-double Random::q_exp(double q, double rate)
-{
-    boost::math::exponential_distribution<> exp(rate);
-    return quantile(exp, q);
-}*/
-
 double Random::d_gamma(double d, double shape, double scale)
 {
     boost::math::gamma_distribution<> gam(shape, scale);

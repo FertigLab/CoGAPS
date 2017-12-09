@@ -6,76 +6,22 @@
 
 using namespace Rcpp;
 
-// cogapsMap
-Rcpp::List cogapsMap(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed, bool messages);
-RcppExport SEXP _CoGAPS_cogapsMap(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP seedSEXP, SEXP messagesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type DFrame(DFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type SFrame(SFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FixedPatt(FixedPattSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type ABinsFrame(ABinsFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type PBinsFrame(PBinsFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type Config(ConfigSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
-    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< bool >::type messages(messagesSEXP);
-    rcpp_result_gen = Rcpp::wrap(cogapsMap(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, seed, messages));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cogapsMapTest
-Rcpp::List cogapsMapTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame FixedPatt, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed);
-RcppExport SEXP _CoGAPS_cogapsMapTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP FixedPattSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP seedSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type DFrame(DFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type SFrame(SFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type FixedPatt(FixedPattSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type ABinsFrame(ABinsFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type PBinsFrame(PBinsFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type Config(ConfigSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
-    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(cogapsMapTest(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, seed));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cogaps
-Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed, bool messages, bool singleCellRNASeq);
-RcppExport SEXP _CoGAPS_cogaps(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP seedSEXP, SEXP messagesSEXP, SEXP singleCellRNASeqSEXP) {
+Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix, Rcpp::NumericMatrix ABins, Rcpp::NumericMatrix PBins, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed, bool messages, bool singleCellRNASeq);
+RcppExport SEXP _CoGAPS_cogaps(SEXP DMatrixSEXP, SEXP SMatrixSEXP, SEXP ABinsSEXP, SEXP PBinsSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP seedSEXP, SEXP messagesSEXP, SEXP singleCellRNASeqSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type DFrame(DFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type SFrame(SFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type ABinsFrame(ABinsFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type PBinsFrame(PBinsFrameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type DMatrix(DMatrixSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type SMatrix(SMatrixSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type ABins(ABinsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type PBins(PBinsSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type Config(ConfigSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
     Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< bool >::type messages(messagesSEXP);
     Rcpp::traits::input_parameter< bool >::type singleCellRNASeq(singleCellRNASeqSEXP);
-    rcpp_result_gen = Rcpp::wrap(cogaps(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, seed, messages, singleCellRNASeq));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cogapsTest
-Rcpp::List cogapsTest(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame, Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame, Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed);
-RcppExport SEXP _CoGAPS_cogapsTest(SEXP DFrameSEXP, SEXP SFrameSEXP, SEXP ABinsFrameSEXP, SEXP PBinsFrameSEXP, SEXP ConfigSEXP, SEXP ConfigNumsSEXP, SEXP seedSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type DFrame(DFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type SFrame(SFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type ABinsFrame(ABinsFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type PBinsFrame(PBinsFrameSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type Config(ConfigSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type ConfigNums(ConfigNumsSEXP);
-    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
-    rcpp_result_gen = Rcpp::wrap(cogapsTest(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums, seed));
+    rcpp_result_gen = Rcpp::wrap(cogaps(DMatrix, SMatrix, ABins, PBins, Config, ConfigNums, seed, messages, singleCellRNASeq));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -91,10 +37,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_CoGAPS_cogapsMap", (DL_FUNC) &_CoGAPS_cogapsMap, 9},
-    {"_CoGAPS_cogapsMapTest", (DL_FUNC) &_CoGAPS_cogapsMapTest, 8},
     {"_CoGAPS_cogaps", (DL_FUNC) &_CoGAPS_cogaps, 9},
-    {"_CoGAPS_cogapsTest", (DL_FUNC) &_CoGAPS_cogapsTest, 7},
     {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 0},
     {NULL, NULL, 0}
 };
