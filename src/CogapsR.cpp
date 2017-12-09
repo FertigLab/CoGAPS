@@ -33,24 +33,15 @@ using namespace std;
 using std::vector;
 
 // [[Rcpp::export]]
-Rcpp::List cogaps(Rcpp::DataFrame DFrame, Rcpp::DataFrame SFrame,
-Rcpp::DataFrame ABinsFrame, Rcpp::DataFrame PBinsFrame,
+Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
+Rcpp::NumericMatrix ABins, Rcpp::NumericMatrix PBins,
 Rcpp::CharacterVector Config, Rcpp::NumericVector ConfigNums, int seed=-1, 
 bool messages=false, bool singleCellRNASeq=false)
 {
-    // ===========================================================================
-    // Initialization of the random number generator.
-    // Different seeding methods:
-    // --- fixed seed
-    //std::vector<unsigned long> ve(2);
-    //ve[0]=198782;ve[1]=89082;
-    //boost::random::seed_seq seq(ve);
-    //rng.seed(seq);
-    // --- seeded with time
-    uint32_t seedUsed = static_cast<boost::uint32_t>(seed);
-    if (seed <= 0) {seedUsed = static_cast<boost::uint32_t>(std::time(0));}
-    Random::setSeed(seedUsed);
-    if (messages) {Rcpp::Rcout << "Random Seed: " << seedUsed << endl;}
+    // set seed
+    uint32_t seedUsed = seed >= 0 ? static_cast<uint32_t>(seed)
+        : static_cast<uint32_t>(std::time(0));
+    gaps::random::setSeed(seedUsed);
 
     //---------------------
     // ===========================================================================
@@ -134,66 +125,17 @@ bool messages=false, bool singleCellRNASeq=false)
     int numSnapshots = tempNumInput;
     //Code to make the D and S matrices read from R into C++ vectors to make into Elana's Matrix Objects in Matrix.cpp
     //Now also allows for variable bin sizes to be created
-    vector<vector<double> > DVector;
-    vector<vector<double> > SVector;
-    vector<vector<double> > ABinsVector;
-    vector<vector<double> > PBinsVector;
     //Code to establish the sizes and initialize the C++ vectors to pass
-    int numC = DFrame.size();
-    Rcpp::NumericVector tempFrameCol = DFrame[0];
-    int numR = tempFrameCol.size() ;
-    double tempFrameElement;
-    DVector.resize(numR);
-
-    for (int i = 0; i < numR; i++) {
-        DVector[i].resize(numC);
-    }
-
-    for (int i = 0; i < numR; i++) {
-        for (int j = 0; j < numC; j++) {
-            tempFrameCol = DFrame[j];
-            tempFrameElement = tempFrameCol[i];
-            DVector[i][j] = tempFrameElement;
-        }
-    }
-
-    numC = SFrame.size();
-    tempFrameCol = SFrame[0];
-    numR = tempFrameCol.size() ;
-    SVector.resize(numR);
-
-    for (int i = 0; i < numR; i++) {
-        SVector[i].resize(numC);
-    }
-
-    for (int i = 0; i < numR; i++) {
-        for (int j = 0; j < numC; j++) {
-            tempFrameCol = SFrame[j];
-            tempFrameElement = tempFrameCol[i];
-            SVector[i][j] = tempFrameElement;
-        }
-    }
 
     //--------------------END CREATING D and S C++ VECTORS
     // Parameters or structures to be calculated or constructed:
     unsigned long nIterA = 10;    // initial inner loop iterations for A
     unsigned long nIterP = 10;    // initial inner loop iterations for P
     unsigned long atomicSize = 0; // number of atomic points
-    char label_A = 'A';  // label for matrix A
-    char label_P = 'P';  // label for matrix P
-    char label_D = 'D';  // label for matrix D
-    char label_S = 'S';// label for matrix S
-    // ---------------------------------------------------------------------------
+
     // Initialize the GibbsSampler.
-    //R Version
-    //Now with Variable Bin capability for priors (Fixed Bins)
-    GibbsSampler GibbsSamp(nEquil, nSample, nFactor, // construct GibbsSampler and
-                           alphaA, alphaP, nMaxA, nMaxP, // Read in D and S matrices
-                           nIterA, nIterP,
-                           max_gibbsmass_paraA, max_gibbsmass_paraP,
-                           atomicSize,
-                           label_A, label_P, label_D, label_S,
-                           DVector, SVector, simulation_id, singleCellRNASeq);
+    GibbsSampler GibbsSamp(DMatrix, SMatrix, nFactor, alphaA, alphaP);
+
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.
@@ -202,99 +144,6 @@ bool messages=false, bool singleCellRNASeq=false)
     //A for variable A bins, P for variable P Bins, B for both and N for regular uniform bin sizes
     char fixedDomain = fixedDomainStr[0];
 
-    if (fixBinProbs) {
-        if (messages) {
-            Rcpp::Rcout << "Running CoGAPS with fixed bin probabilities with fixed domain ";
-            Rcpp::Rcout << fixedDomain << endl;
-        }
-
-        if (fixedDomain == 'B') {
-            numC = ABinsFrame.size();
-            tempFrameCol = ABinsFrame[0];
-            numR = tempFrameCol.size();
-            ABinsVector.resize(numR);
-
-            for (int i = 0; i < numR; i++) {
-                ABinsVector[i].resize(numC);
-            }
-
-            for (int i = 0; i < numR; i++) {
-                for (int j = 0; j < numC; j++) {
-                    tempFrameCol = ABinsFrame[j];
-                    tempFrameElement = tempFrameCol[i];
-                    ABinsVector[i][j] = tempFrameElement;
-                }
-            }
-
-            numC = PBinsFrame.size();
-            tempFrameCol = PBinsFrame[0];
-            numR = tempFrameCol.size();
-            PBinsVector.resize(numR);
-
-            for (int i = 0; i < numR; i++) {
-                PBinsVector[i].resize(numC);
-            }
-
-            for (int i = 0; i < numR; i++) {
-                for (int j = 0; j < numC; j++) {
-                    tempFrameCol = PBinsFrame[j];
-                    tempFrameElement = tempFrameCol[i];
-                    PBinsVector[i][j] = tempFrameElement;
-                }
-            }
-
-            GibbsSamp.init_AAtomicdomain_and_PAtomicdomain(ABinsVector, PBinsVector);
-
-        } else if (fixedDomain == 'A') {
-            numC = ABinsFrame.size();
-            tempFrameCol = ABinsFrame[0];
-            numR = tempFrameCol.size() ;
-            ABinsVector.resize(numR);
-
-            for (int i = 0; i < numR; i++) {
-                ABinsVector[i].resize(numC);
-            }
-
-            for (int i = 0; i < numR; i++) {
-                for (int j = 0; j < numC; j++) {
-                    tempFrameCol = ABinsFrame[j];
-                    tempFrameElement = tempFrameCol[i];
-                    ABinsVector[i][j] = tempFrameElement;
-                }
-            }
-
-            GibbsSamp.init_AAtomicdomain_and_PAtomicdomain(fixedDomain, ABinsVector);
-
-        } else if (fixedDomain == 'P') {
-            numC = PBinsFrame.size();
-            tempFrameCol = PBinsFrame[0];
-            numR = tempFrameCol.size() ;
-            PBinsVector.resize(numR);
-
-            for (int i = 0; i < numR; i++) {
-                PBinsVector[i].resize(numC);
-            }
-
-            for (int i = 0; i < numR; i++) {
-                for (int j = 0; j < numC; j++) {
-                    tempFrameCol = PBinsFrame[j];
-                    tempFrameElement = tempFrameCol[i];
-                    PBinsVector[i][j] = tempFrameElement;
-                }
-            }
-
-            GibbsSamp.init_AAtomicdomain_and_PAtomicdomain(fixedDomain, PBinsVector);
-
-        } else {
-            throw logic_error("GibbsSampler: Invalid Specification of Fixed Domain(s)!");
-        }
-
-    } else {
-        GibbsSamp.init_AAtomicdomain_and_PAtomicdomain();   // initialize atomic spaces
-        // A and P
-    }
-
-    GibbsSamp.init_sysChi2(); // initialize the system chi2 value
     // ===========================================================================
     // Part 2) Equilibration:
     // In this section, we let the system eqilibrate with nEquil outer loop
@@ -316,21 +165,20 @@ bool messages=false, bool singleCellRNASeq=false)
     Rcpp::NumericVector nPEquil(nEquil);
     Rcpp::NumericVector nPSamp(nSample);
 
-    for (unsigned long ext_iter = 1; ext_iter <= nEquil; ++ext_iter) {
-        GibbsSamp.set_iter(ext_iter);
+    for (unsigned long ext_iter = 1; ext_iter <= nEquil; ++ext_iter)
+    {
         GibbsSamp.set_AnnealingTemperature();
 
-        for (unsigned long iterA = 1; iterA <= nIterA; ++iterA) {
+        for (unsigned long iterA = 1; iterA <= nIterA; ++iterA)
+        {
             GibbsSamp.update('A');
         }
 
-        GibbsSamp.check_atomic_matrix_consistency('A');
-
-        for (unsigned long iterP = 1; iterP <= nIterP; ++iterP) {
+        for (unsigned long iterP = 1; iterP <= nIterP; ++iterP)
+        {
             GibbsSamp.update('P');
         }
 
-        GibbsSamp.check_atomic_matrix_consistency('P');
         //Finds the current ChiSq and places it into the vector to be returned to R (and output on occasion)
         tempChiSq = GibbsSamp.get_sysChi2();
         chiVect[(ext_iter) - 1] = tempChiSq;
@@ -341,13 +189,12 @@ bool messages=false, bool singleCellRNASeq=false)
         nPEquil[outCount] = tempAtomP;
         outCount++;
 
-        if (ext_iter % numOutputs == 0) {
-            if (messages) {
-                Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil <<
-                            ", Atoms:" << tempAtomA << "("
-                            << tempAtomP << ")" <<
-                            "  Chi2 = " << tempChiSq << endl;
-            }
+        if (ext_iter % numOutputs == 0 && messages)
+        {
+            Rcpp::Rcout << "Equil:" << ext_iter << " of " << nEquil <<
+                        ", Atoms:" << tempAtomA << "("
+                        << tempAtomP << ")" <<
+                        "  Chi2 = " << tempChiSq << endl;
         }
 
         // -------------------------------------------
@@ -363,20 +210,17 @@ bool messages=false, bool singleCellRNASeq=false)
     // ===========================================================================
     int nEquilCool = floor(.1 * nEquil);
 
-    for (unsigned long ext_iter = 1; ext_iter <= nEquilCool; ++ext_iter) {
-        GibbsSamp.set_iter(ext_iter);
-
-        for (unsigned long iterA = 1; iterA <= nIterA; ++iterA) {
+    for (unsigned long ext_iter = 1; ext_iter <= nEquilCool; ++ext_iter)
+    {
+        for (unsigned long iterA = 1; iterA <= nIterA; ++iterA)
+        {
             GibbsSamp.update('A');
         }
 
-        GibbsSamp.check_atomic_matrix_consistency('A');
-
-        for (unsigned long iterP = 1; iterP <= nIterP; ++iterP) {
+        for (unsigned long iterP = 1; iterP <= nIterP; ++iterP)
+        {
             GibbsSamp.update('P');
         }
-
-        GibbsSamp.check_atomic_matrix_consistency('P');
     }
 
     // ===========================================================================

@@ -7,14 +7,25 @@
 // temporary: used for testing performance of float vs double
 typedef double matrix_data_t;
 
-struct ElementChange
+struct MatrixChange
 {
-    unsigned int row;
-    unsigned int col;
-    matrix_data_t delta;
+    char type;
+    unsigned nChanges;
 
-    ElementChange(unsigned int r, unsigned int c, matrix_data_t d)
-        : row(r), col(c), delta(d)
+    unsigned row1;
+    unsigned col1;
+    matrix_data_t delta1;
+    
+    unsigned row2;
+    unsigned col2;
+    matrix_data_t delta2;
+
+    MatrixChange(char t, unsigned r, unsigned c, double d)
+        : type(t), nChanges(1), row1(r), col1(c), delta1(d)
+    {}
+
+    MatrixChange(char t, unsigned r1, unsigned c1, double d1, unsigned r2, unsigned c2, double d2)
+        : type(t), nChanges(2), row1(r1), col1(c1), delta1(d1), row2(r2), col2(c2), delta2(d2)
     {}
 };
 
@@ -70,7 +81,7 @@ public:
     Vector& getRow(unsigned int row);
     const Vector& getRow(unsigned int row) const;
 
-    void elemUpdate(const std::vector<ElementChange> &changes);
+    void elemUpdate(const MatrixChange &change);
 };
 
 class ColMatrix
@@ -93,7 +104,7 @@ public:
 
     Vector& getCol(unsigned int col);
 
-    void elemUpdate(const std::vector<ElementChange> &changes);
+    void elemUpdate(const MatrixChange &change);
 };
 
 #endif

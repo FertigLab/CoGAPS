@@ -12,20 +12,20 @@
 struct AtomicProposal
 {
     char type;
-    unsigned int nChanges;
+    unsigned nChanges;
 
     uint64_t pos1;
-    double deltaMass1;
+    double delta1;
 
     uint64_t pos2;
-    double deltaMass2;
+    double delta2;
 
     AtomicProposal(char t, uint64_t p1, double m1)
-        : type(t), nChanges(1), pos1(p1), deltaMass1(m1), pos2(0), deltaMass2(0.0)
+        : type(t), nChanges(1), pos1(p1), delta1(m1), pos2(0), delta2(0.0)
     {}
 
     AtomicProposal(char t, uint64_t p1, double m1, uint64_t p2, double m2)
-        : type(t), nChanges(2), pos1(p1), deltaMass1(m1), pos2(p2), deltaMass2(m2)
+        : type(t), nChanges(2), pos1(p1), delta1(m1), pos2(p2), delta2(m2)
     {}
 };
 
@@ -80,7 +80,7 @@ public:
     void acceptProposal(const AtomicProposal &prop);
 
     // convert an AtomicProposal to an ElementChange
-    std::vector<ElementChange> getElementChange(const AtomicProposal &prop) const;
+    MatrixChange getMatrixChange(const AtomicProposal &prop) const;
 
     // write atomic domain to file
     void write(const std::string &outputFilename, bool append) const;

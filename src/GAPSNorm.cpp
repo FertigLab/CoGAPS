@@ -21,25 +21,19 @@
 
 using std::vector;
 
-// ---------------------------------------------------------------------------
-// Calculation of Chi2 = \sum_{i,j} (D_{ij}-(A*P)_{ij})/(S_{ij}^2)
-double GAPSNorm::calChi2(const Matrix &D, const Matrix &S, const Matrix &A,
-const Matrix &P, unsigned int nFactor)
-{
-    Matrix Mock(D.nRow(), D.nCol());
-    MatAlgo::matrixMultiplication(Mock, A, P);
+#define GAPS_SQ(x) ((x) * (x))
 
-    double Chi2 = 0;
-    for (unsigned int iRow = 0; iRow < D.nRow(); iRow++)
+double gaps::norm::calChi2(const Matrix &D, const Matrix &AP, const Matrix &S)
+{
+    double chi2 = 0;
+    for (unsigned i = 0; i < D.nRow(); ++i)
     {
-        for (unsigned int iCol = 0; iCol < D.nCol(); iCol++)
+        for (unsigned j = 0; j < D.nCol(); ++j)
         {
-            Chi2 += (D(iRow,iCol) - Mock(iRow,iCol)) *
-                    (D(iRow,iCol) - Mock(iRow,iCol)) /
-                    (S(iRow,iCol) * S(iRow,iCol));
+            chi2 += GAPS_SQ(D(i,j) - AP(i,j)) / GAPS_SQ(S(i,j));
         }
     }
-    return Chi2;
+    return chi2;
 }
 
 // ---------------------------------------------------------------------------
@@ -763,3 +757,48 @@ unsigned int iSample1, unsigned int iSample2)
     return std::pair<double, double>(s, su);
 } // end of calcalphaparameters method
 
+vector <vector <vector <double> > > GibbsSampler::getNormedMatrices()
+{
+    vector <vector <double> > AMatrixNormed;
+    AMatrixNormed.resize(_nRow, vector<double>(_nFactor, 0.0));
+    vector <vector <double> > PMatrixNormed;
+    PMatrixNormed.resize(_nFactor, vector<double>(_nCol, 0.0));
+    vector<double> k(_nFactor);  // normalized vector
+
+    // compute the normalization vector
+    for (int m = 0; m < _nFactor; ++m)
+    {
+        k[m] = 0.;
+
+        for (int n = 0; n < _nCol; ++n)
+        {
+            k[m] += _PMatrix(m,n);
+        }
+
+        if (k[m] == 0) // when the whole row of P is zero, then don't do anything
+        {
+            k[m] = 1.0;
+        }
+    }
+
+    for (int m = 0; m < _nRow; ++m)
+    {
+        for (int n = 0; n < _nFactor; ++n)
+        {
+            AMatrixNormed[m][n] = _AMatrix(m,n) * k[n];
+        }
+    }
+
+    for (int m = 0; m < _nFactor; ++m)
+    {
+        for (int n = 0; n < _nCol; ++n)
+        {
+            PMatrixNormed[m][n] = _PMatrix(m,n) / k[m];
+        }
+    }
+
+    vector <vector <vector <double> > > NormedMatrices;
+    NormedMatrices.push_back(AMatrixNormed);
+    NormedMatrices.push_back(PMatrixNormed);
+    return NormedMatrices;
+}
