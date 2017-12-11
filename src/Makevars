@@ -1,12 +1,14 @@
 PKG_CPPFLAGS =
-OBJECTS =   AtomicSupport.o \
-            CogapsR.o \
-            GAPSNorm.o \
+OBJECTS =   Algorithms.o \
+            AtomicSupport.o \
+            Cogaps.o \
             GibbsSampler.o \
             Matrix.o \
-            MatAlgo.o \
             Random.o \
             RcppExports.o \
             test-runner.o \
+            cpp_tests/testRandom.o \
             cpp_tests/testMatrix.o \
-            cpp_tests/testRandom.o
+            cpp_tests/testAlgorithms.o \
+            cpp_tests/testAtomicSupport.o \
+            cpp_tests/testGibbsSampler.o

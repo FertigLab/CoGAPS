@@ -9,7 +9,7 @@ typedef double matrix_data_t;
 
 struct MatrixChange
 {
-    char type;
+    char label;
     unsigned nChanges;
 
     unsigned row1;
@@ -20,19 +20,24 @@ struct MatrixChange
     unsigned col2;
     matrix_data_t delta2;
 
-    MatrixChange(char t, unsigned r, unsigned c, double d)
-        : type(t), nChanges(1), row1(r), col1(c), delta1(d)
+    MatrixChange(char l, unsigned r, unsigned c, double d)
+        : label(l), nChanges(1), row1(r), col1(c), delta1(d)
     {}
 
-    MatrixChange(char t, unsigned r1, unsigned c1, double d1, unsigned r2, unsigned c2, double d2)
-        : type(t), nChanges(2), row1(r1), col1(c1), delta1(d1), row2(r2), col2(c2), delta2(d2)
+    MatrixChange(char l, unsigned r1, unsigned c1, double d1, unsigned r2,
+    unsigned c2, double d2)
+        : label(l), nChanges(2), row1(r1), col1(c1), delta1(d1), row2(r2),
+        col2(c2), delta2(d2)
     {}
 };
 
 class Vector;
 class RowMatrix;
 class ColMatrix;
-typedef RowMatrix Matrix; // default matrix type
+class TwoWayMatrix;
+
+// no polymorphism to prevent virtual function overhead, not really
+// needed anyways since few functions are used on all types of matrices
 
 class Vector
 {
@@ -42,21 +47,12 @@ private:
 
 public:
 
-    Vector(unsigned size) : mValues(std::vector<matrix_data_t>(size, 0)) {}
+    Vector(unsigned size) : mValues(std::vector<matrix_data_t>(size, 0.0)) {}
     Vector(const std::vector<matrix_data_t>& v) : mValues(v) {}
 
-    Rcpp::NumericVector rVector() const {return Rcpp::wrap(mValues);}
-
-    matrix_data_t& operator()(unsigned int i) {return mValues[i];}
-    matrix_data_t operator()(unsigned int i) const {return mValues[i];}
+    matrix_data_t& operator()(unsigned i) {return mValues[i];}
+    matrix_data_t operator()(unsigned i) const {return mValues[i];}
     unsigned size() const {return mValues.size();}
-
-    matrix_data_t dotProduct(const Vector &vec) const;
-    matrix_data_t sum() const;
-
-    typedef std::vector<matrix_data_t>::iterator iterator;
-    iterator begin() {return mValues.begin();}
-    iterator end() {return mValues.end();}
 };
 
 class RowMatrix
@@ -64,24 +60,23 @@ class RowMatrix
 private:
 
     std::vector<Vector> mRows;
-    unsigned int mNumRows, mNumCols;
+    unsigned mNumRows, mNumCols;
 
 public:
 
-    RowMatrix(unsigned int nrow, unsigned int ncol);
-    RowMatrix(const std::vector< std::vector<matrix_data_t> > &mat);
+    RowMatrix(unsigned nrow, unsigned ncol);
     RowMatrix(const Rcpp::NumericMatrix& rmat);
 
-    unsigned int nRow() const {return mNumRows;}
-    unsigned int nCol() const {return mNumCols;}
+    unsigned nRow() const {return mNumRows;}
+    unsigned nCol() const {return mNumCols;}
 
-    matrix_data_t& operator()(unsigned int r, unsigned int c) {return mRows[r](c);}
-    matrix_data_t operator()(unsigned int r, unsigned int c) const {return mRows[r](c);}
+    matrix_data_t& operator()(unsigned r, unsigned c) {return mRows[r](c);}
+    matrix_data_t operator()(unsigned r, unsigned c) const {return mRows[r](c);}
 
-    Vector& getRow(unsigned int row);
-    const Vector& getRow(unsigned int row) const;
+    Vector& getRow(unsigned row);
+    const Vector& getRow(unsigned row) const;
 
-    void elemUpdate(const MatrixChange &change);
+    void update(const MatrixChange &change);
 };
 
 class ColMatrix
@@ -89,22 +84,59 @@ class ColMatrix
 private:
 
     std::vector<Vector> mCols;
-    unsigned int mNumRows, mNumCols;
+    unsigned mNumRows, mNumCols;
 
 public:
 
-    ColMatrix(unsigned int nrow, unsigned int ncol);
+    ColMatrix(unsigned nrow, unsigned ncol);
     ColMatrix(const Rcpp::NumericMatrix& rmat);
 
-    unsigned int nRow() const {return mNumRows;}
-    unsigned int nCol() const {return mNumCols;}
+    unsigned nRow() const {return mNumRows;}
+    unsigned nCol() const {return mNumCols;}
 
-    matrix_data_t& operator()(unsigned int r, unsigned int c) {return mCols[c](r);}
-    matrix_data_t operator()(unsigned int r, unsigned int c) const {return mCols[c](r);}
+    matrix_data_t& operator()(unsigned r, unsigned c) {return mCols[c](r);}
+    matrix_data_t operator()(unsigned r, unsigned c) const {return mCols[c](r);}
 
-    Vector& getCol(unsigned int col);
+    Vector& getCol(unsigned col);
+    const Vector& getCol(unsigned col) const;
 
-    void elemUpdate(const MatrixChange &change);
+    void update(const MatrixChange &change);
+};
+
+// gain performance at the cost of memory
+class TwoWayMatrix
+{
+private:
+
+    RowMatrix mRowMatrix;
+    ColMatrix mColMatrix;
+
+public:
+
+    TwoWayMatrix(unsigned nrow, unsigned ncol)
+        : mRowMatrix(nrow, ncol), mColMatrix(nrow, ncol)
+    {}
+
+    TwoWayMatrix(const Rcpp::NumericMatrix& rmat)
+        : mRowMatrix(rmat), mColMatrix(rmat)
+    {}
+
+    unsigned nRow() const {return mRowMatrix.nRow();}
+    unsigned nCol() const {return mRowMatrix.nCol();}
+
+    matrix_data_t operator()(unsigned r, unsigned c) const
+    {
+        return mRowMatrix(r,c);
+    }
+
+    const Vector& getRow(unsigned row) const {return mRowMatrix.getRow(row);}
+    const Vector& getCol(unsigned col) const {return mColMatrix.getCol(col);}
+
+    void set(unsigned row, unsigned col, double value)
+    {
+        mRowMatrix(row, col) = value;
+        mColMatrix(row, col) = value;
+    }
 };
 
 #endif

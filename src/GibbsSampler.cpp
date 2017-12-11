@@ -1,275 +1,243 @@
 #include "GibbsSampler.h"
+#include "Algorithms.h"
 
 #include <Rcpp.h>
 
-#if 0
+#define EPSILON 1E-10
 
 GibbsSampler::GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S,
-unsigned int nFactor, double alphaA, double alphaP)
+unsigned int nFactor, double alphaA, double alphaP, double maxGibbsMassA,
+double maxGibbsMassP, bool singleCellRNASeq)
     :
 mDMatrix(D), mSMatrix(S), mAMatrix(D.nrow(), nFactor),
 mPMatrix(nFactor, D.ncol()), mAPMatrix(D.nrow(), D.ncol()),
-mADomain(D.nrow(), nFactor), mPDomain(nFactor, D.ncol())
+mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
+mMaxGibbsMassA(maxGibbsMassA), mMaxGibbsMassP(maxGibbsMassP),
+mAnnealingTemp(0.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq)
 {
-    double meanD = mSingleCellRNASeq ? gaps::mat_algo::nonZeroMean(mDMatrix)
-        : gaps::mat_algo::mean(mDMatrix);
+    double meanD = mSingleCellRNASeq ? gaps::algo::nonZeroMean(mDMatrix)
+        : gaps::algo::mean(mDMatrix);
 
     mADomain.setAlpha(alphaA);
-    mADomain.setLambda(alphaA * sqrt(nFactor / meanD) * lambdaScaleFactorA);
+    mADomain.setLambda(alphaA * sqrt(nFactor / meanD));
     mPDomain.setAlpha(alphaP);
-    mPDomain.setLambda(alphaP * sqrt(nFactor / meanD) * lambdaScaleFactorP);
+    mPDomain.setLambda(alphaP * sqrt(nFactor / meanD));
 }
 
-double GibbsSampler::getGibbsMass(char matrixLabel, double origMass,
-unsigned int iRow, unsigned int iCol, const Matrix &otherMatrix,
-const Matrix &currentChainMatrix, const Matrix &D, const Matrix &S,
-double rng)
+double GibbsSampler::getGibbsMass(const MatrixChange &change)
 {
-    double s  = 0.0;
-    double su = 0.0;
-
-    if (matrixLabel == 'A')
-    {
-        double psq = 0.0, ssq = 0.0;
-        for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
-        {
-            psq = mPMatrix(col,j) * mPMatrix(col,j);
-            ssq = mSMatrix(row,j) * mSMatrix(row,j);
-           
-            s += (mAnnealingTemp * psq / ssq) / 2;
-            su += s * (mDMatrix(row,j) - mAPMatrix(row,j));
-        }
-    }
-    else
-    {
-        double asq = 0.0, ssq = 0.0;
-        for (unsigned i = 0; i < mDMatrix.nRow(); ++i)
-        {
-            asq = mAMatrix(i,row) * mAMatrix(i,row);
-            ssq = mSMatrix(i,col) * mSMatrix(i,col);
-           
-            s += (mAnnealingTemp * asq / ssq) / 2;
-            su += s * (mDMatrix(i,col) - mAPMatrix(i,col));
-        }
-    }
+    // get s and su
+    AlphaParameters alphaParam = gaps::algo::alphaParameters(change, mDMatrix,
+        mSMatrix, mAMatrix, mPMatrix, mAPMatrix);
 
     // calculate mean and standard deviation
-    double mean  = (2.0 * su - lambda) / (2.0 * s);
-    double sd = 1.0 / sqrt(2 * s);
+    double lambda = change.label == 'A' ? mADomain.lambda() : mPDomain.lambda();
+    double mean  = (2.0 * alphaParam.su - lambda) / (2.0 * alphaParam.s);
+    double sd = 1.0 / sqrt(2 * alphaParam.s);
 
     // note: is bounded below by zero so have to use inverse sampling!
     // based upon algorithm in DistScalarRmath.cc (scalarRandomSample)
     double plower = gaps::random::p_norm(0.0, mean, sd);
     double u = gaps::random::uniform(plower, 1.0);
 
-    // if the likelihood is flat and nonzero,
-    // force to sample strictly from the prior
-    if (plower == 1 || s < 1.e-5)
+    // if the likelihood is flat and nonzero, sample strictly from the prior
+    double newMass = 0.0;
+    if (plower == 1 || alphaParam.s < 1.e-5)
     {
-        newMass = origMass < 0 ? abs(origMass) : 0.0;
+        newMass = change.delta1 < 0 ? abs(change.delta1) : 0.0;
     }
     else if (plower >= 0.99)
     {
-        double tmp1 = Random::d_norm(0, mean, sd);
-        double tmp2 = Random::d_norm(10 * lambda, mean, sd);
+        double tmp1 = gaps::random::d_norm(0, mean, sd);
+        double tmp2 = gaps::random::d_norm(10 * lambda, mean, sd);
 
-        if ((tmp1 > epsilon) && (fabs(tmp1 - tmp2) < epsilon))
+        if (tmp1 > EPSILON && fabs(tmp1 - tmp2) < EPSILON)
         {
-            return origMass < 0 ? 0.0 : origMass;
+            return change.delta1 < 0 ? 0.0 : change.delta1;
         }
     }
     else
     {
-        newMass = Random::q_norm(u, mean, sd);
+        newMass = gaps::random::q_norm(u, mean, sd);
     }
 
-    if (matrixLabel == 'A')
-        newMass = std::min(newMass, mMaxGibbsMassA);
-    else
-        newMass = std::min(newMass mMaxGibbsMassP);
+    newMass = change.label == 'A' ? std::min(newMass, mMaxGibbsMassA)
+        : std::min(newMass, mMaxGibbsMassP);
 
-    return std::max(newMass, 0);
+    // TODO check if less than epsilon and return original mass
+    return std::max(newMass, 0.0);
 }
 
-double GibbsSampler::cal_logLikelihood()
+double GibbsSampler::computeDeltaLL(const MatrixChange &change)
 {
-    return GAPSNorm::calChi2(mDMatrix, mAPMatrix, mSMatrix) / 2.0;
+    return gaps::algo::deltaLL(change, mDMatrix, mSMatrix, mAMatrix,
+        mPMatrix, mAPMatrix);
 }
 
-// -----------------------------------------------------------------------------
-double GibbsSampler::computeDeltaLL(char the_matrix_label, const Matrix &D,
-const Matrix &S, const Matrix &A, const Matrix &P,
-const std::vector<ElementChange> the_matrixElemChange)
+void GibbsSampler::update(char matrixLabel)
 {
-    if (the_matrixElemChange.size() == 0)
-    {
-        return 0.0;
-    }
-    else if (the_matrixElemChange.size() == 1)
-    {
-        return GAPSNorm::calcDeltaLL1E(the_matrix_label, D, S, A, P,
-            the_matrixElemChange, _nFactor);
-    }
-    else if (the_matrixElemChange.size() == 2)
-    {
-        return GAPSNorm::calcDeltaLL2E(the_matrix_label, D, S, A, P,
-            the_matrixElemChange, _nFactor);
-    }
-    else
-    {
-        return GAPSNorm::calcDeltaLLGen(the_matrix_label, D, S, A, P,
-            the_matrixElemChange, _nFactor);
-    }
-}
-
-// -----------------------------------------------------------------------------
-void GibbsSampler::update(char label)
-{
-    const AtomicSupport &domain(label == 'A' ? _AAtomicdomain : _PAtomicdomain);
-    const Matrix &matrix(label == 'A' ? _AMatrix : _PMatrix)
+    AtomicSupport &domain(matrixLabel == 'A' ? mADomain : mPDomain);
 
     // get proposal and convert to a matrix update
     AtomicProposal proposal = domain.makeProposal();
-    std::vector<ElementChange> matChange = domain.getElementChange(proposal);
 
     // Update based on the proposal type
-    bool Q_update;
     switch (proposal.type)
     {
         case 'D':
-            Q_update = death(label, _DMatrix, _SMatrix, _AMatrix, _PMatrix, proposal, matChange);
+            death(domain, proposal);
             break;
         case 'B':
-            Q_update = birth(label, _DMatrix, _SMatrix, _AMatrix, _PMatrix, proposal, matChange);
+            birth(domain, proposal);
             break;
         case 'M':
-            Q_update = move(label, _DMatrix, _SMatrix, _AMatrix, _PMatrix);
+            move(domain, proposal);
             break;
         case 'E':
-            Q_update = exchange(label, _DMatrix, _SMatrix, _AMatrix, _PMatrix);
+            exchange(domain, proposal);
             break;
     }
-    
-    if (Q_update)
+}
+
+uint64_t GibbsSampler::totalNumAtoms(char matrixLabel) const
+{
+    return matrixLabel == 'A' ? mADomain.numAtoms() : mPDomain.numAtoms();
+}
+
+void GibbsSampler::setChi2(double chi2)
+{
+    mChi2 = chi2;
+}
+
+double GibbsSampler::chi2() const
+{
+    return mChi2;
+}
+
+void GibbsSampler::setAnnealingTemp(double temp)
+{
+    mAnnealingTemp = temp;
+}
+
+bool GibbsSampler::evaluateChange(AtomicSupport &domain,
+const AtomicProposal &proposal, double prob)
+{
+    MatrixChange change = domain.getMatrixChange(proposal);
+    double delLL = computeDeltaLL(change);
+    if (1 - delLL * mAnnealingTemp < prob)
     {
-        matrix.elemUpdate(matChange);
+        domain.acceptProposal(proposal);
+        change.label == 'A' ? mAMatrix.update(change) : mPMatrix.update(change);
+        updateAPMatrix(change);
+        setChi2(chi2() - 2 * delLL);
+        return true;
+    }
+    return false;
+}
+
+void GibbsSampler::updateAPMatrix_A(unsigned row, unsigned col, double delta)
+{
+    double newVal = 0.0;
+    for (unsigned j = 0; j < mAPMatrix.nCol(); ++j)
+    {
+        newVal = mAPMatrix(row,j) + delta * mPMatrix(col,j);
+        mAPMatrix.set(row, j, newVal);
     }
 }
 
-// ----------------------------------------------------------------------------
-void GibbsSampler::init_sysChi2()
+void GibbsSampler::updateAPMatrix_P(unsigned row, unsigned col, double delta)
 {
-    _sysChi2 = 2.0 * cal_logLikelihood();
-}
-
-void GibbsSampler::update_sysChi2(double delsysChi2)
-{
-    _sysChi2 -= 2.0 * delsysChi2;
-}
-
-double GibbsSampler::get_sysChi2()
-{
-    return _sysChi2;
-}
-
-// accept automatically, try to rebirth (effectively reject by attempting birth)
-bool GibbsSampler::death(char the_matrix_label, const Matrix &D, const Matrix &S,
-const Matrix &AOrig, const Matrix &POrig, const AtomicProposal &proposal,
-const AtomicSupport &domain, const Matrix &matrix)
-{
-    std::vector<ElementChange> matChange = domain.getElementChange(proposal);
-
-    unsigned row = matrixChange[0].row;
-    unsigned col = matrixChange[0].col;
-
-    double delLL = computeDeltaLL(matrixLabel, matrixChange);
-    domain.acceptProposal(proposal);
-    matrix.elemUpdate(matrixChange);
-    update_sysChi2(delLL);
-
-    // rebirth
-    double newMass = -proposal.deltaMass1;
-    bool gibbs = matrixLabel == 'A' ? gaps::mat_algo::isRowNonZero(mPMatrix, col)
-        : gaps::mat_algo::isColNonZero(mAMatrix, row);
-
-    if (gibbs)
+    double newVal = 0.0;
+    for (unsigned i = 0; i < mAPMatrix.nRow(); ++i)
     {
-        newMass = the_matrix_label == 'A' ? getMass('A', origMass, iRow, iCol, POrig, AOrig, D, S, 0.1)
-            : getMass('P', origMass, iRow, iCol, AOrig, POrig, D, S, 0.1);
-        if (newMass <= epsilon)
+        newVal = mAPMatrix(i,col) + delta * mAMatrix(i,row);
+        mAPMatrix.set(i, col, newVal);
+    }
+}
+
+void GibbsSampler::updateAPMatrix(const MatrixChange &change)
+{
+    if (change.label == 'A')
+    {
+        updateAPMatrix_A(change.row1, change.col1, change.delta1);
+        if (change.nChanges > 1)
         {
-            newMass = -proposal.deltaMass1;
+            updateAPMatrix_A(change.row2, change.col2, change.delta2);
         }
     }
-
-    proposal.deltaMass1 = newMass;
-    std::vector<ElementChange> matChange = domain.getElementChange(proposal);                        
-    delLL = computeDeltaLL('A', D, S, AOrig, POrig, matChange);
-
-    // M-H sampling to determine whether or not we can accept Gibbs
-    if (1 - delLLnew * _annealingTemperature  < log(Random::uniform()))
+    else
     {
-        domain.acceptProposal(proposal);
-        update_sysChi2(delLLnew);
-        return true;
+        updateAPMatrix_P(change.row1, change.col1, change.delta1);
+        if (change.nChanges > 1)
+        {
+            updateAPMatrix_P(change.row2, change.col2, change.delta2);
+        }
     }
-    return false;
 }
 
-bool GibbsSampler::birth(char matrixLabel, const AtomicProposal &proposal,
-const AtomicSupport &domain)
+bool GibbsSampler::canUseGibbs(const MatrixChange &ch)
 {
-    double origMass = proposal.deltaMass1;
-    std::vector<ElementChange> matChange = domain.getElementChange(proposal);
+    bool check1 = (ch.label == 'A' && gaps::algo::isRowZero(mPMatrix, ch.col1))
+        || (ch.label == 'P' && gaps::algo::isColZero(mAMatrix, ch.row1));
 
-    unsigned int row = matrix[0].row;
-    unsigned int col = matrix[0].col;
-
-    bool gibbs = matrixLabel == 'A' ? canUseGibbs('A', iRow, iCol)
-        : canUseGibbs('P', iRow, iCol);
-
-    if (gibbs)
+    if (ch.nChanges > 1)
     {
-        proposal.deltaMass1 = the_matrix_label == 'A' ? getMass('A', origMass, iRow, iCol, POrig, AOrig, D, S, 0.1)
-            : getMass('P', origMass, iRow, iCol, AOrig, POrig, D, S, 0.1);
-        std::vector<ElementChange> matChange = domain.getElementChange(proposal);                        
+        bool check2 = (ch.label == 'A' && gaps::algo::isRowZero(mPMatrix, ch.col2))
+            || (ch.label == 'P' && gaps::algo::isColZero(mAMatrix, ch.row2));
+
+        return !check1 && !check2;
     }
-    domain.acceptProposal(proposal);
-    update_sysChi2(computeDeltaLL(the_matrix_label, D, S, AOrig, POrig, matChange)); 
-    return true;
+    return !check1;
 }
 
-bool GibbsSampler::move(char the_matrix_label, const Matrix &D, const Matrix &S,
-const Matrix &AOrig, const Matrix &POrig)
+// accept automatically, try to rebirth
+bool GibbsSampler::death(AtomicSupport &domain, AtomicProposal &proposal)
 {
-    std::vector<ElementChange> matChange = domain.getElementChange(proposal);
+    // automaticallly accept death
+    evaluateChange(domain, proposal, 1.0);
 
-    if (matChange.row[0] == matChange[1].row && matChange[1].col == matChange[1].col)
+    // rebirth
+    MatrixChange ch = domain.getMatrixChange(proposal);
+    proposal.delta1 = canUseGibbs(ch) ? getGibbsMass(ch) : -proposal.delta1;
+
+    // attempt to accept rebirth
+    return evaluateChange(domain, proposal, log(gaps::random::uniform()));
+}
+
+bool GibbsSampler::birth(AtomicSupport &domain, AtomicProposal &proposal)
+{
+    // attempt gibbs
+    MatrixChange change = domain.getMatrixChange(proposal);
+    if (canUseGibbs(change))
+    {
+        proposal.delta1 = getGibbsMass(change);
+    }
+    return evaluateChange(domain, proposal, 1.0);
+}
+
+bool GibbsSampler::move(AtomicSupport &domain, AtomicProposal &proposal)
+{
+    MatrixChange change = domain.getMatrixChange(proposal);
+    if (change.row1 == change.row2 && change.col1 == change.col2)
+    {
+        return false;
+    }
+    return evaluateChange(domain, proposal, log(gaps::random::uniform()));
+}
+
+bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
+{
+    MatrixChange change = domain.getMatrixChange(proposal);
+    if (change.row1 == change.row2 && change.col1 == change.col2)
     {
         return false;
     }
 
-    double delLL = computeDeltaLL(matChange, D, S, AOrig, POrig, matChange);
-    
-    if (1 - delLL * _annealingTemperature < log(Random::uniform()))
-    {
-        domain.acceptProposal(proposal);
-        update_sysChi2(delLL);
-        return true;
-    }
-    return false;
-}
 
-bool GibbsSampler::exchange(char the_matrix_label, const Matrix &D,
-const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
-{
-    std::vector<ElementChange> matChange = domain.getElementChange(proposal);
+/*
 
-    // return false if bin1 == bin2
-    if (matChange.row[0] == matChange[1].row && matChange[1].col == matChange[1].col)
-    {
-        return false;
-    }
+
+
 
     bool useGibbs = the_matrix_label == 'A' ? checkOtherMatrix('A', iRow, iCol, POrig) : checkOtherMatrix('P', iRow, iCol, AOrig);
 
@@ -282,31 +250,31 @@ const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
     {
         alphaparam = GAPSNorm::calcAlphaParameters(the_matrix_label, _nFactor, D, S, AOrig, POrig, iGene1,
             iPattern1, iGene2, iPattern2, iSample1, iSample2);
-        s = alphaparam.first * _annealingTemperature;
-        su = alphaparam.second * _annealingTemperature;
-        mean = su / s;
-        sd = 1. / sqrt(s);
     }
 
-    if (s == 0.0 && su == 0.0)
+    if (alphaparam.first == 0.0)
     {
         useGibbs = false;
     }
 
-    // -------------------------------------------------------------------------
     if (useGibbs)
     {
+        s = alphaparam.first * _annealingTemperature;
+        su = alphaparam.second * _annealingTemperature;
+        mean = su / s;
+        sd = 1. / sqrt(s);
+
         // set newMass1
         // need to retain exponential prior
-        double plower = Random::p_norm(-mass1, mean, sd);
-        double pupper = Random::p_norm(mass2, mean, sd);
-        double u = plower + Random::uniform() * (pupper - plower);
+        double plower = gaps::random::p_norm(-mass1, mean, sd);
+        double pupper = gaps::random::p_norm(mass2, mean, sd);
+        double u = plower + gaps::random::uniform() * (pupper - plower);
 
         // must sample from prior if the computed parameters are not good for Gibbs
         if (!(plower >  0.95 || pupper < 0.05 || s < epsilon ||
         newMass1 == DOUBLE_POSINF || newMass1 == DOUBLE_NEGINF))
         {
-            proposal.deltaMass1 = Random::q_norm(u, mean, sd);
+            proposal.deltaMass1 = gaps::random::q_norm(u, mean, sd);
             proposal.deltaMass1 = std::max(proposal.deltaMass1, -mass1);
             proposal.deltaMass1 = std::min(proposal.deltaMass1, mass2);
             proposal.deltaMass2 = -proposal.deltaMass2;
@@ -323,11 +291,11 @@ const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
     // Metropolis-Hasting exchange action
     
     double lambda = the_matrix_label == 'A' ? _lambdaA : _lambdaP;
-    double pnew = mass1 > mass2 ? Random::d_gamma(newMass1, 2.0, 1.0 / lambda)
-        : Random::d_gamma(newMass2, 2.0, 1.0 / lambda)
+    double pnew = mass1 > mass2 ? gaps::random::d_gamma(newMass1, 2.0, 1.0 / lambda)
+        : gaps::random::d_gamma(newMass2, 2.0, 1.0 / lambda)
     
-    double pold = newMass1 > newMass2 ? Random::d_gamma(mass1, 2.0, 1.0 / lambda)
-        : Random::d_gamma(mass2, 2.0, 1.0 / lambda);
+    double pold = newMass1 > newMass2 ? gaps::random::d_gamma(mass1, 2.0, 1.0 / lambda)
+        : gaps::random::d_gamma(mass2, 2.0, 1.0 / lambda);
 
     if (pnew == 0.0 && pold == 0.0)
     {
@@ -353,13 +321,11 @@ const Matrix &S, const Matrix &AOrig, const Matrix &POrig)
         return true;
     }
 
-    if (1 - priorLL + delLLnew * _annealingTemperature  < log(Random::uniform()))
+    if (1 - priorLL + delLLnew * _annealingTemperature  < log(gaps::random::uniform()))
     {
         domain.acceptProposal(false);
         update_sysChi2(delLLnew);
         return true;
     }
-    return false;
+    return false;*/
 }
-
-#endif

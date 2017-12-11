@@ -3,11 +3,11 @@
 
 TEST_CASE("Test Random.h - Random Number Generation")
 {
-    Random::setSeed(0);
+    gaps::random::setSeed(0);
 
     SECTION("Make sure uniform01 is working")
     {
-        REQUIRE(Random::uniform() != Random::uniform());
+        REQUIRE(gaps::random::uniform() != gaps::random::uniform());
     }
 
     SECTION("Test uniform distribution over unit interval")
@@ -15,8 +15,8 @@ TEST_CASE("Test Random.h - Random Number Generation")
         double min = 1, max = 0;
         for (unsigned i = 0; i < 10000; ++i)
         {
-            min = std::min(Random::uniform(), min);
-            max = std::max(Random::uniform(), max);
+            min = std::min(gaps::random::uniform(), min);
+            max = std::max(gaps::random::uniform(), max);
         }
         REQUIRE(min >= 0);
         REQUIRE(max <= 1);
@@ -25,17 +25,17 @@ TEST_CASE("Test Random.h - Random Number Generation")
     SECTION("Test uniform distribution over general interval")
     {
         // invalid bounds
-        REQUIRE_THROWS(Random::uniform(2.0, 1.4));
+        REQUIRE_THROWS(gaps::random::uniform(2.0, 1.4));
 
         // bounds equal
-        REQUIRE(Random::uniform(4.3,4.3) == 4.3);
+        REQUIRE(gaps::random::uniform(4.3,4.3) == 4.3);
 
         // full range possible
         double min = 10., max = 0.;
         for (unsigned i = 0; i < 1000; ++i)
         {
-            min = std::min(Random::uniform(0.0,10.0), min);
-            max = std::max(Random::uniform(0.0,10.0), max);
+            min = std::min(gaps::random::uniform(0.0,10.0), min);
+            max = std::max(gaps::random::uniform(0.0,10.0), max);
         }
         REQUIRE(min < 0.1);
         REQUIRE(max > 9.9);
@@ -59,7 +59,7 @@ TEST_CASE("Test Random.h - Random Number Generation")
         double norm[1024];
         for (unsigned i = 0; i < 1024; ++i)
         {
-            norm[i] = Random::normal(0, 1);        
+            norm[i] = gaps::random::normal(0, 1);        
             mean += norm[i];
         }
 
@@ -79,7 +79,7 @@ TEST_CASE("Test Random.h - Random Number Generation")
         double total = 0;
         for (unsigned i = 0; i < 10000; ++i)
         {
-            double num = Random::poisson(4);
+            double num = gaps::random::poisson(4);
             total += num;
 
             REQUIRE((int)num == num); // should be integer
@@ -94,7 +94,7 @@ TEST_CASE("Test Random.h - Random Number Generation")
         double total = 0;
         for (unsigned i = 0; i < 10000; ++i)
         {
-            double num = Random::exponential(1);
+            double num = gaps::random::exponential(1);
             total += num;
 
             REQUIRE(num >= 0.0); // should be non-negative
@@ -106,63 +106,38 @@ TEST_CASE("Test Random.h - Random Number Generation")
 
 TEST_CASE("Test Random.h - Distribution Calculations")
 {
-    /*SECTION("Test p_exp")
-    {
-        REQUIRE(Random::p_exp(1, 3)    == Approx(0.9502).epsilon(0.001));
-        REQUIRE(Random::p_exp(2, 1)    == Approx(0.8647).epsilon(0.001));
-        REQUIRE(Random::p_exp(0.01, 1) == Approx(0.0100).epsilon(0.001));
-        REQUIRE(Random::p_exp(0, 5)    == Approx(0.0000).epsilon(0.001));
-
-        REQUIRE_THROWS(Random::p_exp(1, 0));
-    }
-
-    SECTION("Test q_exp")
-    {
-        REQUIRE(Random::q_exp(0, 2)    == Approx(0.0000).epsilon(0.001));
-        REQUIRE(Random::q_exp(0.1, 1)  == Approx(0.1054).epsilon(0.001));
-        REQUIRE(Random::q_exp(0.25, 1) == Approx(0.2877).epsilon(0.001));
-        REQUIRE(Random::q_exp(0.5, 1)  == Approx(0.6931).epsilon(0.001));
-        REQUIRE(Random::q_exp(0.75, 1) == Approx(1.3863).epsilon(0.001));
-        REQUIRE(Random::q_exp(0.99, 1) == Approx(4.6052).epsilon(0.001));
-
-        REQUIRE_THROWS(Random::q_exp(0.5, 0));
-        REQUIRE_THROWS(Random::q_exp(-1, 1));
-        REQUIRE_THROWS(Random::q_exp(1.1, 1));
-        REQUIRE_THROWS(Random::q_exp(1, 1));
-    }*/
-
     SECTION("Test d_gamma")
     {
-        REQUIRE(Random::d_gamma(0.5, 1, 1) == Approx(0.6065).epsilon(0.001));
+        REQUIRE(gaps::random::d_gamma(0.5, 1, 1) == Approx(0.6065).epsilon(0.001));
     }
 
     SECTION("Test p_gamma")
     {
-        REQUIRE(Random::p_gamma(0.5, 1, 1) == Approx(0.3935).epsilon(0.001));
+        REQUIRE(gaps::random::p_gamma(0.5, 1, 1) == Approx(0.3935).epsilon(0.001));
     }
 
 
     SECTION("Test q_gamma")
     {
-        REQUIRE(Random::q_gamma(0.5, 1, 1) == Approx(0.6931).epsilon(0.001));
+        REQUIRE(gaps::random::q_gamma(0.5, 1, 1) == Approx(0.6931).epsilon(0.001));
     }
 
 
     SECTION("Test d_norm")
     {
-        REQUIRE(Random::d_norm(0.5, 0, 1) == Approx(0.3521).epsilon(0.001));
+        REQUIRE(gaps::random::d_norm(0.5, 0, 1) == Approx(0.3521).epsilon(0.001));
     }
 
 
     SECTION("Test q_norm")
     {
-        REQUIRE(Random::q_norm(0.5, 0, 1) == Approx(0.0000).epsilon(0.001));
+        REQUIRE(gaps::random::q_norm(0.5, 0, 1) == Approx(0.0000).epsilon(0.001));
     }
 
 
     SECTION("Test p_norm")
     {
-        REQUIRE(Random::p_norm(0.5, 0, 1) == Approx(0.6915).epsilon(0.001));
+        REQUIRE(gaps::random::p_norm(0.5, 0, 1) == Approx(0.6915).epsilon(0.001));
     }
 }
 
