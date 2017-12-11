@@ -11,6 +11,7 @@
 
 struct AtomicProposal
 {
+    char label;
     char type;
     unsigned nChanges;
 
@@ -20,18 +21,21 @@ struct AtomicProposal
     uint64_t pos2;
     double delta2;
 
-    AtomicProposal(char t, uint64_t p1, double m1)
-        : type(t), nChanges(1), pos1(p1), delta1(m1), pos2(0), delta2(0.0)
+    AtomicProposal(char l, char t, uint64_t p1, double m1)
+        : label(l), type(t), nChanges(1), pos1(p1), delta1(m1), pos2(0), delta2(0.0)
     {}
 
-    AtomicProposal(char t, uint64_t p1, double m1, uint64_t p2, double m2)
-        : type(t), nChanges(2), pos1(p1), delta1(m1), pos2(p2), delta2(m2)
+    AtomicProposal(char l, char t, uint64_t p1, double m1, uint64_t p2, double m2)
+        : label(l), type(t), nChanges(2), pos1(p1), delta1(m1), pos2(p2), delta2(m2)
     {}
 };
 
 class AtomicSupport 
 {
 private:
+
+    // label of this atomic domain (A/P)
+    char mLabel;
 
     // storage of the atomic domain
     std::map<uint64_t, double> mAtomicDomain;
@@ -47,10 +51,10 @@ private:
     uint64_t mNumBins;
     uint64_t mBinSize;
 
-    // average number of atoms per bin
+    // average number of atoms per bin (must be > 0)
     double mAlpha;
 
-    // expected magnitude of each atom
+    // expected magnitude of each atom (must be > 0)
     double mLambda;     
 
     // convert atomic position to row/col of the matrix
@@ -73,7 +77,8 @@ private:
 public:
 
     // constructor
-    AtomicSupport(uint64_t nrow, uint64_t ncol);
+    AtomicSupport(char label, uint64_t nrow, uint64_t ncol, double alpha=1.0,
+        double lambda=1.0);
 
     // create and accept a proposal
     AtomicProposal makeProposal() const;
@@ -95,9 +100,6 @@ public:
     void setAlpha(double alpha) {mAlpha = alpha;}
     void setLambda(double lambda) {mLambda = lambda;}
     void setMaxNumAtoms(uint64_t max) {mMaxNumAtoms = max;}
-
-    // TODO remove support for this
-    std::map<uint64_t, double> getDomain() {return mAtomicDomain;}
 };
 
 #endif

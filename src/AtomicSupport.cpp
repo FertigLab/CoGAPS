@@ -14,11 +14,13 @@
 
 #define EPSILON 1E-10
 
-AtomicSupport::AtomicSupport(uint64_t nrow, uint64_t ncol)
-    : mNumRows(nrow), mNumCols(ncol), mNumBins(nrow * ncol),
-      mNumAtoms(0), mTotalMass(0.0),
-      mMaxNumAtoms(std::numeric_limits<uint64_t>::max()),
-      mBinSize(std::numeric_limits<uint64_t>::max() / (nrow * ncol))
+AtomicSupport::AtomicSupport(char label, uint64_t nrow, uint64_t ncol,
+double alpha, double lambda)
+    :
+mNumRows(nrow), mNumCols(ncol), mNumBins(nrow * ncol),
+mNumAtoms(0), mTotalMass(0.0), mLabel(label), mAlpha(alpha), 
+mMaxNumAtoms(std::numeric_limits<uint64_t>::max()), mLambda(lambda),
+mBinSize(std::numeric_limits<uint64_t>::max() / (nrow * ncol))
 {}
 
 uint64_t AtomicSupport::getRow(uint64_t pos) const
@@ -55,14 +57,14 @@ AtomicProposal AtomicSupport::proposeDeath() const
 {
     uint64_t location = randomAtomPosition();
     uint64_t mass = mAtomicDomain.at(location);
-    return AtomicProposal('D', location, -mass);
+    return AtomicProposal(mLabel, 'D', location, -mass);
 }
 
 AtomicProposal AtomicSupport::proposeBirth() const
 {
     uint64_t location = randomFreePosition();
     uint64_t mass = gaps::random::exponential(mLambda);
-    return AtomicProposal('B', location, mass);
+    return AtomicProposal(mLabel, 'B', location, mass);
 }
 
 // move atom between adjacent atoms
@@ -82,7 +84,7 @@ AtomicProposal AtomicSupport::proposeMove() const
 
     uint64_t newLocation = gaps::random::uniform64(left, right);
 
-    return AtomicProposal('M', location, -mass, newLocation, mass);
+    return AtomicProposal(mLabel, 'M', location, -mass, newLocation, mass);
 }
 
 // exchange with adjacent atom to the right
@@ -111,8 +113,8 @@ AtomicProposal AtomicSupport::proposeExchange() const
 
     // preserve total mass
     return mass1 > mass2 ?
-        AtomicProposal('E', pos1, newMass - mass1, pos2, mass1 - newMass)
-        : AtomicProposal('E', pos1, mass2 - newMass, pos2, newMass - mass2);
+        AtomicProposal(mLabel, 'E', pos1, newMass - mass1, pos2, mass1 - newMass)
+        : AtomicProposal(mLabel, 'E', pos1, mass2 - newMass, pos2, newMass - mass2);
 }
 
 void AtomicSupport::updateAtomMass(uint64_t pos, double delta)
@@ -180,13 +182,12 @@ MatrixChange AtomicSupport::getMatrixChange(const AtomicProposal &prop) const
 {
     if (prop.nChanges > 1)
     {
-        return MatrixChange(prop.type, getRow(prop.pos1), getCol(prop.pos1),
-            prop.delta1, getRow(prop.pos2), getCol(prop.pos2), prop.delta2);
+        return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1), prop.delta1,
+            getRow(prop.pos2), getCol(prop.pos2), prop.delta2);
     }
     else
     {   
-        return MatrixChange(prop.type, getRow(prop.pos1), getCol(prop.pos1),
-            prop.delta1);
+        return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1), prop.delta1);
     }
 }
 
