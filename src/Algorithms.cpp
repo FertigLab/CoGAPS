@@ -48,6 +48,84 @@ matrix_data_t gaps::algo::nonZeroMean(const TwoWayMatrix &mat)
     return sum / nNonZeros;
 }
 
+ColMatrix gaps::algo::computeStdDev(const ColMatrix &stdMat,
+const ColMatrix &meanMat, unsigned nUpdates)
+{
+    ColMatrix retMat(stdMat.nRow(), stdMat.nCol());
+    double meanTerm = 0.0;
+    for (unsigned r = 0; r < retMat.nRow(); ++r)
+    {
+        for (unsigned c = 0; c < retMat.nCol(); ++c)
+        {
+            meanTerm = meanMat(r,c) * meanMat(r,c) / nUpdates;
+            retMat(r,c) = sqrt((stdMat(r,c) - meanTerm) / (nUpdates - 1));
+        }
+    }
+    return retMat;
+}
+
+RowMatrix gaps::algo::computeStdDev(const RowMatrix &stdMat,
+const RowMatrix &meanMat, unsigned nUpdates)
+{
+    RowMatrix retMat(stdMat.nRow(), stdMat.nCol());
+    double meanTerm = 0.0;
+    for (unsigned r = 0; r < retMat.nRow(); ++r)
+    {
+        for (unsigned c = 0; c < retMat.nCol(); ++c)
+        {
+            meanTerm = meanMat(r,c) * meanMat(r,c) / nUpdates;
+            retMat(r,c) = sqrt((stdMat(r,c) - meanTerm) / (nUpdates - 1));
+        }
+    }
+    return retMat;
+}
+
+Vector gaps::algo::scalarMultiple(const Vector &vec, double n)
+{
+    Vector retVec(vec.size());
+    for (unsigned i = 0; i < vec.size(); ++i)
+    {
+        retVec(i) = vec(i) * n;
+    }
+    return retVec;
+}
+
+Vector gaps::algo::squaredScalarMultiple(const Vector &vec, double n)
+{
+    Vector retVec(vec.size());
+    for (unsigned i = 0; i < vec.size(); ++i)
+    {
+        retVec(i) = vec(i) * vec(i) * n * n;
+    }
+    return retVec;
+}
+
+ColMatrix gaps::algo::scalarDivision(const ColMatrix &mat, double n)
+{
+    ColMatrix retMat(mat.nRow(), mat.nCol());
+    for (unsigned r = 0; r < retMat.nRow(); ++r)
+    {
+        for (unsigned c = 0; c < retMat.nCol(); ++c)
+        {
+            retMat(r,c) = mat(r,c) / n;
+        }
+    }
+    return retMat;
+}
+
+RowMatrix gaps::algo::scalarDivision(const RowMatrix &mat, double n)
+{
+    RowMatrix retMat(mat.nRow(), mat.nCol());
+    for (unsigned r = 0; r < retMat.nRow(); ++r)
+    {
+        for (unsigned c = 0; c < retMat.nCol(); ++c)
+        {
+            retMat(r,c) = mat(r,c) / n;
+        }
+    }
+    return retMat;
+}
+
 bool gaps::algo::isRowZero(const RowMatrix &mat, unsigned row)
 {
     return gaps::algo::sum(mat.getRow(row)) == 0;

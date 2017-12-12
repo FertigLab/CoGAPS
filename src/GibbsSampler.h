@@ -16,6 +16,10 @@ private:
     RowMatrix mPMatrix;
     ColMatrix mAMatrix;
 
+    RowMatrix mPMeanMatrix, mPStdMatrix;
+    ColMatrix mAMeanMatrix, mAStdMatrix;
+    unsigned mStatUpdates;
+
     double mMaxGibbsMassA;
     double mMaxGibbsMassP;
 
@@ -54,6 +58,13 @@ public:
     double chi2() const;
     uint64_t totalNumAtoms(char matrixLabel) const;
     void setAnnealingTemp(double temp);
+
+    Rcpp::NumericMatrix AMeanRMatrix() const;
+    Rcpp::NumericMatrix AStdRMatrix() const;
+    Rcpp::NumericMatrix PMeanRMatrix() const;
+    Rcpp::NumericMatrix PStdRMatrix() const;
+
+    void updateStatistics();
 };
 
 #endif

@@ -13,7 +13,10 @@ mDMatrix(D), mSMatrix(S), mAMatrix(D.nrow(), nFactor),
 mPMatrix(nFactor, D.ncol()), mAPMatrix(D.nrow(), D.ncol()),
 mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
 mMaxGibbsMassA(maxGibbsMassA), mMaxGibbsMassP(maxGibbsMassP),
-mAnnealingTemp(0.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq)
+mAnnealingTemp(0.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq),
+mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
+mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
+mStatUpdates(0)
 {
     double meanD = mSingleCellRNASeq ? gaps::algo::nonZeroMean(mDMatrix)
         : gaps::algo::mean(mDMatrix);
@@ -287,4 +290,56 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
             - priorLL);
     }
     return false;
+}
+
+Rcpp::NumericMatrix GibbsSampler::AMeanRMatrix() const
+{
+    return gaps::algo::scalarDivision(mAMeanMatrix, mStatUpdates).rMatrix();
+}
+
+Rcpp::NumericMatrix GibbsSampler::AStdRMatrix() const
+{
+    return gaps::algo::computeStdDev(mAStdMatrix, mAMeanMatrix,
+        mStatUpdates).rMatrix();
+}
+
+Rcpp::NumericMatrix GibbsSampler::PMeanRMatrix() const
+{
+    return gaps::algo::scalarDivision(mPMeanMatrix, mStatUpdates).rMatrix();
+}
+
+Rcpp::NumericMatrix GibbsSampler::PStdRMatrix() const
+{
+    return gaps::algo::computeStdDev(mPStdMatrix, mPMeanMatrix,
+        mStatUpdates).rMatrix();
+}
+
+void GibbsSampler::updateStatistics()
+{
+    mStatUpdates++;
+
+    Vector normVec(mPMatrix.nRow());
+        
+    for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
+    {
+        normVec(r) = gaps::algo::sum(mPMatrix.getRow(r));
+    }
+
+    for (unsigned c = 0; c < mAMeanMatrix.nCol(); ++c)
+    {
+        mAMeanMatrix.getCol(c) += gaps::algo::scalarMultiple(mAMatrix.getCol(c),
+            normVec(c));
+
+        mAStdMatrix.getCol(c) += gaps::algo::squaredScalarMultiple(mAMatrix.getCol(c),
+            normVec(c));
+    }
+
+    for (unsigned r = 0; r < mPMeanMatrix.nRow(); ++r)
+    {
+        mPMeanMatrix.getRow(r) += gaps::algo::scalarMultiple(mPMatrix.getRow(r),
+            1 / normVec(r));
+
+        mPStdMatrix.getRow(r) += gaps::algo::squaredScalarMultiple(mPMatrix.getRow(r),
+            1 / normVec(r));
+    }
 }

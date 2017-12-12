@@ -2,6 +2,18 @@
 
 #include <stdexcept>
 
+/******************************** VECTOR *******************************/
+
+Rcpp::NumericVector Vector::rVec() const
+{
+    return Rcpp::wrap(mValues);
+}
+
+void Vector::concat(const Vector& vec)
+{
+    mValues.insert(mValues.end(), vec.mValues.begin(), vec.mValues.end());
+}
+
 /****************************** ROW MATRIX *****************************/
 
 RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
@@ -38,10 +50,32 @@ const Vector& RowMatrix::getRow(unsigned row) const
 
 void RowMatrix::update(const MatrixChange &change)
 {
-    mRows[change.row1](change.col1) += change.delta1;
+    this->operator()(change.row1, change.col1) += change.delta1;
     if (change.nChanges > 1)
     {
-        mRows[change.row2](change.col2) += change.delta2;
+        this->operator()(change.row2, change.col2) += change.delta2;
+    }
+}
+
+Rcpp::NumericMatrix RowMatrix::rMatrix() const
+{
+    Rcpp::NumericMatrix mat(mNumRows, mNumCols);
+
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            mat(i,j) = this->operator()(i,j);
+        }
+    }
+    return mat;
+}
+
+void Vector::operator+=(const Vector &vec)
+{
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        mValues[i] += vec(i);
     }
 }
 
@@ -81,9 +115,23 @@ const Vector& ColMatrix::getCol(unsigned col) const
 
 void ColMatrix::update(const MatrixChange &change)
 {
-    mCols[change.col1](change.row1) += change.delta1;
+    this->operator()(change.row1, change.col1) += change.delta1;
     if (change.nChanges > 1)
     {
-        mCols[change.col2](change.row2) += change.delta2;
+        this->operator()(change.row2, change.col2) += change.delta2;
     }
+}
+
+Rcpp::NumericMatrix ColMatrix::rMatrix() const
+{
+    Rcpp::NumericMatrix mat(mNumRows, mNumCols);
+
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            mat(i,j) = this->operator()(i,j);
+        }
+    }
+    return mat;
 }
