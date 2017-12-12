@@ -60,4 +60,3 @@ domain for relative probabilities}
 matrix factorization returning the two matrices that reconstruct
 the data matrix
 }
-

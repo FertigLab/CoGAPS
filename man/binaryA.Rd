@@ -21,4 +21,3 @@ that an element of Amean must be to get a value of 1}
 in which the value is 1 if the value in Amean is greater than
 threshold * Asd and 0 otherwise
 }
-

@@ -27,4 +27,3 @@ calcGeneGSStat(Amean, Asd, GSGenes, numPerm, Pw = rep(1, ncol(Amean)),
 listed in a gene set behaves like other genes in the set within
 the given data set
 }
-

@@ -22,4 +22,3 @@ calcCoGAPSStat(Amean, Asd, GStoGenes, numPerm = 500)
 column of A using a Z-score from the elements of the A matrix,
 the input gene set, and permutation tests
 }
-
