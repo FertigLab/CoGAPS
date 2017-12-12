@@ -40,8 +40,6 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
 
     chi2Vec.concat(chi2VecSample);
 
-    // compute statistics
-
     //Just leave the snapshots as empty lists
     return Rcpp::List::create(
         Rcpp::Named("Amean") = sampler.AMeanRMatrix(),

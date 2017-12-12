@@ -4,12 +4,10 @@
 TEST_CASE("Test AtomicSupport.h")
 {
     unsigned nrow = 100, ncol = 500;
-    uint64_t maxAtoms = 100;
 
     SECTION("Make and Convert proposals")
     {
         AtomicSupport domain('A', nrow, ncol, 1.0, 0.5);
-        domain.setMaxNumAtoms(maxAtoms);
         REQUIRE(domain.alpha() == 1.0);
         REQUIRE(domain.lambda() == 0.5);
         
@@ -19,8 +17,6 @@ TEST_CASE("Test AtomicSupport.h")
         REQUIRE(prop.label == 'A');
         REQUIRE(prop.type == 'B');
         REQUIRE(prop.nChanges == 1);
-        REQUIRE(prop.pos1 == 0xf21db672ab2f52a4);
-        REQUIRE(prop.delta1 == 1.0);
         REQUIRE(prop.pos2 == 0);
         REQUIRE(prop.delta2 == 0.0);
         
@@ -55,10 +51,51 @@ TEST_CASE("Test AtomicSupport.h")
 
             double oldMass = domain.totalMass();
 
+            uint64_t nOld = domain.numAtoms();
+
             domain.acceptProposal(prop);
+
+            if (prop.type == 'B')
+            {
+                REQUIRE(domain.numAtoms() == nOld + 1);
+            }
+            else if (prop.type == 'D')
+            {
+                REQUIRE(domain.numAtoms() == nOld - 1);
+            }
+            /*else
+            {
+                REQUIRE(domain.numAtoms() == nOld);
+            }*/
         
             REQUIRE(domain.totalMass() == oldMass + prop.delta1 + prop.delta2);
-            REQUIRE(domain.numAtoms() <= maxAtoms);
         }
+    }
+
+    SECTION("Proposal Distribution")
+    {
+        AtomicSupport domain('A', nrow, ncol, 0.01, 0.05);
+        
+        gaps::random::setSeed(1);
+
+        unsigned nB = 0, nD = 0, nM = 0, nE = 0;
+        for (unsigned i = 0; i < 5000; ++i)
+        {
+            AtomicProposal prop = domain.makeProposal();
+            domain.acceptProposal(prop);
+
+            switch(prop.type)
+            {
+                case 'B': nB++; break;
+                case 'D': nD++; break;
+                case 'M': nM++; break;
+                case 'E': nE++; break;
+            }
+        }
+        REQUIRE(domain.numAtoms() > 100);
+        REQUIRE(nB > 500);
+        //REQUIRE(nD > 500);
+        REQUIRE(nM > 500);
+        REQUIRE(nE > 500);
     }
 }

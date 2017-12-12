@@ -100,7 +100,7 @@ public:
     // setters
     void setAlpha(double alpha) {mAlpha = alpha;}
     void setLambda(double lambda) {mLambda = lambda;}
-    void setMaxNumAtoms(uint64_t max) {mMaxNumAtoms = max;}
+    //void setMaxNumAtoms(uint64_t max) {mMaxNumAtoms = max;}
 };
 
 #endif

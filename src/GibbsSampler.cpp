@@ -2,6 +2,7 @@
 #include "Algorithms.h"
 
 #include <Rcpp.h>
+#include <iostream>
 
 #define EPSILON 1E-10
 
@@ -25,6 +26,11 @@ mStatUpdates(0)
     mADomain.setLambda(alphaA * sqrt(nFactor / meanD));
     mPDomain.setAlpha(alphaP);
     mPDomain.setLambda(alphaP * sqrt(nFactor / meanD));
+
+    std::cout << "A lambda: " << mADomain.lambda() << "\n";
+    std::cout << "A alpha: " << mADomain.alpha() << "\n";
+    std::cout << "P lambda: " << mPDomain.lambda() << "\n";
+    std::cout << "P alpha: " << mPDomain.alpha() << "\n";
 }
 
 double GibbsSampler::getGibbsMass(const MatrixChange &change)
@@ -130,7 +136,7 @@ const AtomicProposal &proposal, double rejectProb)
 {
     MatrixChange change = domain.getMatrixChange(proposal);
     double delLL = computeDeltaLL(change);
-    if (delLL * mAnnealingTemp > rejectProb)
+    if (delLL * mAnnealingTemp >= rejectProb)
     {
         domain.acceptProposal(proposal);
         change.label == 'A' ? mAMatrix.update(change) : mPMatrix.update(change);
@@ -323,6 +329,10 @@ void GibbsSampler::updateStatistics()
     for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
     {
         normVec(r) = gaps::algo::sum(mPMatrix.getRow(r));
+        if (normVec(r) == 0)
+        {
+            normVec(r) = 1.0;
+        }
     }
 
     for (unsigned c = 0; c < mAMeanMatrix.nCol(); ++c)
