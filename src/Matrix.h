@@ -53,6 +53,11 @@ public:
     matrix_data_t& operator()(unsigned i) {return mValues[i];}
     matrix_data_t operator()(unsigned i) const {return mValues[i];}
     unsigned size() const {return mValues.size();}
+
+    Rcpp::NumericVector rVec() const;
+    void concat(const Vector& vec);
+
+    void operator+=(const Vector &vec);
 };
 
 class RowMatrix
@@ -77,6 +82,7 @@ public:
     const Vector& getRow(unsigned row) const;
 
     void update(const MatrixChange &change);
+    Rcpp::NumericMatrix rMatrix() const;
 };
 
 class ColMatrix
@@ -101,6 +107,7 @@ public:
     const Vector& getCol(unsigned col) const;
 
     void update(const MatrixChange &change);
+    Rcpp::NumericMatrix rMatrix() const;
 };
 
 // gain performance at the cost of memory
@@ -136,6 +143,11 @@ public:
     {
         mRowMatrix(row, col) = value;
         mColMatrix(row, col) = value;
+    }
+    
+    Rcpp::NumericMatrix rMatrix() const
+    {
+        return mRowMatrix.rMatrix();
     }
 };
 

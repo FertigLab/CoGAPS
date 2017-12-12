@@ -3,8 +3,9 @@
 #include <Rcpp.h>
 #include <ctime>
 
-void runGibbsSampler(GibbsSampler &sampler, unsigned iterations,
-    bool updateTemp=false);
+static void runGibbsSampler(GibbsSampler &sampler, unsigned iterations,
+Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec, bool updateTemp=false,
+bool updateStats=false);
 
 // [[Rcpp::export]]
 Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
@@ -22,16 +23,44 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
         maxGibbsMassA, maxGibbsMassP, singleCellRNASeq);
 
     // run the sampler for each phase of the algorithm
-    runGibbsSampler(sampler, nEquil, true);
-    runGibbsSampler(sampler, nEquilCool);
-    runGibbsSampler(sampler, nSample);
+
+    Vector chi2Vec(nEquil);
+    Vector nAtomsAEquil(nEquil);
+    Vector nAtomsPEquil(nEquil);
+    runGibbsSampler(sampler, nEquil, chi2Vec, nAtomsAEquil, nAtomsPEquil, true);
+
+    Vector trash(nEquilCool);
+    runGibbsSampler(sampler, nEquilCool, trash, trash, trash);
+
+    Vector chi2VecSample(nSample);
+    Vector nAtomsASample(nSample);
+    Vector nAtomsPSample(nSample);
+    runGibbsSampler(sampler, nSample, chi2VecSample, nAtomsASample, nAtomsPSample,
+        false, true);
+
+    chi2Vec.concat(chi2VecSample);
+
+    // compute statistics
 
     //Just leave the snapshots as empty lists
-    return Rcpp::List::create(Rcpp::Named("randSeed") = seedUsed,
-                              Rcpp::Named("numAtomA") = sampler.totalNumAtoms('A'));
+    return Rcpp::List::create(
+        Rcpp::Named("Amean") = sampler.AMeanRMatrix(),
+        Rcpp::Named("Asd") = sampler.AStdRMatrix(),
+        Rcpp::Named("Pmean") = sampler.PMeanRMatrix(),
+        Rcpp::Named("Psd") = sampler.PStdRMatrix(),
+        Rcpp::Named("ASnapshots") = Rcpp::List::create(),
+        Rcpp::Named("PSnapshots") = Rcpp::List::create(),
+        Rcpp::Named("atomsAEquil") = nAtomsAEquil.rVec(),
+        Rcpp::Named("atomsASamp") = nAtomsASample.rVec(),
+        Rcpp::Named("atomsPEquil") = nAtomsPEquil.rVec(),
+        Rcpp::Named("atomsPSamp") = nAtomsPSample.rVec(),
+        Rcpp::Named("chiSqValues") = chi2Vec.rVec(),
+        Rcpp::Named("randSeed") = seedUsed);
 }
 
-void runGibbsSampler(GibbsSampler &sampler, unsigned iterations, bool updateTemp)
+static void runGibbsSampler(GibbsSampler &sampler, unsigned iterations,
+Vector& chi2Vec, Vector& aAtomVec, Vector& pAtomVec, bool updateTemp,
+bool updateStats)
 {
     unsigned nIterA = 10;
     unsigned nIterP = 10;
@@ -55,12 +84,18 @@ void runGibbsSampler(GibbsSampler &sampler, unsigned iterations, bool updateTemp
             sampler.update('P');
         }
 
-        double tempChiSq = sampler.chi2();
+        if (updateStats)
+        {
+            sampler.updateStatistics();
+        }
+
+        chi2Vec(i) = sampler.chi2();
         uint64_t numAtomsA = sampler.totalNumAtoms('A');
         uint64_t numAtomsP = sampler.totalNumAtoms('P');
+        aAtomVec(i) = (double) numAtomsA;
+        pAtomVec(i) = (double) numAtomsP;
 
         nIterA = gaps::random::poisson(std::max(numAtomsA, (uint64_t)10));
         nIterP = gaps::random::poisson(std::max(numAtomsP, (uint64_t)10));
     }
-
 }

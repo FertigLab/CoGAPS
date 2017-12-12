@@ -29,6 +29,20 @@ namespace algo
     matrix_data_t sum(const TwoWayMatrix &mat);
     matrix_data_t mean(const TwoWayMatrix &mat);
     matrix_data_t nonZeroMean(const TwoWayMatrix &mat);
+    
+    ColMatrix computeStdDev(const ColMatrix &stdMat, const ColMatrix &meanMat,
+        unsigned nUpdates);
+
+    RowMatrix computeStdDev(const RowMatrix &stdMat, const RowMatrix &meanMat,
+        unsigned nUpdates);
+
+    Vector scalarMultiple(const Vector &vec, double n);
+
+    Vector squaredScalarMultiple(const Vector &vec, double n);
+
+    ColMatrix scalarDivision(const ColMatrix &mat, double n);
+    RowMatrix scalarDivision(const RowMatrix &mat, double n);
+
     bool isRowZero(const RowMatrix &mat, unsigned row);
     bool isColZero(const ColMatrix &mat, unsigned col);
 
