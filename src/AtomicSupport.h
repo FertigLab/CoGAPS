@@ -95,6 +95,7 @@ public:
     double lambda() const {return mLambda;}
     double totalMass() const {return mTotalMass;}
     uint64_t numAtoms() const {return mNumAtoms;}
+    double at(uint64_t loc) const {return mAtomicDomain.at(loc);}
 
     // setters
     void setAlpha(double alpha) {mAlpha = alpha;}
