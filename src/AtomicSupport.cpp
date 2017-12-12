@@ -41,7 +41,7 @@ uint64_t AtomicSupport::randomFreePosition() const
     do
     {
         pos = gaps::random::uniform64();
-    } while (mAtomicDomain.count(pos));
+    } while (mAtomicDomain.count(pos) > 0);
     return pos;
 }
 
@@ -56,15 +56,15 @@ uint64_t AtomicSupport::randomAtomPosition() const
 AtomicProposal AtomicSupport::proposeDeath() const
 {
     uint64_t location = randomAtomPosition();
-    uint64_t mass = mAtomicDomain.at(location);
+    double mass = mAtomicDomain.at(location);
     return AtomicProposal(mLabel, 'D', location, -mass);
 }
 
 AtomicProposal AtomicSupport::proposeBirth() const
 {
     uint64_t location = randomFreePosition();
-    uint64_t mass = gaps::random::exponential(mLambda);
-    return AtomicProposal(mLabel, 'B', location, mass);
+    double mass = gaps::random::exponential(mLambda);
+    return AtomicProposal(mLabel, 'B', location, std::max(mass, EPSILON));
 }
 
 // move atom between adjacent atoms
@@ -72,7 +72,7 @@ AtomicProposal AtomicSupport::proposeMove() const
 {
     // get random atom
     uint64_t location = randomAtomPosition();
-    uint64_t mass = mAtomicDomain.at(location);
+    double mass = mAtomicDomain.at(location);
 
     // get an iterator to this atom
     std::map<uint64_t, double>::const_iterator it;
@@ -130,7 +130,7 @@ void AtomicSupport::updateAtomMass(uint64_t pos, double delta)
         mTotalMass += delta;
         mNumAtoms++;
     }
-    if (mAtomicDomain.at(pos) <= EPSILON) // check if atom is too small
+    if (mAtomicDomain.at(pos) < EPSILON) // check if atom is too small
     {
         mTotalMass -= mAtomicDomain.at(pos);
         mAtomicDomain.erase(pos);
@@ -138,8 +138,6 @@ void AtomicSupport::updateAtomMass(uint64_t pos, double delta)
     }
 }
 
-#define GEOM_F(x) (((double) (x)) / ((double) (x + 1)))
-#define POISS_F(x,y) ((double)((x) * (y)) / (double)((x) - (y)))
 AtomicProposal AtomicSupport::makeProposal() const
 {
     if (mNumAtoms == 0)
@@ -148,7 +146,7 @@ AtomicProposal AtomicSupport::makeProposal() const
     }
 
     double unif = gaps::random::uniform();
-    if (mNumAtoms < 2 && unif <= 0.6667 || unif <= 0.5) // birth/death
+    if ((mNumAtoms < 2 && unif <= 0.6667) || unif <= 0.5) // birth/death
     {
         if (mNumAtoms >= mMaxNumAtoms)
         {
@@ -158,15 +156,20 @@ AtomicProposal AtomicSupport::makeProposal() const
         double pDelete = 0.5; // default uniform prior for mAlpha == 0
         if (mAlpha > 0) // poisson prior
         {
-            pDelete = 1 + POISS_F(mMaxNumAtoms, mNumAtoms) / (mAlpha * mNumBins);
+            double dMax = (double)mMaxNumAtoms;
+            double dNum = (double)mNumAtoms;
+            double maxTerm = (dMax - dNum) / dMax;
+
+            pDelete = dNum / (dNum + mAlpha * (double)mNumBins * maxTerm);
         }
         else if (mAlpha < 0) // geometric prior
         {
-            pDelete = 1 + GEOM_F(mNumAtoms) / GEOM_F(-mAlpha * mNumBins);
+            double c = -mAlpha * mNumBins / (-mAlpha * mNumBins + 1.0);
+            pDelete = (double)mNumAtoms / ((mNumAtoms + 1) * c + (double)mNumAtoms);
         }
         return gaps::random::uniform() < pDelete ? proposeDeath() : proposeBirth();
     }
-    return mNumAtoms < 2 || unif <= 0.75 ? proposeMove() : proposeExchange();
+    return (mNumAtoms < 2 || unif >= 0.75) ? proposeMove() : proposeExchange();
 }
 
 void AtomicSupport::acceptProposal(const AtomicProposal &prop)

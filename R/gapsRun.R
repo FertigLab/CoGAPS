@@ -118,7 +118,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
   names(cogapResult)[13] = "meanChi2";
 
   if (messages)
-    message(paste("Chi-Squared of Mean:",calcChiSq))
+    message(paste("Chi-Squared of Mean:", calcChiSq))
 
   return(cogapResult);
 }

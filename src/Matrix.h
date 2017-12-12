@@ -21,7 +21,8 @@ struct MatrixChange
     matrix_data_t delta2;
 
     MatrixChange(char l, unsigned r, unsigned c, double d)
-        : label(l), nChanges(1), row1(r), col1(c), delta1(d)
+        : label(l), nChanges(1), row1(r), col1(c), delta1(d), row2(0),
+        col2(0), delta2(0.0)
     {}
 
     MatrixChange(char l, unsigned r1, unsigned c1, double d1, unsigned r2,

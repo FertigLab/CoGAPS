@@ -4,7 +4,9 @@ test_that("GAPS Simple Simulation",
 {
     data(SimpSim)
     nIter <- 1000
-    expect_error(gapsRun(SimpSim.D, SimpSim.S, nFactor=3, messages=FALSE), NA)
+    res <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3, messages=FALSE)
+
+    expect_true(!is.na(res$meanChi2))
 })
 
 #test_that("GAPSmap Simple Simulation",

@@ -13,13 +13,19 @@ TEST_CASE("Test Random.h - Random Number Generation")
     SECTION("Test uniform distribution over unit interval")
     {
         double min = 1, max = 0;
-        for (unsigned i = 0; i < 10000; ++i)
+        double sum = 0.0;
+        unsigned N = 10000;
+        for (unsigned i = 0; i < N; ++i)
         {
             min = std::min(gaps::random::uniform(), min);
             max = std::max(gaps::random::uniform(), max);
+            sum += gaps::random::uniform();
         }
+        REQUIRE(sum / N == Approx(0.5).epsilon(0.01));
         REQUIRE(min >= 0);
+        REQUIRE(min < 0.01);
         REQUIRE(max <= 1);
+        REQUIRE(max > 0.99);
     }
 
     SECTION("Test uniform distribution over general interval")
