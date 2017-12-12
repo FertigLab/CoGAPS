@@ -30,7 +30,7 @@ private:
     bool exchange(AtomicSupport &domain, AtomicProposal &proposal);
 
     bool evaluateChange(AtomicSupport &domain, const AtomicProposal &proposal,
-        double prob);
+        double rejectProb);
 
     double computeDeltaLL(const MatrixChange &change);
 
