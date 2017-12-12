@@ -72,4 +72,3 @@ individual samples from Markov chain during sampling}
 matrix factorization returning the two matrices that reconstruct
 the data matrix
 }
-

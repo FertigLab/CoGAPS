@@ -19,4 +19,3 @@ not specified, output goes to screen}
 \code{plotGAPS} plots the output A and P matrices as a
 heatmap and line plot respectively
 }
-

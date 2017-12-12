@@ -43,4 +43,3 @@ samplePalette=pd$color,colDenogram=TRUE,heatmapCol="bluered", scale='row')
 \seealso{
 \code{\link{heatmap.2}}
 }
-
