@@ -28,15 +28,27 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
     Vector nAtomsAEquil(nEquil);
     Vector nAtomsPEquil(nEquil);
     runGibbsSampler(sampler, nEquil, chi2Vec, nAtomsAEquil, nAtomsPEquil, true);
+#ifdef GAPS_DEBUG
+    sampler.checkAtomicMatrixConsistency();
+    sampler.checkAPMatrix();
+#endif
 
     Vector trash(nEquilCool);
     runGibbsSampler(sampler, nEquilCool, trash, trash, trash);
+#ifdef GAPS_DEBUG
+    sampler.checkAtomicMatrixConsistency();
+    sampler.checkAPMatrix();
+#endif
 
     Vector chi2VecSample(nSample);
     Vector nAtomsASample(nSample);
     Vector nAtomsPSample(nSample);
     runGibbsSampler(sampler, nSample, chi2VecSample, nAtomsASample, nAtomsPSample,
         false, true);
+#ifdef GAPS_DEBUG
+    sampler.checkAtomicMatrixConsistency();
+    sampler.checkAPMatrix();
+#endif
 
     chi2Vec.concat(chi2VecSample);
 

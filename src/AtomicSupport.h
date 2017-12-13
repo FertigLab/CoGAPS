@@ -71,8 +71,8 @@ private:
     AtomicProposal proposeMove() const;
     AtomicProposal proposeExchange() const;
 
-    // update the mass of an atom
-    void updateAtomMass(uint64_t pos, double delta);
+    // update the mass of an atom, return the total amount changed
+    double updateAtomMass(uint64_t pos, double delta);
 
 public:
 
@@ -82,20 +82,17 @@ public:
 
     // create and accept a proposal
     AtomicProposal makeProposal() const;
-    void acceptProposal(const AtomicProposal &prop);
+    MatrixChange acceptProposal(const AtomicProposal &prop);
 
     // convert an AtomicProposal to an ElementChange
     MatrixChange getMatrixChange(const AtomicProposal &prop) const;
 
-    // write atomic domain to file
-    void write(const std::string &outputFilename, bool append) const;
-    
     // getters
     double alpha() const {return mAlpha;}
     double lambda() const {return mLambda;}
     double totalMass() const {return mTotalMass;}
     uint64_t numAtoms() const {return mNumAtoms;}
-    double at(uint64_t loc) const {return mAtomicDomain.at(loc);}
+    double at(uint64_t loc) const {return mAtomicDomain.at(loc);} //TODO rm
 
     // setters
     void setAlpha(double alpha) {mAlpha = alpha;}

@@ -1,17 +1,5 @@
 #include "AtomicSupport.h"
 
-#include <stdexcept>
-#include <algorithm>
-#include <iostream>
-#include <vector>
-#include <limits>
-
-#include <sstream>
-#include <string>
-#include <istream>
-#include <iterator>
-#include <fstream>
-
 #define EPSILON 1E-10
 
 AtomicSupport::AtomicSupport(char label, uint64_t nrow, uint64_t ncol,
@@ -25,13 +13,13 @@ mBinSize(std::numeric_limits<uint64_t>::max() / (nrow * ncol))
 
 uint64_t AtomicSupport::getRow(uint64_t pos) const
 {
-    uint64_t binNum = std::max(pos / mBinSize, mNumBins - 1);
+    uint64_t binNum = std::min(pos / mBinSize, mNumBins - 1);
     return binNum / mNumCols;
 }
 
 uint64_t AtomicSupport::getCol(uint64_t pos) const
 {
-    uint64_t binNum = std::max(pos / mBinSize, mNumBins - 1);
+    uint64_t binNum = std::min(pos / mBinSize, mNumBins - 1);
     return binNum % mNumCols;
 }
 
@@ -117,25 +105,26 @@ AtomicProposal AtomicSupport::proposeExchange() const
         : AtomicProposal(mLabel, 'E', pos1, mass2 - newMass, pos2, newMass - mass2);
 }
 
-void AtomicSupport::updateAtomMass(uint64_t pos, double delta)
+double AtomicSupport::updateAtomMass(uint64_t pos, double delta)
 {
     if (mAtomicDomain.count(pos)) // update atom if it exists
     {
         mAtomicDomain.at(pos) += delta;
-        mTotalMass += delta;
     }
     else // create a new atom if it doesn't exist
     {
         mAtomicDomain.insert(std::pair<uint64_t, double>(pos, delta));
-        mTotalMass += delta;
         mNumAtoms++;
     }
+
     if (mAtomicDomain.at(pos) < EPSILON) // check if atom is too small
     {
-        mTotalMass -= mAtomicDomain.at(pos);
+        delta -= mAtomicDomain.at(pos);
         mAtomicDomain.erase(pos);
         mNumAtoms--;
     }
+    mTotalMass += delta;
+    return delta;
 }
 
 AtomicProposal AtomicSupport::makeProposal() const
@@ -172,17 +161,33 @@ AtomicProposal AtomicSupport::makeProposal() const
     return (mNumAtoms < 2 || unif >= 0.75) ? proposeMove() : proposeExchange();
 }
 
-void AtomicSupport::acceptProposal(const AtomicProposal &prop)
+MatrixChange AtomicSupport::acceptProposal(const AtomicProposal &prop)
 {
-    updateAtomMass(prop.pos1, prop.delta1);
+#ifdef GAPS_DEBUG
+    if (prop.label != mLabel)
+    {
+        throw std::runtime_error("domain mismatch");
+    }
+#endif
+
+    MatrixChange change = getMatrixChange(prop);
+    change.delta1 = updateAtomMass(prop.pos1, prop.delta1);
     if (prop.nChanges > 1)
     {
-        updateAtomMass(prop.pos2, prop.delta2);
+        change.delta2 = updateAtomMass(prop.pos2, prop.delta2);
     }
+    return change;
 }
 
 MatrixChange AtomicSupport::getMatrixChange(const AtomicProposal &prop) const
 {
+#ifdef GAPS_DEBUG
+    if (prop.label != mLabel)
+    {
+        throw std::runtime_error("domain mismatch");
+    }
+#endif
+
     if (prop.nChanges > 1)
     {
         return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1), prop.delta1,
@@ -192,19 +197,4 @@ MatrixChange AtomicSupport::getMatrixChange(const AtomicProposal &prop) const
     {   
         return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1), prop.delta1);
     }
-}
-
-void AtomicSupport::write(const std::string &path, bool append) const
-{
-    std::ios_base::openmode mode = append ? std::ios::out | std::ios::app
-        : std::ios::out;
-    std::ofstream outputFile(path.c_str(), mode);
-
-    std::map<uint64_t, double>::const_iterator iter;
-    for (iter = mAtomicDomain.begin(); iter != mAtomicDomain.end(); ++iter)
-    {
-        outputFile << setiosflags(std::ios::right) << std::setw(25) << iter->first
-            << ' ' << std::setw(15) << iter->second << '\n';
-    }
-    outputFile.close();
 }

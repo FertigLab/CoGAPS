@@ -2,7 +2,11 @@
 #include "Algorithms.h"
 
 #include <Rcpp.h>
+
+#ifdef GAPS_DEBUG
+#include <stdexcept>
 #include <iostream>
+#endif
 
 #define EPSILON 1E-10
 
@@ -23,14 +27,12 @@ mStatUpdates(0)
         : gaps::algo::mean(mDMatrix);
 
     mADomain.setAlpha(alphaA);
-    mADomain.setLambda(alphaA * sqrt(nFactor / meanD));
+    mADomain.setLambda(alphaA * std::sqrt(nFactor / meanD));
     mPDomain.setAlpha(alphaP);
-    mPDomain.setLambda(alphaP * sqrt(nFactor / meanD));
+    mPDomain.setLambda(alphaP * std::sqrt(nFactor / meanD));
 
-    std::cout << "A lambda: " << mADomain.lambda() << "\n";
-    std::cout << "A alpha: " << mADomain.alpha() << "\n";
-    std::cout << "P lambda: " << mPDomain.lambda() << "\n";
-    std::cout << "P alpha: " << mPDomain.alpha() << "\n";
+    mMaxGibbsMassA /= mADomain.lambda();
+    mMaxGibbsMassP /= mPDomain.lambda();
 }
 
 double GibbsSampler::getGibbsMass(const MatrixChange &change)
@@ -43,9 +45,11 @@ double GibbsSampler::getGibbsMass(const MatrixChange &change)
         mSMatrix, mAMatrix, mPMatrix, mAPMatrix);
 
     // calculate mean and standard deviation
+    alphaParam.s *= mAnnealingTemp / 4.0;
+    alphaParam.su *= mAnnealingTemp / 4.0;
     double lambda = change.label == 'A' ? mADomain.lambda() : mPDomain.lambda();
     double mean  = (2.0 * alphaParam.su - lambda) / (2.0 * alphaParam.s);
-    double sd = 1.0 / sqrt(2 * alphaParam.s);
+    double sd = 1.0 / std::sqrt(2 * alphaParam.s);
 
     // note: is bounded below by zero so have to use inverse sampling!
     // based upon algorithm in DistScalarRmath.cc (scalarRandomSample)
@@ -56,14 +60,14 @@ double GibbsSampler::getGibbsMass(const MatrixChange &change)
     double newMass = 0.0;
     if (plower == 1 || alphaParam.s < 1.e-5)
     {
-        newMass = death ? abs(change.delta1) : 0.0;
+        newMass = death ? std::abs(change.delta1) : 0.0;
     }
     else if (plower >= 0.99)
     {
         double tmp1 = gaps::random::d_norm(0, mean, sd);
         double tmp2 = gaps::random::d_norm(10 * lambda, mean, sd);
 
-        if (tmp1 > EPSILON && fabs(tmp1 - tmp2) < EPSILON)
+        if (tmp1 > EPSILON && std::abs(tmp1 - tmp2) < EPSILON)
         {
             return death ? 0.0 : change.delta1;
         }
@@ -73,10 +77,9 @@ double GibbsSampler::getGibbsMass(const MatrixChange &change)
         newMass = gaps::random::q_norm(u, mean, sd);
     }
 
-    newMass = change.label == 'A' ? std::min(newMass, mMaxGibbsMassA)
-        : std::min(newMass, mMaxGibbsMassP);
+    newMass = (change.label == 'A' ? std::min(newMass, mMaxGibbsMassA)
+        : std::min(newMass, mMaxGibbsMassP));
 
-    // TODO check if less than epsilon and return original mass
     return std::max(newMass, 0.0);
 }
 
@@ -138,7 +141,7 @@ const AtomicProposal &proposal, double rejectProb)
     double delLL = computeDeltaLL(change);
     if (delLL * mAnnealingTemp >= rejectProb)
     {
-        domain.acceptProposal(proposal);
+        change = domain.acceptProposal(proposal);
         change.label == 'A' ? mAMatrix.update(change) : mPMatrix.update(change);
         updateAPMatrix(change);
         setChi2(chi2() - 2 * delLL);
@@ -210,7 +213,8 @@ bool GibbsSampler::death(AtomicSupport &domain, AtomicProposal &proposal)
 
     // rebirth
     MatrixChange ch = domain.getMatrixChange(proposal);
-    proposal.delta1 = canUseGibbs(ch) ? getGibbsMass(ch) : -proposal.delta1;
+    double newMass = canUseGibbs(ch) ? getGibbsMass(ch) : 0.0;
+    proposal.delta1 = newMass < EPSILON ? -proposal.delta1 : newMass;    
 
     // attempt to accept rebirth
     return evaluateChange(domain, proposal, log(gaps::random::uniform()));
@@ -263,7 +267,7 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
             alphaParam.s *= mAnnealingTemp;
             alphaParam.su *= mAnnealingTemp;
             double mean = alphaParam.su / alphaParam.s;
-            double sd = 1.0 / sqrt(alphaParam.s);
+            double sd = 1.0 / std::sqrt(alphaParam.s);
 
             double plower = gaps::random::p_norm(-mass1, mean, sd);
             double pupper = gaps::random::p_norm(mass2, mean, sd);
@@ -353,3 +357,29 @@ void GibbsSampler::updateStatistics()
             1 / normVec(r));
     }
 }
+
+#ifdef GAPS_DEBUG
+
+void GibbsSampler::checkAtomicMatrixConsistency() const
+{
+    double AMass = gaps::algo::sum(mAMatrix);
+    double PMass = gaps::algo::sum(mPMatrix);
+    double Adiff = std::abs(AMass - mADomain.totalMass());
+    double Pdiff = std::abs(PMass - mPDomain.totalMass());
+    if (Adiff > EPSILON || Pdiff > EPSILON)
+    {
+        std::cout << "A Mass - " << AMass << "," << mADomain.totalMass() << '\n';
+        std::cout << "P Mass - " << PMass << "," << mPDomain.totalMass() << '\n';
+        throw std::runtime_error("inconsistency with Atomic Domain");
+    }
+}
+
+void GibbsSampler::checkAPMatrix() const
+{
+    if (!gaps::algo::checkAPMatrix(mAPMatrix, mAMatrix, mPMatrix))
+    {
+        throw std::runtime_error("APMatrix inconsistency");
+    }
+}
+
+#endif
