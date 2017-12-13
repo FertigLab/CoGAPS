@@ -1,6 +1,6 @@
 #include "AtomicSupport.h"
 
-#define EPSILON 1E-10
+static const double EPSILON = 1.e-10;
 
 AtomicSupport::AtomicSupport(char label, uint64_t nrow, uint64_t ncol,
 double alpha, double lambda)

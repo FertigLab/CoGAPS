@@ -8,7 +8,7 @@
 #include <iostream>
 #endif
 
-#define EPSILON 1E-10
+static const double EPSILON = 1.e-10;
 
 GibbsSampler::GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S,
 unsigned int nFactor, double alphaA, double alphaP, double maxGibbsMassA,
@@ -353,10 +353,10 @@ void GibbsSampler::updateStatistics()
     for (unsigned r = 0; r < mPMeanMatrix.nRow(); ++r)
     {
         mPMeanMatrix.getRow(r) += gaps::algo::scalarMultiple(mPMatrix.getRow(r),
-            1 / normVec(r));
+            1.0 / normVec(r));
 
         mPStdMatrix.getRow(r) += gaps::algo::squaredScalarMultiple(mPMatrix.getRow(r),
-            1 / normVec(r));
+            1.0 / normVec(r));
     }
 }
 

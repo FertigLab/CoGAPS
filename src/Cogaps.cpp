@@ -2,10 +2,11 @@
 
 #include <Rcpp.h>
 #include <ctime>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
-static void runGibbsSampler(GibbsSampler &sampler, unsigned iterations,
-Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec, bool updateTemp=false,
-bool updateStats=false);
+static void runGibbsSampler(GibbsSampler &sampler, unsigned nIterTotal,
+unsigned& nIterA, unsigned& nIterP, Vector& chi2Vec, Vector& aAtomVec,
+Vector& pAtomVec, bool updateTemp=false, bool updateStats=false);
 
 // [[Rcpp::export]]
 Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
@@ -14,37 +15,41 @@ unsigned nEquilCool, unsigned nSample, double maxGibbsMassA,
 double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=false)
 {
     // set seed
-    uint32_t seedUsed = seed >= 0 ? static_cast<uint32_t>(seed)
-        : static_cast<uint32_t>(std::time(0));
+    uint32_t seedUsed = static_cast<uint32_t>(seed);
+    if (seed < 0)
+    {
+        boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1)); 
+        boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
+        boost::posix_time::time_duration diff = now - epoch;
+        seedUsed = static_cast<uint32_t>(diff.total_milliseconds() % 1000);
+    }
     gaps::random::setSeed(seedUsed);
 
     // create the gibbs sampler
     GibbsSampler sampler(DMatrix, SMatrix, nFactor, alphaA, alphaP,
         maxGibbsMassA, maxGibbsMassP, singleCellRNASeq);
 
+    // initial number of iterations for each matrix
+    unsigned nIterA = 10;
+    unsigned nIterP = 10;
+
     // run the sampler for each phase of the algorithm
 
     Vector chi2Vec(nEquil);
     Vector nAtomsAEquil(nEquil);
     Vector nAtomsPEquil(nEquil);
-    runGibbsSampler(sampler, nEquil, chi2Vec, nAtomsAEquil, nAtomsPEquil, true);
-#ifdef GAPS_DEBUG
-    sampler.checkAtomicMatrixConsistency();
-    sampler.checkAPMatrix();
-#endif
+    runGibbsSampler(sampler, nEquil, nIterA, nIterP, chi2Vec, nAtomsAEquil,
+        nAtomsPEquil, true);
 
     Vector trash(nEquilCool);
-    runGibbsSampler(sampler, nEquilCool, trash, trash, trash);
-#ifdef GAPS_DEBUG
-    sampler.checkAtomicMatrixConsistency();
-    sampler.checkAPMatrix();
-#endif
+    runGibbsSampler(sampler, nEquilCool, nIterA, nIterP, trash, trash, trash);
 
     Vector chi2VecSample(nSample);
     Vector nAtomsASample(nSample);
     Vector nAtomsPSample(nSample);
-    runGibbsSampler(sampler, nSample, chi2VecSample, nAtomsASample, nAtomsPSample,
-        false, true);
+    runGibbsSampler(sampler, nSample, nIterA, nIterP, chi2VecSample,
+        nAtomsASample, nAtomsPSample, false, true);
+
 #ifdef GAPS_DEBUG
     sampler.checkAtomicMatrixConsistency();
     sampler.checkAPMatrix();
@@ -68,20 +73,18 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
         Rcpp::Named("randSeed") = seedUsed);
 }
 
-static void runGibbsSampler(GibbsSampler &sampler, unsigned iterations,
-Vector& chi2Vec, Vector& aAtomVec, Vector& pAtomVec, bool updateTemp,
-bool updateStats)
+static void runGibbsSampler(GibbsSampler &sampler, unsigned nIterTotal,
+unsigned& nIterA, unsigned& nIterP, Vector& chi2Vec, Vector& aAtomVec,
+Vector& pAtomVec, bool updateTemp, bool updateStats)
 {
-    unsigned nIterA = 10;
-    unsigned nIterP = 10;
         
-    double tempDenom = (double)iterations / 2.0;
+    double tempDenom = (double)nIterTotal / 2.0;
 
-    for (unsigned i = 0; i < iterations; ++i)
+    for (unsigned i = 0; i < nIterTotal; ++i)
     {
         if (updateTemp)
         {
-            sampler.setAnnealingTemp(std::min((i + 1) / tempDenom, 1.0));
+            sampler.setAnnealingTemp(std::min(((double)i + 1.0) / tempDenom, 1.0));
         }
 
         for (unsigned j = 0; j < nIterA; ++j)
@@ -100,12 +103,12 @@ bool updateStats)
         }
 
         chi2Vec(i) = sampler.chi2();
-        uint64_t numAtomsA = sampler.totalNumAtoms('A');
-        uint64_t numAtomsP = sampler.totalNumAtoms('P');
-        aAtomVec(i) = (double) numAtomsA;
-        pAtomVec(i) = (double) numAtomsP;
+        double numAtomsA = sampler.totalNumAtoms('A');
+        double numAtomsP = sampler.totalNumAtoms('P');
+        aAtomVec(i) = numAtomsA;
+        pAtomVec(i) = numAtomsP;
 
-        nIterA = gaps::random::poisson(std::max(numAtomsA, (uint64_t)10));
-        nIterP = gaps::random::poisson(std::max(numAtomsP, (uint64_t)10));
+        nIterA = gaps::random::poisson(std::max(numAtomsA, 10.0));
+        nIterP = gaps::random::poisson(std::max(numAtomsP, 10.0));
     }
 }

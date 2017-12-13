@@ -77,8 +77,8 @@ const ColMatrix &meanMat, unsigned nUpdates)
     {
         for (unsigned c = 0; c < retMat.nCol(); ++c)
         {
-            meanTerm = meanMat(r,c) * meanMat(r,c) / nUpdates;
-            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / (nUpdates - 1));
+            meanTerm = meanMat(r,c) * meanMat(r,c) / (double)nUpdates;
+            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / ((double)nUpdates - 1.0));
         }
     }
     return retMat;
@@ -93,8 +93,8 @@ const RowMatrix &meanMat, unsigned nUpdates)
     {
         for (unsigned c = 0; c < retMat.nCol(); ++c)
         {
-            meanTerm = meanMat(r,c) * meanMat(r,c) / nUpdates;
-            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / (nUpdates - 1));
+            meanTerm = meanMat(r,c) * meanMat(r,c) / (double)nUpdates;
+            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / ((double)nUpdates - 1.0));
         }
     }
     return retMat;
