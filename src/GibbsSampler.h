@@ -65,6 +65,11 @@ public:
     Rcpp::NumericMatrix PStdRMatrix() const;
 
     void updateStatistics();
+
+#ifdef GAPS_DEBUG
+    void checkAtomicMatrixConsistency() const;
+    void checkAPMatrix() const;
+#endif
 };
 
 #endif

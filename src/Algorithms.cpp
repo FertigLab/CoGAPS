@@ -30,6 +30,26 @@ matrix_data_t gaps::algo::sum(const TwoWayMatrix &mat)
     return sum;
 }
 
+matrix_data_t gaps::algo::sum(const RowMatrix &mat)
+{
+    matrix_data_t sum = 0.0;
+    for (unsigned r = 0; r < mat.nRow(); ++r)
+    {
+        sum += gaps::algo::sum(mat.getRow(r));
+    }
+    return sum;
+}
+
+matrix_data_t gaps::algo::sum(const ColMatrix &mat)
+{
+    matrix_data_t sum = 0.0;
+    for (unsigned c = 0; c < mat.nCol(); ++c)
+    {
+        sum += gaps::algo::sum(mat.getCol(c));
+    }
+    return sum;
+}
+
 matrix_data_t gaps::algo::nonZeroMean(const TwoWayMatrix &mat)
 {
     matrix_data_t sum = 0.0;
@@ -58,7 +78,7 @@ const ColMatrix &meanMat, unsigned nUpdates)
         for (unsigned c = 0; c < retMat.nCol(); ++c)
         {
             meanTerm = meanMat(r,c) * meanMat(r,c) / nUpdates;
-            retMat(r,c) = sqrt((stdMat(r,c) - meanTerm) / (nUpdates - 1));
+            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / (nUpdates - 1));
         }
     }
     return retMat;
@@ -74,7 +94,7 @@ const RowMatrix &meanMat, unsigned nUpdates)
         for (unsigned c = 0; c < retMat.nCol(); ++c)
         {
             meanTerm = meanMat(r,c) * meanMat(r,c) / nUpdates;
-            retMat(r,c) = sqrt((stdMat(r,c) - meanTerm) / (nUpdates - 1));
+            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / (nUpdates - 1));
         }
     }
     return retMat;
@@ -95,7 +115,7 @@ Vector gaps::algo::squaredScalarMultiple(const Vector &vec, double n)
     Vector retVec(vec.size());
     for (unsigned i = 0; i < vec.size(); ++i)
     {
-        retVec(i) = vec(i) * vec(i) * n * n;
+        retVec(i) = GAPS_SQ(vec(i) * n);
     }
     return retVec;
 }
@@ -240,3 +260,26 @@ const RowMatrix &P, const TwoWayMatrix &AP)
     }
 }
 
+bool gaps::algo::checkAPMatrix(const TwoWayMatrix &AP, const ColMatrix &A,
+const RowMatrix &P)
+{
+    double sum = 0.0, diff = 0.0;
+    for (unsigned r = 0; r < AP.nRow(); ++r)
+    {
+        for (unsigned c = 0; c < AP.nCol(); ++c)
+        {
+            sum = 0.0;
+            for (unsigned k = 0; k < A.nCol(); ++k)
+            {
+                sum += A(r,k) * P(k,c);
+            }
+
+            diff = std::abs(AP(r,c) - sum);
+            if (diff > 1E-10)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
