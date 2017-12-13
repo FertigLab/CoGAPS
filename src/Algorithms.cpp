@@ -146,6 +146,20 @@ RowMatrix gaps::algo::scalarDivision(const RowMatrix &mat, double n)
     return retMat;
 }
 
+matrix_data_t gaps::algo::loglikelihood(const TwoWayMatrix &D,
+const TwoWayMatrix &S, const TwoWayMatrix &AP)
+{
+    double chi2 = 0.0;
+    for (unsigned r = 0; r < D.nRow(); ++r)
+    {
+        for (unsigned c = 0; c < D.nCol(); ++c)
+        {
+            chi2 += GAPS_SQ(D(r,c) - AP(r,c)) / GAPS_SQ(S(r,c));
+        }
+    }
+    return chi2;
+}
+
 bool gaps::algo::isRowZero(const RowMatrix &mat, unsigned row)
 {
     return gaps::algo::sum(mat.getRow(row)) == 0;
@@ -163,8 +177,8 @@ const RowMatrix &P, const TwoWayMatrix &AP)
     double numer = 0.0, denom = 0.0, delLL = 0.0;
     for (unsigned j = 0; j < D.nCol(); ++j)
     {
-        numer = 2 * delta * (D(row,j) - AP(row,j)) * P(col,j) - GAPS_SQ(delta * P(col,j));
-        denom = 2 * GAPS_SQ(S(row,j));
+        numer = 2.0 * delta * (D(row,j) - AP(row,j)) * P(col,j) - GAPS_SQ(delta * P(col,j));
+        denom = 2.0 * GAPS_SQ(S(row,j));
         delLL += numer / denom;
     }
     return delLL;
@@ -198,13 +212,41 @@ const TwoWayMatrix &AP)
     }
     else if (ch.nChanges == 2 && ch.label == 'A')
     {
-        return deltaLL_A(ch.row1, ch.col1, ch.delta1, D, S, A, P, AP)
-            + deltaLL_A(ch.row2, ch.col2, ch.delta2, D, S, A, P, AP);
+        if (ch.row1 == ch.row2)
+        { 
+            double numer = 0.0, denom = 0.0, delLL = 0.0;
+            for (unsigned j = 0; j < D.nCol(); ++j)
+            {
+                numer = 2.0 * (D(ch.row1,j) - AP(ch.row1,j)) * (ch.delta1 * P(ch.col1,j) + ch.delta2 * P(ch.col2,j)) - GAPS_SQ(ch.delta1 * P(ch.col1,j) + ch.delta2 * P(ch.col2,j));
+                denom = 2.0 * GAPS_SQ(S(ch.row1,j));
+                delLL += numer / denom;
+            }
+            return delLL;
+        }
+        else
+        {
+            return deltaLL_A(ch.row1, ch.col1, ch.delta1, D, S, A, P, AP)
+                + deltaLL_A(ch.row2, ch.col2, ch.delta2, D, S, A, P, AP);
+        }
     }
     else
     {
-        return deltaLL_P(ch.row1, ch.col1, ch.delta1, D, S, A, P, AP)
-            + deltaLL_P(ch.row2, ch.col2, ch.delta2, D, S, A, P, AP);
+        if (ch.col1 == ch.col2)
+        {
+            double numer = 0.0, denom = 0.0, delLL = 0.0;
+            for (unsigned i = 0; i < D.nRow(); ++i)
+            {
+                numer = 2.0 * (D(i,ch.col1) - AP(i,ch.col1)) * (ch.delta1 * A(i,ch.row1) + ch.delta2 * A(i,ch.row2)) - GAPS_SQ(ch.delta1 * A(i,ch.row1) + ch.delta2 * A(i,ch.row2));
+                denom = 2.0 * GAPS_SQ(S(i,ch.col1));
+                delLL += numer / denom;
+            }
+            return delLL;
+        }
+        else
+        {
+            return deltaLL_P(ch.row1, ch.col1, ch.delta1, D, S, A, P, AP)
+                + deltaLL_P(ch.row2, ch.col2, ch.delta2, D, S, A, P, AP);
+        }
     }
 }
 
@@ -250,16 +292,45 @@ const RowMatrix &P, const TwoWayMatrix &AP)
     }
     else if (ch.nChanges == 2 && ch.label == 'A')
     {
-        return alphaParameters_A(ch.row1, ch.col1, D, S, P, AP)
-            + alphaParameters_A(ch.row2, ch.col2, D, S, P, AP);
+        if (ch.row1 == ch.row2)
+        {
+            double s = 0.0, su = 0.0, ratio = 0.0;
+            for (unsigned j = 0; j < D.nCol(); ++j)
+            {
+                ratio = (P(ch.col1,j) - P(ch.col2,j)) / S(ch.row1,j);
+                s += GAPS_SQ(ratio);
+                su += (D(ch.row1,j) - AP(ch.row1,j)) * ratio / S(ch.row1,j);
+            }
+            return AlphaParameters(s, su);
+        }
+        else
+        {
+            return alphaParameters_A(ch.row1, ch.col1, D, S, P, AP)
+                + alphaParameters_A(ch.row2, ch.col2, D, S, P, AP);
+        }
     }
     else
     {
-        return alphaParameters_P(ch.row1, ch.col1, D, S, A, AP)
-            + alphaParameters_P(ch.row2, ch.col2, D, S, A, AP);
+        if (ch.col1 == ch.col2)
+        {
+            double s = 0.0, su = 0.0, ratio = 0.0;
+            for (unsigned i = 0; i < D.nRow(); ++i)
+            {
+                ratio = (A(i,ch.row1) - A(i,ch.row2)) / S(i,ch.col1);
+                s += GAPS_SQ(ratio);
+                su += (D(i,ch.col1) - AP(i,ch.col1)) * ratio / S(i,ch.col1);
+            }
+            return AlphaParameters(s, su);
+        }
+        else
+        {
+            return alphaParameters_P(ch.row1, ch.col1, D, S, A, AP)
+                + alphaParameters_P(ch.row2, ch.col2, D, S, A, AP);
+        }
     }
 }
 
+#ifdef GAPS_DEBUG
 bool gaps::algo::checkAPMatrix(const TwoWayMatrix &AP, const ColMatrix &A,
 const RowMatrix &P)
 {
@@ -275,7 +346,7 @@ const RowMatrix &P)
             }
 
             diff = std::abs(AP(r,c) - sum);
-            if (diff > 1E-10)
+            if (diff > 0.00001)
             {
                 return false;
             }
@@ -283,3 +354,4 @@ const RowMatrix &P)
     }
     return true;
 }
+#endif

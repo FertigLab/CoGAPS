@@ -33,6 +33,8 @@ mStatUpdates(0)
 
     mMaxGibbsMassA /= mADomain.lambda();
     mMaxGibbsMassP /= mPDomain.lambda();
+
+    mChi2 = 2.0 * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);
 }
 
 double GibbsSampler::getGibbsMass(const MatrixChange &change)
@@ -291,9 +293,9 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
     double pnew = gaps::random::d_gamma(pnewMass, 2.0, 1.0 / domain.lambda());
     double pold = gaps::random::d_gamma(poldMass, 2.0, 1.0 / domain.lambda());
 
-    if (pold != 0.0)
+    if (pold != 0.0 || pnew == 0.0)
     {
-        double priorLL = log(pnew / pold);
+        double priorLL = pnew == 0.0 ? 0.0 : log(pnew / pold);
         proposal.delta1 = newMass1 - mass1;
         proposal.delta2 = newMass2 - mass2;
         return evaluateChange(domain, proposal, log(gaps::random::uniform())
@@ -366,7 +368,7 @@ void GibbsSampler::checkAtomicMatrixConsistency() const
     double PMass = gaps::algo::sum(mPMatrix);
     double Adiff = std::abs(AMass - mADomain.totalMass());
     double Pdiff = std::abs(PMass - mPDomain.totalMass());
-    if (Adiff > EPSILON || Pdiff > EPSILON)
+    if (Adiff > 0.00001 || Pdiff > 0.00001)
     {
         std::cout << "A Mass - " << AMass << "," << mADomain.totalMass() << '\n';
         std::cout << "P Mass - " << PMass << "," << mPDomain.totalMass() << '\n';
