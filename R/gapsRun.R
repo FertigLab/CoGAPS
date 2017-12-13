@@ -80,8 +80,9 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     }
 
     # call to C++ Rcpp code
-    cogapResult <- cogaps(as.matrix(D), as.matrix(S), nFactor, alphaA, alphaP, nEquil, 10, nSample, max_gibbmass_paraA,
-        max_gibbmass_paraP, seed, messages, singleCellRNASeq)
+    cogapResult <- cogaps(as.matrix(D), as.matrix(S), nFactor, alphaA, alphaP,
+        nEquil, floor(nEquil/10), nSample, max_gibbmass_paraA, max_gibbmass_paraP,
+        seed, messages, singleCellRNASeq)
 
     # convert returned files to matrices to simplify visualization and processing
     cogapResult$Amean <- as.matrix(cogapResult$Amean);
