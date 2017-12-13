@@ -18,8 +18,8 @@
 #define Q_GAMMA_THRESHOLD 0.01
 #define Q_GAMMA_MIN_VALUE 0.0
 
-//typedef boost::random::mt19937 RNGType;
-typedef boost::random::mt11213b RNGType; // should be faster
+typedef boost::random::mt19937 RNGType;
+//typedef boost::random::mt11213b RNGType; // should be faster
 static RNGType rng;
 
 void gaps::random::setSeed(uint32_t seed)

@@ -64,61 +64,60 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                     alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0,
                     seed=-1, messages=TRUE, singleCellRNASeq=FALSE)
 {
-  #Floor the parameters that are integers to prevent allowing doubles.
-  nFactor = floor(nFactor)
-  nEquil = floor(nEquil)
-  nSample = floor(nSample)
+    #Floor the parameters that are integers to prevent allowing doubles.
+    nFactor <- floor(nFactor)
+    nEquil <- floor(nEquil)
+    nSample <- floor(nSample)
 
-  geneNames = rownames(D);
-  sampleNames = colnames(D);
+    geneNames <- rownames(D);
+    sampleNames <- colnames(D);
 
-  # label patterns as Patt N
-  patternNames = c("0");
-  for(i in 1:nFactor)
-  {
-    patternNames[i] = paste('Patt', i);
-  }
-
-  # call to C++ Rcpp code
-  cogapResult = cogaps(as.matrix(D), as.matrix(S), nFactor, alphaA, alphaP, nEquil, 10, nSample, max_gibbmass_paraA,
-    max_gibbmass_paraP, seed, messages, singleCellRNASeq)
-
-  # convert returned files to matrices to simplify visualization and processing
-  cogapResult$Amean = as.matrix(cogapResult$Amean);
-  cogapResult$Asd = as.matrix(cogapResult$Asd);
-  cogapResult$Pmean = as.matrix(cogapResult$Pmean);
-  cogapResult$Psd = as.matrix(cogapResult$Psd);
-
-  ## label matrices
-  colnames(cogapResult$Amean) = patternNames;
-  rownames(cogapResult$Amean) = geneNames;
-  colnames(cogapResult$Asd) = patternNames;
-  rownames(cogapResult$Asd) = geneNames;
-  colnames(cogapResult$Pmean) = sampleNames;
-  rownames(cogapResult$Pmean) = patternNames;
-  colnames(cogapResult$Psd) = sampleNames;
-  rownames(cogapResult$Psd) = patternNames;
-
-  ## calculate chi-squared of mean, this should be smaller than individual
-  ## chi-squared sample values if sampling is good
-  calcChiSq = c(0);
-  MMatrix = (cogapResult$Amean %*% cogapResult$Pmean);
-
-
-  for(i in 1:(nrow(MMatrix)))
-  {
-    for(j in 1:(ncol(MMatrix)))
+    # label patterns as Patt N
+    patternNames <- c("0");
+    for(i in 1:nFactor)
     {
-      calcChiSq = (calcChiSq) + ((D[i,j] - MMatrix[i,j])/(S[i,j]))^(2);
+        patternNames[i] <- paste('Patt', i);
     }
-  }
 
-  cogapResult = c(cogapResult, calcChiSq);
+    # call to C++ Rcpp code
+    cogapResult <- cogaps(as.matrix(D), as.matrix(S), nFactor, alphaA, alphaP, nEquil, 10, nSample, max_gibbmass_paraA,
+        max_gibbmass_paraP, seed, messages, singleCellRNASeq)
 
-  names(cogapResult)[13] = "meanChi2";
+    # convert returned files to matrices to simplify visualization and processing
+    cogapResult$Amean <- as.matrix(cogapResult$Amean);
+    cogapResult$Asd <- as.matrix(cogapResult$Asd);
+    cogapResult$Pmean <- as.matrix(cogapResult$Pmean);
+    cogapResult$Psd <- as.matrix(cogapResult$Psd);
 
-  if (messages)
-    message(paste("Chi-Squared of Mean:", calcChiSq))
+    ## label matrices
+    colnames(cogapResult$Amean) <- patternNames;
+    rownames(cogapResult$Amean) <- geneNames;
+    colnames(cogapResult$Asd) <- patternNames;
+    rownames(cogapResult$Asd) <- geneNames;
+    colnames(cogapResult$Pmean) <- sampleNames;
+    rownames(cogapResult$Pmean) <- patternNames;
+    colnames(cogapResult$Psd) <- sampleNames;
+    rownames(cogapResult$Psd) <- patternNames;
 
-  return(cogapResult);
+    ## calculate chi-squared of mean, this should be smaller than individual
+    ## chi-squared sample values if sampling is good
+    calcChiSq <- c(0);
+    MMatrix <- (cogapResult$Amean %*% cogapResult$Pmean);
+
+    for(i in 1:(nrow(MMatrix)))
+    {
+        for(j in 1:(ncol(MMatrix)))
+        {
+            calcChiSq <- calcChiSq + ((D[i,j] - MMatrix[i,j])/S[i,j])^2;
+        }
+    }
+
+    cogapResult = c(cogapResult, calcChiSq);
+    
+    names(cogapResult)[13] <- "meanChi2";
+
+    if (messages)
+        message(paste("Chi-Squared of Mean:", calcChiSq))
+
+    return(cogapResult);
 }

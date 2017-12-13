@@ -32,9 +32,6 @@ namespace algo
     matrix_data_t mean(const TwoWayMatrix &mat);
     matrix_data_t nonZeroMean(const TwoWayMatrix &mat);
 
-    bool checkAPMatrix(const TwoWayMatrix &AP, const ColMatrix &A,
-        const RowMatrix &P);
-    
     ColMatrix computeStdDev(const ColMatrix &stdMat, const ColMatrix &meanMat,
         unsigned nUpdates);
 
@@ -48,6 +45,9 @@ namespace algo
     ColMatrix scalarDivision(const ColMatrix &mat, double n);
     RowMatrix scalarDivision(const RowMatrix &mat, double n);
 
+    matrix_data_t loglikelihood(const TwoWayMatrix &D, const TwoWayMatrix &S,
+        const TwoWayMatrix &AP);
+
     bool isRowZero(const RowMatrix &mat, unsigned row);
     bool isColZero(const ColMatrix &mat, unsigned col);
 
@@ -58,6 +58,12 @@ namespace algo
     AlphaParameters alphaParameters(const MatrixChange &ch,
         const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
         const RowMatrix &P, const TwoWayMatrix &AP);
+
+#ifdef GAPS_DEBUG
+    bool checkAPMatrix(const TwoWayMatrix &AP, const ColMatrix &A,
+        const RowMatrix &P);
+#endif
+
 }
 
 }
