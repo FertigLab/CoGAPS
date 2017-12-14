@@ -45,7 +45,6 @@ TEST_CASE("Test Random.h - Random Number Generation")
         }
         REQUIRE(min < 0.1);
         REQUIRE(max > 9.9);
-
     }
 
     SECTION("Test uniform distribution over integer range")

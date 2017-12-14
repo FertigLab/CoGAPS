@@ -63,10 +63,10 @@ TEST_CASE("Test AtomicSupport.h")
             {
                 REQUIRE(domain.numAtoms() == nOld - 1);
             }
-            /*else
+            else if (prop.type == 'M')
             {
                 REQUIRE(domain.numAtoms() == nOld);
-            }*/
+            }
         
             REQUIRE(domain.totalMass() == oldMass + prop.delta1 + prop.delta2);
         }
@@ -99,3 +99,154 @@ TEST_CASE("Test AtomicSupport.h")
         REQUIRE(nE > 500);
     }
 }
+
+#ifdef GAPS_INTERNAL_TESTS
+
+TEST_CASE("Internal AtomicSupport Tests")
+{
+    unsigned nrow = 29, ncol = 53;
+    AtomicSupport Adomain('A', nrow, ncol, 1.0, 0.5);
+    AtomicSupport Pdomain('P', nrow, ncol, 1.0, 0.5);
+
+    std::vector<uint64_t> aAtomPos;
+    std::vector<uint64_t> pAtomPos;
+
+    for (unsigned i = 0; i < 100; ++i)
+    {
+        AtomicProposal propA = Adomain.proposeBirth();
+        AtomicProposal propP = Pdomain.proposeBirth();
+        Adomain.acceptProposal(propA);
+        Pdomain.acceptProposal(propP);
+        aAtomPos.push_back(propA.pos1);
+        pAtomPos.push_back(propP.pos1);
+    }
+
+    REQUIRE(Adomain.numAtoms() == 100);
+    REQUIRE(Pdomain.numAtoms() == 100);    
+
+    SECTION("get row/col")
+    {
+        for (unsigned i = 0; i < 10000; ++i)
+        {
+            REQUIRE(Adomain.getRow(gaps::random::uniform64()) >= 0);
+            REQUIRE(Adomain.getRow(gaps::random::uniform64()) < nrow);
+            REQUIRE(Adomain.getCol(gaps::random::uniform64()) >= 0);
+            REQUIRE(Adomain.getCol(gaps::random::uniform64()) < ncol);
+
+            REQUIRE(Pdomain.getRow(gaps::random::uniform64()) >= 0);
+            REQUIRE(Pdomain.getRow(gaps::random::uniform64()) < nrow);
+            REQUIRE(Pdomain.getCol(gaps::random::uniform64()) >= 0);
+            REQUIRE(Pdomain.getCol(gaps::random::uniform64()) < ncol);            
+        }
+    }
+
+    SECTION("randomFreePosition")
+    {
+        for (unsigned i = 0; i < 10000; ++i)
+        {
+            uint64_t posA = Adomain.randomFreePosition();
+            uint64_t posP = Pdomain.randomFreePosition();
+            
+            REQUIRE(std::find(aAtomPos.begin(), aAtomPos.end(), posA) == aAtomPos.end());
+            REQUIRE(std::find(pAtomPos.begin(), pAtomPos.end(), posP) == pAtomPos.end());
+        }
+    }
+
+    SECTION("randomAtomPosition")
+    {
+        for (unsigned i = 0; i < 10000; ++i)
+        {
+            uint64_t posA = Adomain.randomAtomPosition();
+            uint64_t posP = Pdomain.randomAtomPosition();
+            
+            REQUIRE(std::find(aAtomPos.begin(), aAtomPos.end(), posA) != aAtomPos.end());
+            REQUIRE(std::find(pAtomPos.begin(), pAtomPos.end(), posP) != pAtomPos.end());
+        }
+    }
+
+    SECTION("updateAtomMass")
+    {
+        double oldMass = 0.0;
+        uint64_t posA = 0, posP = 0;
+        for (unsigned i = 0; i < 1000; ++i)
+        {
+            posA = Adomain.randomAtomPosition();
+            oldMass = Adomain.at(posA);
+            REQUIRE_NOTHROW(Adomain.updateAtomMass(posA, 0.05));
+            REQUIRE(Adomain.at(posA) == oldMass + 0.05);
+
+            posP = Pdomain.randomAtomPosition();
+            oldMass = Pdomain.at(posP);
+            REQUIRE_NOTHROW(Pdomain.updateAtomMass(posP, 0.05));
+            REQUIRE(Pdomain.at(posP) == oldMass + 0.05);
+        }
+    }
+
+    SECTION("proposeBirth")
+    {
+        for (unsigned i = 0; i < 1000; ++i)
+        {
+            AtomicProposal propA = Adomain.proposeBirth();
+            REQUIRE(propA.nChanges == 1);
+            REQUIRE(std::find(aAtomPos.begin(), aAtomPos.end(), propA.pos1) == aAtomPos.end());
+            REQUIRE(propA.delta1 > 0);
+
+            AtomicProposal propP = Pdomain.proposeBirth();
+            REQUIRE(propP.nChanges == 1);
+            REQUIRE(std::find(pAtomPos.begin(), pAtomPos.end(), propP.pos1) == pAtomPos.end());
+            REQUIRE(propP.delta1 > 0);
+        }
+    }
+
+    SECTION("proposeDeath")
+    {
+        for (unsigned i = 0; i < 1000; ++i)
+        {
+            AtomicProposal propA = Adomain.proposeDeath();
+            REQUIRE(propA.nChanges == 1);
+            REQUIRE(std::find(aAtomPos.begin(), aAtomPos.end(), propA.pos1) != aAtomPos.end());
+            REQUIRE(propA.delta1 < 0);
+
+            AtomicProposal propP = Pdomain.proposeDeath();
+            REQUIRE(propP.nChanges == 1);
+            REQUIRE(std::find(pAtomPos.begin(), pAtomPos.end(), propP.pos1) != pAtomPos.end());
+            REQUIRE(propP.delta1 < 0);
+        }
+    }
+
+    SECTION("proposeMove")
+    {
+        for (unsigned i = 0; i < 1000; ++i)
+        {
+            AtomicProposal propA = Adomain.proposeMove();
+            REQUIRE(propA.nChanges == 2);
+            REQUIRE(std::find(aAtomPos.begin(), aAtomPos.end(), propA.pos1) != aAtomPos.end());
+            REQUIRE(propA.delta1 < 0);
+            REQUIRE(propA.delta1 == -propA.delta2);
+
+            AtomicProposal propP = Pdomain.proposeMove();
+            REQUIRE(propP.nChanges == 2);
+            REQUIRE(std::find(pAtomPos.begin(), pAtomPos.end(), propP.pos1) != pAtomPos.end());
+            REQUIRE(propP.delta1 < 0);
+            REQUIRE(propP.delta1 == -propP.delta2);
+        }
+    }
+        
+    SECTION("proposeExchange")
+    {
+        for (unsigned i = 0; i < 1000; ++i)
+        {
+            AtomicProposal propA = Adomain.proposeExchange();
+            REQUIRE(propA.nChanges == 2);
+            REQUIRE(std::find(aAtomPos.begin(), aAtomPos.end(), propA.pos1) != aAtomPos.end());
+            REQUIRE(propA.delta1 + propA.delta2 == 0.0);
+
+            AtomicProposal propP = Pdomain.proposeExchange();
+            REQUIRE(propP.nChanges == 2);
+            REQUIRE(std::find(pAtomPos.begin(), pAtomPos.end(), propP.pos1) != pAtomPos.end());
+            REQUIRE(propP.delta1 + propP.delta2 == 0.0);
+        }
+    }
+}
+
+#endif

@@ -9,6 +9,7 @@
 #endif
 
 static const double EPSILON = 1.e-10;
+static const double AUTO_ACCEPT = std::numeric_limits<double>::min();
 
 GibbsSampler::GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S,
 unsigned int nFactor, double alphaA, double alphaP, double maxGibbsMassA,
@@ -18,7 +19,7 @@ mDMatrix(D), mSMatrix(S), mAMatrix(D.nrow(), nFactor),
 mPMatrix(nFactor, D.ncol()), mAPMatrix(D.nrow(), D.ncol()),
 mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
 mMaxGibbsMassA(maxGibbsMassA), mMaxGibbsMassP(maxGibbsMassP),
-mAnnealingTemp(0.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq),
+mAnnealingTemp(1.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq),
 mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
 mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
 mStatUpdates(0)
@@ -51,7 +52,7 @@ double GibbsSampler::getGibbsMass(const MatrixChange &change)
     alphaParam.su *= mAnnealingTemp / 4.0;
     double lambda = change.label == 'A' ? mADomain.lambda() : mPDomain.lambda();
     double mean  = (2.0 * alphaParam.su - lambda) / (2.0 * alphaParam.s);
-    double sd = 1.0 / std::sqrt(2 * alphaParam.s);
+    double sd = 1.0 / std::sqrt(2.0 * alphaParam.s);
 
     // note: is bounded below by zero so have to use inverse sampling!
     // based upon algorithm in DistScalarRmath.cc (scalarRandomSample)
@@ -101,18 +102,10 @@ void GibbsSampler::update(char matrixLabel)
     // Update based on the proposal type
     switch (proposal.type)
     {
-        case 'D':
-            death(domain, proposal);
-            break;
-        case 'B':
-            birth(domain, proposal);
-            break;
-        case 'M':
-            move(domain, proposal);
-            break;
-        case 'E':
-            exchange(domain, proposal);
-            break;
+        case 'D': death(domain, proposal);    break;
+        case 'B': birth(domain, proposal);    break;
+        case 'M': move(domain, proposal);     break;
+        case 'E': exchange(domain, proposal); break;
     }
 }
 
@@ -137,11 +130,11 @@ void GibbsSampler::setAnnealingTemp(double temp)
 }
 
 bool GibbsSampler::evaluateChange(AtomicSupport &domain,
-const AtomicProposal &proposal, double rejectProb)
+const AtomicProposal &proposal, double threshold, bool accept)
 {
     MatrixChange change = domain.getMatrixChange(proposal);
     double delLL = computeDeltaLL(change);
-    if (delLL * mAnnealingTemp >= rejectProb)
+    if (accept || delLL * mAnnealingTemp >= threshold)
     {
         change = domain.acceptProposal(proposal);
         change.label == 'A' ? mAMatrix.update(change) : mPMatrix.update(change);
@@ -211,7 +204,7 @@ bool GibbsSampler::canUseGibbs(const MatrixChange &ch)
 bool GibbsSampler::death(AtomicSupport &domain, AtomicProposal &proposal)
 {
     // automaticallly accept death
-    evaluateChange(domain, proposal, 0.0);
+    evaluateChange(domain, proposal, 0.0, true);
 
     // rebirth
     MatrixChange ch = domain.getMatrixChange(proposal);
@@ -219,7 +212,7 @@ bool GibbsSampler::death(AtomicSupport &domain, AtomicProposal &proposal)
     proposal.delta1 = newMass < EPSILON ? -proposal.delta1 : newMass;    
 
     // attempt to accept rebirth
-    return evaluateChange(domain, proposal, log(gaps::random::uniform()));
+    return evaluateChange(domain, proposal, std::log(gaps::random::uniform()));
 }
 
 bool GibbsSampler::birth(AtomicSupport &domain, AtomicProposal &proposal)
@@ -229,7 +222,7 @@ bool GibbsSampler::birth(AtomicSupport &domain, AtomicProposal &proposal)
     proposal.delta1 = canUseGibbs(ch) ? getGibbsMass(ch) : proposal.delta1;
 
     // accept birth
-    return evaluateChange(domain, proposal, 0.0);
+    return evaluateChange(domain, proposal, 0.0, true);
 }
 
 bool GibbsSampler::move(AtomicSupport &domain, AtomicProposal &proposal)
@@ -239,7 +232,7 @@ bool GibbsSampler::move(AtomicSupport &domain, AtomicProposal &proposal)
     {
         return false;
     }
-    return evaluateChange(domain, proposal, log(gaps::random::uniform()));
+    return evaluateChange(domain, proposal, std::log(gaps::random::uniform()));
 }
 
 bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
@@ -280,9 +273,9 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
                 proposal.delta1 = gaps::random::q_norm(u, mean, sd);
                 proposal.delta1 = std::max(proposal.delta1, -mass1);
                 proposal.delta1 = std::min(proposal.delta1, mass2);
-                proposal.delta2 = -proposal.delta2;
+                proposal.delta2 = -proposal.delta1;
 
-                return evaluateChange(domain, proposal, 0.0);
+                return evaluateChange(domain, proposal, 0.0, true);
             }
         }
     }
@@ -298,7 +291,7 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
         double priorLL = pnew == 0.0 ? 0.0 : log(pnew / pold);
         proposal.delta1 = newMass1 - mass1;
         proposal.delta2 = newMass2 - mass2;
-        return evaluateChange(domain, proposal, log(gaps::random::uniform())
+        return evaluateChange(domain, proposal, std::log(gaps::random::uniform())
             - priorLL);
     }
     return false;

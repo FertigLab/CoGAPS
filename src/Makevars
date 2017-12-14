@@ -1,4 +1,5 @@
-PKG_CPPFLAGS = -DGAPS_DEBUG
+TEST_PKG_CPPFLAGS = -DGAPS_DEBUG -DGAPS_INTERNAL_TESTS
+PKG_CPPFLAGS = 
 OBJECTS =   Algorithms.o \
             AtomicSupport.o \
             Cogaps.o \
@@ -7,8 +8,9 @@ OBJECTS =   Algorithms.o \
             Random.o \
             RcppExports.o \
             test-runner.o \
-            cpp_tests/testRandom.o \
-            cpp_tests/testMatrix.o \
             cpp_tests/testAlgorithms.o \
             cpp_tests/testAtomicSupport.o \
-            cpp_tests/testGibbsSampler.o
+            cpp_tests/testGibbsSampler.o \
+            cpp_tests/testMatrix.o \
+            cpp_tests/testRandom.o
+

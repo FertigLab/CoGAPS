@@ -5,8 +5,8 @@
 
 TEST_CASE("Test Algorithms.h")
 {
-    unsigned nrow = 250;
-    unsigned ncol = 500;
+    unsigned nrow = 25;
+    unsigned ncol = 10;
 
     Vector v(nrow);
     TwoWayMatrix D(nrow, ncol), S(nrow, ncol), AP(nrow, ncol);
@@ -15,21 +15,50 @@ TEST_CASE("Test Algorithms.h")
 
     for (unsigned r = 0; r < nrow; ++r)
     {
-        v(r) = r / 100.0;
+        v(r) = r;
         for (unsigned c = 0; c < ncol; ++c)
         {
-            D.set(r, c, (r + c) / 100.0);
+            D.set(r, c, r + c);
             S.set(r, c, (r + c) / 100.0);
-            AP.set(r, c, (r - c) / 100.0);
-            P(r,c) = (r * c) / 100.0;
-            A(r,c) = (r * c) / 100.0;
+            AP.set(r, c, r - c);
+            P(r,c) = r * c;
+            A(r,c) = r * c;
         }
     }
 
-    SECTION("Simple Algorithms")
+    SECTION("sum")
     {
-        REQUIRE(gaps::algo::sum(v) == 311.25);
-        REQUIRE(gaps::algo::sum(D) == 467500);
+        REQUIRE(gaps::algo::sum(v) == 300);
+        REQUIRE(gaps::algo::sum(D) == 300 * 10 + 45 * 25);
+        REQUIRE(gaps::algo::sum(D) == gaps::algo::sum(S) * 100.0);
+        REQUIRE(gaps::algo::sum(A) == gaps::algo::sum(P));
+    }
+
+    SECTION("mean")
+    {
+        double dTotal = 300 * 10 + 45 * 25;
+    
+        REQUIRE(gaps::algo::mean(D) == gaps::algo::mean(S) * 100.0);
+        REQUIRE(gaps::algo::mean(D) == dTotal / (nrow * ncol));
+        REQUIRE(gaps::algo::nonZeroMean(D) == dTotal / (nrow * ncol - 1));
+    }
+
+    SECTION("scalar multiplication/division")
+    {
+        REQUIRE(gaps::algo::sum(gaps::algo::scalarMultiple(v, 3.5))
+            == 3.5 * 300.0);
+
+        double vsqSum = 24.0 * 25.0 * (2.0 * 24.0 + 1.0) / 6.0;
+        REQUIRE(gaps::algo::sum(gaps::algo::squaredScalarMultiple(v, 4.0))
+            == 16.0 * vsqSum);
+/*
+        REQUIRE(gaps::algo::sum(gaps::algo::scalarDivision(v, 1.3))
+            == 300.0 / 1.3);
+
+        REQUIRE(gaps::algo::sum(gaps::algo::squaredScalarDivision(v, 1.3))
+            == vsqSum / (1.3 * 1.3));*/
+    }
+/*        REQUIRE(gaps::algo::sum(D) == 467500);
         
         REQUIRE(gaps::algo::mean(D) == 3.74);
 
@@ -56,5 +85,6 @@ TEST_CASE("Test Algorithms.h")
         REQUIRE(ap.s == Approx(1887.023).epsilon(0.001));
         REQUIRE(ap.su == Approx(-33433278390.625).epsilon(0.001));
     }
+*/
 }
 

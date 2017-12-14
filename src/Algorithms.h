@@ -3,6 +3,10 @@
 
 #include "Matrix.h"
 
+#if (!defined(GAPS_DEBUG) && defined(GAPS_INTERNAL_TESTS))
+    #define GAPS_DEBUG
+#endif
+
 struct AlphaParameters
 {
     double s;
@@ -29,6 +33,7 @@ namespace algo
     matrix_data_t sum(const TwoWayMatrix &mat);
     matrix_data_t sum(const RowMatrix &mat);
     matrix_data_t sum(const ColMatrix &mat);
+
     matrix_data_t mean(const TwoWayMatrix &mat);
     matrix_data_t nonZeroMean(const TwoWayMatrix &mat);
 
@@ -38,18 +43,19 @@ namespace algo
     RowMatrix computeStdDev(const RowMatrix &stdMat, const RowMatrix &meanMat,
         unsigned nUpdates);
 
-    Vector scalarMultiple(const Vector &vec, double n);
+    Vector scalarMultiple(const Vector &vec, matrix_data_t n);
+    Vector squaredScalarMultiple(const Vector &vec, matrix_data_t n);
+    Vector scalarDivision(const Vector &vec, matrix_data_t n);
+    Vector squaredScalarDivision(const Vector &vec, matrix_data_t n);
 
-    Vector squaredScalarMultiple(const Vector &vec, double n);
-
-    ColMatrix scalarDivision(const ColMatrix &mat, double n);
-    RowMatrix scalarDivision(const RowMatrix &mat, double n);
-
-    matrix_data_t loglikelihood(const TwoWayMatrix &D, const TwoWayMatrix &S,
-        const TwoWayMatrix &AP);
+    ColMatrix scalarDivision(const ColMatrix &mat, matrix_data_t n);
+    RowMatrix scalarDivision(const RowMatrix &mat, matrix_data_t n);
 
     bool isRowZero(const RowMatrix &mat, unsigned row);
     bool isColZero(const ColMatrix &mat, unsigned col);
+
+    matrix_data_t loglikelihood(const TwoWayMatrix &D, const TwoWayMatrix &S,
+        const TwoWayMatrix &AP);
 
     double deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
         const TwoWayMatrix &S, const ColMatrix &A,
