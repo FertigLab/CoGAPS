@@ -15,6 +15,10 @@
 
 #include <stdint.h>
 
+#ifdef GAPS_DEBUG
+#include <stdexcept>
+#endif
+
 #define Q_GAMMA_THRESHOLD 1E-6
 #define Q_GAMMA_MIN_VALUE 0.0
 
@@ -60,8 +64,40 @@ uint64_t gaps::random::uniform64()
 
 uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
 {
-    boost::random::uniform_int_distribution<uint64_t> dist(a,b);
-    return dist(rng);
+    if (a == b)
+    {
+        return a;
+    }
+    else if (a < b)
+    {
+        boost::random::uniform_int_distribution<uint64_t> dist(a,b);
+        return dist(rng);
+    }
+#ifdef GAPS_DEBUG
+    else
+    {
+        throw std::runtime_error("invalid arguments in uniform64()");
+    }
+#endif
+}
+
+double gaps::random::uniform(double a, double b)
+{
+    if (a == b)
+    {
+        return a;
+    }
+    else if (a < b)
+    {
+        boost::random::uniform_real_distribution<> dist(a,b);
+        return dist(rng);
+    }
+#ifdef GAPS_DEBUG
+    else
+    {
+        throw std::runtime_error("invalid arguments in uniform64()");
+    }
+#endif
 }
 
 double gaps::random::d_gamma(double d, double shape, double scale)
@@ -107,36 +143,3 @@ double gaps::random::p_norm(double p, double mean, double sd)
     return cdf(norm, p);
 }
 
-int gaps::random::uniformInt(int a, int b)
-{
-    if (a > b)
-    {
-        throw std::invalid_argument("uniformInt: invalid range\n");
-    }
-    else if (a == b)
-    {
-        return a;
-    }
-    else
-    {
-        boost::random::uniform_int_distribution<> dist(a,b);
-        return dist(rng);
-    }
-}
-
-double gaps::random::uniform(double a, double b)
-{
-    if (a > b)
-    {
-        throw std::invalid_argument("uniform: invalid range\n");
-    }
-    else if (a == b)
-    {
-        return a;
-    }
-    else
-    {
-        boost::random::uniform_real_distribution<> dist(a,b);
-        return dist(rng);
-    }
-}

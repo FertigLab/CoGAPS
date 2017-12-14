@@ -53,6 +53,8 @@ public:
 
     matrix_data_t& operator()(unsigned i) {return mValues[i];}
     matrix_data_t operator()(unsigned i) const {return mValues[i];}
+    matrix_data_t& operator[](unsigned i) {return mValues[i];}
+    matrix_data_t operator[](unsigned i) const {return mValues[i];}
     unsigned size() const {return mValues.size();}
 
     Rcpp::NumericVector rVec() const;

@@ -28,13 +28,17 @@ private:
 
     bool mSingleCellRNASeq;
 
+#ifdef GAPS_INTERNAL_TESTS
+public:
+#endif
+
     bool death(AtomicSupport &domain, AtomicProposal &proposal);
     bool birth(AtomicSupport &domain, AtomicProposal &proposal);
     bool move(AtomicSupport &domain, AtomicProposal &proposal);
     bool exchange(AtomicSupport &domain, AtomicProposal &proposal);
 
     bool evaluateChange(AtomicSupport &domain, const AtomicProposal &proposal,
-        double rejectProb);
+        double threshold, bool accept=false);
 
     double computeDeltaLL(const MatrixChange &change);
 
@@ -47,7 +51,9 @@ private:
     bool canUseGibbs(const MatrixChange &ch);
     void setChi2(double chi2);
 
+#ifndef GAPS_INTERNAL_TESTS
 public:
+#endif
 
     GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S, unsigned nFactor,
         double alphaA, double alphaP, double maxGibbsMassA, double maxGibbsMassP,
@@ -55,9 +61,9 @@ public:
 
     void update(char matrixLabel);
 
-    double chi2() const;
     uint64_t totalNumAtoms(char matrixLabel) const;
     void setAnnealingTemp(double temp);
+    double chi2() const;
 
     Rcpp::NumericMatrix AMeanRMatrix() const;
     Rcpp::NumericMatrix AStdRMatrix() const;

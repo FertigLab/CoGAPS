@@ -4,9 +4,16 @@
 #include <ctime>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+enum GapsPhase
+{
+    GAPS_CALIBRATION,
+    GAPS_COOLING,
+    GAPS_SAMPLING
+};
+
 static void runGibbsSampler(GibbsSampler &sampler, unsigned nIterTotal,
 unsigned& nIterA, unsigned& nIterP, Vector& chi2Vec, Vector& aAtomVec,
-Vector& pAtomVec, bool updateTemp=false, bool updateStats=false);
+Vector& pAtomVec, GapsPhase phase);
 
 // [[Rcpp::export]]
 Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
@@ -33,28 +40,32 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
     unsigned nIterA = 10;
     unsigned nIterP = 10;
 
-    // run the sampler for each phase of the algorithm
-
+    // calibration phase
     Vector chi2Vec(nEquil);
     Vector nAtomsAEquil(nEquil);
     Vector nAtomsPEquil(nEquil);
-    runGibbsSampler(sampler, nEquil, nIterA, nIterP, chi2Vec, nAtomsAEquil,
-        nAtomsPEquil, true);
+    runGibbsSampler(sampler, nEquil, nIterA, nIterP, chi2Vec,
+        nAtomsAEquil, nAtomsPEquil, GAPS_CALIBRATION);
 
+    // cooling phase
     Vector trash(nEquilCool);
-    runGibbsSampler(sampler, nEquilCool, nIterA, nIterP, trash, trash, trash);
+    runGibbsSampler(sampler, nEquilCool, nIterA, nIterP, trash,
+        trash, trash, GAPS_COOLING);
 
+    // sampling phase
     Vector chi2VecSample(nSample);
     Vector nAtomsASample(nSample);
     Vector nAtomsPSample(nSample);
     runGibbsSampler(sampler, nSample, nIterA, nIterP, chi2VecSample,
-        nAtomsASample, nAtomsPSample, false, true);
+        nAtomsASample, nAtomsPSample, GAPS_SAMPLING);
 
+    // debug checks
 #ifdef GAPS_DEBUG
     sampler.checkAtomicMatrixConsistency();
     sampler.checkAPMatrix();
 #endif
 
+    // combine chi2 vectors
     chi2Vec.concat(chi2VecSample);
 
     //Just leave the snapshots as empty lists
@@ -75,14 +86,13 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
 
 static void runGibbsSampler(GibbsSampler &sampler, unsigned nIterTotal,
 unsigned& nIterA, unsigned& nIterP, Vector& chi2Vec, Vector& aAtomVec,
-Vector& pAtomVec, bool updateTemp, bool updateStats)
+Vector& pAtomVec, GapsPhase phase)
 {
-        
     double tempDenom = (double)nIterTotal / 2.0;
 
     for (unsigned i = 0; i < nIterTotal; ++i)
     {
-        if (updateTemp)
+        if (phase == GAPS_CALIBRATION)
         {
             sampler.setAnnealingTemp(std::min(((double)i + 1.0) / tempDenom, 1.0));
         }
@@ -97,7 +107,7 @@ Vector& pAtomVec, bool updateTemp, bool updateStats)
             sampler.update('P');
         }
 
-        if (updateStats)
+        if (phase == GAPS_SAMPLING)
         {
             sampler.updateStatistics();
         }
@@ -108,7 +118,10 @@ Vector& pAtomVec, bool updateTemp, bool updateStats)
         aAtomVec(i) = numAtomsA;
         pAtomVec(i) = numAtomsP;
 
-        nIterA = gaps::random::poisson(std::max(numAtomsA, 10.0));
-        nIterP = gaps::random::poisson(std::max(numAtomsP, 10.0));
+        if (phase != GAPS_COOLING)
+        {
+            nIterA = gaps::random::poisson(std::max(numAtomsA, 10.0));
+            nIterP = gaps::random::poisson(std::max(numAtomsP, 10.0));
+        }
     }
 }

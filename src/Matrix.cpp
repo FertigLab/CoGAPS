@@ -2,6 +2,19 @@
 
 #include <stdexcept>
 
+static const double EPSILON = 1.e-10;
+
+/******************************** HELPER *******************************/
+
+static void updateHelper(double& val, double delta)
+{
+    val += delta;
+    if (std::abs(val) < EPSILON)
+    {
+        val = 0.0;
+    }
+}
+
 /******************************** VECTOR *******************************/
 
 Rcpp::NumericVector Vector::rVec() const
@@ -50,10 +63,10 @@ const Vector& RowMatrix::getRow(unsigned row) const
 
 void RowMatrix::update(const MatrixChange &change)
 {
-    this->operator()(change.row1, change.col1) += change.delta1;
+    updateHelper(mRows[change.row1][change.col1], change.delta1);
     if (change.nChanges > 1)
     {
-        this->operator()(change.row2, change.col2) += change.delta2;
+        updateHelper(mRows[change.row2][change.col2], change.delta2);
     }
 }
 
@@ -115,10 +128,10 @@ const Vector& ColMatrix::getCol(unsigned col) const
 
 void ColMatrix::update(const MatrixChange &change)
 {
-    this->operator()(change.row1, change.col1) += change.delta1;
+    updateHelper(mCols[change.col1][change.row1], change.delta1);
     if (change.nChanges > 1)
     {
-        this->operator()(change.row2, change.col2) += change.delta2;
+        updateHelper(mCols[change.col2][change.row2], change.delta2);
     }
 }
 

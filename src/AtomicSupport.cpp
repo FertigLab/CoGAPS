@@ -14,13 +14,13 @@ mBinSize(std::numeric_limits<uint64_t>::max() / (nrow * ncol))
 uint64_t AtomicSupport::getRow(uint64_t pos) const
 {
     uint64_t binNum = std::min(pos / mBinSize, mNumBins - 1);
-    return binNum / mNumCols;
+    return mLabel == 'A' ? binNum / mNumCols : binNum % mNumRows;
 }
 
 uint64_t AtomicSupport::getCol(uint64_t pos) const
 {
     uint64_t binNum = std::min(pos / mBinSize, mNumBins - 1);
-    return binNum % mNumCols;
+    return mLabel == 'A' ? binNum % mNumCols : binNum / mNumRows;
 }
 
 uint64_t AtomicSupport::randomFreePosition() const
@@ -62,15 +62,8 @@ AtomicProposal AtomicSupport::proposeMove() const
     uint64_t location = randomAtomPosition();
     double mass = mAtomicDomain.at(location);
 
-    // get an iterator to this atom
-    std::map<uint64_t, double>::const_iterator it;
-    it = mAtomicDomain.find(location);
-    uint64_t left = (it == mAtomicDomain.begin() ? it->first : (++it)->first);
-    if (++it == mAtomicDomain.end())
-        --it;
-    uint64_t right = it->first;
-
-    uint64_t newLocation = gaps::random::uniform64(left, right);
+    // move to random location
+    uint64_t newLocation = randomFreePosition();
 
     return AtomicProposal(mLabel, 'M', location, -mass, newLocation, mass);
 }
@@ -82,17 +75,12 @@ AtomicProposal AtomicSupport::proposeExchange() const
     uint64_t pos1 = randomAtomPosition();
     double mass1 = mAtomicDomain.at(pos1);
 
-    // find atom to the right, wrap around the end
-    std::map<uint64_t, double>::const_iterator it;
-    it = ++(mAtomicDomain.find(pos1));
-    if (it == mAtomicDomain.end())
+    uint64_t pos2 = pos1;
+    while (pos1 == pos2)
     {
-        it = mAtomicDomain.begin();
+        pos2 = randomAtomPosition();
     }
-
-    // get adjacent atom info
-    uint64_t pos2 = it->first;
-    double mass2 = it->second;
+    double mass2 = mAtomicDomain.at(pos2);
 
     // calculate new mass
     double pupper = gaps::random::p_gamma(mass1 + mass2, 2.0, 1.0 / mLambda);

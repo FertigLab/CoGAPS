@@ -57,6 +57,10 @@ private:
     // expected magnitude of each atom (must be > 0)
     double mLambda;     
 
+#ifdef GAPS_INTERNAL_TESTS
+public:
+#endif
+
     // convert atomic position to row/col of the matrix
     uint64_t getRow(uint64_t pos) const;
     uint64_t getCol(uint64_t pos) const;
@@ -74,7 +78,9 @@ private:
     // update the mass of an atom, return the total amount changed
     double updateAtomMass(uint64_t pos, double delta);
 
+#ifndef GAPS_INTERNAL_TESTS
 public:
+#endif
 
     // constructor
     AtomicSupport(char label, uint64_t nrow, uint64_t ncol, double alpha=1.0,
@@ -92,7 +98,7 @@ public:
     double lambda() const {return mLambda;}
     double totalMass() const {return mTotalMass;}
     uint64_t numAtoms() const {return mNumAtoms;}
-    double at(uint64_t loc) const {return mAtomicDomain.at(loc);} //TODO rm
+    double at(uint64_t loc) const {return mAtomicDomain.at(loc);}
 
     // setters
     void setAlpha(double alpha) {mAlpha = alpha;}
