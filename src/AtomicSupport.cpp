@@ -62,8 +62,16 @@ AtomicProposal AtomicSupport::proposeMove() const
     uint64_t location = randomAtomPosition();
     double mass = mAtomicDomain.at(location);
 
-    // move to random location
-    uint64_t newLocation = randomFreePosition();
+    // get an iterator to this atom
+    std::map<uint64_t, double>::const_iterator it, left, right;
+    it = mAtomicDomain.find(location);
+    left = it; right = it;
+    if (left != mAtomicDomain.begin())
+        --left;
+    if (++right == mAtomicDomain.end())
+        --right;
+
+    uint64_t newLocation = gaps::random::uniform64(left->first, right->first);
 
     return AtomicProposal(mLabel, 'M', location, -mass, newLocation, mass);
 }
@@ -75,12 +83,17 @@ AtomicProposal AtomicSupport::proposeExchange() const
     uint64_t pos1 = randomAtomPosition();
     double mass1 = mAtomicDomain.at(pos1);
 
-    uint64_t pos2 = pos1;
-    while (pos1 == pos2)
+    // find atom to the right, wrap around the end
+    std::map<uint64_t, double>::const_iterator it;
+    it = ++(mAtomicDomain.find(pos1));
+    if (it == mAtomicDomain.end())
     {
-        pos2 = randomAtomPosition();
+        it = mAtomicDomain.begin();
     }
-    double mass2 = mAtomicDomain.at(pos2);
+
+    // get adjacent atom info
+    uint64_t pos2 = it->first;
+    double mass2 = it->second;
 
     // calculate new mass
     double pupper = gaps::random::p_gamma(mass1 + mass2, 2.0, 1.0 / mLambda);

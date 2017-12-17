@@ -170,29 +170,35 @@ bool gaps::algo::isColZero(const ColMatrix &mat, unsigned col)
     return gaps::algo::sum(mat.getCol(col)) == 0;
 }
 
-static double deltaLL_A(unsigned row, unsigned col, double delta,
-const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
-const RowMatrix &P, const TwoWayMatrix &AP)
+static double deltaLL_A(const TwoWayMatrix &D, const TwoWayMatrix &S,
+const RowMatrix &P, const TwoWayMatrix &AP, unsigned row,
+unsigned col1, double delta1, unsigned col2=0, double delta2=0.0,
+bool twoChanges=false)
 {
-    double numer = 0.0, denom = 0.0, delLL = 0.0;
+    double numer = 0.0, denom = 0.0, delLL = 0.0, d1 = 0.0, d2 = 0.0;
     for (unsigned j = 0; j < D.nCol(); ++j)
     {
-        numer = 2.0 * delta * (D(row,j) - AP(row,j)) * P(col,j) - GAPS_SQ(delta * P(col,j));
+        d1 = delta1 * P(col1,j);
+        d2 = twoChanges ? delta2 * P(col2,j) : 0.0;
+        numer = 2.0 * (D(row,j) - AP(row,j)) * (d1 + d2) - GAPS_SQ(d1 + d2);
         denom = 2.0 * GAPS_SQ(S(row,j));
         delLL += numer / denom;
     }
     return delLL;
 }
 
-static double deltaLL_P(unsigned row, unsigned col, double delta,
-const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
-const RowMatrix &P, const TwoWayMatrix &AP)
+static double deltaLL_P(const TwoWayMatrix &D, const TwoWayMatrix &S,
+const ColMatrix &A, const TwoWayMatrix &AP, unsigned col,
+unsigned row1, double delta1, unsigned row2=0, double delta2=0.0,
+bool twoChanges=false)
 {
-    double numer = 0.0, denom = 0.0, delLL = 0.0;
+    double numer = 0.0, denom = 0.0, delLL = 0.0, d1 = 0.0, d2 = 0.0;
     for (unsigned i = 0; i < D.nRow(); ++i)
     {
-        numer = 2 * delta * (D(i,col) - AP(i,col)) * A(i,row) - GAPS_SQ(delta * A(i,row));
-        denom = 2 * GAPS_SQ(S(i,col));
+        d1 = delta1 * A(i,row1);
+        d2 = twoChanges ? delta2 * A(i,row2) : 0.0;
+        numer = 2.0 * (D(i,col) - AP(i,col)) * (d1 + d2) - GAPS_SQ(d1 + d2);
+        denom = 2.0 * GAPS_SQ(S(i,col));
         delLL += numer / denom;
     }
     return delLL;
@@ -202,78 +208,57 @@ double gaps::algo::deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
 const TwoWayMatrix &S, const ColMatrix &A, const RowMatrix &P,
 const TwoWayMatrix &AP)
 {
-    if (ch.nChanges == 1 && ch.label == 'A')
+    // change in A matrix
+    if (ch.label == 'A' && ch.nChanges == 2 && ch.row1 != ch.row2)
     {
-        return deltaLL_A(ch.row1, ch.col1, ch.delta1, D, S, A, P, AP);
+        return deltaLL_A(D, S, P, AP, ch.row1, ch.col1, ch.delta1)
+            + deltaLL_A(D, S, P, AP, ch.row2, ch.col2, ch.delta2);
     }
-    else if (ch.nChanges == 1 && ch.label == 'P')
+    else if (ch.label == 'A')
     {
-        return deltaLL_P(ch.row1, ch.col1, ch.delta1, D, S, A, P, AP);
+        return deltaLL_A(D, S, P, AP, ch.row1, ch.col1, ch.delta1, ch.col2,
+            ch.delta2, ch.nChanges == 2);
     }
-    else if (ch.nChanges == 2 && ch.label == 'A')
+
+    // change in P matrix
+    if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
     {
-        if (ch.row1 == ch.row2)
-        { 
-            double numer = 0.0, denom = 0.0, delLL = 0.0;
-            for (unsigned j = 0; j < D.nCol(); ++j)
-            {
-                numer = 2.0 * (D(ch.row1,j) - AP(ch.row1,j)) * (ch.delta1 * P(ch.col1,j) + ch.delta2 * P(ch.col2,j)) - GAPS_SQ(ch.delta1 * P(ch.col1,j) + ch.delta2 * P(ch.col2,j));
-                denom = 2.0 * GAPS_SQ(S(ch.row1,j));
-                delLL += numer / denom;
-            }
-            return delLL;
-        }
-        else
-        {
-            return deltaLL_A(ch.row1, ch.col1, ch.delta1, D, S, A, P, AP)
-                + deltaLL_A(ch.row2, ch.col2, ch.delta2, D, S, A, P, AP);
-        }
+        return deltaLL_P(D, S, A, AP, ch.col1, ch.row1, ch.delta1)
+            + deltaLL_P(D, S, A, AP, ch.col2, ch.row2, ch.delta2);
     }
-    else
+    else if (ch.label == 'P')
     {
-        if (ch.col1 == ch.col2)
-        {
-            double numer = 0.0, denom = 0.0, delLL = 0.0;
-            for (unsigned i = 0; i < D.nRow(); ++i)
-            {
-                numer = 2.0 * (D(i,ch.col1) - AP(i,ch.col1)) * (ch.delta1 * A(i,ch.row1) + ch.delta2 * A(i,ch.row2)) - GAPS_SQ(ch.delta1 * A(i,ch.row1) + ch.delta2 * A(i,ch.row2));
-                denom = 2.0 * GAPS_SQ(S(i,ch.col1));
-                delLL += numer / denom;
-            }
-            return delLL;
-        }
-        else
-        {
-            return deltaLL_P(ch.row1, ch.col1, ch.delta1, D, S, A, P, AP)
-                + deltaLL_P(ch.row2, ch.col2, ch.delta2, D, S, A, P, AP);
-        }
+        return deltaLL_P(D, S, A, AP, ch.col1, ch.row1, ch.delta1, ch.row2,
+            ch.delta2, ch.nChanges == 2);
     }
 }
 
-static AlphaParameters alphaParameters_A(unsigned row, unsigned col,
-const TwoWayMatrix &D, const TwoWayMatrix &S, const RowMatrix &P,
-const TwoWayMatrix &AP)
+static AlphaParameters alphaParameters_A(const TwoWayMatrix &D,
+const TwoWayMatrix &S, const RowMatrix &P, const TwoWayMatrix &AP,
+unsigned row, unsigned col1, unsigned col2=0, bool twoChanges=false)
 {
-    double s = 0.0, su = 0.0, ratio = 0.0;
+    double s = 0.0, su = 0.0, ratio = 0.0, p2 = 0.0;
     for (unsigned j = 0; j < D.nCol(); ++j)
     {
-        ratio = P(col,j) / S(row,j);
+        p2 = twoChanges ? P(col2,j) : 0.0;
+        ratio = (P(col1,j) - p2) / S(row,j);
         s += GAPS_SQ(ratio);
-        su += P(col,j) * (D(row,j) - AP(row,j)) / GAPS_SQ(S(row,j));
+        su += ratio * (D(row,j) - AP(row,j)) / S(row,j);
     }
     return AlphaParameters(s, su);
 }
 
-static AlphaParameters alphaParameters_P(unsigned row, unsigned col,
-const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
-const TwoWayMatrix &AP)
+static AlphaParameters alphaParameters_P(const TwoWayMatrix &D,
+const TwoWayMatrix &S, const ColMatrix &A, const TwoWayMatrix &AP,
+unsigned col, unsigned row1, unsigned row2=0, bool twoChanges=false)
 {
-    double s = 0.0, su = 0.0, ratio = 0.0;
+    double s = 0.0, su = 0.0, ratio = 0.0, a2 = 0.0;
     for (unsigned i = 0; i < D.nRow(); ++i)
     {
-        ratio = A(i,row) / S(i,col);
+        a2 = twoChanges ? A(i,row2) : 0.0;
+        ratio = (A(i,row1) - a2) / S(i,col);
         s += GAPS_SQ(ratio);
-        su += A(i,row) * (D(i,col) - AP(i,col)) / GAPS_SQ(S(i,col));
+        su += ratio * (D(i,col) - AP(i,col)) / S(i,col);
     }
     return AlphaParameters(s, su);
 }
@@ -282,51 +267,28 @@ AlphaParameters gaps::algo::alphaParameters(const MatrixChange &ch,
 const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
 const RowMatrix &P, const TwoWayMatrix &AP)
 {
-    if (ch.nChanges == 1 && ch.label == 'A')
+    // change in A matrix
+    if (ch.label == 'A' && ch.nChanges == 2 && ch.row1 != ch.row2)
     {
-        return alphaParameters_A(ch.row1, ch.col1, D, S, P, AP);
+        return alphaParameters_A(D, S, P, AP, ch.row1, ch.col1)
+            + alphaParameters_A(D, S, P, AP, ch.row2, ch.col2);
     }
-    else if (ch.nChanges == 1 && ch.label == 'P')
+    else if (ch.label == 'A')
     {
-        return alphaParameters_P(ch.row1, ch.col1, D, S, A, AP);
+        return alphaParameters_A(D, S, P, AP, ch.row1, ch.col1, ch.col2,
+            ch.nChanges == 2);
     }
-    else if (ch.nChanges == 2 && ch.label == 'A')
+
+    // change in P matrix
+    if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
     {
-        if (ch.row1 == ch.row2)
-        {
-            double s = 0.0, su = 0.0, ratio = 0.0;
-            for (unsigned j = 0; j < D.nCol(); ++j)
-            {
-                ratio = (P(ch.col1,j) - P(ch.col2,j)) / S(ch.row1,j);
-                s += GAPS_SQ(ratio);
-                su += (D(ch.row1,j) - AP(ch.row1,j)) * ratio / S(ch.row1,j);
-            }
-            return AlphaParameters(s, su);
-        }
-        else
-        {
-            return alphaParameters_A(ch.row1, ch.col1, D, S, P, AP)
-                + alphaParameters_A(ch.row2, ch.col2, D, S, P, AP);
-        }
+        return alphaParameters_P(D, S, A, AP, ch.col1, ch.row1)
+            + alphaParameters_P(D, S, A, AP, ch.col2, ch.row2);
     }
-    else
+    else if (ch.label == 'P')
     {
-        if (ch.col1 == ch.col2)
-        {
-            double s = 0.0, su = 0.0, ratio = 0.0;
-            for (unsigned i = 0; i < D.nRow(); ++i)
-            {
-                ratio = (A(i,ch.row1) - A(i,ch.row2)) / S(i,ch.col1);
-                s += GAPS_SQ(ratio);
-                su += (D(i,ch.col1) - AP(i,ch.col1)) * ratio / S(i,ch.col1);
-            }
-            return AlphaParameters(s, su);
-        }
-        else
-        {
-            return alphaParameters_P(ch.row1, ch.col1, D, S, A, AP)
-                + alphaParameters_P(ch.row2, ch.col2, D, S, A, AP);
-        }
+        return alphaParameters_P(D, S, A, AP, ch.col1, ch.row1, ch.row2,
+            ch.nChanges == 2);
     }
 }
 

@@ -319,6 +319,7 @@ Rcpp::NumericMatrix GibbsSampler::PStdRMatrix() const
         mStatUpdates).rMatrix();
 }
 
+// TODO cache matrices used in these calculations
 void GibbsSampler::updateStatistics()
 {
     mStatUpdates++;
