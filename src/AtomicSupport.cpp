@@ -43,6 +43,7 @@ uint64_t AtomicSupport::randomAtomPosition() const
 
 AtomicProposal AtomicSupport::proposeDeath() const
 {
+    std::cout << "death" << std::endl;
     uint64_t location = randomAtomPosition();
     double mass = mAtomicDomain.at(location);
     return AtomicProposal(mLabel, 'D', location, -mass);
@@ -50,6 +51,7 @@ AtomicProposal AtomicSupport::proposeDeath() const
 
 AtomicProposal AtomicSupport::proposeBirth() const
 {
+    std::cout << "birth" << std::endl;
     uint64_t location = randomFreePosition();
     double mass = gaps::random::exponential(mLambda);
     return AtomicProposal(mLabel, 'B', location, std::max(mass, EPSILON));
@@ -58,6 +60,7 @@ AtomicProposal AtomicSupport::proposeBirth() const
 // move atom between adjacent atoms
 AtomicProposal AtomicSupport::proposeMove() const
 {
+    std::cout << "move" << std::endl;
     // get random atom
     uint64_t location = randomAtomPosition();
     double mass = mAtomicDomain.at(location);
@@ -79,6 +82,7 @@ AtomicProposal AtomicSupport::proposeMove() const
 // exchange with adjacent atom to the right
 AtomicProposal AtomicSupport::proposeExchange() const
 {
+    std::cout << "exchange" << std::endl;
     // get random atom
     uint64_t pos1 = randomAtomPosition();
     double mass1 = mAtomicDomain.at(pos1);
