@@ -48,8 +48,8 @@ double GibbsSampler::getGibbsMass(const MatrixChange &change)
         mSMatrix, mAMatrix, mPMatrix, mAPMatrix);
 
     // calculate mean and standard deviation
-    alphaParam.s *= mAnnealingTemp / 4.0;
-    alphaParam.su *= mAnnealingTemp / 4.0;
+    alphaParam.s *= mAnnealingTemp / 2.0;
+    alphaParam.su *= mAnnealingTemp / 2.0;
     double lambda = change.label == 'A' ? mADomain.lambda() : mPDomain.lambda();
     double mean  = (2.0 * alphaParam.su - lambda) / (2.0 * alphaParam.s);
     double sd = 1.0 / std::sqrt(2.0 * alphaParam.s);
