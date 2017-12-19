@@ -34,32 +34,47 @@ void gaps::random::setSeed(uint32_t seed)
 double gaps::random::normal(double mean, double var)
 {
     boost::random::normal_distribution<double> dist(mean, var);
-    return dist(rng);
+    double ret = dist(rng);
+    std::cout << "normal: " << ret << std::endl;
+    return ret;
+    //return dist(rng);
 }
 
 double gaps::random::uniform()
 {
     boost::random::uniform_01<RNGType&> dist(rng); // could be moved out
-    return dist();
+    double ret = dist();
+    std::cout << "uniform_01: " << ret << std::endl;
+    return ret;
+    //return dist();
 }
 
 int gaps::random::poisson(double lambda)
 {
     boost::random::poisson_distribution<> dist(lambda);
-    return dist(rng);
+    double ret = dist(rng);
+    std::cout << "poisson: " << ret << std::endl;
+    return ret;
+    //return dist(rng);
 }
 
 double gaps::random::exponential(double lambda)
 {
     boost::random::exponential_distribution<> dist(lambda);
-    return dist(rng);
+    double ret = dist(rng);
+    std::cout << "exponential: " << ret << std::endl;
+    return ret;
+    //return dist(rng);
 }
 
 uint64_t gaps::random::uniform64()
 {
     boost::random::uniform_int_distribution<uint64_t> dist(0,
         std::numeric_limits<uint64_t>::max());
-    return dist(rng);
+    double ret = dist(rng);
+    std::cout << "uniform64_01: " << ret << std::endl;
+    return ret;
+    //return dist(rng);
 }
 
 uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
@@ -71,7 +86,10 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     else if (a < b)
     {
         boost::random::uniform_int_distribution<uint64_t> dist(a,b);
-        return dist(rng);
+        double ret = dist(rng);
+        std::cout << "uniform64_ab: " << ret << std::endl;
+        return ret;
+        //return dist(rng);
     }
 #ifdef GAPS_DEBUG
     else
@@ -90,7 +108,10 @@ double gaps::random::uniform(double a, double b)
     else if (a < b)
     {
         boost::random::uniform_real_distribution<> dist(a,b);
-        return dist(rng);
+        double ret = dist(rng);
+        std::cout << "uniform_ab: " << ret << std::endl;
+        return ret;
+        //return dist(rng);
     }
 #ifdef GAPS_DEBUG
     else
