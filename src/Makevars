@@ -1,5 +1,4 @@
-TEST_PKG_CPPFLAGS = -DGAPS_DEBUG -DGAPS_INTERNAL_TESTS
-PKG_CPPFLAGS = 
+PKG_CPPFLAGS = -DGAPS_DEBUG -DGAPS_INTERNAL_TESTS
 OBJECTS =   Algorithms.o \
             AtomicSupport.o \
             Cogaps.o \

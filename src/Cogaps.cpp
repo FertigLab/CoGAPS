@@ -81,7 +81,12 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
         Rcpp::Named("atomsPEquil") = nAtomsPEquil.rVec(),
         Rcpp::Named("atomsPSamp") = nAtomsPSample.rVec(),
         Rcpp::Named("chiSqValues") = chi2Vec.rVec(),
-        Rcpp::Named("randSeed") = seedUsed);
+        Rcpp::Named("randSeed") = seedUsed
+#ifdef GAPS_DEBUG
+        , Rcpp::Named("randTypes") = Rcpp::wrap(gaps::random::getTypes()),
+        Rcpp::Named("randValues") = Rcpp::wrap(gaps::random::getValues())
+#endif
+    );
 }
 
 static void runGibbsSampler(GibbsSampler &sampler, unsigned nIterTotal,

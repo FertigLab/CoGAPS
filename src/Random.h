@@ -2,12 +2,18 @@
 #define __COGAPS_RANDOM_H__
 
 #include <stdint.h>
+#include <vector>
 
 namespace gaps
 {
 
 namespace random
 {
+#ifdef GAPS_DEBUG
+    std::vector<char> getTypes();
+    std::vector<double> getValues();
+#endif
+
     void setSeed(uint32_t seed);
 
     int poisson(double lambda);
