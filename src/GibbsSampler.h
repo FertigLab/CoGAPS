@@ -75,12 +75,38 @@ public:
 #ifdef GAPS_DEBUG
     void checkAtomicMatrixConsistency() const;
     void checkAPMatrix() const;
-    std::vector<char> proposalHistory(char label)
+    std::vector<char> proposalTypeHistory(char label)
     {
-        return label == 'A' ? mADomain.proposalHistory()
-            : mPDomain.proposalHistory();
+        return label == 'A' ? mADomain.proposalTypeHistory()
+            : mPDomain.proposalTypeHistory();
     }
 
+    std::vector<double> proposalDelta1History(char label)
+    {
+        return label == 'A' ? mADomain.proposalDelta1History()
+            : mPDomain.proposalDelta1History();
+    }
+    std::vector<double> proposalDelta2History(char label)
+    {
+        return label == 'A' ? mADomain.proposalDelta2History()
+            : mPDomain.proposalDelta2History();
+    }
+    std::vector<char> acceptTypeHistory(char label)
+    {
+        return label == 'A' ? mADomain.acceptTypeHistory()
+            : mPDomain.acceptTypeHistory();
+    }
+
+    std::vector<double> acceptDelta1History(char label)
+    {
+        return label == 'A' ? mADomain.acceptDelta1History()
+            : mPDomain.acceptDelta1History();
+    }
+    std::vector<double> acceptDelta2History(char label)
+    {
+        return label == 'A' ? mADomain.acceptDelta2History()
+            : mPDomain.acceptDelta2History();
+    }
     std::vector<unsigned> atomHistory(char label)
     {
         return label == 'A' ? mADomain.atomHistory()
