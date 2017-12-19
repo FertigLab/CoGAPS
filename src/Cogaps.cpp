@@ -74,8 +74,8 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
         Rcpp::Named("Asd") = sampler.AStdRMatrix(),
         Rcpp::Named("Pmean") = sampler.PMeanRMatrix(),
         Rcpp::Named("Psd") = sampler.PStdRMatrix(),
-        Rcpp::Named("ASnapshots") = Rcpp::List::create(),
-        Rcpp::Named("PSnapshots") = Rcpp::List::create(),
+//        Rcpp::Named("ASnapshots") = Rcpp::List::create(),
+//        Rcpp::Named("PSnapshots") = Rcpp::List::create(),
         Rcpp::Named("atomsAEquil") = nAtomsAEquil.rVec(),
         Rcpp::Named("atomsASamp") = nAtomsASample.rVec(),
         Rcpp::Named("atomsPEquil") = nAtomsPEquil.rVec(),
@@ -85,10 +85,13 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
 #ifdef GAPS_DEBUG
         , Rcpp::Named("randTypes") = Rcpp::wrap(gaps::random::getTypes()),
         Rcpp::Named("randValues") = Rcpp::wrap(gaps::random::getValues()),
-        Rcpp::Named("propHistoryA") = Rcpp::wrap(sampler.proposalHistory('A')),
-        Rcpp::Named("propHistoryP") = Rcpp::wrap(sampler.proposalHistory('P')),
-        Rcpp::Named("atomHistoryA") = Rcpp::wrap(sampler.atomHistory('A')),
-        Rcpp::Named("atomHistoryP") = Rcpp::wrap(sampler.atomHistory('P'))
+        Rcpp::Named("propTypeHistoryA") = Rcpp::wrap(sampler.proposalTypeHistory('A')),
+        Rcpp::Named("propDelta1HistoryA") = Rcpp::wrap(sampler.proposalDelta1History('A')),
+        Rcpp::Named("propDelta2HistoryA") = Rcpp::wrap(sampler.proposalDelta2History('A')),
+        Rcpp::Named("acptTypeHistoryA") = Rcpp::wrap(sampler.acceptTypeHistory('A')),
+        Rcpp::Named("acptDelta1HistoryA") = Rcpp::wrap(sampler.acceptDelta1History('A')),
+        Rcpp::Named("acptDelta2HistoryA") = Rcpp::wrap(sampler.acceptDelta2History('A')),
+        Rcpp::Named("atomHistoryA") = Rcpp::wrap(sampler.atomHistory('A'))
 #endif
     );
 }

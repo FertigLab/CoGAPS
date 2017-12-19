@@ -43,33 +43,33 @@ uint64_t AtomicSupport::randomAtomPosition() const
 
 AtomicProposal AtomicSupport::proposeDeath() const
 {
-#ifdef GAPS_DEBUG
-    mProposalHistory.push_back('D');
-    mAtomHistory.push_back(mNumAtoms);
-#endif
     uint64_t location = randomAtomPosition();
     double mass = mAtomicDomain.at(location);
+#ifdef GAPS_DEBUG
+    mProposalTypeHistory.push_back('D');
+    mProposalDelta1History.push_back(-mass);
+    mProposalDelta2History.push_back(0.0);
+    mAtomHistory.push_back(mNumAtoms);
+#endif
     return AtomicProposal(mLabel, 'D', location, -mass);
 }
 
 AtomicProposal AtomicSupport::proposeBirth() const
 {
-#ifdef GAPS_DEBUG
-    mProposalHistory.push_back('B');
-    mAtomHistory.push_back(mNumAtoms);
-#endif
     uint64_t location = randomFreePosition();
     double mass = gaps::random::exponential(mLambda);
+#ifdef GAPS_DEBUG
+    mProposalTypeHistory.push_back('B');
+    mProposalDelta1History.push_back(std::max(mass, EPSILON));
+    mProposalDelta2History.push_back(0.0);
+    mAtomHistory.push_back(mNumAtoms);
+#endif
     return AtomicProposal(mLabel, 'B', location, std::max(mass, EPSILON));
 }
 
 // move atom between adjacent atoms
 AtomicProposal AtomicSupport::proposeMove() const
 {
-#ifdef GAPS_DEBUG
-    mProposalHistory.push_back('M');
-    mAtomHistory.push_back(mNumAtoms);
-#endif
     // get random atom
     uint64_t location = randomAtomPosition();
     double mass = mAtomicDomain.at(location);
@@ -85,16 +85,18 @@ AtomicProposal AtomicSupport::proposeMove() const
 
     uint64_t newLocation = gaps::random::uniform64(left->first, right->first);
 
+#ifdef GAPS_DEBUG
+    mProposalTypeHistory.push_back('M');
+    mProposalDelta1History.push_back(-mass);
+    mProposalDelta2History.push_back(mass);
+    mAtomHistory.push_back(mNumAtoms);
+#endif
     return AtomicProposal(mLabel, 'M', location, -mass, newLocation, mass);
 }
 
 // exchange with adjacent atom to the right
 AtomicProposal AtomicSupport::proposeExchange() const
 {
-#ifdef GAPS_DEBUG
-    mProposalHistory.push_back('E');
-    mAtomHistory.push_back(mNumAtoms);
-#endif
     // get random atom
     uint64_t pos1 = randomAtomPosition();
     double mass1 = mAtomicDomain.at(pos1);
@@ -116,17 +118,23 @@ AtomicProposal AtomicSupport::proposeExchange() const
     double newMass = gaps::random::q_gamma(gaps::random::uniform(0.0, pupper),
         2.0, 1.0 / mLambda);
 
+    // calculate mass changes
+    double delta1 = mass1 > mass2 ? newMass - mass1 : mass2 - newMass;
+    double delta2 = mass2 > mass1 ? newMass - mass2 : mass1 - newMass;
+
 #ifdef GAPS_DEBUG
-    if (newMass > mass1 + mass2)
+    if (newMass > mass1 + mass2 || mass1 + delta1 < 0.0 || mass2 + delta2 < 0.0)
     {
         throw std::runtime_error("mass not preserved in exchange");
     }
+    mProposalTypeHistory.push_back('E');
+    mProposalDelta1History.push_back(delta1);
+    mProposalDelta2History.push_back(delta2);
+    mAtomHistory.push_back(mNumAtoms);
 #endif
 
     // preserve total mass
-    return mass1 > mass2 ?
-        AtomicProposal(mLabel, 'E', pos1, newMass - mass1, pos2, mass1 - newMass)
-        : AtomicProposal(mLabel, 'E', pos1, mass2 - newMass, pos2, newMass - mass2);
+    return AtomicProposal(mLabel, 'E', pos1, delta1, pos2, delta2);
 }
 
 double AtomicSupport::updateAtomMass(char type, uint64_t pos, double delta)
@@ -192,6 +200,9 @@ MatrixChange AtomicSupport::acceptProposal(const AtomicProposal &prop)
     {
         throw std::runtime_error("domain mismatch");
     }
+    mAcceptTypeHistory.push_back(prop.type);
+    mAcceptDelta1History.push_back(prop.delta1);
+    mAcceptDelta2History.push_back(prop.nChanges > 1 ? prop.delta2 : 0.0);
 #endif
 
     MatrixChange change = getMatrixChange(prop);

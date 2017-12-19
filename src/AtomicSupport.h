@@ -58,7 +58,12 @@ private:
     double mLambda;
 
 #ifdef GAPS_DEBUG
-    mutable std::vector<char> mProposalHistory;
+    mutable std::vector<char> mProposalTypeHistory;
+    mutable std::vector<double> mProposalDelta1History;
+    mutable std::vector<double> mProposalDelta2History;
+    mutable std::vector<char> mAcceptTypeHistory;
+    mutable std::vector<double> mAcceptDelta1History;
+    mutable std::vector<double> mAcceptDelta2History;
     mutable std::vector<unsigned> mAtomHistory;
 #endif
 
@@ -111,7 +116,12 @@ public:
     //void setMaxNumAtoms(uint64_t max) {mMaxNumAtoms = max;}
 
 #ifdef GAPS_DEBUG
-    std::vector<char> proposalHistory() {return mProposalHistory;}
+    std::vector<char> proposalTypeHistory() {return mProposalTypeHistory;}
+    std::vector<double> proposalDelta1History() {return mProposalDelta1History;}
+    std::vector<double> proposalDelta2History() {return mProposalDelta2History;}
+    std::vector<char> acceptTypeHistory() {return mAcceptTypeHistory;}
+    std::vector<double> acceptDelta1History() {return mAcceptDelta1History;}
+    std::vector<double> acceptDelta2History() {return mAcceptDelta2History;}
     std::vector<unsigned> atomHistory() {return mAtomHistory;}
 #endif
 };

@@ -243,11 +243,11 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
         return false;
     }
 
-    double mass1 = proposal.delta1 > 0 ? domain.at(proposal.pos1)
-        : domain.at(proposal.pos2);
+    uint64_t pos1 = proposal.delta1 > 0 ? proposal.pos1 : proposal.pos2;
+    uint64_t pos2 = proposal.delta1 > 0 ? proposal.pos2 : proposal.pos1;
 
-    double mass2 = proposal.delta1 > 0 ? domain.at(proposal.pos2)
-        : domain.at(proposal.pos1);
+    double mass1 = domain.at(pos1);
+    double mass2 = domain.at(pos2);
 
     double newMass1 = mass1 + std::max(proposal.delta1, proposal.delta2);
     double newMass2 = mass2 + std::min(proposal.delta1, proposal.delta2);
@@ -289,7 +289,9 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
     if (pold != 0.0 || pnew == 0.0)
     {
         double priorLL = pnew == 0.0 ? 0.0 : log(pnew / pold);
+        proposal.pos1 = pos1;
         proposal.delta1 = newMass1 - mass1;
+        proposal.pos2 = pos2;
         proposal.delta2 = newMass2 - mass2;
         return evaluateChange(domain, proposal, std::log(gaps::random::uniform())
             - priorLL);
