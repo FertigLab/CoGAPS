@@ -256,11 +256,11 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
     {
         AlphaParameters alphaParam = gaps::algo::alphaParameters(change,
             mDMatrix, mSMatrix, mAMatrix, mPMatrix, mAPMatrix);
+        alphaParam.s *= mAnnealingTemp;
+        alphaParam.su *= mAnnealingTemp;
 
         if (alphaParam.s > EPSILON)
         {
-            alphaParam.s *= mAnnealingTemp;
-            alphaParam.su *= mAnnealingTemp;
             double mean = alphaParam.su / alphaParam.s;
             double sd = 1.0 / std::sqrt(alphaParam.s);
 
