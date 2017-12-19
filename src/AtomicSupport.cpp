@@ -45,6 +45,7 @@ AtomicProposal AtomicSupport::proposeDeath() const
 {
 #ifdef GAPS_DEBUG
     mProposalHistory.push_back('D');
+    mAtomHistory.push_back(mNumAtoms);
 #endif
     uint64_t location = randomAtomPosition();
     double mass = mAtomicDomain.at(location);
@@ -55,6 +56,7 @@ AtomicProposal AtomicSupport::proposeBirth() const
 {
 #ifdef GAPS_DEBUG
     mProposalHistory.push_back('B');
+    mAtomHistory.push_back(mNumAtoms);
 #endif
     uint64_t location = randomFreePosition();
     double mass = gaps::random::exponential(mLambda);
@@ -66,6 +68,7 @@ AtomicProposal AtomicSupport::proposeMove() const
 {
 #ifdef GAPS_DEBUG
     mProposalHistory.push_back('M');
+    mAtomHistory.push_back(mNumAtoms);
 #endif
     // get random atom
     uint64_t location = randomAtomPosition();
@@ -90,6 +93,7 @@ AtomicProposal AtomicSupport::proposeExchange() const
 {
 #ifdef GAPS_DEBUG
     mProposalHistory.push_back('E');
+    mAtomHistory.push_back(mNumAtoms);
 #endif
     // get random atom
     uint64_t pos1 = randomAtomPosition();
@@ -118,7 +122,7 @@ AtomicProposal AtomicSupport::proposeExchange() const
         : AtomicProposal(mLabel, 'E', pos1, mass2 - newMass, pos2, newMass - mass2);
 }
 
-double AtomicSupport::updateAtomMass(uint64_t pos, double delta)
+double AtomicSupport::updateAtomMass(char type, uint64_t pos, double delta)
 {
     if (mAtomicDomain.count(pos)) // update atom if it exists
     {
@@ -130,9 +134,9 @@ double AtomicSupport::updateAtomMass(uint64_t pos, double delta)
         mNumAtoms++;
     }
 
-    if (mAtomicDomain.at(pos) < EPSILON) // check if atom is too small
+    if (type == 'D') //mAtomicDomain.at(pos) < EPSILON) // check if atom is too small
     {
-        delta -= mAtomicDomain.at(pos);
+        //delta -= mAtomicDomain.at(pos);
         mAtomicDomain.erase(pos);
         mNumAtoms--;
     }
@@ -184,10 +188,10 @@ MatrixChange AtomicSupport::acceptProposal(const AtomicProposal &prop)
 #endif
 
     MatrixChange change = getMatrixChange(prop);
-    change.delta1 = updateAtomMass(prop.pos1, prop.delta1);
+    change.delta1 = updateAtomMass(prop.type, prop.pos1, prop.delta1);
     if (prop.nChanges > 1)
     {
-        change.delta2 = updateAtomMass(prop.pos2, prop.delta2);
+        change.delta2 = updateAtomMass(prop.type, prop.pos2, prop.delta2);
     }
     return change;
 }

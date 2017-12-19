@@ -59,6 +59,7 @@ private:
 
 #ifdef GAPS_DEBUG
     mutable std::vector<char> mProposalHistory;
+    mutable std::vector<uint64_t> mAtomHistory;
 #endif
 
 #ifdef GAPS_INTERNAL_TESTS
@@ -80,7 +81,7 @@ public:
     AtomicProposal proposeExchange() const;
 
     // update the mass of an atom, return the total amount changed
-    double updateAtomMass(uint64_t pos, double delta);
+    double updateAtomMass(char type, uint64_t pos, double delta);
 
 #ifndef GAPS_INTERNAL_TESTS
 public:
@@ -111,6 +112,7 @@ public:
 
 #ifdef GAPS_DEBUG
     std::vector<char> proposalHistory() {return mProposalHistory;}
+    std::vector<uint64_t> atomHistory() {return mAtomHistory;}
 #endif
 };
 

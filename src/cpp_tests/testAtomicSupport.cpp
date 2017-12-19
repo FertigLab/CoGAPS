@@ -164,7 +164,7 @@ TEST_CASE("Internal AtomicSupport Tests")
         }
     }
 
-    SECTION("updateAtomMass")
+/*    SECTION("updateAtomMass")
     {
         double oldMass = 0.0;
         uint64_t posA = 0, posP = 0;
@@ -181,7 +181,7 @@ TEST_CASE("Internal AtomicSupport Tests")
             REQUIRE(Pdomain.at(posP) == oldMass + 0.05);
         }
     }
-
+*/
     SECTION("proposeBirth")
     {
         for (unsigned i = 0; i < 1000; ++i)
