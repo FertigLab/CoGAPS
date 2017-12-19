@@ -75,6 +75,11 @@ public:
 #ifdef GAPS_DEBUG
     void checkAtomicMatrixConsistency() const;
     void checkAPMatrix() const;
+    std::vector<char> proposalHistory(char label)
+    {
+        return label == 'A' ? mADomain.proposalHistory()
+            : mPDomain.proposalHistory();
+    }
 #endif
 };
 

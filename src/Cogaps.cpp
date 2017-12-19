@@ -84,7 +84,9 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
         Rcpp::Named("randSeed") = seedUsed
 #ifdef GAPS_DEBUG
         , Rcpp::Named("randTypes") = Rcpp::wrap(gaps::random::getTypes()),
-        Rcpp::Named("randValues") = Rcpp::wrap(gaps::random::getValues())
+        Rcpp::Named("randValues") = Rcpp::wrap(gaps::random::getValues()),
+        Rcpp::Named("propHistoryA") = Rcpp::wrap(sampler.proposalHistory('A')),
+        Rcpp::Named("propHistoryP") = Rcpp::wrap(sampler.proposalHistory('P'))
 #endif
     );
 }

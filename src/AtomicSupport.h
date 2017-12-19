@@ -57,6 +57,10 @@ private:
     // expected magnitude of each atom (must be > 0)
     double mLambda;
 
+#ifdef GAPS_DEBUG
+    mutable std::vector<char> mProposalHistory;
+#endif
+
 #ifdef GAPS_INTERNAL_TESTS
 public:
 #endif
@@ -104,6 +108,10 @@ public:
     void setAlpha(double alpha) {mAlpha = alpha;}
     void setLambda(double lambda) {mLambda = lambda;}
     //void setMaxNumAtoms(uint64_t max) {mMaxNumAtoms = max;}
+
+#ifdef GAPS_DEBUG
+    std::vector<char> proposalHistory() {return mProposalHistory;}
+#endif
 };
 
 #endif
