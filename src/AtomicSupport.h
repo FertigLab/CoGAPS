@@ -59,7 +59,7 @@ private:
 
 #ifdef GAPS_DEBUG
     mutable std::vector<char> mProposalHistory;
-    mutable std::vector<uint64_t> mAtomHistory;
+    mutable std::vector<unsigned> mAtomHistory;
 #endif
 
 #ifdef GAPS_INTERNAL_TESTS
@@ -112,7 +112,7 @@ public:
 
 #ifdef GAPS_DEBUG
     std::vector<char> proposalHistory() {return mProposalHistory;}
-    std::vector<uint64_t> atomHistory() {return mAtomHistory;}
+    std::vector<unsigned> atomHistory() {return mAtomHistory;}
 #endif
 };
 
