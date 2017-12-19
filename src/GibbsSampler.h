@@ -81,11 +81,11 @@ public:
             : mPDomain.proposalHistory();
     }
 
-    /*std::vector<uint64_t> atomHistory(char label)
+    std::vector<unsigned> atomHistory(char label)
     {
         return label == 'A' ? mADomain.atomHistory()
             : mPDomain.atomHistory();
-    }*/
+    }
 #endif
 };
 

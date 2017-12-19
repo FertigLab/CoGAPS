@@ -116,6 +116,13 @@ AtomicProposal AtomicSupport::proposeExchange() const
     double newMass = gaps::random::q_gamma(gaps::random::uniform(0.0, pupper),
         2.0, 1.0 / mLambda);
 
+#ifdef GAPS_DEBUG
+    if (newMass > mass1 + mass2)
+    {
+        throw std::runtime_error("mass not preserved in exchange");
+    }
+#endif
+
     // preserve total mass
     return mass1 > mass2 ?
         AtomicProposal(mLabel, 'E', pos1, newMass - mass1, pos2, mass1 - newMass)
@@ -134,9 +141,9 @@ double AtomicSupport::updateAtomMass(char type, uint64_t pos, double delta)
         mNumAtoms++;
     }
 
-    if (type == 'D') //mAtomicDomain.at(pos) < EPSILON) // check if atom is too small
+    if (mAtomicDomain.at(pos) < EPSILON) // check if atom is too small
     {
-        //delta -= mAtomicDomain.at(pos);
+        delta -= mAtomicDomain.at(pos);
         mAtomicDomain.erase(pos);
         mNumAtoms--;
     }
