@@ -80,6 +80,12 @@ public:
         return label == 'A' ? mADomain.proposalHistory()
             : mPDomain.proposalHistory();
     }
+
+    /*std::vector<uint64_t> atomHistory(char label)
+    {
+        return label == 'A' ? mADomain.atomHistory()
+            : mPDomain.atomHistory();
+    }*/
 #endif
 };
 
