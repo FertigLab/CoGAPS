@@ -55,7 +55,7 @@ private:
     double mAlpha;
 
     // expected magnitude of each atom (must be > 0)
-    double mLambda;     
+    double mLambda;
 
 #ifdef GAPS_INTERNAL_TESTS
 public:
