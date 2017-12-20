@@ -252,7 +252,7 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
     double newMass1 = mass1 + std::max(proposal.delta1, proposal.delta2);
     double newMass2 = mass2 + std::min(proposal.delta1, proposal.delta2);
 
-    if (canUseGibbs(change))
+    /*if (canUseGibbs(change))
     {
         AlphaParameters alphaParam = gaps::algo::alphaParameters(change,
             mDMatrix, mSMatrix, mAMatrix, mPMatrix, mAPMatrix);
@@ -273,12 +273,14 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
                 proposal.delta1 = gaps::random::q_norm(u, mean, sd);
                 proposal.delta1 = std::max(proposal.delta1, -mass1);
                 proposal.delta1 = std::min(proposal.delta1, mass2);
+                proposal.pos1 = pos1;
+                proposal.pos2 = pos2;
                 proposal.delta2 = -proposal.delta1;
 
                 return evaluateChange(domain, proposal, 0.0, true);
             }
         }
-    }
+    }*/
 
     double pnewMass = mass1 > mass2 ? newMass1 : newMass2;
     double poldMass = newMass1 > newMass2 ? mass1 : mass2;
