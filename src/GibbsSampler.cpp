@@ -195,7 +195,7 @@ bool GibbsSampler::canUseGibbs(const MatrixChange &ch)
         bool check2 = (ch.label == 'A' && gaps::algo::isRowZero(mPMatrix, ch.col2))
             || (ch.label == 'P' && gaps::algo::isColZero(mAMatrix, ch.row2));
 
-        return !check1 && !check2;
+        return !(check1 && check2);
     }
     return !check1;
 }
@@ -252,7 +252,20 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
     double newMass1 = mass1 + std::max(proposal.delta1, proposal.delta2);
     double newMass2 = mass2 + std::min(proposal.delta1, proposal.delta2);
 
-    /*if (canUseGibbs(change))
+    unsigned row1 = change.delta1 > 0 ? change.row1 : change.row2;
+    unsigned row2 = change.delta1 > 0 ? change.row2 : change.row1;
+
+    unsigned col1 = change.delta1 > 0 ? change.col1 : change.col2;
+    unsigned col2 = change.delta1 > 0 ? change.col2 : change.col1;
+
+    change.row1 = row1;
+    change.col1 = col1;
+    change.row2 = row2;
+    change.col2 = col2;
+    change.delta1 = newMass1 - mass1;
+    change.delta2 = newMass2 - mass2;
+
+    if (canUseGibbs(change))
     {
         AlphaParameters alphaParam = gaps::algo::alphaParameters(change,
             mDMatrix, mSMatrix, mAMatrix, mPMatrix, mAPMatrix);
@@ -280,7 +293,7 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
                 return evaluateChange(domain, proposal, 0.0, true);
             }
         }
-    }*/
+    }
 
     double pnewMass = mass1 > mass2 ? newMass1 : newMass2;
     double poldMass = newMass1 > newMass2 ? mass1 : mass2;
