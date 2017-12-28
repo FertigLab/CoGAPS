@@ -74,8 +74,6 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
         Rcpp::Named("Asd") = sampler.AStdRMatrix(),
         Rcpp::Named("Pmean") = sampler.PMeanRMatrix(),
         Rcpp::Named("Psd") = sampler.PStdRMatrix(),
-//        Rcpp::Named("ASnapshots") = Rcpp::List::create(),
-//        Rcpp::Named("PSnapshots") = Rcpp::List::create(),
         Rcpp::Named("atomsAEquil") = nAtomsAEquil.rVec(),
         Rcpp::Named("atomsASamp") = nAtomsASample.rVec(),
         Rcpp::Named("atomsPEquil") = nAtomsPEquil.rVec(),
@@ -106,7 +104,7 @@ Vector& pAtomVec, GapsPhase phase)
     {
         if (phase == GAPS_CALIBRATION)
         {
-            sampler.setAnnealingTemp(std::min(((double)i + 1.0) / tempDenom, 1.0));
+            sampler.setAnnealingTemp(std::min(((double)i + 2.0) / tempDenom, 1.0));
         }
 
         for (unsigned j = 0; j < nIterA; ++j)

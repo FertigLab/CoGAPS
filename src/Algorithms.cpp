@@ -245,6 +245,7 @@ unsigned row, unsigned col1, unsigned col2=0, bool twoChanges=false)
         s += GAPS_SQ(ratio);
         su += ratio * (D(row,j) - AP(row,j)) / S(row,j);
     }
+    std::cout << "A,s: " << s << " A,su: " << su << std::endl;
     return AlphaParameters(s, su);
 }
 
@@ -260,6 +261,7 @@ unsigned col, unsigned row1, unsigned row2=0, bool twoChanges=false)
         s += GAPS_SQ(ratio);
         su += ratio * (D(i,col) - AP(i,col)) / S(i,col);
     }
+    std::cout << "P,s: " << s << " P,su: " << su << std::endl;
     return AlphaParameters(s, su);
 }
 
