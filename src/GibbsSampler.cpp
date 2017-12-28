@@ -94,10 +94,14 @@ double GibbsSampler::computeDeltaLL(const MatrixChange &change)
 
 void GibbsSampler::update(char matrixLabel)
 {
+    std::cout << "temp: " << mAnnealingTemp << '\n';
     AtomicSupport &domain(matrixLabel == 'A' ? mADomain : mPDomain);
 
     // get proposal and convert to a matrix update
     AtomicProposal proposal = domain.makeProposal();
+
+    std::cout << matrixLabel << " " << proposal.type << " " << proposal.pos1 << " " <<
+        proposal.delta1 << " " << proposal.pos2 << " " << proposal.delta2 << '\n';
 
     // Update based on the proposal type
     switch (proposal.type)
@@ -195,8 +199,10 @@ bool GibbsSampler::canUseGibbs(const MatrixChange &ch)
         bool check2 = (ch.label == 'A' && gaps::algo::isRowZero(mPMatrix, ch.col2))
             || (ch.label == 'P' && gaps::algo::isColZero(mAMatrix, ch.row2));
 
+        std::cout << "Gibbs Check: " << ch.label << " " << !(check1 && check2) << '\n';
         return !(check1 && check2);
     }
+    std::cout << "Gibbs Check: " << ch.label << " " << !check1 << '\n';
     return !check1;
 }
 

@@ -58,6 +58,7 @@ AtomicProposal AtomicSupport::proposeBirth() const
 {
     uint64_t location = randomFreePosition();
     double mass = gaps::random::exponential(mLambda);
+    
 #ifdef GAPS_DEBUG
     mProposalTypeHistory.push_back('B');
     mProposalDelta1History.push_back(std::max(mass, EPSILON));
@@ -70,6 +71,8 @@ AtomicProposal AtomicSupport::proposeBirth() const
 // move atom between adjacent atoms
 AtomicProposal AtomicSupport::proposeMove() const
 {
+    std::cout << "propMove: " << mNumAtoms << '\n';
+
     // get random atom
     uint64_t location = randomAtomPosition();
     double mass = mAtomicDomain.at(location);
@@ -78,12 +81,19 @@ AtomicProposal AtomicSupport::proposeMove() const
     std::map<uint64_t, double>::const_iterator it, left, right;
     it = mAtomicDomain.find(location);
     left = it; right = it;
+    uint64_t rbound = mMaxNumAtoms - 1, lbound = 0;
     if (left != mAtomicDomain.begin())
+    {
         --left;
-    if (++right == mAtomicDomain.end())
-        --right;
+        lbound = left->first;
+    }
+    if (++right != mAtomicDomain.end())
+    {
+        rbound = right->first;
+    }
 
-    uint64_t newLocation = gaps::random::uniform64(left->first, right->first);
+    std::cout << "lbound: " << lbound << " rbound: " << rbound << '\n';
+    uint64_t newLocation = gaps::random::uniform64(lbound, rbound);
 
 #ifdef GAPS_DEBUG
     mProposalTypeHistory.push_back('M');
@@ -190,7 +200,7 @@ AtomicProposal AtomicSupport::makeProposal() const
         }
         return gaps::random::uniform() < pDelete ? proposeDeath() : proposeBirth();
     }
-    return (mNumAtoms < 2 || unif >= 0.75) ? proposeMove() : proposeExchange();
+    return (mNumAtoms < 2 || unif < 0.75) ? proposeMove() : proposeExchange();
 }
 
 MatrixChange AtomicSupport::acceptProposal(const AtomicProposal &prop)

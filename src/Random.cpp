@@ -57,7 +57,9 @@ double gaps::random::normal(double mean, double var)
     randGenValues.push_back(ret);
     return ret;
 #else
-    return dist(rng);
+    double val = dist(rng);
+    std::cout << "n: " << val << '\n';
+    return val;
 #endif
 }
 
@@ -70,7 +72,9 @@ int gaps::random::poisson(double lambda)
     randGenValues.push_back(ret);
     return ret;
 #else
-    return dist(rng);
+    int val = dist(rng);
+    std::cout << "p: " << val << '\n';
+    return val;
 #endif
 }
 
@@ -83,7 +87,9 @@ double gaps::random::exponential(double lambda)
     randGenValues.push_back(ret);
     return ret;
 #else
-    return dist(rng);
+    double val = dist(rng);
+    std::cout << "e: " << val << '\n';
+    return val;
 #endif
 }
 
@@ -96,7 +102,9 @@ double gaps::random::uniform()
     randGenValues.push_back(ret);
     return ret;
 #else
-    return dist(rng);
+    double val = dist();
+    std::cout << "u: " << val << '\n';
+    return val;
 #endif
 }
 
@@ -110,7 +118,9 @@ double gaps::random::uniform(double a, double b)
     {
         boost::random::uniform_real_distribution<> dist(a,b);
 #ifndef GAPS_DEBUG
-        return dist(rng);
+        double val = dist(rng);
+        std::cout << "u_ab: " << val << '\n';
+        return val;
     }
 #else
         double ret = dist(rng);
@@ -135,7 +145,9 @@ uint64_t gaps::random::uniform64()
     randGenValues.push_back(ret);
     return ret;
 #else
-    return dist(rng);
+    uint64_t loc = dist(rng);
+    std::cout << "u64: " << loc << '\n';
+    return loc;
 #endif
 }
 
@@ -149,7 +161,9 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     {
         boost::random::uniform_int_distribution<uint64_t> dist(a,b);
  #ifndef GAPS_DEBUG
-        return dist(rng);
+        uint64_t val = dist(rng);
+        std::cout << "u64_ab: " << val << '\n';
+        return val;
     }
 #else
         double ret = dist(rng);
