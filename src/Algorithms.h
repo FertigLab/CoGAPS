@@ -19,7 +19,7 @@ struct AlphaParameters
     AlphaParameters& operator+(const AlphaParameters &other)
     {
         s += other.s;
-        su -= other.su; // TODO weird
+        su -= other.su; // weird
         return *this;
     }
 };

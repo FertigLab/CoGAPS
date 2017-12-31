@@ -94,14 +94,19 @@ double GibbsSampler::computeDeltaLL(const MatrixChange &change)
 
 void GibbsSampler::update(char matrixLabel)
 {
-    std::cout << "temp: " << mAnnealingTemp << '\n';
     AtomicSupport &domain(matrixLabel == 'A' ? mADomain : mPDomain);
 
     // get proposal and convert to a matrix update
     AtomicProposal proposal = domain.makeProposal();
 
-    std::cout << matrixLabel << " " << proposal.type << " " << proposal.pos1 << " " <<
-        proposal.delta1 << " " << proposal.pos2 << " " << proposal.delta2 << '\n';
+    /*if (proposal.type == 'M' || proposal.type == 'E')
+    {
+        AtomicProposal temp = proposal;
+        proposal.pos1 = temp.pos1 < temp.pos2 ? temp.pos1 : temp.pos2;
+        proposal.delta1 = temp.pos1 < temp.pos2 ? temp.delta1 : temp.delta2;
+        proposal.pos2 = temp.pos1 < temp.pos2 ? temp.pos2 : temp.pos1;
+        proposal.delta2 = temp.pos1 < temp.pos2 ? temp.delta2 : temp.delta1;
+    }*/
 
     // Update based on the proposal type
     switch (proposal.type)
@@ -198,11 +203,8 @@ bool GibbsSampler::canUseGibbs(const MatrixChange &ch)
     {
         bool check2 = (ch.label == 'A' && gaps::algo::isRowZero(mPMatrix, ch.col2))
             || (ch.label == 'P' && gaps::algo::isColZero(mAMatrix, ch.row2));
-
-        std::cout << "Gibbs Check: " << ch.label << " " << !(check1 && check2) << '\n';
         return !(check1 && check2);
     }
-    std::cout << "Gibbs Check: " << ch.label << " " << !check1 << '\n';
     return !check1;
 }
 
@@ -307,17 +309,21 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
     double pnew = gaps::random::d_gamma(pnewMass, 2.0, 1.0 / domain.lambda());
     double pold = gaps::random::d_gamma(poldMass, 2.0, 1.0 / domain.lambda());
 
-    if (pold != 0.0 || pnew == 0.0)
+    proposal.pos1 = pos1;
+    proposal.delta1 = newMass1 - mass1;
+    proposal.pos2 = pos2;
+    proposal.delta2 = newMass2 - mass2;
+
+    if (pold == 0.0 && pnew != 0.0)
     {
-        double priorLL = pnew == 0.0 ? 0.0 : log(pnew / pold);
-        proposal.pos1 = pos1;
-        proposal.delta1 = newMass1 - mass1;
-        proposal.pos2 = pos2;
-        proposal.delta2 = newMass2 - mass2;
+        return evaluateChange(domain, proposal, 0.0, true);
+    }
+    else
+    {
+        double priorLL = pold == 0.0 ? 0.0 : log(pnew / pold);
         return evaluateChange(domain, proposal, std::log(gaps::random::uniform())
             - priorLL);
     }
-    return false;
 }
 
 Rcpp::NumericMatrix GibbsSampler::AMeanRMatrix() const

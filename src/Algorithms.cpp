@@ -245,7 +245,6 @@ unsigned row, unsigned col1, unsigned col2=0, bool twoChanges=false)
         s += GAPS_SQ(ratio);
         su += ratio * (D(row,j) - AP(row,j)) / S(row,j);
     }
-    std::cout << "A,s: " << s << " A,su: " << su << std::endl;
     return AlphaParameters(s, su);
 }
 
@@ -261,7 +260,6 @@ unsigned col, unsigned row1, unsigned row2=0, bool twoChanges=false)
         s += GAPS_SQ(ratio);
         su += ratio * (D(i,col) - AP(i,col)) / S(i,col);
     }
-    std::cout << "P,s: " << s << " P,su: " << su << std::endl;
     return AlphaParameters(s, su);
 }
 
@@ -270,28 +268,30 @@ const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
 const RowMatrix &P, const TwoWayMatrix &AP)
 {
     // change in A matrix
+    AlphaParameters p(0,0);
     if (ch.label == 'A' && ch.nChanges == 2 && ch.row1 != ch.row2)
     {
-        return alphaParameters_A(D, S, P, AP, ch.row1, ch.col1)
+        p = alphaParameters_A(D, S, P, AP, ch.row1, ch.col1)
             + alphaParameters_A(D, S, P, AP, ch.row2, ch.col2);
     }
     else if (ch.label == 'A')
     {
-        return alphaParameters_A(D, S, P, AP, ch.row1, ch.col1, ch.col2,
+        p = alphaParameters_A(D, S, P, AP, ch.row1, ch.col1, ch.col2,
             ch.nChanges == 2);
     }
 
     // change in P matrix
     if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
     {
-        return alphaParameters_P(D, S, A, AP, ch.col1, ch.row1)
+        p = alphaParameters_P(D, S, A, AP, ch.col1, ch.row1)
             + alphaParameters_P(D, S, A, AP, ch.col2, ch.row2);
     }
     else if (ch.label == 'P')
     {
-        return alphaParameters_P(D, S, A, AP, ch.col1, ch.row1, ch.row2,
+        p = alphaParameters_P(D, S, A, AP, ch.col1, ch.row1, ch.row2,
             ch.nChanges == 2);
     }
+    return p;
 }
 
 #ifdef GAPS_DEBUG
