@@ -57,9 +57,7 @@ double gaps::random::normal(double mean, double var)
     randGenValues.push_back(ret);
     return ret;
 #else
-    double val = dist(rng);
-    std::cout << "n: " << val << '\n';
-    return val;
+    return dist(rng);
 #endif
 }
 
@@ -72,9 +70,7 @@ int gaps::random::poisson(double lambda)
     randGenValues.push_back(ret);
     return ret;
 #else
-    int val = dist(rng);
-    std::cout << "p: " << val << '\n';
-    return val;
+    return dist(rng);
 #endif
 }
 
@@ -87,9 +83,7 @@ double gaps::random::exponential(double lambda)
     randGenValues.push_back(ret);
     return ret;
 #else
-    double val = dist(rng);
-    std::cout << "e: " << val << '\n';
-    return val;
+    return dist(rng);
 #endif
 }
 
@@ -102,9 +96,7 @@ double gaps::random::uniform()
     randGenValues.push_back(ret);
     return ret;
 #else
-    double val = dist();
-    std::cout << "u: " << val << '\n';
-    return val;
+    return dist();
 #endif
 }
 
@@ -117,12 +109,7 @@ double gaps::random::uniform(double a, double b)
     else if (a < b)
     {
         boost::random::uniform_real_distribution<> dist(a,b);
-#ifndef GAPS_DEBUG
-        double val = dist(rng);
-        std::cout << "u_ab: " << val << '\n';
-        return val;
-    }
-#else
+#ifdef GAPS_DEBUG
         double ret = dist(rng);
         randGenTypes.push_back('u');
         randGenValues.push_back(ret);
@@ -131,6 +118,9 @@ double gaps::random::uniform(double a, double b)
     else
     {
         throw std::runtime_error("invalid arguments in uniform64()");
+    }
+#else
+        return dist(rng);
     }
 #endif
 }
@@ -145,9 +135,7 @@ uint64_t gaps::random::uniform64()
     randGenValues.push_back(ret);
     return ret;
 #else
-    uint64_t loc = dist(rng);
-    std::cout << "u64: " << loc << '\n';
-    return loc;
+    return dist(rng);
 #endif
 }
 
@@ -160,12 +148,7 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     else if (a < b)
     {
         boost::random::uniform_int_distribution<uint64_t> dist(a,b);
- #ifndef GAPS_DEBUG
-        uint64_t val = dist(rng);
-        std::cout << "u64_ab: " << val << '\n';
-        return val;
-    }
-#else
+#ifdef GAPS_DEBUG
         double ret = dist(rng);
         randGenTypes.push_back('l');
         randGenValues.push_back(ret);
@@ -174,6 +157,9 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     else
     {
         throw std::runtime_error("invalid arguments in uniform64()");
+    }
+#else
+        return dist(rng);
     }
 #endif
 }
