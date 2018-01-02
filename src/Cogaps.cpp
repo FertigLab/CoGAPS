@@ -59,12 +59,6 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
     runGibbsSampler(sampler, nSample, nIterA, nIterP, chi2VecSample,
         nAtomsASample, nAtomsPSample, GAPS_SAMPLING);
 
-    // debug checks
-#ifdef GAPS_DEBUG
-    sampler.checkAtomicMatrixConsistency();
-    sampler.checkAPMatrix();
-#endif
-
     // combine chi2 vectors
     chi2Vec.concat(chi2VecSample);
 
@@ -80,17 +74,6 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
         Rcpp::Named("atomsPSamp") = nAtomsPSample.rVec(),
         Rcpp::Named("chiSqValues") = chi2Vec.rVec(),
         Rcpp::Named("randSeed") = seedUsed
-#ifdef GAPS_DEBUG
-        , Rcpp::Named("randTypes") = Rcpp::wrap(gaps::random::getTypes()),
-        Rcpp::Named("randValues") = Rcpp::wrap(gaps::random::getValues()),
-        Rcpp::Named("propTypeHistoryA") = Rcpp::wrap(sampler.proposalTypeHistory('A')),
-        Rcpp::Named("propDelta1HistoryA") = Rcpp::wrap(sampler.proposalDelta1History('A')),
-        Rcpp::Named("propDelta2HistoryA") = Rcpp::wrap(sampler.proposalDelta2History('A')),
-        Rcpp::Named("acptTypeHistoryA") = Rcpp::wrap(sampler.acceptTypeHistory('A')),
-        Rcpp::Named("acptDelta1HistoryA") = Rcpp::wrap(sampler.acceptDelta1History('A')),
-        Rcpp::Named("acptDelta2HistoryA") = Rcpp::wrap(sampler.acceptDelta2History('A')),
-        Rcpp::Named("atomHistoryA") = Rcpp::wrap(sampler.atomHistory('A'))
-#endif
     );
 }
 

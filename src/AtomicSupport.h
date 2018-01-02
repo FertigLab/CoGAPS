@@ -34,6 +34,10 @@ class AtomicSupport
 {
 private:
 
+#ifdef GAPS_INTERNAL_TESTS
+public:
+#endif
+
     // label of this atomic domain (A/P)
     char mLabel;
 
@@ -57,20 +61,6 @@ private:
     // expected magnitude of each atom (must be > 0)
     double mLambda;
 
-#ifdef GAPS_DEBUG
-    mutable std::vector<char> mProposalTypeHistory;
-    mutable std::vector<double> mProposalDelta1History;
-    mutable std::vector<double> mProposalDelta2History;
-    mutable std::vector<char> mAcceptTypeHistory;
-    mutable std::vector<double> mAcceptDelta1History;
-    mutable std::vector<double> mAcceptDelta2History;
-    mutable std::vector<unsigned> mAtomHistory;
-#endif
-
-#ifdef GAPS_INTERNAL_TESTS
-public:
-#endif
-
     // convert atomic position to row/col of the matrix
     uint64_t getRow(uint64_t pos) const;
     uint64_t getCol(uint64_t pos) const;
@@ -88,9 +78,7 @@ public:
     // update the mass of an atom, return the total amount changed
     double updateAtomMass(char type, uint64_t pos, double delta);
 
-#ifndef GAPS_INTERNAL_TESTS
 public:
-#endif
 
     // constructor
     AtomicSupport(char label, uint64_t nrow, uint64_t ncol, double alpha=1.0,
@@ -114,16 +102,6 @@ public:
     void setAlpha(double alpha) {mAlpha = alpha;}
     void setLambda(double lambda) {mLambda = lambda;}
     //void setMaxNumAtoms(uint64_t max) {mMaxNumAtoms = max;}
-
-#ifdef GAPS_DEBUG
-    std::vector<char> proposalTypeHistory() {return mProposalTypeHistory;}
-    std::vector<double> proposalDelta1History() {return mProposalDelta1History;}
-    std::vector<double> proposalDelta2History() {return mProposalDelta2History;}
-    std::vector<char> acceptTypeHistory() {return mAcceptTypeHistory;}
-    std::vector<double> acceptDelta1History() {return mAcceptDelta1History;}
-    std::vector<double> acceptDelta2History() {return mAcceptDelta2History;}
-    std::vector<unsigned> atomHistory() {return mAtomHistory;}
-#endif
 };
 
 #endif

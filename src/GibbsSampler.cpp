@@ -3,13 +3,7 @@
 
 #include <Rcpp.h>
 
-#ifdef GAPS_DEBUG
-#include <stdexcept>
-#include <iostream>
-#endif
-
 static const double EPSILON = 1.e-10;
-static const double AUTO_ACCEPT = std::numeric_limits<double>::min();
 
 GibbsSampler::GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S,
 unsigned int nFactor, double alphaA, double alphaP, double maxGibbsMassA,
@@ -373,29 +367,3 @@ void GibbsSampler::updateStatistics()
             1.0 / normVec(r));
     }
 }
-
-#ifdef GAPS_DEBUG
-
-void GibbsSampler::checkAtomicMatrixConsistency() const
-{
-    double AMass = gaps::algo::sum(mAMatrix);
-    double PMass = gaps::algo::sum(mPMatrix);
-    double Adiff = std::abs(AMass - mADomain.totalMass());
-    double Pdiff = std::abs(PMass - mPDomain.totalMass());
-    if (Adiff > 0.00001 || Pdiff > 0.00001)
-    {
-        std::cout << "A Mass - " << AMass << "," << mADomain.totalMass() << '\n';
-        std::cout << "P Mass - " << PMass << "," << mPDomain.totalMass() << '\n';
-        throw std::runtime_error("inconsistency with Atomic Domain");
-    }
-}
-
-void GibbsSampler::checkAPMatrix() const
-{
-    if (!gaps::algo::checkAPMatrix(mAPMatrix, mAMatrix, mPMatrix))
-    {
-        throw std::runtime_error("APMatrix inconsistency");
-    }
-}
-
-#endif
