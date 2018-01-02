@@ -33,6 +33,9 @@ namespace algo
     matrix_data_t mean(const TwoWayMatrix &mat);
     matrix_data_t nonZeroMean(const TwoWayMatrix &mat);
 
+    void matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
+        const RowMatrix &B);
+
     ColMatrix computeStdDev(const ColMatrix &stdMat, const ColMatrix &meanMat,
         unsigned nUpdates);
 

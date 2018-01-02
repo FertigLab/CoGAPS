@@ -31,6 +31,9 @@ public:
 
     bool mSingleCellRNASeq;
 
+    unsigned mNumFixedPatterns;
+    char mFixedMat;
+
     bool death(AtomicSupport &domain, AtomicProposal &proposal);
     bool birth(AtomicSupport &domain, AtomicProposal &proposal);
     bool move(AtomicSupport &domain, AtomicProposal &proposal);
@@ -54,7 +57,7 @@ public:
 
     GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S, unsigned nFactor,
         double alphaA, double alphaP, double maxGibbsMassA, double maxGibbsMassP,
-        bool singleCellRNASeq);
+        bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat, char whichMat);
 
     void update(char matrixLabel);
 

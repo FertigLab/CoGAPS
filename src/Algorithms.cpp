@@ -100,6 +100,24 @@ const RowMatrix &meanMat, unsigned nUpdates)
     return retMat;
 }
 
+// horribly slow, don't call often
+void gaps::algo::matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
+const RowMatrix &B)
+{
+    for (unsigned i = 0; i < C.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < C.nCol(); ++j)
+        {
+            double sum = 0.0;
+            for (unsigned k = 0; k < A.nCol(); ++k)
+            {
+                sum += A(i,k) * B(k,j);
+            }
+            C.set(i, j, sum);
+        }
+    }
+}
+
 Vector gaps::algo::scalarMultiple(const Vector &vec, double n)
 {
     Vector retVec(vec.size());
@@ -131,6 +149,16 @@ ColMatrix gaps::algo::scalarDivision(const ColMatrix &mat, double n)
         }
     }
     return retMat;
+}
+
+Vector gaps::algo::scalarDivision(const Vector &vec, matrix_data_t n)
+{
+    Vector temp(vec.size());
+    for (unsigned i = 0; i < vec.size(); ++i)
+    {
+        temp(i) = vec(i) / n;
+    }
+    return temp;
 }
 
 RowMatrix gaps::algo::scalarDivision(const RowMatrix &mat, double n)

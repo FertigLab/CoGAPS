@@ -12,7 +12,8 @@ gapsRun(D, S, ABins = data.frame(), PBins = data.frame(), nFactor = 7,
   fixedDomain = "N", sampleSnapshots = TRUE, numSnapshots = 100,
   alphaA = 0.01, nMaxA = 1e+05, max_gibbmass_paraA = 100, alphaP = 0.01,
   nMaxP = 1e+05, max_gibbmass_paraP = 100, seed = -1, messages = TRUE,
-  singleCellRNASeq = FALSE)
+  singleCellRNASeq = FALSE, fixedPatterns = matrix(0),
+  whichMatrixFixed = "N")
 }
 \arguments{
 \item{D}{data matrix}
@@ -66,6 +67,11 @@ individual samples from Markov chain during sampling}
 \item{messages}{Display progress messages}
 
 \item{singleCellRNASeq}{T/F indicating if the data is single cell RNA-seq data}
+
+\item{fixedPatterns}{matrix of fixed values in either A or P matrix}
+
+\item{whichMatrixFixed}{character to indicate whether A or P matrix
+contains the fixed patterns}
 }
 \description{
 \code{gapsRun} calls the C++ MCMC code and performs Bayesian
