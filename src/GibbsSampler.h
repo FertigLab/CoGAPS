@@ -50,6 +50,8 @@ public:
     bool canUseGibbs(const MatrixChange &ch);
     void setChi2(double chi2);
 
+public:
+
     GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S, unsigned nFactor,
         double alphaA, double alphaP, double maxGibbsMassA, double maxGibbsMassP,
         bool singleCellRNASeq);
