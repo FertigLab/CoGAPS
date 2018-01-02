@@ -51,6 +51,15 @@ RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
     }
 }
 
+RowMatrix::RowMatrix(const RowMatrix &mat)
+: mNumRows(mat.nRow()), mNumCols(mat.nCol())
+{
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        mRows.push_back(mat.getRow(i));
+    }
+}
+
 Vector& RowMatrix::getRow(unsigned row)
 {
     return mRows[row];
@@ -113,6 +122,15 @@ ColMatrix::ColMatrix(const Rcpp::NumericMatrix &rmat)
         {
             mCols[j](i) = rmat(i,j);
         }
+    }
+}
+
+ColMatrix::ColMatrix(const ColMatrix &mat)
+: mNumRows(mat.nRow()), mNumCols(mat.nCol())
+{
+    for (unsigned j = 0; j < mNumCols; ++j)
+    {
+        mCols.push_back(mat.getCol(j));
     }
 }
 

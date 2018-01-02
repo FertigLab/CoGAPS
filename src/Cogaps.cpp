@@ -11,16 +11,21 @@ enum GapsPhase
     GAPS_SAMPLING
 };
 
+static std::vector<Rcpp::NumericMatrix> snapshotsA;
+static std::vector<Rcpp::NumericMatrix> snapshotsP;
+
 static void runGibbsSampler(GibbsSampler &sampler, unsigned nIterTotal,
 unsigned& nIterA, unsigned& nIterP, Vector& chi2Vec, Vector& aAtomVec,
-Vector& pAtomVec, GapsPhase phase);
+Vector& pAtomVec, GapsPhase phase, unsigned numOutputs, bool messages,
+unsigned numSnapshots);
 
 // [[Rcpp::export]]
 Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
 unsigned nFactor, double alphaA, double alphaP, unsigned nEquil,
 unsigned nEquilCool, unsigned nSample, double maxGibbsMassA,
 double maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns,
-char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq)
+char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq,
+unsigned numOutputs, unsigned numSnapshots)
 {
     // set seed
     uint32_t seedUsed = static_cast<uint32_t>(seed);
@@ -47,33 +52,32 @@ char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq)
     Vector nAtomsAEquil(nEquil);
     Vector nAtomsPEquil(nEquil);
     runGibbsSampler(sampler, nEquil, nIterA, nIterP, chi2Vec,
-        nAtomsAEquil, nAtomsPEquil, GAPS_CALIBRATION);
+        nAtomsAEquil, nAtomsPEquil, GAPS_CALIBRATION, numOutputs, messages,
+        numSnapshots);
 
     // cooling phase
     Vector trash(nEquilCool);
     runGibbsSampler(sampler, nEquilCool, nIterA, nIterP, trash,
-        trash, trash, GAPS_COOLING);
+        trash, trash, GAPS_COOLING, numOutputs, messages, numSnapshots);
 
     // sampling phase
     Vector chi2VecSample(nSample);
     Vector nAtomsASample(nSample);
     Vector nAtomsPSample(nSample);
     runGibbsSampler(sampler, nSample, nIterA, nIterP, chi2VecSample,
-        nAtomsASample, nAtomsPSample, GAPS_SAMPLING);
+        nAtomsASample, nAtomsPSample, GAPS_SAMPLING, numOutputs, messages,
+        numSnapshots);
 
     // combine chi2 vectors
     chi2Vec.concat(chi2VecSample);
 
-    //Just leave the snapshots as empty lists
-    Rcpp::List ASnapR = Rcpp::List::create();
-    Rcpp::List PSnapR = Rcpp::List::create();
     return Rcpp::List::create(
         Rcpp::Named("Amean") = sampler.AMeanRMatrix(),
         Rcpp::Named("Asd") = sampler.AStdRMatrix(),
         Rcpp::Named("Pmean") = sampler.PMeanRMatrix(),
         Rcpp::Named("Psd") = sampler.PStdRMatrix(),
-        Rcpp::Named("ASnapshots") = ASnapR,
-        Rcpp::Named("PSnapshots") = PSnapR,
+        Rcpp::Named("ASnapshots") = Rcpp::wrap(snapshotsA),
+        Rcpp::Named("PSnapshots") = Rcpp::wrap(snapshotsP),
         Rcpp::Named("atomsAEquil") = nAtomsAEquil.rVec(),
         Rcpp::Named("atomsASamp") = nAtomsASample.rVec(),
         Rcpp::Named("atomsPEquil") = nAtomsPEquil.rVec(),
@@ -85,7 +89,8 @@ char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq)
 
 static void runGibbsSampler(GibbsSampler &sampler, unsigned nIterTotal,
 unsigned& nIterA, unsigned& nIterP, Vector& chi2Vec, Vector& aAtomVec,
-Vector& pAtomVec, GapsPhase phase)
+Vector& pAtomVec, GapsPhase phase, unsigned numOutputs, bool messages,
+unsigned numSnapshots)
 {
     double tempDenom = (double)nIterTotal / 2.0;
 
@@ -109,16 +114,29 @@ Vector& pAtomVec, GapsPhase phase)
         if (phase == GAPS_SAMPLING)
         {
             sampler.updateStatistics();
+            if (numSnapshots > 0 && (i + 1) % (nIterTotal / numSnapshots) == 0)
+            {
+                snapshotsA.push_back(sampler.getNormedMatrix('A'));
+                snapshotsP.push_back(sampler.getNormedMatrix('P'));
+            }
         }
 
-        chi2Vec(i) = sampler.chi2();
         double numAtomsA = sampler.totalNumAtoms('A');
         double numAtomsP = sampler.totalNumAtoms('P');
         aAtomVec(i) = numAtomsA;
         pAtomVec(i) = numAtomsP;
+        chi2Vec(i) = sampler.chi2();
 
         if (phase != GAPS_COOLING)
         {
+            if ((i + 1) % numOutputs == 0 && messages)
+            {
+                std::string temp = phase == GAPS_CALIBRATION ? "Equil: " : "Samp: ";
+                std::cout << temp << i + 1 << " of " << nIterTotal << ", Atoms:"
+                    << numAtomsA << "(" << numAtomsP << ") Chi2 = "
+                    << sampler.chi2() << '\n';
+            }
+
             nIterA = gaps::random::poisson(std::max(numAtomsA, 10.0));
             nIterP = gaps::random::poisson(std::max(numAtomsP, 10.0));
         }

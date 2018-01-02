@@ -38,8 +38,6 @@
 #' given in Abins and Pbins
 #'@param fixedDomain character to indicate whether A or P is
 #' domain for relative probabilities
-#'@param sampleSnapshots Boolean to indicate whether to capture
-#' individual samples from Markov chain during sampling
 #'@param numSnapshots the number of individual samples to capture
 #'@param alphaA sparsity parameter for A domain
 #'@param nMaxA PRESENTLY UNUSED, future = limit number of atoms
@@ -61,8 +59,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                     nFactor = 7, simulation_id = "simulation",
                     nEquil = 1000, nSample = 1000, nOutR = 1000,
                     output_atomic = FALSE, fixedBinProbs = FALSE,
-                    fixedDomain = "N", sampleSnapshots = TRUE,
-                    numSnapshots = 100, alphaA = 0.01,
+                    fixedDomain = "N", numSnapshots = 0, alphaA = 0.01,
                     nMaxA = 100000, max_gibbmass_paraA = 100.0,
                     alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0,
                     seed=-1, messages=TRUE, singleCellRNASeq=FALSE,
@@ -102,7 +99,8 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     # call to C++ Rcpp code
     cogapResult <- cogaps(as.matrix(D), as.matrix(S), nFactor, alphaA, alphaP,
         nEquil, floor(nEquil/10), nSample, max_gibbmass_paraA, max_gibbmass_paraP,
-        fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq)
+        fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq,
+        nOutR, numSnapshots)
 
     # convert returned files to matrices to simplify visualization and processing
     cogapResult$Amean <- as.matrix(cogapResult$Amean);

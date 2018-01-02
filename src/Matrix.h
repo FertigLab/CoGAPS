@@ -74,6 +74,7 @@ public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
     RowMatrix(const Rcpp::NumericMatrix& rmat);
+    RowMatrix(const RowMatrix &mat);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -99,6 +100,7 @@ public:
 
     ColMatrix(unsigned nrow, unsigned ncol);
     ColMatrix(const Rcpp::NumericMatrix& rmat);
+    ColMatrix(const ColMatrix &mat);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}

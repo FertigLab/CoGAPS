@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // cogaps
-Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix, unsigned nFactor, double alphaA, double alphaP, unsigned nEquil, unsigned nEquilCool, unsigned nSample, double maxGibbsMassA, double maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns, char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq);
-RcppExport SEXP _CoGAPS_cogaps(SEXP DMatrixSEXP, SEXP SMatrixSEXP, SEXP nFactorSEXP, SEXP alphaASEXP, SEXP alphaPSEXP, SEXP nEquilSEXP, SEXP nEquilCoolSEXP, SEXP nSampleSEXP, SEXP maxGibbsMassASEXP, SEXP maxGibbsMassPSEXP, SEXP fixedPatternsSEXP, SEXP whichMatrixFixedSEXP, SEXP seedSEXP, SEXP messagesSEXP, SEXP singleCellRNASeqSEXP) {
+Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix, unsigned nFactor, double alphaA, double alphaP, unsigned nEquil, unsigned nEquilCool, unsigned nSample, double maxGibbsMassA, double maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns, char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq, unsigned numOutputs, unsigned numSnapshots);
+RcppExport SEXP _CoGAPS_cogaps(SEXP DMatrixSEXP, SEXP SMatrixSEXP, SEXP nFactorSEXP, SEXP alphaASEXP, SEXP alphaPSEXP, SEXP nEquilSEXP, SEXP nEquilCoolSEXP, SEXP nSampleSEXP, SEXP maxGibbsMassASEXP, SEXP maxGibbsMassPSEXP, SEXP fixedPatternsSEXP, SEXP whichMatrixFixedSEXP, SEXP seedSEXP, SEXP messagesSEXP, SEXP singleCellRNASeqSEXP, SEXP numOutputsSEXP, SEXP numSnapshotsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -26,7 +26,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< bool >::type messages(messagesSEXP);
     Rcpp::traits::input_parameter< bool >::type singleCellRNASeq(singleCellRNASeqSEXP);
-    rcpp_result_gen = Rcpp::wrap(cogaps(DMatrix, SMatrix, nFactor, alphaA, alphaP, nEquil, nEquilCool, nSample, maxGibbsMassA, maxGibbsMassP, fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq));
+    Rcpp::traits::input_parameter< unsigned >::type numOutputs(numOutputsSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type numSnapshots(numSnapshotsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cogaps(DMatrix, SMatrix, nFactor, alphaA, alphaP, nEquil, nEquilCool, nSample, maxGibbsMassA, maxGibbsMassP, fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq, numOutputs, numSnapshots));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -42,7 +44,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_CoGAPS_cogaps", (DL_FUNC) &_CoGAPS_cogaps, 15},
+    {"_CoGAPS_cogaps", (DL_FUNC) &_CoGAPS_cogaps, 17},
     {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 0},
     {NULL, NULL, 0}
 };

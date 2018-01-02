@@ -9,9 +9,9 @@ the data matrix}
 gapsRun(D, S, ABins = data.frame(), PBins = data.frame(), nFactor = 7,
   simulation_id = "simulation", nEquil = 1000, nSample = 1000,
   nOutR = 1000, output_atomic = FALSE, fixedBinProbs = FALSE,
-  fixedDomain = "N", sampleSnapshots = TRUE, numSnapshots = 100,
-  alphaA = 0.01, nMaxA = 1e+05, max_gibbmass_paraA = 100, alphaP = 0.01,
-  nMaxP = 1e+05, max_gibbmass_paraP = 100, seed = -1, messages = TRUE,
+  fixedDomain = "N", numSnapshots = 0, alphaA = 0.01, nMaxA = 1e+05,
+  max_gibbmass_paraA = 100, alphaP = 0.01, nMaxP = 1e+05,
+  max_gibbmass_paraP = 100, seed = -1, messages = TRUE,
   singleCellRNASeq = FALSE, fixedPatterns = matrix(0),
   whichMatrixFixed = "N")
 }
@@ -44,9 +44,6 @@ given in Abins and Pbins}
 
 \item{fixedDomain}{character to indicate whether A or P is
 domain for relative probabilities}
-
-\item{sampleSnapshots}{Boolean to indicate whether to capture
-individual samples from Markov chain during sampling}
 
 \item{numSnapshots}{the number of individual samples to capture}
 
