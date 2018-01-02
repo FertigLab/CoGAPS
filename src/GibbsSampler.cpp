@@ -211,21 +211,21 @@ const AtomicProposal &proposal, double threshold, bool accept)
 
 void GibbsSampler::updateAPMatrix_A(unsigned row, unsigned col, double delta)
 {
-    double newVal = 0.0;
+    const Vector &APvec = mAPMatrix.getRow(row);
+    const Vector &Pvec = mPMatrix.getRow(col);
     for (unsigned j = 0; j < mAPMatrix.nCol(); ++j)
     {
-        newVal = mAPMatrix(row,j) + delta * mPMatrix(col,j);
-        mAPMatrix.set(row, j, newVal);
+        mAPMatrix.set(row, j, APvec(j) + delta * Pvec(j));
     }
 }
 
 void GibbsSampler::updateAPMatrix_P(unsigned row, unsigned col, double delta)
 {
-    double newVal = 0.0;
+    const Vector &APvec = mAPMatrix.getCol(col);
+    const Vector &Avec = mAMatrix.getCol(row);
     for (unsigned i = 0; i < mAPMatrix.nRow(); ++i)
     {
-        newVal = mAPMatrix(i,col) + delta * mAMatrix(i,row);
-        mAPMatrix.set(i, col, newVal);
+        mAPMatrix.set(i, col, APvec(i) + delta * Avec(i));
     }
 }
 
