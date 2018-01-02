@@ -50,6 +50,9 @@
 #'@param seed Set seed for reproducibility. Positive values provide initial seed, negative values just use the time.
 #'@param messages Display progress messages
 #'@param singleCellRNASeq T/F indicating if the data is single cell RNA-seq data
+#'@param fixedPatterns matrix of fixed values in either A or P matrix
+#'@param whichMatrixFixed character to indicate whether A or P matrix
+#'  contains the fixed patterns
 #'@export
 
 #--CHANGES 1/20/15--
@@ -62,12 +65,29 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                     numSnapshots = 100, alphaA = 0.01,
                     nMaxA = 100000, max_gibbmass_paraA = 100.0,
                     alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0,
-                    seed=-1, messages=TRUE, singleCellRNASeq=FALSE)
+                    seed=-1, messages=TRUE, singleCellRNASeq=FALSE,
+                    fixedPatterns = matrix(0), whichMatrixFixed = 'N')
 {
-    #Floor the parameters that are integers to prevent allowing doubles.
+    # Floor the parameters that are integers to prevent allowing doubles.
     nFactor <- floor(nFactor)
     nEquil <- floor(nEquil)
     nSample <- floor(nSample)
+    nOutR <- floor(nOutR)
+    numSnapshots <- floor(numSnapshots)
+    nMaxA <- floor(nMaxA)
+    nMaxP <- floor(nMaxP)
+
+    # check the fixed patterns
+    if ((whichMatrixFixed == 'A' & nrow(fixedPatterns) != nrow(D))
+    | (whichMatrixFixed == 'P' & nrow(fixedPatterns) > nFactor)) 
+    {
+        stop('invalid number of rows in fixed pattern matrix')
+    }
+    if ((whichMatrixFixed == 'A' & ncol(fixedPatterns) > nFactor)
+    | (whichMatrixFixed == 'P' & ncol(fixedPatterns) != ncol(D))) 
+    {
+        stop('invalid number of cols in fixed pattern matrix')
+    }
 
     geneNames <- rownames(D);
     sampleNames <- colnames(D);
@@ -82,7 +102,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     # call to C++ Rcpp code
     cogapResult <- cogaps(as.matrix(D), as.matrix(S), nFactor, alphaA, alphaP,
         nEquil, floor(nEquil/10), nSample, max_gibbmass_paraA, max_gibbmass_paraP,
-        seed, messages, singleCellRNASeq)
+        fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq)
 
     # convert returned files to matrices to simplify visualization and processing
     cogapResult$Amean <- as.matrix(cogapResult$Amean);
@@ -117,8 +137,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     
     # names(cogapResult)[13] <- "meanChi2";
 
-    #if (messages)
-        message(paste("Chi-Squared of Mean:", calcChiSq))
+    message(paste("Chi-Squared of Mean:", calcChiSq))
 
     return(cogapResult);
 }

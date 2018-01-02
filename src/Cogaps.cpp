@@ -19,7 +19,8 @@ Vector& pAtomVec, GapsPhase phase);
 Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
 unsigned nFactor, double alphaA, double alphaP, unsigned nEquil,
 unsigned nEquilCool, unsigned nSample, double maxGibbsMassA,
-double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=false)
+double maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns,
+char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq)
 {
     // set seed
     uint32_t seedUsed = static_cast<uint32_t>(seed);
@@ -34,7 +35,8 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
 
     // create the gibbs sampler
     GibbsSampler sampler(DMatrix, SMatrix, nFactor, alphaA, alphaP,
-        maxGibbsMassA, maxGibbsMassP, singleCellRNASeq);
+        maxGibbsMassA, maxGibbsMassP, singleCellRNASeq, fixedPatterns,
+        whichMatrixFixed);
 
     // initial number of iterations for each matrix
     unsigned nIterA = 10;
@@ -63,11 +65,15 @@ double maxGibbsMassP, int seed=-1, bool messages=false, bool singleCellRNASeq=fa
     chi2Vec.concat(chi2VecSample);
 
     //Just leave the snapshots as empty lists
+    Rcpp::List ASnapR = Rcpp::List::create();
+    Rcpp::List PSnapR = Rcpp::List::create();
     return Rcpp::List::create(
         Rcpp::Named("Amean") = sampler.AMeanRMatrix(),
         Rcpp::Named("Asd") = sampler.AStdRMatrix(),
         Rcpp::Named("Pmean") = sampler.PMeanRMatrix(),
         Rcpp::Named("Psd") = sampler.PStdRMatrix(),
+        Rcpp::Named("ASnapshots") = ASnapR,
+        Rcpp::Named("PSnapshots") = PSnapR,
         Rcpp::Named("atomsAEquil") = nAtomsAEquil.rVec(),
         Rcpp::Named("atomsASamp") = nAtomsASample.rVec(),
         Rcpp::Named("atomsPEquil") = nAtomsPEquil.rVec(),

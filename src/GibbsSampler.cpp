@@ -7,7 +7,8 @@ static const double EPSILON = 1.e-10;
 
 GibbsSampler::GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S,
 unsigned int nFactor, double alphaA, double alphaP, double maxGibbsMassA,
-double maxGibbsMassP, bool singleCellRNASeq)
+double maxGibbsMassP, bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat,
+char whichMat)
     :
 mDMatrix(D), mSMatrix(S), mAMatrix(D.nrow(), nFactor),
 mPMatrix(nFactor, D.ncol()), mAPMatrix(D.nrow(), D.ncol()),
@@ -16,7 +17,7 @@ mMaxGibbsMassA(maxGibbsMassA), mMaxGibbsMassP(maxGibbsMassP),
 mAnnealingTemp(1.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq),
 mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
 mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
-mStatUpdates(0)
+mStatUpdates(0), mFixedMat(whichMat)
 {
     double meanD = mSingleCellRNASeq ? gaps::algo::nonZeroMean(mDMatrix)
         : gaps::algo::mean(mDMatrix);
@@ -29,6 +30,27 @@ mStatUpdates(0)
     mMaxGibbsMassA /= mADomain.lambda();
     mMaxGibbsMassP /= mPDomain.lambda();
 
+    if (mFixedMat == 'A')
+    {
+        mNumFixedPatterns = fixedPat.ncol();
+        ColMatrix temp(fixedPat);
+        for (unsigned j = 0; j < mNumFixedPatterns; ++j)
+        {
+            mAMatrix.getCol(j) = gaps::algo::scalarDivision(temp.getCol(j),
+                gaps::algo::sum(temp.getCol(j)));
+        }
+    }
+    else if (mFixedMat == 'P')
+    {
+        mNumFixedPatterns = fixedPat.nrow();
+        RowMatrix temp(fixedPat);
+        for (unsigned i = 0; i < mNumFixedPatterns; ++i)
+        {
+            mPMatrix.getRow(i) = gaps::algo::scalarDivision(temp.getRow(i),
+                gaps::algo::sum(temp.getRow(i)));
+        }
+    }
+    gaps::algo::matrixMultiplication(mAPMatrix, mAMatrix, mPMatrix);
     mChi2 = 2.0 * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);
 }
 
@@ -92,6 +114,20 @@ void GibbsSampler::update(char matrixLabel)
 
     // get proposal and convert to a matrix update
     AtomicProposal proposal = domain.makeProposal();
+
+    // check if proposal is in fixed region
+    if (mFixedMat == 'A' || mFixedMat == 'P')
+    {
+        MatrixChange change = domain.getMatrixChange(proposal);
+        unsigned index1 = mFixedMat == 'A' ? change.col1 : change.row1;
+        unsigned index2 = mFixedMat == 'A' ? change.col2 : change.row2;
+        index2 = change.nChanges == 1 ? mNumFixedPatterns : index2;
+
+        if (index1 < mNumFixedPatterns || index2 < mNumFixedPatterns)
+        {
+            return;
+        }
+    }
 
     // Update based on the proposal type
     switch (proposal.type)
