@@ -138,6 +138,16 @@ Vector gaps::algo::squaredScalarMultiple(const Vector &vec, double n)
     return retVec;
 }
 
+Vector gaps::algo::squaredScalarDivision(const Vector &vec, double n)
+{
+    Vector retVec(vec.size());
+    for (unsigned i = 0; i < vec.size(); ++i)
+    {
+        retVec(i) = GAPS_SQ(vec(i) / n);
+    }
+    return retVec;
+}
+
 ColMatrix gaps::algo::scalarDivision(const ColMatrix &mat, double n)
 {
     ColMatrix retMat(mat.nRow(), mat.nCol());

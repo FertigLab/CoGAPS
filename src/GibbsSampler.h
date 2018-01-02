@@ -71,6 +71,8 @@ public:
     Rcpp::NumericMatrix PStdRMatrix() const;
 
     void updateStatistics();
+
+    Rcpp::NumericMatrix getNormedMatrix(char mat);
 };
 
 #endif

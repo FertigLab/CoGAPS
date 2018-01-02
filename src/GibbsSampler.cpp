@@ -54,6 +54,40 @@ mStatUpdates(0), mFixedMat(whichMat)
     mChi2 = 2.0 * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);
 }
 
+Rcpp::NumericMatrix GibbsSampler::getNormedMatrix(char mat)
+{
+    Vector normVec(mPMatrix.nRow());
+    for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
+    {
+        normVec(r) = gaps::algo::sum(mPMatrix.getRow(r));
+        if (normVec(r) == 0)
+        {
+            normVec(r) = 1.0;
+        }
+    }
+
+    if (mat == 'A')
+    {
+        ColMatrix normedA(mAMatrix);    
+        for (unsigned c = 0; c < normedA.nCol(); ++c)
+        {
+            normedA.getCol(c) += gaps::algo::scalarMultiple(normedA.getCol(c),
+                normVec(c));
+        }
+        return normedA.rMatrix();
+    }
+    else
+    {
+        RowMatrix normedP(mPMatrix);
+        for (unsigned r = 0; r < normedP.nRow(); ++r)
+        {
+            normedP.getRow(r) += gaps::algo::scalarDivision(normedP.getRow(r),
+                normVec(r));
+        }
+        return normedP.rMatrix();
+    }
+}
+
 double GibbsSampler::getGibbsMass(const MatrixChange &change)
 {
     // check if this change is death (only called in birth/death)
@@ -396,10 +430,10 @@ void GibbsSampler::updateStatistics()
 
     for (unsigned r = 0; r < mPMeanMatrix.nRow(); ++r)
     {
-        mPMeanMatrix.getRow(r) += gaps::algo::scalarMultiple(mPMatrix.getRow(r),
-            1.0 / normVec(r));
+        mPMeanMatrix.getRow(r) += gaps::algo::scalarDivision(mPMatrix.getRow(r),
+            normVec(r));
 
-        mPStdMatrix.getRow(r) += gaps::algo::squaredScalarMultiple(mPMatrix.getRow(r),
-            1.0 / normVec(r));
+        mPStdMatrix.getRow(r) += gaps::algo::squaredScalarDivision(mPMatrix.getRow(r),
+            normVec(r));
     }
 }
