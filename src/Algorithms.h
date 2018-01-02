@@ -3,10 +3,6 @@
 
 #include "Matrix.h"
 
-#if (!defined(GAPS_DEBUG) && defined(GAPS_INTERNAL_TESTS))
-    #define GAPS_DEBUG
-#endif
-
 struct AlphaParameters
 {
     double s;
@@ -64,12 +60,6 @@ namespace algo
     AlphaParameters alphaParameters(const MatrixChange &ch,
         const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
         const RowMatrix &P, const TwoWayMatrix &AP);
-
-#ifdef GAPS_DEBUG
-    bool checkAPMatrix(const TwoWayMatrix &AP, const ColMatrix &A,
-        const RowMatrix &P);
-#endif
-
 }
 
 }

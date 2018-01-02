@@ -9,6 +9,9 @@
 class GibbsSampler
 {
 private:
+#ifdef GAPS_INTERNAL_TESTS
+public:
+#endif
 
     AtomicSupport mADomain, mPDomain;
 
@@ -27,10 +30,6 @@ private:
     double mChi2;
 
     bool mSingleCellRNASeq;
-
-#ifdef GAPS_INTERNAL_TESTS
-public:
-#endif
 
     bool death(AtomicSupport &domain, AtomicProposal &proposal);
     bool birth(AtomicSupport &domain, AtomicProposal &proposal);
@@ -51,10 +50,6 @@ public:
     bool canUseGibbs(const MatrixChange &ch);
     void setChi2(double chi2);
 
-#ifndef GAPS_INTERNAL_TESTS
-public:
-#endif
-
     GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S, unsigned nFactor,
         double alphaA, double alphaP, double maxGibbsMassA, double maxGibbsMassP,
         bool singleCellRNASeq);
@@ -71,48 +66,6 @@ public:
     Rcpp::NumericMatrix PStdRMatrix() const;
 
     void updateStatistics();
-
-#ifdef GAPS_DEBUG
-    void checkAtomicMatrixConsistency() const;
-    void checkAPMatrix() const;
-    std::vector<char> proposalTypeHistory(char label)
-    {
-        return label == 'A' ? mADomain.proposalTypeHistory()
-            : mPDomain.proposalTypeHistory();
-    }
-
-    std::vector<double> proposalDelta1History(char label)
-    {
-        return label == 'A' ? mADomain.proposalDelta1History()
-            : mPDomain.proposalDelta1History();
-    }
-    std::vector<double> proposalDelta2History(char label)
-    {
-        return label == 'A' ? mADomain.proposalDelta2History()
-            : mPDomain.proposalDelta2History();
-    }
-    std::vector<char> acceptTypeHistory(char label)
-    {
-        return label == 'A' ? mADomain.acceptTypeHistory()
-            : mPDomain.acceptTypeHistory();
-    }
-
-    std::vector<double> acceptDelta1History(char label)
-    {
-        return label == 'A' ? mADomain.acceptDelta1History()
-            : mPDomain.acceptDelta1History();
-    }
-    std::vector<double> acceptDelta2History(char label)
-    {
-        return label == 'A' ? mADomain.acceptDelta2History()
-            : mPDomain.acceptDelta2History();
-    }
-    std::vector<unsigned> atomHistory(char label)
-    {
-        return label == 'A' ? mADomain.atomHistory()
-            : mPDomain.atomHistory();
-    }
-#endif
 };
 
 #endif

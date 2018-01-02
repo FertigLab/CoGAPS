@@ -293,29 +293,3 @@ const RowMatrix &P, const TwoWayMatrix &AP)
     }
     return p;
 }
-
-#ifdef GAPS_DEBUG
-bool gaps::algo::checkAPMatrix(const TwoWayMatrix &AP, const ColMatrix &A,
-const RowMatrix &P)
-{
-    double sum = 0.0, diff = 0.0;
-    for (unsigned r = 0; r < AP.nRow(); ++r)
-    {
-        for (unsigned c = 0; c < AP.nCol(); ++c)
-        {
-            sum = 0.0;
-            for (unsigned k = 0; k < A.nCol(); ++k)
-            {
-                sum += A(r,k) * P(k,c);
-            }
-
-            diff = std::abs(AP(r,c) - sum);
-            if (diff > 0.00001)
-            {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-#endif

@@ -15,33 +15,12 @@
 
 #include <stdint.h>
 
-#ifdef GAPS_DEBUG
-#include <stdexcept>
-#endif
-
 #define Q_GAMMA_THRESHOLD 1E-6
 #define Q_GAMMA_MIN_VALUE 0.0
 
 typedef boost::random::mt19937 RNGType;
 //typedef boost::random::mt11213b RNGType; // should be faster
 static RNGType rng;
-
-#ifdef GAPS_DEBUG
-
-static std::vector<char> randGenTypes;
-static std::vector<double> randGenValues;
-
-std::vector<char> gaps::random::getTypes()
-{
-    return randGenTypes;
-}
-
-std::vector<double> gaps::random::getValues()
-{
-    return randGenValues;
-}
-
-#endif
 
 void gaps::random::setSeed(uint32_t seed)
 {
@@ -51,53 +30,25 @@ void gaps::random::setSeed(uint32_t seed)
 double gaps::random::normal(double mean, double var)
 {
     boost::random::normal_distribution<double> dist(mean, var);
-#ifdef GAPS_DEBUG
-    double ret = dist(rng);
-    randGenTypes.push_back('N');
-    randGenValues.push_back(ret);
-    return ret;
-#else
     return dist(rng);
-#endif
 }
 
 int gaps::random::poisson(double lambda)
 {
     boost::random::poisson_distribution<> dist(lambda);
-#ifdef GAPS_DEBUG
-    double ret = dist(rng);
-    randGenTypes.push_back('P');
-    randGenValues.push_back(ret);
-    return ret;
-#else
     return dist(rng);
-#endif
 }
 
 double gaps::random::exponential(double lambda)
 {
     boost::random::exponential_distribution<> dist(lambda);
-#ifdef GAPS_DEBUG
-    double ret = dist(rng);
-    randGenTypes.push_back('E');
-    randGenValues.push_back(ret);
-    return ret;
-#else
     return dist(rng);
-#endif
 }
 
 double gaps::random::uniform()
 {
     boost::random::uniform_01<RNGType&> dist(rng); // could be moved out
-#ifdef GAPS_DEBUG
-    double ret = dist();
-    randGenTypes.push_back('U');
-    randGenValues.push_back(ret);
-    return ret;
-#else
     return dist();
-#endif
 }
 
 double gaps::random::uniform(double a, double b)
@@ -109,34 +60,15 @@ double gaps::random::uniform(double a, double b)
     else if (a < b)
     {
         boost::random::uniform_real_distribution<> dist(a,b);
-#ifdef GAPS_DEBUG
-        double ret = dist(rng);
-        randGenTypes.push_back('u');
-        randGenValues.push_back(ret);
-        return ret;
-    }
-    else
-    {
-        throw std::runtime_error("invalid arguments in uniform64()");
-    }
-#else
         return dist(rng);
     }
-#endif
 }
 
 uint64_t gaps::random::uniform64()
 {
     boost::random::uniform_int_distribution<uint64_t> dist(0,
         std::numeric_limits<uint64_t>::max());
-#ifdef GAPS_DEBUG
-    double ret = dist(rng);
-    randGenTypes.push_back('L');
-    randGenValues.push_back(ret);
-    return ret;
-#else
     return dist(rng);
-#endif
 }
 
 uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
@@ -148,20 +80,8 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     else if (a < b)
     {
         boost::random::uniform_int_distribution<uint64_t> dist(a,b);
-#ifdef GAPS_DEBUG
-        double ret = dist(rng);
-        randGenTypes.push_back('l');
-        randGenValues.push_back(ret);
-        return ret;
-    }
-    else
-    {
-        throw std::runtime_error("invalid arguments in uniform64()");
-    }
-#else
         return dist(rng);
     }
-#endif
 }
 
 double gaps::random::d_gamma(double d, double shape, double scale)
