@@ -214,12 +214,17 @@ unsigned col1, double delta1, unsigned col2=0, double delta2=0.0,
 bool twoChanges=false)
 {
     double numer = 0.0, denom = 0.0, delLL = 0.0, d1 = 0.0, d2 = 0.0;
+    const Vector &Drow = D.getRow(row);
+    const Vector &AProw = AP.getRow(row);
+    const Vector &Srow = S.getRow(row);
+    const Vector &Prow1 = P.getRow(col1);
+    const Vector &Prow2 = P.getRow(col2);
     for (unsigned j = 0; j < D.nCol(); ++j)
     {
-        d1 = delta1 * P(col1,j);
-        d2 = twoChanges ? delta2 * P(col2,j) : 0.0;
-        numer = 2.0 * (D(row,j) - AP(row,j)) * (d1 + d2) - GAPS_SQ(d1 + d2);
-        denom = 2.0 * GAPS_SQ(S(row,j));
+        d1 = delta1 * Prow1(j);
+        d2 = twoChanges ? delta2 * Prow2(j) : 0.0;
+        numer = 2.0 * (Drow(j) - AProw(j)) * (d1 + d2) - GAPS_SQ(d1 + d2);
+        denom = 2.0 * GAPS_SQ(Srow(j));
         delLL += numer / denom;
     }
     return delLL;
@@ -231,12 +236,17 @@ unsigned row1, double delta1, unsigned row2=0, double delta2=0.0,
 bool twoChanges=false)
 {
     double numer = 0.0, denom = 0.0, delLL = 0.0, d1 = 0.0, d2 = 0.0;
+    const Vector &Dcol = D.getCol(col);
+    const Vector &APcol = AP.getCol(col);
+    const Vector &Scol = S.getCol(col);
+    const Vector &Acol1 = A.getCol(row1);
+    const Vector &Acol2 = A.getCol(row2);
     for (unsigned i = 0; i < D.nRow(); ++i)
     {
-        d1 = delta1 * A(i,row1);
-        d2 = twoChanges ? delta2 * A(i,row2) : 0.0;
-        numer = 2.0 * (D(i,col) - AP(i,col)) * (d1 + d2) - GAPS_SQ(d1 + d2);
-        denom = 2.0 * GAPS_SQ(S(i,col));
+        d1 = delta1 * Acol1(i);
+        d2 = twoChanges ? delta2 * Acol2(i) : 0.0;
+        numer = 2.0 * (Dcol(i) - APcol(i)) * (d1 + d2) - GAPS_SQ(d1 + d2);
+        denom = 2.0 * GAPS_SQ(Scol(i));
         delLL += numer / denom;
     }
     return delLL;
@@ -276,12 +286,17 @@ const TwoWayMatrix &S, const RowMatrix &P, const TwoWayMatrix &AP,
 unsigned row, unsigned col1, unsigned col2=0, bool twoChanges=false)
 {
     double s = 0.0, su = 0.0, ratio = 0.0, p2 = 0.0;
+    const Vector &Drow = D.getRow(row);
+    const Vector &AProw = AP.getRow(row);
+    const Vector &Srow = S.getRow(row);
+    const Vector &Prow1 = P.getRow(col1);
+    const Vector &Prow2 = P.getRow(col2);
     for (unsigned j = 0; j < D.nCol(); ++j)
     {
-        p2 = twoChanges ? P(col2,j) : 0.0;
-        ratio = (P(col1,j) - p2) / S(row,j);
+        p2 = twoChanges ? Prow2(j) : 0.0;
+        ratio = (Prow1(j) - p2) / Srow(j);
         s += GAPS_SQ(ratio);
-        su += ratio * (D(row,j) - AP(row,j)) / S(row,j);
+        su += ratio * (Drow(j) - AProw(j)) / Srow(j);
     }
     return AlphaParameters(s, su);
 }
@@ -291,12 +306,17 @@ const TwoWayMatrix &S, const ColMatrix &A, const TwoWayMatrix &AP,
 unsigned col, unsigned row1, unsigned row2=0, bool twoChanges=false)
 {
     double s = 0.0, su = 0.0, ratio = 0.0, a2 = 0.0;
+    const Vector &Dcol = D.getCol(col);
+    const Vector &APcol = AP.getCol(col);
+    const Vector &Scol = S.getCol(col);
+    const Vector &Acol1 = A.getCol(row1);
+    const Vector &Acol2 = A.getCol(row2);
     for (unsigned i = 0; i < D.nRow(); ++i)
     {
-        a2 = twoChanges ? A(i,row2) : 0.0;
-        ratio = (A(i,row1) - a2) / S(i,col);
+        a2 = twoChanges ? Acol2(i) : 0.0;
+        ratio = (Acol1(i) - a2) / Scol(i);
         s += GAPS_SQ(ratio);
-        su += ratio * (D(i,col) - AP(i,col)) / S(i,col);
+        su += ratio * (Dcol(i) - APcol(i)) / Scol(i);
     }
     return AlphaParameters(s, su);
 }
