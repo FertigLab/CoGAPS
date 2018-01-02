@@ -40,8 +40,12 @@ runBenchmark <- function(m, n, k, iter, seed, reps)
     {
         start_time <- Sys.time()
         gapsRun(test_mat_D, test_mat_S, nEquil=iter, nSample=iter,
+<<<<<<< HEAD
             nFactor=k, seed=seed+r, messages=FALSE, sampleSnapshots=FALSE,
             numSnapshots=iter / 2, nOutR = iter / 2)
+=======
+            nFactor=k, seed=seed+r, messages=FALSE)
+>>>>>>> develop
         times[r] <- as.numeric(Sys.time() - start_time)
     }
     params <- c(m, n, k, iter, seed, reps)
