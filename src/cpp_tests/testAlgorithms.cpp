@@ -15,7 +15,7 @@ TEST_CASE("Test Algorithms.h")
 
     for (unsigned r = 0; r < nrow; ++r)
     {
-        v(r) = r;
+        v[r] = r;
         for (unsigned c = 0; c < ncol; ++c)
         {
             D.set(r, c, r + c);
@@ -36,7 +36,7 @@ TEST_CASE("Test Algorithms.h")
 
     SECTION("mean")
     {
-        double dTotal = 300 * 10 + 45 * 25;
+        float dTotal = 300 * 10 + 45 * 25;
     
         REQUIRE(gaps::algo::mean(D) == gaps::algo::mean(S) * 100.0);
         REQUIRE(gaps::algo::mean(D) == dTotal / (nrow * ncol));
@@ -48,7 +48,7 @@ TEST_CASE("Test Algorithms.h")
         REQUIRE(gaps::algo::sum(gaps::algo::scalarMultiple(v, 3.5))
             == 3.5 * 300.0);
 
-        double vsqSum = 24.0 * 25.0 * (2.0 * 24.0 + 1.0) / 6.0;
+        float vsqSum = 24.0 * 25.0 * (2.0 * 24.0 + 1.0) / 6.0;
         REQUIRE(gaps::algo::sum(gaps::algo::squaredScalarMultiple(v, 4.0))
             == 16.0 * vsqSum);
 /*

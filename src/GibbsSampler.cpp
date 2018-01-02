@@ -3,11 +3,11 @@
 
 #include <Rcpp.h>
 
-static const double EPSILON = 1.e-10;
+static const float EPSILON = 1.e-10;
 
 GibbsSampler::GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S,
-unsigned int nFactor, double alphaA, double alphaP, double maxGibbsMassA,
-double maxGibbsMassP, bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat,
+unsigned int nFactor, float alphaA, float alphaP, float maxGibbsMassA,
+float maxGibbsMassP, bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat,
 char whichMat)
     :
 mDMatrix(D), mSMatrix(S), mAMatrix(D.nrow(), nFactor),
@@ -19,7 +19,7 @@ mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
 mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
 mStatUpdates(0), mFixedMat(whichMat)
 {
-    double meanD = mSingleCellRNASeq ? gaps::algo::nonZeroMean(mDMatrix)
+    float meanD = mSingleCellRNASeq ? gaps::algo::nonZeroMean(mDMatrix)
         : gaps::algo::mean(mDMatrix);
 
     mADomain.setAlpha(alphaA);
@@ -59,10 +59,10 @@ Rcpp::NumericMatrix GibbsSampler::getNormedMatrix(char mat)
     Vector normVec(mPMatrix.nRow());
     for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
     {
-        normVec(r) = gaps::algo::sum(mPMatrix.getRow(r));
-        if (normVec(r) == 0)
+        normVec[r] = gaps::algo::sum(mPMatrix.getRow(r));
+        if (normVec[r] == 0)
         {
-            normVec(r) = 1.0;
+            normVec[r] = 1.0;
         }
     }
 
@@ -72,7 +72,7 @@ Rcpp::NumericMatrix GibbsSampler::getNormedMatrix(char mat)
         for (unsigned c = 0; c < normedA.nCol(); ++c)
         {
             normedA.getCol(c) += gaps::algo::scalarMultiple(normedA.getCol(c),
-                normVec(c));
+                normVec[c]);
         }
         return normedA.rMatrix();
     }
@@ -82,13 +82,13 @@ Rcpp::NumericMatrix GibbsSampler::getNormedMatrix(char mat)
         for (unsigned r = 0; r < normedP.nRow(); ++r)
         {
             normedP.getRow(r) += gaps::algo::scalarDivision(normedP.getRow(r),
-                normVec(r));
+                normVec[r]);
         }
         return normedP.rMatrix();
     }
 }
 
-double GibbsSampler::getGibbsMass(const MatrixChange &change)
+float GibbsSampler::getGibbsMass(const MatrixChange &change)
 {
     // check if this change is death (only called in birth/death)
     bool death = change.delta1 < 0;
@@ -100,25 +100,25 @@ double GibbsSampler::getGibbsMass(const MatrixChange &change)
     // calculate mean and standard deviation
     alphaParam.s *= mAnnealingTemp / 2.0;
     alphaParam.su *= mAnnealingTemp / 2.0;
-    double lambda = change.label == 'A' ? mADomain.lambda() : mPDomain.lambda();
-    double mean  = (2.0 * alphaParam.su - lambda) / (2.0 * alphaParam.s);
-    double sd = 1.0 / std::sqrt(2.0 * alphaParam.s);
+    float lambda = change.label == 'A' ? mADomain.lambda() : mPDomain.lambda();
+    float mean  = (2.0 * alphaParam.su - lambda) / (2.0 * alphaParam.s);
+    float sd = 1.0 / std::sqrt(2.0 * alphaParam.s);
 
     // note: is bounded below by zero so have to use inverse sampling!
     // based upon algorithm in DistScalarRmath.cc (scalarRandomSample)
-    double plower = gaps::random::p_norm(0.0, mean, sd);
-    double u = gaps::random::uniform(plower, 1.0);
+    float plower = gaps::random::p_norm(0.f, mean, sd);
+    float u = gaps::random::uniform(plower, 1.f);
 
     // if the likelihood is flat and nonzero, sample strictly from the prior
-    double newMass = 0.0;
-    if (plower == 1 || alphaParam.s < 1.e-5)
+    float newMass = 0.f;
+    if (plower == 1.f || alphaParam.s < 0.00001f)
     {
-        newMass = death ? std::abs(change.delta1) : 0.0;
+        newMass = death ? std::abs(change.delta1) : 0.f;
     }
-    else if (plower >= 0.99)
+    else if (plower >= 0.99f)
     {
-        double tmp1 = gaps::random::d_norm(0, mean, sd);
-        double tmp2 = gaps::random::d_norm(10 * lambda, mean, sd);
+        float tmp1 = gaps::random::d_norm(0.f, mean, sd);
+        float tmp2 = gaps::random::d_norm(10.f * lambda, mean, sd);
 
         if (tmp1 > EPSILON && std::abs(tmp1 - tmp2) < EPSILON)
         {
@@ -133,10 +133,10 @@ double GibbsSampler::getGibbsMass(const MatrixChange &change)
     newMass = (change.label == 'A' ? std::min(newMass, mMaxGibbsMassA)
         : std::min(newMass, mMaxGibbsMassP));
 
-    return std::max(newMass, 0.0);
+    return std::max(newMass, 0.f);
 }
 
-double GibbsSampler::computeDeltaLL(const MatrixChange &change)
+float GibbsSampler::computeDeltaLL(const MatrixChange &change)
 {
     return gaps::algo::deltaLL(change, mDMatrix, mSMatrix, mAMatrix,
         mPMatrix, mAPMatrix);
@@ -178,26 +178,26 @@ uint64_t GibbsSampler::totalNumAtoms(char matrixLabel) const
     return matrixLabel == 'A' ? mADomain.numAtoms() : mPDomain.numAtoms();
 }
 
-void GibbsSampler::setChi2(double chi2)
+void GibbsSampler::setChi2(float chi2)
 {
     mChi2 = chi2;
 }
 
-double GibbsSampler::chi2() const
+float GibbsSampler::chi2() const
 {
     return mChi2;
 }
 
-void GibbsSampler::setAnnealingTemp(double temp)
+void GibbsSampler::setAnnealingTemp(float temp)
 {
     mAnnealingTemp = temp;
 }
 
 bool GibbsSampler::evaluateChange(AtomicSupport &domain,
-const AtomicProposal &proposal, double threshold, bool accept)
+const AtomicProposal &proposal, float threshold, bool accept)
 {
     MatrixChange change = domain.getMatrixChange(proposal);
-    double delLL = computeDeltaLL(change);
+    float delLL = computeDeltaLL(change);
     if (accept || delLL * mAnnealingTemp >= threshold)
     {
         change = domain.acceptProposal(proposal);
@@ -209,23 +209,23 @@ const AtomicProposal &proposal, double threshold, bool accept)
     return false;
 }
 
-void GibbsSampler::updateAPMatrix_A(unsigned row, unsigned col, double delta)
+void GibbsSampler::updateAPMatrix_A(unsigned row, unsigned col, float delta)
 {
     const Vector &APvec = mAPMatrix.getRow(row);
     const Vector &Pvec = mPMatrix.getRow(col);
     for (unsigned j = 0; j < mAPMatrix.nCol(); ++j)
     {
-        mAPMatrix.set(row, j, APvec(j) + delta * Pvec(j));
+        mAPMatrix.set(row, j, APvec[j] + delta * Pvec[j]);
     }
 }
 
-void GibbsSampler::updateAPMatrix_P(unsigned row, unsigned col, double delta)
+void GibbsSampler::updateAPMatrix_P(unsigned row, unsigned col, float delta)
 {
     const Vector &APvec = mAPMatrix.getCol(col);
     const Vector &Avec = mAMatrix.getCol(row);
     for (unsigned i = 0; i < mAPMatrix.nRow(); ++i)
     {
-        mAPMatrix.set(i, col, APvec(i) + delta * Avec(i));
+        mAPMatrix.set(i, col, APvec[i] + delta * Avec[i]);
     }
 }
 
@@ -271,7 +271,7 @@ bool GibbsSampler::death(AtomicSupport &domain, AtomicProposal &proposal)
 
     // rebirth
     MatrixChange ch = domain.getMatrixChange(proposal);
-    double newMass = canUseGibbs(ch) ? getGibbsMass(ch) : 0.0;
+    float newMass = canUseGibbs(ch) ? getGibbsMass(ch) : 0.0;
     proposal.delta1 = newMass < EPSILON ? -proposal.delta1 : newMass;    
 
     // attempt to accept rebirth
@@ -309,11 +309,11 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
     uint64_t pos1 = proposal.delta1 > 0 ? proposal.pos1 : proposal.pos2;
     uint64_t pos2 = proposal.delta1 > 0 ? proposal.pos2 : proposal.pos1;
 
-    double mass1 = domain.at(pos1);
-    double mass2 = domain.at(pos2);
+    float mass1 = domain.at(pos1);
+    float mass2 = domain.at(pos2);
 
-    double newMass1 = mass1 + std::max(proposal.delta1, proposal.delta2);
-    double newMass2 = mass2 + std::min(proposal.delta1, proposal.delta2);
+    float newMass1 = mass1 + std::max(proposal.delta1, proposal.delta2);
+    float newMass2 = mass2 + std::min(proposal.delta1, proposal.delta2);
 
     unsigned row1 = change.delta1 > 0 ? change.row1 : change.row2;
     unsigned row2 = change.delta1 > 0 ? change.row2 : change.row1;
@@ -337,14 +337,14 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
 
         if (alphaParam.s > EPSILON)
         {
-            double mean = alphaParam.su / alphaParam.s;
-            double sd = 1.0 / std::sqrt(alphaParam.s);
+            float mean = alphaParam.su / alphaParam.s;
+            float sd = 1.f / std::sqrt(alphaParam.s);
 
-            double plower = gaps::random::p_norm(-mass1, mean, sd);
-            double pupper = gaps::random::p_norm(mass2, mean, sd);
-            double u = gaps::random::uniform(plower, pupper);
+            float plower = gaps::random::p_norm(-mass1, mean, sd);
+            float pupper = gaps::random::p_norm(mass2, mean, sd);
+            float u = gaps::random::uniform(plower, pupper);
 
-            if (!(plower >  0.95 || pupper < 0.05))
+            if (!(plower >  0.95f || pupper < 0.05f))
             {
                 proposal.delta1 = gaps::random::q_norm(u, mean, sd);
                 proposal.delta1 = std::max(proposal.delta1, -mass1);
@@ -358,11 +358,11 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
         }
     }
 
-    double pnewMass = mass1 > mass2 ? newMass1 : newMass2;
-    double poldMass = newMass1 > newMass2 ? mass1 : mass2;
+    float pnewMass = mass1 > mass2 ? newMass1 : newMass2;
+    float poldMass = newMass1 > newMass2 ? mass1 : mass2;
 
-    double pnew = gaps::random::d_gamma(pnewMass, 2.0, 1.0 / domain.lambda());
-    double pold = gaps::random::d_gamma(poldMass, 2.0, 1.0 / domain.lambda());
+    float pnew = gaps::random::d_gamma(pnewMass, 2.0, 1.f / domain.lambda());
+    float pold = gaps::random::d_gamma(poldMass, 2.0, 1.f / domain.lambda());
 
     proposal.pos1 = pos1;
     proposal.delta1 = newMass1 - mass1;
@@ -375,7 +375,7 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
     }
     else
     {
-        double priorLL = pold == 0.0 ? 0.0 : log(pnew / pold);
+        float priorLL = pold == 0.0 ? 0.0 : log(pnew / pold);
         return evaluateChange(domain, proposal, std::log(gaps::random::uniform())
             - priorLL);
     }
@@ -412,28 +412,28 @@ void GibbsSampler::updateStatistics()
         
     for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
     {
-        normVec(r) = gaps::algo::sum(mPMatrix.getRow(r));
-        if (normVec(r) == 0)
+        normVec[r] = gaps::algo::sum(mPMatrix.getRow(r));
+        if (normVec[r] == 0)
         {
-            normVec(r) = 1.0;
+            normVec[r] = 1.0;
         }
     }
 
     for (unsigned c = 0; c < mAMeanMatrix.nCol(); ++c)
     {
         mAMeanMatrix.getCol(c) += gaps::algo::scalarMultiple(mAMatrix.getCol(c),
-            normVec(c));
+            normVec[c]);
 
         mAStdMatrix.getCol(c) += gaps::algo::squaredScalarMultiple(mAMatrix.getCol(c),
-            normVec(c));
+            normVec[c]);
     }
 
     for (unsigned r = 0; r < mPMeanMatrix.nRow(); ++r)
     {
         mPMeanMatrix.getRow(r) += gaps::algo::scalarDivision(mPMatrix.getRow(r),
-            normVec(r));
+            normVec[r]);
 
         mPStdMatrix.getRow(r) += gaps::algo::squaredScalarDivision(mPMatrix.getRow(r),
-            normVec(r));
+            normVec[r]);
     }
 }

@@ -2,11 +2,11 @@
 
 #include <stdexcept>
 
-static const double EPSILON = 1.e-10;
+static const float EPSILON = 1.e-10;
 
 /******************************** HELPER *******************************/
 
-static void updateHelper(double& val, double delta)
+static void updateHelper(float& val, float delta)
 {
     val += delta;
     if (std::abs(val) < EPSILON)
@@ -46,7 +46,7 @@ RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
         mRows.push_back(Vector(mNumCols));
         for (unsigned j = 0; j < mNumCols; ++j)
         {
-            mRows[i](j) = rmat(i,j);
+            this->operator()(i,j) = rmat(i,j);
         }
     }
 }
@@ -97,7 +97,7 @@ void Vector::operator+=(const Vector &vec)
 {
     for (unsigned i = 0; i < size(); ++i)
     {
-        mValues[i] += vec(i);
+        mValues[i] += vec[i];
     }
 }
 
@@ -120,7 +120,7 @@ ColMatrix::ColMatrix(const Rcpp::NumericMatrix &rmat)
         mCols.push_back(Vector(mNumRows));
         for (unsigned i = 0; i < mNumRows; ++i)
         {
-            mCols[j](i) = rmat(i,j);
+            this->operator()(i,j) = rmat(i,j);
         }
     }
 }

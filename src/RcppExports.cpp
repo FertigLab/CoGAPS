@@ -6,7 +6,7 @@
 using namespace Rcpp;
 
 // cogaps
-Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix, unsigned nFactor, double alphaA, double alphaP, unsigned nEquil, unsigned nEquilCool, unsigned nSample, double maxGibbsMassA, double maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns, char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq, unsigned numOutputs, unsigned numSnapshots);
+Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix, unsigned nFactor, float alphaA, float alphaP, unsigned nEquil, unsigned nEquilCool, unsigned nSample, float maxGibbsMassA, float maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns, char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq, unsigned numOutputs, unsigned numSnapshots);
 RcppExport SEXP _CoGAPS_cogaps(SEXP DMatrixSEXP, SEXP SMatrixSEXP, SEXP nFactorSEXP, SEXP alphaASEXP, SEXP alphaPSEXP, SEXP nEquilSEXP, SEXP nEquilCoolSEXP, SEXP nSampleSEXP, SEXP maxGibbsMassASEXP, SEXP maxGibbsMassPSEXP, SEXP fixedPatternsSEXP, SEXP whichMatrixFixedSEXP, SEXP seedSEXP, SEXP messagesSEXP, SEXP singleCellRNASeqSEXP, SEXP numOutputsSEXP, SEXP numSnapshotsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -14,13 +14,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type DMatrix(DMatrixSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type SMatrix(SMatrixSEXP);
     Rcpp::traits::input_parameter< unsigned >::type nFactor(nFactorSEXP);
-    Rcpp::traits::input_parameter< double >::type alphaA(alphaASEXP);
-    Rcpp::traits::input_parameter< double >::type alphaP(alphaPSEXP);
+    Rcpp::traits::input_parameter< float >::type alphaA(alphaASEXP);
+    Rcpp::traits::input_parameter< float >::type alphaP(alphaPSEXP);
     Rcpp::traits::input_parameter< unsigned >::type nEquil(nEquilSEXP);
     Rcpp::traits::input_parameter< unsigned >::type nEquilCool(nEquilCoolSEXP);
     Rcpp::traits::input_parameter< unsigned >::type nSample(nSampleSEXP);
-    Rcpp::traits::input_parameter< double >::type maxGibbsMassA(maxGibbsMassASEXP);
-    Rcpp::traits::input_parameter< double >::type maxGibbsMassP(maxGibbsMassPSEXP);
+    Rcpp::traits::input_parameter< float >::type maxGibbsMassA(maxGibbsMassASEXP);
+    Rcpp::traits::input_parameter< float >::type maxGibbsMassP(maxGibbsMassPSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type fixedPatterns(fixedPatternsSEXP);
     Rcpp::traits::input_parameter< char >::type whichMatrixFixed(whichMatrixFixedSEXP);
     Rcpp::traits::input_parameter< int >::type seed(seedSEXP);

@@ -49,7 +49,7 @@ TEST_CASE("Test AtomicSupport.h")
             REQUIRE(change.delta1 == prop.delta1);
             REQUIRE(change.delta2 == prop.delta2);
 
-            double oldMass = domain.totalMass();
+            float oldMass = domain.totalMass();
 
             uint64_t nOld = domain.numAtoms();
 
@@ -166,7 +166,7 @@ TEST_CASE("Internal AtomicSupport Tests")
 
 /*    SECTION("updateAtomMass")
     {
-        double oldMass = 0.0;
+        float oldMass = 0.0;
         uint64_t posA = 0, posP = 0;
         for (unsigned i = 0; i < 1000; ++i)
         {
