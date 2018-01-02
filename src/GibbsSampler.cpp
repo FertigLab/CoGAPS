@@ -99,15 +99,6 @@ void GibbsSampler::update(char matrixLabel)
     // get proposal and convert to a matrix update
     AtomicProposal proposal = domain.makeProposal();
 
-    /*if (proposal.type == 'M' || proposal.type == 'E')
-    {
-        AtomicProposal temp = proposal;
-        proposal.pos1 = temp.pos1 < temp.pos2 ? temp.pos1 : temp.pos2;
-        proposal.delta1 = temp.pos1 < temp.pos2 ? temp.delta1 : temp.delta2;
-        proposal.pos2 = temp.pos1 < temp.pos2 ? temp.pos2 : temp.pos1;
-        proposal.delta2 = temp.pos1 < temp.pos2 ? temp.delta2 : temp.delta1;
-    }*/
-
     // Update based on the proposal type
     switch (proposal.type)
     {
