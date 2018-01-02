@@ -21,9 +21,9 @@ unsigned numSnapshots);
 
 // [[Rcpp::export]]
 Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
-unsigned nFactor, double alphaA, double alphaP, unsigned nEquil,
-unsigned nEquilCool, unsigned nSample, double maxGibbsMassA,
-double maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns,
+unsigned nFactor, float alphaA, float alphaP, unsigned nEquil,
+unsigned nEquilCool, unsigned nSample, float maxGibbsMassA,
+float maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns,
 char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq,
 unsigned numOutputs, unsigned numSnapshots)
 {
@@ -92,13 +92,13 @@ unsigned& nIterA, unsigned& nIterP, Vector& chi2Vec, Vector& aAtomVec,
 Vector& pAtomVec, GapsPhase phase, unsigned numOutputs, bool messages,
 unsigned numSnapshots)
 {
-    double tempDenom = (double)nIterTotal / 2.0;
+    float tempDenom = (float)nIterTotal / 2.f;
 
     for (unsigned i = 0; i < nIterTotal; ++i)
     {
         if (phase == GAPS_CALIBRATION)
         {
-            sampler.setAnnealingTemp(std::min(((double)i + 2.0) / tempDenom, 1.0));
+            sampler.setAnnealingTemp(std::min(((float)i + 2.f) / tempDenom, 1.f));
         }
 
         for (unsigned j = 0; j < nIterA; ++j)
@@ -121,11 +121,11 @@ unsigned numSnapshots)
             }
         }
 
-        double numAtomsA = sampler.totalNumAtoms('A');
-        double numAtomsP = sampler.totalNumAtoms('P');
-        aAtomVec(i) = numAtomsA;
-        pAtomVec(i) = numAtomsP;
-        chi2Vec(i) = sampler.chi2();
+        float numAtomsA = sampler.totalNumAtoms('A');
+        float numAtomsP = sampler.totalNumAtoms('P');
+        aAtomVec[i] = numAtomsA;
+        pAtomVec[i] = numAtomsP;
+        chi2Vec[i] = sampler.chi2();
 
         if (phase != GAPS_COOLING)
         {
@@ -137,8 +137,8 @@ unsigned numSnapshots)
                     << sampler.chi2() << '\n';
             }
 
-            nIterA = gaps::random::poisson(std::max(numAtomsA, 10.0));
-            nIterP = gaps::random::poisson(std::max(numAtomsP, 10.0));
+            nIterA = gaps::random::poisson(std::max(numAtomsA, 10.f));
+            nIterP = gaps::random::poisson(std::max(numAtomsP, 10.f));
         }
     }
 }

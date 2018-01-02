@@ -27,31 +27,31 @@ void gaps::random::setSeed(uint32_t seed)
     rng.seed(seed);
 }
 
-double gaps::random::normal(double mean, double var)
+float gaps::random::normal(float mean, float var)
 {
-    boost::random::normal_distribution<double> dist(mean, var);
+    boost::random::normal_distribution<float> dist(mean, var);
     return dist(rng);
 }
 
-int gaps::random::poisson(double lambda)
+int gaps::random::poisson(float lambda)
 {
     boost::random::poisson_distribution<> dist(lambda);
     return dist(rng);
 }
 
-double gaps::random::exponential(double lambda)
+float gaps::random::exponential(float lambda)
 {
     boost::random::exponential_distribution<> dist(lambda);
     return dist(rng);
 }
 
-double gaps::random::uniform()
+float gaps::random::uniform()
 {
     boost::random::uniform_01<RNGType&> dist(rng); // could be moved out
     return dist();
 }
 
-double gaps::random::uniform(double a, double b)
+float gaps::random::uniform(float a, float b)
 {
     if (a == b)
     {
@@ -84,19 +84,19 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     }
 }
 
-double gaps::random::d_gamma(double d, double shape, double scale)
+float gaps::random::d_gamma(float d, float shape, float scale)
 {
     boost::math::gamma_distribution<> gam(shape, scale);
     return pdf(gam, d);
 }
 
-double gaps::random::p_gamma(double p, double shape, double scale)
+float gaps::random::p_gamma(float p, float shape, float scale)
 {
     boost::math::gamma_distribution<> gam(shape, scale);
     return cdf(gam, p);
 }
 
-double gaps::random::q_gamma(double q, double shape, double scale)
+float gaps::random::q_gamma(float q, float shape, float scale)
 {
     if (q < Q_GAMMA_THRESHOLD)
     {
@@ -109,19 +109,19 @@ double gaps::random::q_gamma(double q, double shape, double scale)
     }
 }
 
-double gaps::random::d_norm(double d, double mean, double sd)
+float gaps::random::d_norm(float d, float mean, float sd)
 {
     boost::math::normal_distribution<> norm(mean, sd);
     return pdf(norm, d);
 }
 
-double gaps::random::q_norm(double q, double mean, double sd)
+float gaps::random::q_norm(float q, float mean, float sd)
 {
     boost::math::normal_distribution<> norm(mean, sd);
     return quantile(norm, q);
 }
 
-double gaps::random::p_norm(double p, double mean, double sd)
+float gaps::random::p_norm(float p, float mean, float sd)
 {
     boost::math::normal_distribution<> norm(mean, sd);
     return cdf(norm, p);

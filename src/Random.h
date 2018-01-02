@@ -11,22 +11,22 @@ namespace random
 {
     void setSeed(uint32_t seed);
 
-    int poisson(double lambda);
+    int poisson(float lambda);
     int uniformInt(int a, int b);
     uint64_t uniform64();
     uint64_t uniform64(uint64_t a, uint64_t b);
 
-    double uniform();
-    double uniform(double a, double b);
-    double normal(double mean, double var);
-    double exponential(double lambda);
+    float uniform();
+    float uniform(float a, float b);
+    float normal(float mean, float var);
+    float exponential(float lambda);
 
-    double d_gamma(double d, double shape, double scale);
-    double p_gamma(double p, double shape, double scale);
-    double q_gamma(double q, double shape, double scale);
-    double d_norm(double d, double mean, double sd);
-    double q_norm(double q, double mean, double sd);
-    double p_norm(double p, double mean, double sd);
+    float d_gamma(float d, float shape, float scale);
+    float p_gamma(float p, float shape, float scale);
+    float q_gamma(float q, float shape, float scale);
+    float d_norm(float d, float mean, float sd);
+    float q_norm(float q, float mean, float sd);
+    float p_norm(float p, float mean, float sd);
 }
 
 }
