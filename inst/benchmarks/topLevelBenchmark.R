@@ -10,20 +10,15 @@ print(packageVersion('CoGAPS'))
 
 # benchmark dimensions
 
-#M_dimensions <- c(10, 25, 50, 100, 250, 500, 750, 1000, 2500, 5000)
-#N_dimensions <- c(10, 25, 50, 100, 250, 500, 750, 1000, 2500, 5000)
-#nFactor_dimensions <- c(3, 5, 7, 10, 15, 20, 25, 30, 40, 50, 75, 100)
-#nIter_dimensions <- c(1000, 1250, 1500, 1750, 2000, 2500, 3000, 4000, 5000)
+M_dimensions <- c(10, 25, 50, 100, 250, 500, 750, 1000, 2500, 5000)
+N_dimensions <- c(10, 25, 50, 100, 250, 500, 750, 1000, 2500, 5000)
+nFactor_dimensions <- c(3, 5, 7, 10, 15, 20, 25, 30, 40, 50, 75, 100)
+nIter_dimensions <- c(1000, 1250, 1500, 1750, 2000, 2500, 3000, 4000, 5000)
 
-M_dimensions <- c(10, 25) #, 50)
-N_dimensions <- c(10, 25) #, 50)
-nFactor_dimensions <- c(3, 5) #, 7)
-nIter_dimensions <- c(250, 500) #, 1250, 1500)
-
-M_default <- 100
-N_default <- 100
-nFactor_default <- 7
-nIter_default <- 1000
+M_default <- floor(median(M_dimensions))
+N_default <- floor(median(N_dimensions))
+nFactor_default <- floor(median(nFactor_dimensions))
+nIter_default <- floor(median(nIter_default))
 
 seed_default <- 12345
 reps_default <- 5
