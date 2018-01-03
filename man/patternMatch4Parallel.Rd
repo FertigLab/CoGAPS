@@ -34,3 +34,4 @@ patternMatch4Parallel
 \seealso{
 \code{\link{agnes}}
 }
+

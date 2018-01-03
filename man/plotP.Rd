@@ -16,3 +16,4 @@ plotP(PMean_Mat, P_SD)
 \code{plotP} plots the P matrix in a line plot
 with error bars
 }
+
