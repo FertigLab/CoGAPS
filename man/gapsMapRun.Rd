@@ -8,7 +8,7 @@ the data matrix; as opposed to gapsRun, this method takes an
 additional input specifying set patterns in the P matrix}
 \usage{
 gapsMapRun(D, S, FP, ABins = data.frame(), PBins = data.frame(),
-  nFactor = 5, simulation_id = "simulation", nEquil = 1000,
+  nFactor = 7, simulation_id = "simulation", nEquil = 1000,
   nSample = 1000, nOutR = 1000, output_atomic = FALSE,
   fixedMatrix = "P", fixedBinProbs = FALSE, fixedDomain = "N",
   sampleSnapshots = TRUE, numSnapshots = 100, alphaA = 0.01,

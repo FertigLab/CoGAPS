@@ -1,19 +1,15 @@
-PKG_CPPFLAGS =
-OBJECTS =   AtomicSupport.o \
-            cogapsmapR.o \
-            cogapsmaptestR.o \
-            cogapsR.o \
-            cogapstestR.o \
-            GAPSNorm.o \
-            GibbsSampler-atomic.o \
-            GibbsSampler-init.o \
-            GibbsSampler-update.o \
-            GibbsSampler-util.o \
-            GibbsSamplerMap.o \
+PKG_CPPFLAGS = 
+OBJECTS =   Algorithms.o \
+            AtomicSupport.o \
+            Cogaps.o \
+            GibbsSampler.o \
             Matrix.o \
-            MatAlgo.o \
             Random.o \
             RcppExports.o \
             test-runner.o \
+            cpp_tests/testAlgorithms.o \
+            cpp_tests/testAtomicSupport.o \
+            cpp_tests/testGibbsSampler.o \
             cpp_tests/testMatrix.o \
             cpp_tests/testRandom.o
+

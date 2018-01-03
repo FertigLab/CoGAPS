@@ -1,8 +1,12 @@
 library(CoGAPS)
 
+print(packageVersion('CoGAPS'))
+
 data(SimpSim)
 nIter <- 1000
-eat <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3, messages=FALSE, seed=12345)
+nFactor <- 7
+eat <- gapsRun(D=SimpSim.D, S=SimpSim.S, nEquil=nIter, nSample=nIter,
+    nFactor=nFactor, seed=12345)
 
 #data(GIST_TS_20084)
 #nIter <- 3000

@@ -38,8 +38,6 @@
 #' given in Abins and Pbins
 #'@param fixedDomain character to indicate whether A or P is
 #' domain for relative probabilities
-#'@param sampleSnapshots Boolean to indicate whether to capture
-#' individual samples from Markov chain during sampling
 #'@param numSnapshots the number of individual samples to capture
 #'@param alphaA sparsity parameter for A domain
 #'@param nMaxA PRESENTLY UNUSED, future = limit number of atoms
@@ -50,6 +48,9 @@
 #'@param seed Set seed for reproducibility. Positive values provide initial seed, negative values just use the time.
 #'@param messages Display progress messages
 #'@param singleCellRNASeq T/F indicating if the data is single cell RNA-seq data
+#'@param fixedPatterns matrix of fixed values in either A or P matrix
+#'@param whichMatrixFixed character to indicate whether A or P matrix
+#'  contains the fixed patterns
 #'@export
 
 #--CHANGES 1/20/15--
@@ -58,180 +59,82 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                     nFactor = 7, simulation_id = "simulation",
                     nEquil = 1000, nSample = 1000, nOutR = 1000,
                     output_atomic = FALSE, fixedBinProbs = FALSE,
-                    fixedDomain = "N", sampleSnapshots = TRUE,
-                    numSnapshots = 100, alphaA = 0.01,
+                    fixedDomain = "N", numSnapshots = 0, alphaA = 0.01,
                     nMaxA = 100000, max_gibbmass_paraA = 100.0,
                     alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0,
-                    seed=-1, messages=TRUE, singleCellRNASeq=FALSE)
+                    seed=-1, messages=TRUE, singleCellRNASeq=FALSE,
+                    fixedPatterns = matrix(0), whichMatrixFixed = 'N')
 {
-  #Begin data type error checking code
-  charDataErrors = c(!is.character(simulation_id), !is.character(fixedDomain))
-  charCheck = c("simulation_id", "fixedDomain")
+    # Floor the parameters that are integers to prevent allowing doubles.
+    nFactor <- floor(nFactor)
+    nEquil <- floor(nEquil)
+    nSample <- floor(nSample)
+    nOutR <- floor(nOutR)
+    numSnapshots <- floor(numSnapshots)
+    nMaxA <- floor(nMaxA)
+    nMaxP <- floor(nMaxP)
 
-  boolDataErrors = c(!is.logical(output_atomic), !is.logical(fixedBinProbs), !is.logical(sampleSnapshots))
-  boolCheck = c("output_atomic", "fixedBinProbs", "sampleSnapshots")
-
-  numericDataErrors = c(!is.numeric(nFactor), !is.numeric(nEquil), !is.numeric(nSample), !is.numeric(nOutR), !is.numeric(numSnapshots),
-                        !is.numeric(alphaA), !is.numeric(nMaxA), !is.numeric(max_gibbmass_paraA), !is.numeric(alphaP),
-                        !is.numeric(nMaxP), !is.numeric(max_gibbmass_paraP))
-  numericCheck = c("nFactor", "nEquil", "nSample", "nOutR", "numSnapshots", "alphaA", "nMaxA",
-                   "max_gibbmass_paraA", "alphaP",    "nMaxP", "max_gibbmass_paraP")
-
-  dataFrameErrors = c(!is.data.frame(D), !is.data.frame(S), !is.data.frame(ABins), !is.data.frame(PBins))
-  dataFrameCheck = c("D", "S", "ABins", "PBins")
-
-  matrixErrors = c(!is.matrix(D), !is.matrix(S), !is.matrix(ABins), !is.matrix(PBins))
-
-  if(any(charDataErrors))
-  {
-    #Check which of these is not a string
-    for(i in 1:length(charDataErrors))
+    # check the fixed patterns
+    if ((whichMatrixFixed == 'A' & nrow(fixedPatterns) != nrow(D))
+    | (whichMatrixFixed == 'P' & nrow(fixedPatterns) > nFactor)) 
     {
-      if(charDataErrors[i] == TRUE)
-      {
-        stop(paste("Error in gapsRun: Argument",charCheck[i],"is of the incorrect type. Please see documentation for details."))
-      }
+        stop('invalid number of rows in fixed pattern matrix')
     }
-  }
-
-  if(any(boolDataErrors))
-  {
-    #Check which of these is not a boolean
-    for(i in 1:length(boolDataErrors))
+    if ((whichMatrixFixed == 'A' & ncol(fixedPatterns) > nFactor)
+    | (whichMatrixFixed == 'P' & ncol(fixedPatterns) != ncol(D))) 
     {
-      if(boolDataErrors[i] == TRUE)
-      {
-        stop(paste("Error in gapsRun: Argument",boolCheck[i],"is of the incorrect type. Please see documentation for details."))
-      }
+        stop('invalid number of cols in fixed pattern matrix')
     }
-  }
 
-  if(any(numericDataErrors))
-  {
-    #Check which of these is not an integer/double
-    for(i in 1:length(numericDataErrors))
+    geneNames <- rownames(D);
+    sampleNames <- colnames(D);
+
+    # label patterns as Patt N
+    patternNames <- c("0");
+    for(i in 1:nFactor)
     {
-      if(numericDataErrors[i] == TRUE)
-      {
-        stop(paste("Error in gapsRun: Argument",numericCheck[i],"is of the incorrect type. Please see documentation for details."))
-
-      }
+        patternNames[i] <- paste('Patt', i);
     }
-  }
 
-  #At least one of A, P, ABins, or PBins is not a matrix or data.frame
-  if(any((dataFrameErrors[1] && matrixErrors[1]), (dataFrameErrors[2] && matrixErrors[2]), (dataFrameErrors[3] && matrixErrors[3]), (dataFrameErrors[4] && matrixErrors[4])))
-  {
-    for(i in 1:length(dataFrameCheck))
+    # call to C++ Rcpp code
+    cogapResult <- cogaps(as.matrix(D), as.matrix(S), nFactor, alphaA, alphaP,
+        nEquil, floor(nEquil/10), nSample, max_gibbmass_paraA, max_gibbmass_paraP,
+        fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq,
+        nOutR, numSnapshots)
+
+    # convert returned files to matrices to simplify visualization and processing
+    cogapResult$Amean <- as.matrix(cogapResult$Amean);
+    cogapResult$Asd <- as.matrix(cogapResult$Asd);
+    cogapResult$Pmean <- as.matrix(cogapResult$Pmean);
+    cogapResult$Psd <- as.matrix(cogapResult$Psd);
+
+    ## label matrices
+    colnames(cogapResult$Amean) <- patternNames;
+    rownames(cogapResult$Amean) <- geneNames;
+    colnames(cogapResult$Asd) <- patternNames;
+    rownames(cogapResult$Asd) <- geneNames;
+    colnames(cogapResult$Pmean) <- sampleNames;
+    rownames(cogapResult$Pmean) <- patternNames;
+    colnames(cogapResult$Psd) <- sampleNames;
+    rownames(cogapResult$Psd) <- patternNames;
+
+    ## calculate chi-squared of mean, this should be smaller than individual
+    ## chi-squared sample values if sampling is good
+    calcChiSq <- c(0);
+    MMatrix <- (cogapResult$Amean %*% cogapResult$Pmean);
+
+    for(i in 1:(nrow(MMatrix)))
     {
-      if((dataFrameErrors[i] && matrixErrors[i]) == TRUE)
-      {
-        stop(paste("Error in gapsRun: Argument",dataFrameCheck[i],"is not a matrix or data.frame. Please see documentation for details."))
-
-      }
+        for(j in 1:(ncol(MMatrix)))
+        {
+            calcChiSq <- calcChiSq + ((D[i,j] - MMatrix[i,j])/S[i,j])^2;
+        }
     }
-  }
 
-  #Floor the parameters that are integers to prevent allowing doubles.
-  nFactor = floor(nFactor)
-  nEquil = floor(nEquil)
-  nSample = floor(nSample)
-  nOutR = floor(nOutR)
-  numSnapshots = floor(numSnapshots)
-  nMaxA = floor(nMaxA)
-  nMaxP = floor(nMaxP)
+    cogapResult = c(cogapResult, calcChiSq);
+    
+    # names(cogapResult)[13] <- "meanChi2";
 
-
-  # pass all settings to C++ within a list
-  #    if (is.null(P)) {
-  Config = c(simulation_id, output_atomic, fixedBinProbs, fixedDomain, sampleSnapshots);
-
-  ConfigNums = c(nFactor, nEquil, nSample, nOutR, alphaA, nMaxA, max_gibbmass_paraA,
-                 alphaP, nMaxP, max_gibbmass_paraP, numSnapshots);
-
-  #Begin logic error checking code
-
-  #Check for negative or zero arguments
-  if(any(ConfigNums <= 0))
-  {
-    stop("Error in gapsRun: Numeric Arguments must be strictly positive.")
-  }
-
-  #Check for nonsensical inputs (such as numSnapshots < nEquil or nSample)
-  if((numSnapshots > nEquil) || (numSnapshots > nSample))
-  {
-    stop("Error in gapsRun: Cannot have more snapshots of A and P than equilibration and/or sampling iterations.")
-  }
-
-  if((nOutR > nEquil) || (nOutR > nSample))
-  {
-    stop("Error in gapsRun: Cannot have more output steps than equilibration and/or sampling iterations.")
-  }
-
-  if(nFactor > (ncol(D)))
-  {
-    warning("Warning in gapsRun: Number of requested patterns greater than columns of Data Matrix.")
-  }
-
-  #        P <- as.data.frame(matrix(nrow=1,c(1,1,1))) # make something to pass
-  #    } else {
-  #        Config = c(nFactor, simulation_id, nEquil, nSample, nOutR,
-  #        output_atomic, alphaA, nMaxA, max_gibbmass_paraA, lambdaA_scale_factor,
-  #        alphaP, nMaxP, max_gibbmass_paraP, lambdaP_scale_factor, 1)
-
-  #   }
-
-
-  geneNames = rownames(D);
-  sampleNames = colnames(D);
-
-  # label patterns as Patt N
-  patternNames = c("0");
-  for(i in 1:nFactor)
-  {
-    patternNames[i] = paste('Patt', i);
-  }
-
-  # call to C++ Rcpp code
-  cogapResult = cogaps(D, S, ABins, PBins, Config, ConfigNums, seed, messages,
-    singleCellRNASeq);
-
-  # convert returned files to matrices to simplify visualization and processing
-  #cogapResult$Amean = as.matrix(cogapResult$Amean);
-  #cogapResult$Asd = as.matrix(cogapResult$Asd);
-  #cogapResult$Pmean = as.matrix(cogapResult$Pmean);
-  #cogapResult$Psd = as.matrix(cogapResult$Psd);
-#
-  ## label matrices
-  #colnames(cogapResult$Amean) = patternNames;
-  #rownames(cogapResult$Amean) = geneNames;
-  #colnames(cogapResult$Asd) = patternNames;
-  #rownames(cogapResult$Asd) = geneNames;
-  #colnames(cogapResult$Pmean) = sampleNames;
-  #rownames(cogapResult$Pmean) = patternNames;
-  #colnames(cogapResult$Psd) = sampleNames;
-  #rownames(cogapResult$Psd) = patternNames;
-#
-  ## calculate chi-squared of mean, this should be smaller than individual
-  ## chi-squared sample values if sampling is good
-  #calcChiSq = c(0);
-  #MMatrix = (cogapResult$Amean %*% cogapResult$Pmean);
-#
-#
-  #for(i in 1:(nrow(MMatrix)))
-  #{
-  #  for(j in 1:(ncol(MMatrix)))
-  #  {
-  #    calcChiSq = (calcChiSq) + ((D[i,j] - MMatrix[i,j])/(S[i,j]))^(2);
-  #  }
-  #}
-#
-  #cogapResult = c(cogapResult, calcChiSq);
-#
-  #names(cogapResult)[13] = "meanChi2";
-#
-  #if (messages)
-  #  message(paste("Chi-Squared of Mean:",calcChiSq))
-
-  return(cogapResult);
+    message(paste("Chi-Squared of Mean:", calcChiSq))
+    return(cogapResult);
 }

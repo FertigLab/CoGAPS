@@ -1,22 +1,95 @@
 #include "catch.h"
 #include "../Matrix.h"
 
-#include <algorithm>
-#include <cmath>
-
-TEST_CASE("Test Matrix")
+TEST_CASE("Test Matrix.h")
 {
-    double row1[3] = { 1.0,  2.0,  3.0};
-    double row2[3] = {-4.0,  5.0, -6.0};
-    double row3[3] = { 7.0, -8.0,  9.0};
+    SECTION("Matrix/Vector Initialization")
+    {
+        Vector v(10);
+        RowMatrix rm(10, 25);
+        ColMatrix cm(10, 25);
+        TwoWayMatrix twm(10, 25);
 
-    std::vector< std::vector<double> > data;
-    data.push_back(std::vector<double>(row1, row1 + 3));
-    data.push_back(std::vector<double>(row2, row2 + 3));
-    data.push_back(std::vector<double>(row3, row3 + 3));
-    
-    Matrix testMat (data);
-    REQUIRE(testMat.nRow() == 3);
-    REQUIRE(testMat.nCol() == 3);
+        REQUIRE(v.size() == 10);
+        REQUIRE(rm.nRow() == 10);
+        REQUIRE(rm.nCol() == 25);
+        REQUIRE(cm.nRow() == 10);
+        REQUIRE(cm.nCol() == 25);
+        REQUIRE(twm.nRow() == 10);
+        REQUIRE(twm.nCol() == 25);
+    }
+
+    SECTION("Matrix Initialization from R Matrix")
+    {
+        Rcpp::Function asMatrix("as.matrix");
+        Rcpp::Environment pkgEnv;
+        pkgEnv = Rcpp::Environment::namespace_env("CoGAPS");
+        Rcpp::NumericMatrix rD = asMatrix(pkgEnv.find("GIST.D"));
+        Rcpp::NumericMatrix rS = asMatrix(pkgEnv.find("GIST.D"));
+
+        REQUIRE(rD.nrow() == 1363);
+        REQUIRE(rD.ncol() == 9);
+
+        REQUIRE(rS.nrow() == 1363);
+        REQUIRE(rS.ncol() == 9);
+
+        RowMatrix rmD(rD);
+        RowMatrix rmS(rS);
+
+        ColMatrix cmD(rD);
+        ColMatrix cmS(rS);
+
+        TwoWayMatrix twmD(rD);
+        TwoWayMatrix twmS(rS);
+
+        REQUIRE(rmD.nRow() == 1363);
+        REQUIRE(rmD.nCol() == 9);
+
+        REQUIRE(rmS.nRow() == 1363);
+        REQUIRE(rmS.nCol() == 9);
+
+        REQUIRE(cmD.nRow() == 1363);
+        REQUIRE(cmD.nCol() == 9);
+
+        REQUIRE(cmS.nRow() == 1363);
+        REQUIRE(cmS.nCol() == 9);
+
+        REQUIRE(twmD.nRow() == 1363);
+        REQUIRE(twmD.nCol() == 9);
+
+        REQUIRE(twmS.nRow() == 1363);
+        REQUIRE(twmS.nCol() == 9);
+    }
+
+    SECTION("Matrix Update")
+    {
+        RowMatrix rm(10, 25);
+        ColMatrix cm(10, 25);
+
+        rm.update(MatrixChange('A', 3, 4, 3.0));
+        cm.update(MatrixChange('P', 1, 2, 13.0));
+
+        REQUIRE(rm(3,4) == 3.0);
+        REQUIRE(cm(1,2) == 13.0);
+        REQUIRE(rm.getRow(3)(4) == 3.0);
+        REQUIRE(cm.getCol(2)(1) == 13.0);
+
+        rm.update(MatrixChange('A', 3, 4, 3.0));
+        cm.update(MatrixChange('P', 1, 2, 5.0));
+        
+        REQUIRE(rm(3,4) == 6.0);
+        REQUIRE(cm(1,2) == 18.0);
+        REQUIRE(rm.getRow(3)(4) == 6.0);
+        REQUIRE(cm.getCol(2)(1) == 18.0);
+    }
+
+    SECTION("TwoWayMatrix set")
+    {
+        TwoWayMatrix mat(100, 300);
+        mat.set(0,299,54.0);
+        
+        REQUIRE(mat.getRow(0)(299) == 54.0);
+        REQUIRE(mat.getCol(299)(0) == 54.0);
+    }
 }
 
