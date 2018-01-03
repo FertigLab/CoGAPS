@@ -73,3 +73,4 @@ matrix factorization returning the two matrices that reconstruct
 the data matrix and then calls calcCoGAPSStat to estimate gene set
 activity with nPerm set to 500
 }
+

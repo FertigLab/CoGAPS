@@ -33,3 +33,4 @@ patternMarkers(Amatrix=AP$Amean,scaledPmatrix=FALSE,Pmatrix=NA,threshold="All",f
 }
 
 }
+

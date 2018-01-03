@@ -16,3 +16,4 @@ reorderByPatternMatch(P, matchTo)
 \code{reorderByPatternMatch} plots the output A and P matrices as a
 heatmap and line plot respectively
 }
+
