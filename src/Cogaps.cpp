@@ -8,7 +8,7 @@ typedef std::vector<Rcpp::NumericMatrix> SnapshotList;
 
 enum GapsPhase
 {
-    GAPS_CALIBRATION,
+    GAPS_CALIBRATION=,
     GAPS_COOLING,
     GAPS_SAMPLING
 };
@@ -40,6 +40,8 @@ struct GapsInternalState
     SnapshotList snapshotsA;
     SnapshotList snapshotsP;
 
+    uint32_t seed;
+
     GapsInternalState(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
         unsigned nFactor, double alphaA, double alphaP, unsigned nE,
         unsigned nEC, unsigned nS, double maxGibbsMassA,
@@ -56,8 +58,6 @@ struct GapsInternalState
             whichMatrixFixed)
     {}
 
-    GibbsSampler ;
-
     GapsInternalState(std::ifstream &file)
         :
     {}
@@ -65,16 +65,121 @@ struct GapsInternalState
 
 };
 
+static void runGibbsSampler(GapsInternalState &state, unsigned nIterTotal,
+Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
+{
+    for (unsigned i = 0; i < nIterTotal; ++i)
+    {
+        if (state.phase == GAPS_CALIBRATION)
+        {
+            state.sampler.setAnnealingTemp(std::min(1.0,
+                ((double)i + 2.0) / ((double)state.nEquil / 2.0)));
+        }
+
+        for (unsigned j = 0; j < state.nIterA; ++j)
+        {
+            state.sampler.update('A');
+        }
+
+        for (unsigned j = 0; j < state.nIterP; ++j)
+        {
+            state.sampler.update('P');
+        }
+
+        if (state.phase == GAPS_SAMPLING)
+        {
+            state.sampler.updateStatistics();
+            if (state.numSnapshots > 0 && (i + 1) % (nIterTotal / state.numSnapshots) == 0)
+            {
+                state.snapshotsA.push_back(state.sampler.getNormedMatrix('A'));
+                state.snapshotsP.push_back(state.sampler.getNormedMatrix('P'));
+            }
+        }
+
+        if (phase != GAPS_COOLING)
+        {
+            double numAtomsA = state.sampler.totalNumAtoms('A');
+            double numAtomsP = state.sampler.totalNumAtoms('P');
+            aAtomVec(i) = numAtomsA;
+            pAtomVec(i) = numAtomsP;
+            chi2Vec(i) = state.sampler.chi2();
+
+            if ((i + 1) % state.numOutputs == 0 && state.messages)
+            {
+                std::string temp = state.phase == GAPS_CALIBRATION ? "Equil: "
+                    : "Samp: ";
+                std::cout << temp << i + 1 << " of " << nIterTotal
+                    << ", Atoms:" << numAtomsA << "(" << numAtomsP
+                    << ") Chi2 = " << state.sampler.chi2() << '\n';
+            }
+            state.nIterA = gaps::random::poisson(std::max(numAtomsA, 10.0));
+            state.nIterP = gaps::random::poisson(std::max(numAtomsP, 10.0));
+        }
+    }
+}
+
+static Rcpp::List runCogaps(GapsInternalState &state)
+{
+    if (state.phase == GAPS_CALIBRATION)
+    {
+        runGibbsSampler(state, state.nEquil, state.chi2VecEquil,
+            state.nAtomsAEquil, state.nAtomsPEquil)
+        state.phase = GAPS_COOLING;
+    }
+
+    if (state.phase == GAPS_COOLING)
+    {
+        Vector trash(1);
+        runGibbsSampler(state, state.nEquilCool, trash, trash, trash);
+        state.phase = GAPS_SAMPLING;
+    }
+
+    if (state.phase == GAPS_SAMPLING)
+    {
+        runGibbsSampler(state, state.nSample, state.chi2VecSample,
+            state.nAtomsASample, state.nAtomsPSample)
+    }
+
+    // combine chi2 vectors
+    Vector chi2Vec(state.chi2VecEquil);
+    chi2Vec.concat(state.chi2VecSample);
+
+    return Rcpp::List::create(
+        Rcpp::Named("Amean") = state.sampler.AMeanRMatrix(),
+        Rcpp::Named("Asd") = state.sampler.AStdRMatrix(),
+        Rcpp::Named("Pmean") = state.sampler.PMeanRMatrix(),
+        Rcpp::Named("Psd") = state.sampler.PStdRMatrix(),
+        Rcpp::Named("ASnapshots") = Rcpp::wrap(state.snapshotsA),
+        Rcpp::Named("PSnapshots") = Rcpp::wrap(state.snapshotsP),
+        Rcpp::Named("atomsAEquil") = state.nAtomsAEquil.rVec(),
+        Rcpp::Named("atomsASamp") = state.nAtomsASample.rVec(),
+        Rcpp::Named("atomsPEquil") = state.nAtomsPEquil.rVec(),
+        Rcpp::Named("atomsPSamp") = state.nAtomsPSample.rVec(),
+        Rcpp::Named("chiSqValues") = state.chi2Vec.rVec(),
+        Rcpp::Named("randSeed") = state.seed
+    );
+}
+
 // [[Rcpp::export]]
 Rcpp::List cogapsFromCheckpoint(const std::string &fileName)
 {   
     // open file
     std::ifstream file(fileName);
 
-    // seed random number generator
-
-    // load state from file and run
+    // verify magic number
+    uint32_t magicNum = 0;
+    file.read(reinterpret_cast<char*>(&magicNum), sizeof(uint32_t));
+    if (magicNum != 0xCE45D32A)
+    {
+        std::cout << "invalid checkpoint file" << std::endl;
+        return Rcpp::List::create();
+    }
+    
+    // seed random number generator and create internal state
+    gaps::random::load(file);
     GapsInternalState state(file);
+
+    // run cogaps from this internal state
     return runCogaps(state);
 }
 
@@ -97,105 +202,13 @@ unsigned numOutputs, unsigned numSnapshots)
     }
     gaps::random::setSeed(seedUsed);
 
+    // create internal state from parameters
     GapsInternalState state(DMatrix, SMatrix, nFactor, alphaA, alphaP,
         nEquil, nEquilCool, nSample, maxGibbsMassA, maxGibbsMassP,
         fixedPatterns, whichMatrixFixed, messages, singleCellRNASeq,
         numOutputs, numSnapshots);
+
+    // run cogaps from this internal state
     return runCogaps(state);
-}
-
-Rcpp::List runCogaps(GapsInternalState &state)
-{
-    // calibration phase
-    runGibbsSampler(sampler, nEquil, nIterA, nIterP, chi2Vec,
-        nAtomsAEquil, nAtomsPEquil, GAPS_CALIBRATION, numOutputs, messages,
-        numSnapshots);
-
-    // cooling phase
-    Vector trash(nEquilCool);
-    runGibbsSampler(sampler, nEquilCool, nIterA, nIterP, trash,
-        trash, trash, GAPS_COOLING, numOutputs, messages, numSnapshots);
-
-    // sampling phase
-    runGibbsSampler(sampler, nSample, nIterA, nIterP, chi2VecSample,
-        nAtomsASample, nAtomsPSample, GAPS_SAMPLING, numOutputs, messages,
-        numSnapshots);
-
-    // combine chi2 vectors
-    Vector chi2Vec(chi2VecEquil);
-    chi2Vec.concat(chi2VecSample);
-
-    return Rcpp::List::create(
-        Rcpp::Named("Amean") = sampler.AMeanRMatrix(),
-        Rcpp::Named("Asd") = sampler.AStdRMatrix(),
-        Rcpp::Named("Pmean") = sampler.PMeanRMatrix(),
-        Rcpp::Named("Psd") = sampler.PStdRMatrix(),
-        Rcpp::Named("ASnapshots") = Rcpp::wrap(snapshotsA),
-        Rcpp::Named("PSnapshots") = Rcpp::wrap(snapshotsP),
-        Rcpp::Named("atomsAEquil") = nAtomsAEquil.rVec(),
-        Rcpp::Named("atomsASamp") = nAtomsASample.rVec(),
-        Rcpp::Named("atomsPEquil") = nAtomsPEquil.rVec(),
-        Rcpp::Named("atomsPSamp") = nAtomsPSample.rVec(),
-        Rcpp::Named("chiSqValues") = chi2Vec.rVec(),
-        Rcpp::Named("randSeed") = seedUsed
-    );
-}
-
-static void runGibbsSampler(GibbsSampler &sampler, unsigned nIterTotal,
-unsigned& nIterA, unsigned& nIterP, Vector& chi2Vec, Vector& aAtomVec,
-Vector& pAtomVec, GapsPhase phase, unsigned numOutputs, bool messages,
-unsigned numSnapshots)
-{
-    double tempDenom = (double)nIterTotal / 2.0;
-
-    for (unsigned i = 0; i < nIterTotal; ++i)
-    {
-        // TODO check if checkpoint should be created
-
-        if (phase == GAPS_CALIBRATION)
-        {
-            sampler.setAnnealingTemp(std::min(((double)i + 2.0) / tempDenom, 1.0));
-        }
-
-        for (unsigned j = 0; j < nIterA; ++j)
-        {
-            sampler.update('A');
-        }
-
-        for (unsigned j = 0; j < nIterP; ++j)
-        {
-            sampler.update('P');
-        }
-
-        if (phase == GAPS_SAMPLING)
-        {
-            sampler.updateStatistics();
-            if (numSnapshots > 0 && (i + 1) % (nIterTotal / numSnapshots) == 0)
-            {
-                snapshotsA.push_back(sampler.getNormedMatrix('A'));
-                snapshotsP.push_back(sampler.getNormedMatrix('P'));
-            }
-        }
-
-        double numAtomsA = sampler.totalNumAtoms('A');
-        double numAtomsP = sampler.totalNumAtoms('P');
-        aAtomVec(i) = numAtomsA;
-        pAtomVec(i) = numAtomsP;
-        chi2Vec(i) = sampler.chi2();
-
-        if (phase != GAPS_COOLING)
-        {
-            if ((i + 1) % numOutputs == 0 && messages)
-            {
-                std::string temp = phase == GAPS_CALIBRATION ? "Equil: " : "Samp: ";
-                std::cout << temp << i + 1 << " of " << nIterTotal << ", Atoms:"
-                    << numAtomsA << "(" << numAtomsP << ") Chi2 = "
-                    << sampler.chi2() << '\n';
-            }
-
-            nIterA = gaps::random::poisson(std::max(numAtomsA, 10.0));
-            nIterP = gaps::random::poisson(std::max(numAtomsP, 10.0));
-        }
-    }
 }
 
