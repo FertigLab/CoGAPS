@@ -2,139 +2,106 @@
 #define __COGAPS_ATOMIC_SUPPORT_H__
 
 #include "Random.h"
+#include "Matrix.h"
 
 #include <map>
-#include <iostream>
 #include <fstream>
-#include <iomanip>
 #include <vector>
+#include <stdint.h>
 
-using std::map;
-using namespace std;
+struct AtomicProposal
+{
+    char label;
+    char type;
+    unsigned nChanges;
 
-namespace gaps {
+    uint64_t pos1;
+    double delta1;
 
-class AtomicSupport {
+    uint64_t pos2;
+    double delta2;
 
-  public:
-    AtomicSupport();
-    ~AtomicSupport();
+    AtomicProposal(char l, char t, uint64_t p1, double m1)
+        : label(l), type(t), nChanges(1), pos1(p1), delta1(m1), pos2(0), delta2(0.0)
+    {}
 
-    /**
-     * @short Initialize atoms into the atomic domain --
-        adding ONE atom to the location [loc] with mass (mass)
-     */
-    void initializeAtomic(unsigned int nBin, unsigned long long NatomLength,
-                          double alpha, double lambda, char atomic_domain_label);
-
-    void FixedBins_initializeAtomic(unsigned int nBin, unsigned long long NatomLength,
-                                    double alpha, double lambda, char atomic_domain_label,
-                                    std::vector<std::vector<double> > ReadBinProbs);
-
-    /**
-     * @short Find the bin to which the given location refers.
-     * @return Bin number.
-     */
-    unsigned int getBin(unsigned long long location);
-
-    unsigned long long getMidLocation(unsigned int iBin);
-
-    unsigned int getExpectedNAtom() {
-        return _alpha * _nBin;
-    }
-
-    map <unsigned long long, double> getDomain();
-
-    double get_atomicDomain_totalmass();
-
-    double getLambda();
-
-    /**
-     * @short Propose a change to the atomic domain
-       The first method to be called in the Gibbs Sampler.
-       Decide which propose method to call based on value of
-       double updatestep, which is based on # of atoms and
-       distribution on number of atoms. Propose methods are
-       below makeProposal.
-    */
-    void makeProposal(); //TODO should return proposed atoms
-
-    void ProposeBirth();
-    void ProposeDeath();
-    void ProposeMove();
-    void ProposeExchange();
-
-
-    map<unsigned long long, double> getProposedAtoms() {
-        return _proposedAtoms;
-    }
-
-    map<unsigned long long, double>::const_iterator getAtomsBegin() {
-        return _AtomicDomain.begin();
-    }
-
-    map<unsigned long long, double>::const_iterator getAtomsEnd() {
-        return _AtomicDomain.end();
-    }
-
-    unsigned int getNAtom() {
-        return _nAtom;
-    }
-
-    bool inDomain(unsigned long long location);
-    double getMass(unsigned long long location);
-
-    unsigned long long birthAtomLocation();
-
-    void setProposedAtomMass(const map<unsigned long long, double> newProposal,
-                             bool isNewProposal);
-
-    void acceptProposal(bool updateIter);
-
-    void rejectProposal(bool updateIter);
-
-    unsigned int getNBin() {
-        return _nBin;
-    }
-
-    void updateAtomicBins(double binProbabilities[], unsigned int length,
-                          bool onlyUpdateRelativeWidth);
-
-    void writeAtomicInfo(char outputFilename[], unsigned long Samp_cycle);
-
-    char get_oper_type();
-
-
-  private:
-    // storage of the atomic domain
-    map<unsigned long long, double> _AtomicDomain;
-    unsigned long long _nAtom;
-    int _iter;
-
-    // boundaries of the atomic domain
-    map<unsigned int, unsigned long long> _lBoundariesByBin;
-    map<unsigned long long, unsigned int> _lBoundaries;
-
-    // proposed changes to the atomic domain
-    map<unsigned long long, double> _proposedAtoms;
-
-    // deletion functions that properly clean up the memory
-    void cleanDeleteProposal(map<unsigned long long, double>::const_iterator iter);
-    void cleanDeleteProposalLocation(unsigned long long location);
-    void cleanDeleteAtomic(map<unsigned long long, double>::const_iterator iter);
-    void cleanDeleteAtomicLocation(unsigned long long location);
-    void cleanClearProposal();
-    void cleanClearAtomic();
-
-    // parameters of the distribution
-    unsigned int _nBin; // number of bins into which the distribution is divided
-    unsigned long long _NatomLength;   // maximum number of slots for atoms
-    double _alpha;      // average number of atoms per bin
-    double _lambda;     // expected magnitude of each atom
-    char _atomic_domain_label;  // label of the atomic domain
-    char _oper_type; // the type of operation in makeProposal
-    double _epsilon; // small number for setting things to zero
+    AtomicProposal(char l, char t, uint64_t p1, double m1, uint64_t p2, double m2)
+        : label(l), type(t), nChanges(2), pos1(p1), delta1(m1), pos2(p2), delta2(m2)
+    {}
 };
-}
 
-#endif /* ATOMIC_SUPPORT_H_ */
+class AtomicSupport 
+{
+private:
+
+#ifdef GAPS_INTERNAL_TESTS
+public:
+#endif
+
+    // label of this atomic domain (A/P)
+    char mLabel;
+
+    // storage of the atomic domain
+    std::map<uint64_t, double> mAtomicDomain;
+    uint64_t mNumAtoms;
+    uint64_t mMaxNumAtoms;
+
+    // total mass of all atoms
+    double mTotalMass;
+
+    // matrix information
+    uint64_t mNumRows;
+    uint64_t mNumCols;
+    uint64_t mNumBins;
+    uint64_t mBinSize;
+
+    // average number of atoms per bin (must be > 0)
+    double mAlpha;
+
+    // expected magnitude of each atom (must be > 0)
+    double mLambda;
+
+    // convert atomic position to row/col of the matrix
+    uint64_t getRow(uint64_t pos) const;
+    uint64_t getCol(uint64_t pos) const;
+
+    // get atomic positions at random
+    uint64_t randomFreePosition() const;
+    uint64_t randomAtomPosition() const;
+
+    // proposal helper functions
+    AtomicProposal proposeBirth() const;
+    AtomicProposal proposeDeath() const;
+    AtomicProposal proposeMove() const;
+    AtomicProposal proposeExchange() const;
+
+    // update the mass of an atom, return the total amount changed
+    double updateAtomMass(char type, uint64_t pos, double delta);
+
+public:
+
+    // constructor
+    AtomicSupport(char label, uint64_t nrow, uint64_t ncol, double alpha=1.0,
+        double lambda=1.0);
+
+    // create and accept a proposal
+    AtomicProposal makeProposal() const;
+    MatrixChange acceptProposal(const AtomicProposal &prop);
+
+    // convert an AtomicProposal to an ElementChange
+    MatrixChange getMatrixChange(const AtomicProposal &prop) const;
+
+    // getters
+    double alpha() const {return mAlpha;}
+    double lambda() const {return mLambda;}
+    double totalMass() const {return mTotalMass;}
+    uint64_t numAtoms() const {return mNumAtoms;}
+    double at(uint64_t loc) const {return mAtomicDomain.at(loc);}
+
+    // setters
+    void setAlpha(double alpha) {mAlpha = alpha;}
+    void setLambda(double lambda) {mLambda = lambda;}
+    //void setMaxNumAtoms(uint64_t max) {mMaxNumAtoms = max;}
+};
+
+#endif
