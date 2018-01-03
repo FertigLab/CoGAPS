@@ -30,6 +30,7 @@ mStatUpdates(0), mFixedMat(whichMat)
     mMaxGibbsMassA /= mADomain.lambda();
     mMaxGibbsMassP /= mPDomain.lambda();
 
+    // need to update atomic in order to create checkpoints
     if (mFixedMat == 'A')
     {
         mNumFixedPatterns = fixedPat.ncol();

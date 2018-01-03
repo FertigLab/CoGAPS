@@ -58,6 +58,7 @@ public:
     GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S, unsigned nFactor,
         double alphaA, double alphaP, double maxGibbsMassA, double maxGibbsMassP,
         bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat, char whichMat);
+    GibbsSampler(const std::ifstream &file);
 
     void update(char matrixLabel);
 
@@ -73,6 +74,9 @@ public:
     void updateStatistics();
 
     Rcpp::NumericMatrix getNormedMatrix(char mat);
+
+    // serialize and write to file
+    void serializeAndWrite(const std::ofstream &file);
 };
 
 #endif

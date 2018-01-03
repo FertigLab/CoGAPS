@@ -27,6 +27,9 @@ namespace random
     double d_norm(double d, double mean, double sd);
     double q_norm(double q, double mean, double sd);
     double p_norm(double p, double mean, double sd);
+
+    void save(ofstream &file);
+    void load(ofstream &file);
 }
 
 }
