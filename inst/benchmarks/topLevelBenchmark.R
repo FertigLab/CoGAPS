@@ -28,6 +28,11 @@ reps_default <- 5
 
 # benchmark function
 
+timeToSeconds <- function(time)
+{
+     time$hour * 3600 + time$min * 60 + time$sec
+}   
+
 data(GIST_TS_20084)
 runBenchmark <- function(m, n, k, iter, seed, reps)
 {
@@ -41,12 +46,12 @@ runBenchmark <- function(m, n, k, iter, seed, reps)
     times <- c()
     for (r in 1:reps)
     {
-        start_time <- Sys.time()
+        start_time <- as.POSIXlt(Sys.time())
         gapsRun(test_mat_D, test_mat_S, nEquil=iter, nSample=iter,
-            nFactor=k, seed=seed+r, messages=TRUE, nOutR = iter/10,
+            nFactor=k, seed=seed+r, messages=TRUE, nOutR = iter/2,
 #            sampleSnapshots=FALSE, numSnapshots=iter / 2)
             numSnapshots=0)
-        times[r] <- as.numeric(Sys.time() - start_time)
+        times[r] <- timeToSeconds(as.POSIXlt(Sys.time())) - timeToSeconds(start_time)
         print(round(times[r], 2))
     }
     params <- c(m, n, k, iter, seed, reps)
