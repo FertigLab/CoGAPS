@@ -115,7 +115,7 @@ public:
     Rcpp::NumericMatrix rMatrix() const;
 };
 
-// gain performance at the cost of memory
+// gain performance at the expense of memory
 class TwoWayMatrix
 {
 private:
@@ -135,7 +135,8 @@ public:
 
     unsigned nRow() const {return mRowMatrix.nRow();}
     unsigned nCol() const {return mRowMatrix.nCol();}
-
+    
+    // TODO remove since accessing this way defeats the purpose
     matrix_data_t operator()(unsigned r, unsigned c) const
     {
         return mRowMatrix(r,c);
@@ -146,8 +147,8 @@ public:
 
     void set(unsigned row, unsigned col, double value)
     {
-        mRowMatrix(row, col) = value;
-        mColMatrix(row, col) = value;
+        mRowMatrix(row,col) = value;
+        mColMatrix(row,col) = value;
     }
     
     Rcpp::NumericMatrix rMatrix() const

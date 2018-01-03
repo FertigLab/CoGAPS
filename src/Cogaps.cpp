@@ -4,6 +4,8 @@
 #include <ctime>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+typedef std::vector<Rcpp::NumericMatrix> SnapshotList;
+
 enum GapsPhase
 {
     GAPS_CALIBRATION,
@@ -11,13 +13,70 @@ enum GapsPhase
     GAPS_SAMPLING
 };
 
-static std::vector<Rcpp::NumericMatrix> snapshotsA;
-static std::vector<Rcpp::NumericMatrix> snapshotsP;
+// declaration order of member variables important!
+// initialization depends on it
+struct GapsInternalState
+{
+    GibbsSampler sampler;
+    
+    Vector chi2VecEquil;
+    Vector nAtomsAEquil;
+    Vector nAtomsPEquil;
 
-static void runGibbsSampler(GibbsSampler &sampler, unsigned nIterTotal,
-unsigned& nIterA, unsigned& nIterP, Vector& chi2Vec, Vector& aAtomVec,
-Vector& pAtomVec, GapsPhase phase, unsigned numOutputs, bool messages,
-unsigned numSnapshots);
+    Vector chi2VecSample;
+    Vector nAtomsASample;
+    Vector nAtomsPSample;
+
+    unsigned nIterA;
+    unsigned nIterP;
+    
+    unsigned nEquil;
+    unsigned nEquilCool;
+    unsigned nSample;
+
+    unsigned iteration;
+    GapsPhase phase;
+
+    SnapshotList snapshotsA;
+    SnapshotList snapshotsP;
+
+    GapsInternalState(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
+        unsigned nFactor, double alphaA, double alphaP, unsigned nE,
+        unsigned nEC, unsigned nS, double maxGibbsMassA,
+        double maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns,
+        char whichMatrixFixed, bool messages, bool singleCellRNASeq,
+        unsigned numOutputs, unsigned numSnapshots)
+            :
+        chi2VecEquil(nEquil), nAtomsAEquil(nEquil), nAtomsPEquil(nEquil),
+        chi2VecSample(nSample), nAtomsASample(nSample), nAtomsPSample(nSample),
+        nIterA(10), nIterP(10), nEquil(nE), nEquilCool(nEC), nSample(nS),
+        iteration(0), phase(GAPS_CALIBRATION),
+        sampler(DMatrix, SMatrix, nFactor, alphaA, alphaP,
+            maxGibbsMassA, maxGibbsMassP, singleCellRNASeq, fixedPatterns,
+            whichMatrixFixed)
+    {}
+
+    GibbsSampler ;
+
+    GapsInternalState(std::ifstream &file)
+        :
+    {}
+
+
+};
+
+// [[Rcpp::export]]
+Rcpp::List cogapsFromCheckpoint(const std::string &fileName)
+{   
+    // open file
+    std::ifstream file(fileName);
+
+    // seed random number generator
+
+    // load state from file and run
+    GapsInternalState state(file);
+    return runCogaps(state);
+}
 
 // [[Rcpp::export]]
 Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
@@ -38,19 +97,16 @@ unsigned numOutputs, unsigned numSnapshots)
     }
     gaps::random::setSeed(seedUsed);
 
-    // create the gibbs sampler
-    GibbsSampler sampler(DMatrix, SMatrix, nFactor, alphaA, alphaP,
-        maxGibbsMassA, maxGibbsMassP, singleCellRNASeq, fixedPatterns,
-        whichMatrixFixed);
+    GapsInternalState state(DMatrix, SMatrix, nFactor, alphaA, alphaP,
+        nEquil, nEquilCool, nSample, maxGibbsMassA, maxGibbsMassP,
+        fixedPatterns, whichMatrixFixed, messages, singleCellRNASeq,
+        numOutputs, numSnapshots);
+    return runCogaps(state);
+}
 
-    // initial number of iterations for each matrix
-    unsigned nIterA = 10;
-    unsigned nIterP = 10;
-
+Rcpp::List runCogaps(GapsInternalState &state)
+{
     // calibration phase
-    Vector chi2Vec(nEquil);
-    Vector nAtomsAEquil(nEquil);
-    Vector nAtomsPEquil(nEquil);
     runGibbsSampler(sampler, nEquil, nIterA, nIterP, chi2Vec,
         nAtomsAEquil, nAtomsPEquil, GAPS_CALIBRATION, numOutputs, messages,
         numSnapshots);
@@ -61,14 +117,12 @@ unsigned numOutputs, unsigned numSnapshots)
         trash, trash, GAPS_COOLING, numOutputs, messages, numSnapshots);
 
     // sampling phase
-    Vector chi2VecSample(nSample);
-    Vector nAtomsASample(nSample);
-    Vector nAtomsPSample(nSample);
     runGibbsSampler(sampler, nSample, nIterA, nIterP, chi2VecSample,
         nAtomsASample, nAtomsPSample, GAPS_SAMPLING, numOutputs, messages,
         numSnapshots);
 
     // combine chi2 vectors
+    Vector chi2Vec(chi2VecEquil);
     chi2Vec.concat(chi2VecSample);
 
     return Rcpp::List::create(
@@ -96,6 +150,8 @@ unsigned numSnapshots)
 
     for (unsigned i = 0; i < nIterTotal; ++i)
     {
+        // TODO check if checkpoint should be created
+
         if (phase == GAPS_CALIBRATION)
         {
             sampler.setAnnealingTemp(std::min(((double)i + 2.0) / tempDenom, 1.0));
@@ -142,3 +198,4 @@ unsigned numSnapshots)
         }
     }
 }
+
