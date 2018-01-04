@@ -57,7 +57,7 @@ double gaps::random::uniform(double a, double b)
     {
         return a;
     }
-    else if (a < b)
+    else
     {
         boost::random::uniform_real_distribution<> dist(a,b);
         return dist(rng);
@@ -77,7 +77,7 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     {
         return a;
     }
-    else if (a < b)
+    else
     {
         boost::random::uniform_int_distribution<uint64_t> dist(a,b);
         return dist(rng);

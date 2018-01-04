@@ -13,14 +13,16 @@ private:
 public:
 #endif
 
+    TwoWayMatrix mDMatrix, mSMatrix, mAPMatrix;
+
+    ColMatrix mAMatrix;
+    RowMatrix mPMatrix;
+
     AtomicSupport mADomain, mPDomain;
 
-    TwoWayMatrix mDMatrix, mSMatrix, mAPMatrix;
-    RowMatrix mPMatrix;
-    ColMatrix mAMatrix;
-
-    RowMatrix mPMeanMatrix, mPStdMatrix;
     ColMatrix mAMeanMatrix, mAStdMatrix;
+    RowMatrix mPMeanMatrix, mPStdMatrix;
+
     unsigned mStatUpdates;
 
     double mMaxGibbsMassA;
@@ -55,10 +57,10 @@ public:
 
 public:
 
+    GibbsSampler(std::ifstream &file);
     GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S, unsigned nFactor,
         double alphaA, double alphaP, double maxGibbsMassA, double maxGibbsMassP,
         bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat, char whichMat);
-    GibbsSampler(const std::ifstream &file);
 
     void update(char matrixLabel);
 
@@ -75,7 +77,6 @@ public:
 
     Rcpp::NumericMatrix getNormedMatrix(char mat);
 
-    // serialize and write to file
     void serializeAndWrite(const std::ofstream &file);
 };
 

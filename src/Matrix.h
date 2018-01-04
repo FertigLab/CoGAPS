@@ -50,6 +50,7 @@ public:
 
     Vector(unsigned size) : mValues(std::vector<matrix_data_t>(size, 0.0)) {}
     Vector(const std::vector<matrix_data_t>& v) : mValues(v) {}
+    Vector(const Vector &vec) : mValues(vec.mValues) {}
 
     matrix_data_t& operator()(unsigned i) {return mValues[i];}
     matrix_data_t operator()(unsigned i) const {return mValues[i];}

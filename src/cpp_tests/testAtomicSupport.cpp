@@ -42,10 +42,8 @@ TEST_CASE("Test AtomicSupport.h")
             
             REQUIRE(change.label == 'A');
             REQUIRE(change.nChanges == prop.nChanges);
-            cond = change.row1 >= 0 && change.row2 < nrow;
-            REQUIRE(cond);
-            cond = change.col1 >= 0 && change.col2 < ncol;
-            REQUIRE(cond);
+            REQUIRE(change.row2 < nrow);
+            REQUIRE(change.col2 < ncol);
             REQUIRE(change.delta1 == prop.delta1);
             REQUIRE(change.delta2 == prop.delta2);
 

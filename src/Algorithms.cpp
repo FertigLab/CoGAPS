@@ -256,7 +256,6 @@ double gaps::algo::deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
 const TwoWayMatrix &S, const ColMatrix &A, const RowMatrix &P,
 const TwoWayMatrix &AP)
 {
-    // change in A matrix
     if (ch.label == 'A' && ch.nChanges == 2 && ch.row1 != ch.row2)
     {
         return deltaLL_A(D, S, P, AP, ch.row1, ch.col1, ch.delta1)
@@ -267,14 +266,12 @@ const TwoWayMatrix &AP)
         return deltaLL_A(D, S, P, AP, ch.row1, ch.col1, ch.delta1, ch.col2,
             ch.delta2, ch.nChanges == 2);
     }
-
-    // change in P matrix
-    if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
+    else if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
     {
         return deltaLL_P(D, S, A, AP, ch.col1, ch.row1, ch.delta1)
             + deltaLL_P(D, S, A, AP, ch.col2, ch.row2, ch.delta2);
     }
-    else if (ch.label == 'P')
+    else
     {
         return deltaLL_P(D, S, A, AP, ch.col1, ch.row1, ch.delta1, ch.row2,
             ch.delta2, ch.nChanges == 2);
