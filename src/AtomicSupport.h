@@ -76,14 +76,14 @@ public:
     AtomicProposal proposeExchange() const;
 
     // update the mass of an atom, return the total amount changed
-    double updateAtomMass(char type, uint64_t pos, double delta);
+    double updateAtomMass(uint64_t pos, double delta);
 
 public:
 
-    // constructor
+    // constructors
+    AtomicSupport(std::ifstream &file);
     AtomicSupport(char label, uint64_t nrow, uint64_t ncol, double alpha=1.0,
         double lambda=1.0);
-    AtomicSupport(const std::ifstream &file);
 
     // create and accept a proposal
     AtomicProposal makeProposal() const;
@@ -103,7 +103,6 @@ public:
     void setAlpha(double alpha) {mAlpha = alpha;}
     void setLambda(double lambda) {mLambda = lambda;}
 
-    // serialize and write to file
     void serializeAndWrite(const std::ofstream &file);
 };
 

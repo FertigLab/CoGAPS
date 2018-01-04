@@ -1,4 +1,4 @@
-PKG_CPPFLAGS = 
+PKG_CPPFLAGS = -Wall -Wextra
 OBJECTS =   Algorithms.o \
             AtomicSupport.o \
             Cogaps.o \

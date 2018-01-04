@@ -5,10 +5,11 @@ static const double EPSILON = 1.e-10;
 AtomicSupport::AtomicSupport(char label, uint64_t nrow, uint64_t ncol,
 double alpha, double lambda)
     :
-mNumRows(nrow), mNumCols(ncol), mNumBins(nrow * ncol),
-mNumAtoms(0), mTotalMass(0.0), mLabel(label), mAlpha(alpha), 
-mMaxNumAtoms(std::numeric_limits<uint64_t>::max()), mLambda(lambda),
-mBinSize(std::numeric_limits<uint64_t>::max() / (nrow * ncol))
+mLabel(label), mNumAtoms(0),
+mMaxNumAtoms(std::numeric_limits<uint64_t>::max()),
+mTotalMass(0.0), mNumRows(nrow), mNumCols(ncol), mNumBins(nrow * ncol),
+mBinSize(std::numeric_limits<uint64_t>::max() / (nrow * ncol)),
+mAlpha(alpha), mLambda(lambda)
 {}
 
 uint64_t AtomicSupport::getRow(uint64_t pos) const
@@ -113,7 +114,7 @@ AtomicProposal AtomicSupport::proposeExchange() const
     return AtomicProposal(mLabel, 'E', pos1, delta1, pos2, delta2);
 }
 
-double AtomicSupport::updateAtomMass(char type, uint64_t pos, double delta)
+double AtomicSupport::updateAtomMass(uint64_t pos, double delta)
 {
     if (mAtomicDomain.count(pos)) // update atom if it exists
     {
@@ -172,10 +173,10 @@ AtomicProposal AtomicSupport::makeProposal() const
 MatrixChange AtomicSupport::acceptProposal(const AtomicProposal &prop)
 {
     MatrixChange change = getMatrixChange(prop);
-    change.delta1 = updateAtomMass(prop.type, prop.pos1, prop.delta1);
+    change.delta1 = updateAtomMass(prop.pos1, prop.delta1);
     if (prop.nChanges > 1)
     {
-        change.delta2 = updateAtomMass(prop.type, prop.pos2, prop.delta2);
+        change.delta2 = updateAtomMass(prop.pos2, prop.delta2);
     }
     return change;
 }

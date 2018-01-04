@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <fstream>
 
 namespace gaps
 {
@@ -28,8 +29,8 @@ namespace random
     double q_norm(double q, double mean, double sd);
     double p_norm(double p, double mean, double sd);
 
-    void save(ofstream &file);
-    void load(ofstream &file);
+    void save(std::ofstream &file);
+    void load(std::ifstream &file);
 }
 
 }

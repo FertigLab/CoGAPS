@@ -10,14 +10,14 @@ unsigned int nFactor, double alphaA, double alphaP, double maxGibbsMassA,
 double maxGibbsMassP, bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat,
 char whichMat)
     :
-mDMatrix(D), mSMatrix(S), mAMatrix(D.nrow(), nFactor),
-mPMatrix(nFactor, D.ncol()), mAPMatrix(D.nrow(), D.ncol()),
+mDMatrix(D), mSMatrix(S), mAPMatrix(D.nrow(), D.ncol()),
+mAMatrix(D.nrow(), nFactor), mPMatrix(nFactor, D.ncol()), 
 mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
-mMaxGibbsMassA(maxGibbsMassA), mMaxGibbsMassP(maxGibbsMassP),
-mAnnealingTemp(1.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq),
 mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
 mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
-mStatUpdates(0), mFixedMat(whichMat)
+mStatUpdates(0), mMaxGibbsMassA(maxGibbsMassA), mMaxGibbsMassP(maxGibbsMassP),
+mAnnealingTemp(1.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq),
+mFixedMat(whichMat)
 {
     double meanD = mSingleCellRNASeq ? gaps::algo::nonZeroMean(mDMatrix)
         : gaps::algo::mean(mDMatrix);
