@@ -83,8 +83,8 @@ public:
     matrix_data_t& operator()(unsigned r, unsigned c) {return mRows[r](c);}
     matrix_data_t operator()(unsigned r, unsigned c) const {return mRows[r](c);}
 
-    Vector& getRow(unsigned row);
-    const Vector& getRow(unsigned row) const;
+    Vector& getRow(unsigned row) {return mRows[row];}
+    const Vector& getRow(unsigned row) const {return mRows[row];}
 
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;

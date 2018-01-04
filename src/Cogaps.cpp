@@ -69,7 +69,8 @@ Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
 {
     for (; state.iter < nIterTotal; ++state.iter)
     {
-        // check if checkpoint should be created
+        // TODO check if checkpoint should be created
+
         if (state.phase == GAPS_CALIBRATION)
         {
             state.sampler.setAnnealingTemp(std::min(1.0,
@@ -89,8 +90,7 @@ Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
         if (state.phase == GAPS_SAMPLING)
         {
             state.sampler.updateStatistics();
-            if (state.nSnapshots > 0 && (state.iter + 1)
-            % (nIterTotal / state.nSnapshots) == 0)
+            if (state.nSnapshots && !((state.iter + 1) % (nIterTotal / state.nSnapshots)))
             {
                 state.snapshotsA.push_back(state.sampler.getNormedMatrix('A'));
                 state.snapshotsP.push_back(state.sampler.getNormedMatrix('P'));
@@ -107,8 +107,7 @@ Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
 
             if ((state.iter + 1) % state.nOutputs == 0 && state.messages)
             {
-                std::string temp = state.phase == GAPS_CALIBRATION ? "Equil: "
-                    : "Samp: ";
+                std::string temp = state.phase == GAPS_CALIBRATION ? "Equil: " : "Samp: ";
                 std::cout << temp << state.iter + 1 << " of " << nIterTotal
                     << ", Atoms:" << aAtomVec(state.iter) << "(" << pAtomVec(state.iter)
                     << ") Chi2 = " << state.sampler.chi2() << '\n';

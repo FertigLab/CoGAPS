@@ -15,6 +15,20 @@ static void updateHelper(double& val, double delta)
     }
 }
 
+template <class GenericMatrix>
+Rcpp::NumericMatrix convertToRMatrix(const GenericMatrix &mat)
+{
+    Rcpp::NumericMatrix rmat(mat.nRow(), mat.nCol());
+    for (unsigned i = 0; i < mat.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < mat.nCol(); ++j)
+        {
+            rmat(i,j) = mat(i,j);
+        }
+    }
+    return rmat;
+}
+
 /******************************** VECTOR *******************************/
 
 Rcpp::NumericVector Vector::rVec() const
@@ -60,16 +74,6 @@ RowMatrix::RowMatrix(const RowMatrix &mat)
     }
 }
 
-Vector& RowMatrix::getRow(unsigned row)
-{
-    return mRows[row];
-}
-
-const Vector& RowMatrix::getRow(unsigned row) const
-{
-    return mRows[row];
-}
-
 void RowMatrix::update(const MatrixChange &change)
 {
     updateHelper(mRows[change.row1][change.col1], change.delta1);
@@ -81,16 +85,7 @@ void RowMatrix::update(const MatrixChange &change)
 
 Rcpp::NumericMatrix RowMatrix::rMatrix() const
 {
-    Rcpp::NumericMatrix mat(mNumRows, mNumCols);
-
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            mat(i,j) = this->operator()(i,j);
-        }
-    }
-    return mat;
+    return convertToRMatrix<RowMatrix>(*this);
 }
 
 void Vector::operator+=(const Vector &vec)
@@ -155,14 +150,5 @@ void ColMatrix::update(const MatrixChange &change)
 
 Rcpp::NumericMatrix ColMatrix::rMatrix() const
 {
-    Rcpp::NumericMatrix mat(mNumRows, mNumCols);
-
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            mat(i,j) = this->operator()(i,j);
-        }
-    }
-    return mat;
+    return convertToRMatrix<ColMatrix>(*this);
 }
