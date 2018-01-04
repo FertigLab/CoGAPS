@@ -44,17 +44,17 @@ public:
 
     inline operator __m128() const {return mValue;}
 
-    inline vec4f& operator+=(const vec4f &rhs)
+    /*inline vec4f& operator+=(const vec4f &rhs)
     {
         *this = *this + rhs;
         return *this;
-    }
+    }*/
 };
 
-inline vec4f operator+(const vec4f &lhs, const vec4f &rhs)
+/*inline vec4f operator+(const vec4f &lhs, const vec4f &rhs)
 {
     return _mm_add_ps(lhs,rhs);
-}
+}*/
 
 namespace gaps
 {
