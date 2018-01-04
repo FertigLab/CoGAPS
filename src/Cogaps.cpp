@@ -37,7 +37,7 @@ struct GapsInternalState
     unsigned nOutputs;
     bool messages;
 
-    unsigned iteration;
+    unsigned iter;
     GapsPhase phase;
     uint32_t seed;
 
@@ -57,7 +57,7 @@ struct GapsInternalState
         chi2VecSample(nS), nAtomsASample(nS), nAtomsPSample(nS),
         nIterA(10), nIterP(10), nEquil(nE), nEquilCool(nEC), nSample(nS),
         nSnapshots(numSnapshots), nOutputs(numOutputs), messages(msg),
-        iteration(0), phase(GAPS_CALIBRATION), seed(in_seed),
+        iter(0), phase(GAPS_CALIBRATION), seed(in_seed),
         sampler(DMatrix, SMatrix, nFactor, alphaA, alphaP,
             maxGibbsMassA, maxGibbsMassP, singleCellRNASeq, fixedPatterns,
             whichMatrixFixed)
@@ -67,12 +67,13 @@ struct GapsInternalState
 static void runGibbsSampler(GapsInternalState &state, unsigned nIterTotal,
 Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
 {
-    for (unsigned i = 0; i < nIterTotal; ++i)
+    for (; state.iter < nIterTotal; ++state.iter)
     {
+        // check if checkpoint should be created
         if (state.phase == GAPS_CALIBRATION)
         {
             state.sampler.setAnnealingTemp(std::min(1.0,
-                ((double)i + 2.0) / ((double)state.nEquil / 2.0)));
+                ((double)state.iter + 2.0) / ((double)state.nEquil / 2.0)));
         }
 
         for (unsigned j = 0; j < state.nIterA; ++j)
@@ -88,7 +89,8 @@ Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
         if (state.phase == GAPS_SAMPLING)
         {
             state.sampler.updateStatistics();
-            if (state.nSnapshots > 0 && (i + 1) % (nIterTotal / state.nSnapshots) == 0)
+            if (state.nSnapshots > 0 && (state.iter + 1)
+            % (nIterTotal / state.nSnapshots) == 0)
             {
                 state.snapshotsA.push_back(state.sampler.getNormedMatrix('A'));
                 state.snapshotsP.push_back(state.sampler.getNormedMatrix('P'));
@@ -97,18 +99,18 @@ Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
 
         if (state.phase != GAPS_COOLING)
         {
-            aAtomVec(i) = state.sampler.totalNumAtoms('A');
-            pAtomVec(i) = state.sampler.totalNumAtoms('P');
-            chi2Vec(i) = state.sampler.chi2();
-            state.nIterA = gaps::random::poisson(std::max(aAtomVec(i), 10.0));
-            state.nIterP = gaps::random::poisson(std::max(pAtomVec(i), 10.0));
+            aAtomVec(state.iter) = state.sampler.totalNumAtoms('A');
+            pAtomVec(state.iter) = state.sampler.totalNumAtoms('P');
+            chi2Vec(state.iter) = state.sampler.chi2();
+            state.nIterA = gaps::random::poisson(std::max(aAtomVec(state.iter), 10.0));
+            state.nIterP = gaps::random::poisson(std::max(pAtomVec(state.iter), 10.0));
 
-            if ((i + 1) % state.nOutputs == 0 && state.messages)
+            if ((state.iter + 1) % state.nOutputs == 0 && state.messages)
             {
                 std::string temp = state.phase == GAPS_CALIBRATION ? "Equil: "
                     : "Samp: ";
-                std::cout << temp << i + 1 << " of " << nIterTotal
-                    << ", Atoms:" << aAtomVec(i) << "(" << pAtomVec(i)
+                std::cout << temp << state.iter + 1 << " of " << nIterTotal
+                    << ", Atoms:" << aAtomVec(state.iter) << "(" << pAtomVec(state.iter)
                     << ") Chi2 = " << state.sampler.chi2() << '\n';
             }
         }
@@ -121,6 +123,7 @@ static Rcpp::List runCogaps(GapsInternalState &state)
     {
         runGibbsSampler(state, state.nEquil, state.chi2VecEquil,
             state.nAtomsAEquil, state.nAtomsPEquil);
+        state.iter = 0;
         state.phase = GAPS_COOLING;
     }
 
@@ -128,6 +131,7 @@ static Rcpp::List runCogaps(GapsInternalState &state)
     {
         Vector trash(1);
         runGibbsSampler(state, state.nEquilCool, trash, trash, trash);
+        state.iter = 0;
         state.phase = GAPS_SAMPLING;
     }
 
