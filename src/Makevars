@@ -1,4 +1,4 @@
-PKG_CPPFLAGS = 
+PKG_CPPFLAGS = -O3
 OBJECTS =   Algorithms.o \
             AtomicSupport.o \
             Cogaps.o \
@@ -12,4 +12,3 @@ OBJECTS =   Algorithms.o \
             cpp_tests/testGibbsSampler.o \
             cpp_tests/testMatrix.o \
             cpp_tests/testRandom.o
-
