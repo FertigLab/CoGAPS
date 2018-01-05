@@ -147,6 +147,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     
     for (int i = 0; i < _theta_truth.length(); ++i) {
         theta_prime[i] = Rcpp::rnorm(1, _theta_truth[i], _delta)[0];
+        //theta_prime[i] = 2.91;
     }
 
     // simulate epsilon' ~ K(epsilon|epsilon^{(t-1)})
@@ -154,20 +155,25 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     eps_prime = std::max(eps_prime, 0.25);
 
     // simulate x ~ p(x | theta')
-    Rcpp::NumericMatrix P_prime = P;
-    Rcpp::NumericMatrix A_prime = A;
+    int row_num = P.rows();
+    Rcpp::NumericMatrix P_prime = Rcpp::clone(P);
+    Rcpp::NumericMatrix A_prime = Rcpp::clone(A);
 
     // allocate curve (assume same number of recordings for all conditions
-    int row_num = P.rows();
     P_prime(row_num - 1, Rcpp::_) = curve(theta_prime);
 
     double Pnorm = Rcpp::sum(curve(theta_prime));
+    double Pnorm_old = Rcpp::sum(curve(_theta_truth));
 
     P_prime(row_num - 1, Rcpp::_) = P_prime(row_num - 1, Rcpp::_) / Pnorm;
-    A_prime(Rcpp::_, row_num - 1) = A_prime(Rcpp::_, row_num - 1) * Pnorm;
+    A_prime(Rcpp::_, row_num - 1) = A_prime(Rcpp::_, row_num - 1) * Pnorm / Pnorm_old;
+
+    Rcpp::Rcout << "Current: " << _theta_truth << " Proposed " << theta_prime << " Pnorm " << Pnorm << " Pnorm_old " << Pnorm_old << "\n";
 
     arma::mat D_prime = Rcpp::as<arma::mat>(A_prime) * Rcpp::as<arma::mat>(P_prime);
     arma::mat D_orig = Rcpp::as<arma::mat>(A) * Rcpp::as<arma::mat>(P);
+
+    double D_diff = arma::accu(D_prime - D_orig);
 
     // calculate rho(S(x), S(y))
     arma::mat diff = Rcpp::as<arma::mat>(_D) - D_prime;
@@ -176,8 +182,9 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     // should be calculating eps_prime as some function of
     // current l2norm (i.e. norm(_D - A * P, 2))
     arma::mat orig = Rcpp::as<arma::mat>(_D) - D_orig; 
-    rho_thresh = norm(orig, 2) + eps_prime;
+    rho_thresh = norm(orig, 2);// + eps_prime;
 
+    Rcpp::Rcout << "D_diff " << D_diff << " rho " << rho << " rho_thresh " << rho_thresh << "\n";
 
     // calculate acceptance probability
     //if (rho < eps_prime) {
