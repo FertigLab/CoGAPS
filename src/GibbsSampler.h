@@ -36,6 +36,31 @@ public:
     unsigned mNumFixedPatterns;
     char mFixedMat;
 
+    /*friend class boost::serialization::access;    
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar & mDMatrix;
+        ar & mSMatrix;
+        ar & mAPMatrix;
+        ar & mAMatrix;
+        ar & mPMatrix;
+        ar & mADomain;  
+        ar & mPDomain;
+        ar & mAMeanMatrix;
+        ar & mAStdMatrix;
+        ar & mPMeanMatrix;
+        ar & mPStdMatrix;
+        ar & mStatUpdates;
+        ar & mMaxGibbsMassA;
+        ar & mMaxGibbsMassP;
+        ar & mAnnealingTemp;
+        ar & mChi2;
+        ar & mSingleCellRNASeq;
+        ar & mNumFixedPatterns;
+        ar & mFixedMat;
+    }*/
+
     bool death(AtomicSupport &domain, AtomicProposal &proposal);
     bool birth(AtomicSupport &domain, AtomicProposal &proposal);
     bool move(AtomicSupport &domain, AtomicProposal &proposal);

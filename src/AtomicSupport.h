@@ -8,6 +8,7 @@
 #include <fstream>
 #include <vector>
 #include <stdint.h>
+//#include <boost/serialization/map.hpp>
 
 struct AtomicProposal
 {
@@ -60,6 +61,23 @@ public:
 
     // expected magnitude of each atom (must be > 0)
     double mLambda;
+
+    /*friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar & mLabel;
+        ar & mAtomicDomain;
+        ar & mNumAtoms;
+        ar & mMaxNumAtoms;
+        ar & mTotalMass;
+        ar & mNumRows;
+        ar & mNumCols;
+        ar & mNumBins;
+        ar & mBinSize;
+        ar & mAlpha;
+        ar & mLambda;
+    }*/
 
     // convert atomic position to row/col of the matrix
     uint64_t getRow(uint64_t pos) const;

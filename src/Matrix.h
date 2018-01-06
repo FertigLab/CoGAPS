@@ -3,6 +3,7 @@
 
 #include <Rcpp.h>
 #include <vector>
+//#include <boost/serialization/vector.hpp>
 
 // temporary: used for testing performance of float vs double
 typedef double matrix_data_t;
@@ -32,11 +33,6 @@ struct MatrixChange
     {}
 };
 
-class Vector;
-class RowMatrix;
-class ColMatrix;
-class TwoWayMatrix;
-
 // no polymorphism to prevent virtual function overhead, not really
 // needed anyways since few functions are used on all types of matrices
 
@@ -45,6 +41,13 @@ class Vector
 private:
 
     std::vector<matrix_data_t> mValues;
+
+    /*friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar & mValues;
+    }*/
 
 public:
 
@@ -58,18 +61,26 @@ public:
     matrix_data_t operator[](unsigned i) const {return mValues[i];}
     unsigned size() const {return mValues.size();}
 
-    Rcpp::NumericVector rVec() const;
+    Rcpp::NumericVector rVec() const {return Rcpp::wrap(mValues);}
     void concat(const Vector& vec);
-
     void operator+=(const Vector &vec);
 };
 
 class RowMatrix
 {
 private:
-
+    
     std::vector<Vector> mRows;
     unsigned mNumRows, mNumCols;
+
+    /*friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar & mRows;
+        ar & mNumRows;
+        ar & mNumCols;
+    }*/
 
 public:
 
@@ -97,6 +108,15 @@ private:
     std::vector<Vector> mCols;
     unsigned mNumRows, mNumCols;
 
+    /*friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar & mCols;
+        ar & mNumRows;
+        ar & mNumCols;
+    }*/
+
 public:
 
     ColMatrix(unsigned nrow, unsigned ncol);
@@ -109,8 +129,8 @@ public:
     matrix_data_t& operator()(unsigned r, unsigned c) {return mCols[c](r);}
     matrix_data_t operator()(unsigned r, unsigned c) const {return mCols[c](r);}
 
-    Vector& getCol(unsigned col);
-    const Vector& getCol(unsigned col) const;
+    Vector& getCol(unsigned col) {return mCols[col];}
+    const Vector& getCol(unsigned col) const {return mCols[col];}
 
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
@@ -123,6 +143,14 @@ private:
 
     RowMatrix mRowMatrix;
     ColMatrix mColMatrix;
+
+    /*friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar & mRowMatrix;
+        ar & mColMatrix;
+    }*/
 
 public:
 
@@ -138,10 +166,10 @@ public:
     unsigned nCol() const {return mRowMatrix.nCol();}
     
     // TODO remove since accessing this way defeats the purpose
-    matrix_data_t operator()(unsigned r, unsigned c) const
+    /*matrix_data_t operator()(unsigned r, unsigned c) const
     {
         return mRowMatrix(r,c);
-    }
+    }*/
 
     const Vector& getRow(unsigned row) const {return mRowMatrix.getRow(row);}
     const Vector& getCol(unsigned col) const {return mColMatrix.getCol(col);}
