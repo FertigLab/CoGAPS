@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <vector>
 #include <fstream>
+#include <boost/random/mersenne_twister.hpp>
+
+typedef boost::random::mt19937 RNGType;
+//typedef boost::random::mt11213b RNGType; // should be faster
 
 namespace gaps
 {
@@ -29,8 +33,8 @@ namespace random
     double q_norm(double q, double mean, double sd);
     double p_norm(double p, double mean, double sd);
 
-    void save(std::ofstream &file);
-    void load(std::ifstream &file);
+    RNGType getGenerator();
+    void setGenerator(RNGType rng);
 }
 
 }

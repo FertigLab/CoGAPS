@@ -1,4 +1,5 @@
-PKG_CPPFLAGS = -Wall -Wextra
+PKG_CPPFLAGS = -Wall -Wextra -O2 -I.
+PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` -lboost_serialization
 OBJECTS =   Algorithms.o \
             AtomicSupport.o \
             Cogaps.o \

@@ -1,8 +1,5 @@
-// [[Rcpp::depends(BH)]]
-
 #include "Random.h"
 
-#include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -18,9 +15,17 @@
 #define Q_GAMMA_THRESHOLD 1E-6
 #define Q_GAMMA_MIN_VALUE 0.0
 
-typedef boost::random::mt19937 RNGType;
-//typedef boost::random::mt11213b RNGType; // should be faster
 static RNGType rng;
+
+RNGType gaps::random::getGenerator()
+{
+    return rng;
+}
+
+void gaps::random::setGenerator(RNGType temp)
+{
+    rng = temp;
+}
 
 void gaps::random::setSeed(uint32_t seed)
 {
@@ -126,4 +131,3 @@ double gaps::random::p_norm(double p, double mean, double sd)
     boost::math::normal_distribution<> norm(mean, sd);
     return cdf(norm, p);
 }
-

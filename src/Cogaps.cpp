@@ -3,7 +3,10 @@
 
 #include <Rcpp.h>
 #include <ctime>
+#include <fstream>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 typedef std::vector<Rcpp::NumericMatrix> SnapshotList;
 
@@ -14,8 +17,6 @@ enum GapsPhase
     GAPS_SAMPLING
 };
 
-// declaration order of member variables important!
-// initialization depends on it
 struct GapsInternalState
 {
     Vector chi2VecEquil;
@@ -63,6 +64,31 @@ struct GapsInternalState
             whichMatrixFixed)
     {}
 };
+
+/*template<class Archive>
+void boost::serialization::serialize(Archive &ar, GapsInternalState &state)
+{
+    ar & state.chi2VecEquil;
+    ar & state.nAtomsAEquil;
+    ar & state.nAtomsPEquil;
+    ar & state.chi2VecSample;
+    ar & state.nAtomsASample;
+    ar & state.nAtomsPSample;
+    ar & state.nIterA;
+    ar & state.nIterP;
+    ar & state.nEquil;
+    ar & state.nEquilCool;
+    ar & state.nSample;
+    ar & state.nSnapshots;
+    ar & state.nOutputs;
+    ar & state.messages;
+    ar & state.iter;
+    ar & state.phase;
+    ar & state.seed;
+    ar & state.sampler;
+    //ar & state.snapshotsA;
+    //ar & state.snapshotsP;
+}*/
 
 static void runGibbsSampler(GapsInternalState &state, unsigned nIterTotal,
 Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
@@ -125,6 +151,13 @@ static Rcpp::List runCogaps(GapsInternalState &state)
         state.iter = 0;
         state.phase = GAPS_COOLING;
     }
+
+    std::ofstream ofs("gaps_checkpoint.out");
+    {
+        boost::archive::text_oarchive oa(ofs);
+        //oa << state;
+    }
+    ofs.close();
 
     if (state.phase == GAPS_COOLING)
     {
