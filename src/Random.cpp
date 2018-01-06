@@ -1,5 +1,9 @@
 // [[Rcpp::depends(BH)]]
 
+// needed to run in valgrind
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+
 #include "Random.h"
 
 #include <boost/random/mersenne_twister.hpp>
@@ -127,3 +131,4 @@ double gaps::random::p_norm(double p, double mean, double sd)
     return cdf(norm, p);
 }
 
+#pragma GCC pop_options
