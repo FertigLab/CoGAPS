@@ -5,6 +5,15 @@
 
 static const double EPSILON = 1.e-10;
 
+GibbsSampler::GibbsSampler(unsigned nRow, unsigned nCol, unsigned nFactor)
+    :
+mDMatrix(nRow, nCol), mSMatrix(nRow, nCol), mAPMatrix(nRow, nCol),
+mAMatrix(nRow, nFactor), mPMatrix(nFactor, nCol), mADomain('A', nRow, nFactor),
+mPDomain('P', nFactor, nCol), mAMeanMatrix(nRow, nFactor),
+mAStdMatrix(nRow, nFactor), mPMeanMatrix(nFactor, nCol),
+mPStdMatrix(nFactor, nCol)
+{}
+
 GibbsSampler::GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S,
 unsigned int nFactor, double alphaA, double alphaP, double maxGibbsMassA,
 double maxGibbsMassP, bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat,
@@ -437,4 +446,50 @@ void GibbsSampler::updateStatistics()
         mPStdMatrix.getRow(r) += gaps::algo::squaredScalarDivision(mPMatrix.getRow(r),
             normVec(r));
     }
+}
+
+void operator<<(Archive &ar, GibbsSampler &sampler)
+{
+    ar << sampler.mDMatrix;
+    ar << sampler.mSMatrix;
+    ar << sampler.mAPMatrix;
+    ar << sampler.mAMatrix;
+    ar << sampler.mPMatrix;
+    ar << sampler.mADomain;
+    ar << sampler.mPDomain;
+    ar << sampler.mAMeanMatrix;
+    ar << sampler.mAStdMatrix;
+    ar << sampler.mPMeanMatrix;
+    ar << sampler.mPStdMatrix;
+    ar << sampler.mStatUpdates;
+    ar << sampler.mMaxGibbsMassA;
+    ar << sampler.mMaxGibbsMassP;
+    ar << sampler.mAnnealingTemp;
+    ar << sampler.mChi2;
+    ar << sampler.mSingleCellRNASeq;
+    ar << sampler.mNumFixedPatterns;
+    ar << sampler.mFixedMat;
+}
+
+void operator>>(Archive &ar, GibbsSampler &sampler)
+{
+    ar >> sampler.mDMatrix;
+    ar >> sampler.mSMatrix;
+    ar >> sampler.mAPMatrix;
+    ar >> sampler.mAMatrix;
+    ar >> sampler.mPMatrix;
+    ar >> sampler.mADomain;
+    ar >> sampler.mPDomain;
+    ar >> sampler.mAMeanMatrix;
+    ar >> sampler.mAStdMatrix;
+    ar >> sampler.mPMeanMatrix;
+    ar >> sampler.mPStdMatrix;
+    ar >> sampler.mStatUpdates;
+    ar >> sampler.mMaxGibbsMassA;
+    ar >> sampler.mMaxGibbsMassP;
+    ar >> sampler.mAnnealingTemp;
+    ar >> sampler.mChi2;
+    ar >> sampler.mSingleCellRNASeq;
+    ar >> sampler.mNumFixedPatterns;
+    ar >> sampler.mFixedMat;
 }

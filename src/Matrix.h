@@ -1,9 +1,10 @@
 #ifndef __COGAPS_MATRIX_H__
 #define __COGAPS_MATRIX_H__
 
+#include "Archive.h"
+
 #include <Rcpp.h>
 #include <vector>
-//#include <boost/serialization/vector.hpp>
 
 // temporary: used for testing performance of float vs double
 typedef double matrix_data_t;
@@ -33,21 +34,11 @@ struct MatrixChange
     {}
 };
 
-// no polymorphism to prevent virtual function overhead, not really
-// needed anyways since few functions are used on all types of matrices
-
 class Vector
 {
 private:
 
     std::vector<matrix_data_t> mValues;
-
-    /*friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar & mValues;
-    }*/
 
 public:
 
@@ -64,6 +55,9 @@ public:
     Rcpp::NumericVector rVec() const {return Rcpp::wrap(mValues);}
     void concat(const Vector& vec);
     void operator+=(const Vector &vec);
+
+    friend void operator<<(Archive &ar, Vector &vec);
+    friend void operator>>(Archive &ar, Vector &vec);
 };
 
 class RowMatrix
@@ -72,15 +66,6 @@ private:
     
     std::vector<Vector> mRows;
     unsigned mNumRows, mNumCols;
-
-    /*friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar & mRows;
-        ar & mNumRows;
-        ar & mNumCols;
-    }*/
 
 public:
 
@@ -99,6 +84,9 @@ public:
 
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
+
+    friend void operator<<(Archive &ar, RowMatrix &mat);
+    friend void operator>>(Archive &ar, RowMatrix &mat);
 };
 
 class ColMatrix
@@ -107,15 +95,6 @@ private:
 
     std::vector<Vector> mCols;
     unsigned mNumRows, mNumCols;
-
-    /*friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar & mCols;
-        ar & mNumRows;
-        ar & mNumCols;
-    }*/
 
 public:
 
@@ -134,6 +113,9 @@ public:
 
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
+
+    friend void operator<<(Archive &ar, ColMatrix &mat);
+    friend void operator>>(Archive &ar, ColMatrix &mat);
 };
 
 // gain performance at the expense of memory
@@ -143,14 +125,6 @@ private:
 
     RowMatrix mRowMatrix;
     ColMatrix mColMatrix;
-
-    /*friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar & mRowMatrix;
-        ar & mColMatrix;
-    }*/
 
 public:
 
@@ -165,12 +139,6 @@ public:
     unsigned nRow() const {return mRowMatrix.nRow();}
     unsigned nCol() const {return mRowMatrix.nCol();}
     
-    // TODO remove since accessing this way defeats the purpose
-    /*matrix_data_t operator()(unsigned r, unsigned c) const
-    {
-        return mRowMatrix(r,c);
-    }*/
-
     const Vector& getRow(unsigned row) const {return mRowMatrix.getRow(row);}
     const Vector& getCol(unsigned col) const {return mColMatrix.getCol(col);}
 
@@ -184,6 +152,9 @@ public:
     {
         return mRowMatrix.rMatrix();
     }
+
+    friend void operator<<(Archive &ar, TwoWayMatrix &mat);
+    friend void operator>>(Archive &ar, TwoWayMatrix &mat);
 };
 
 #endif

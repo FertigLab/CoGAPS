@@ -62,23 +62,6 @@ public:
     // expected magnitude of each atom (must be > 0)
     double mLambda;
 
-    /*friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar & mLabel;
-        ar & mAtomicDomain;
-        ar & mNumAtoms;
-        ar & mMaxNumAtoms;
-        ar & mTotalMass;
-        ar & mNumRows;
-        ar & mNumCols;
-        ar & mNumBins;
-        ar & mBinSize;
-        ar & mAlpha;
-        ar & mLambda;
-    }*/
-
     // convert atomic position to row/col of the matrix
     uint64_t getRow(uint64_t pos) const;
     uint64_t getCol(uint64_t pos) const;
@@ -99,7 +82,6 @@ public:
 public:
 
     // constructors
-    AtomicSupport(std::ifstream &file);
     AtomicSupport(char label, uint64_t nrow, uint64_t ncol, double alpha=1.0,
         double lambda=1.0);
 
@@ -122,6 +104,9 @@ public:
     void setLambda(double lambda) {mLambda = lambda;}
 
     void serializeAndWrite(const std::ofstream &file);
+
+    friend void operator<<(Archive &ar, AtomicSupport &sampler);
+    friend void operator>>(Archive &ar, AtomicSupport &sampler);
 };
 
 #endif
