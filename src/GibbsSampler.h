@@ -36,31 +36,6 @@ public:
     unsigned mNumFixedPatterns;
     char mFixedMat;
 
-    /*friend class boost::serialization::access;    
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar & mDMatrix;
-        ar & mSMatrix;
-        ar & mAPMatrix;
-        ar & mAMatrix;
-        ar & mPMatrix;
-        ar & mADomain;  
-        ar & mPDomain;
-        ar & mAMeanMatrix;
-        ar & mAStdMatrix;
-        ar & mPMeanMatrix;
-        ar & mPStdMatrix;
-        ar & mStatUpdates;
-        ar & mMaxGibbsMassA;
-        ar & mMaxGibbsMassP;
-        ar & mAnnealingTemp;
-        ar & mChi2;
-        ar & mSingleCellRNASeq;
-        ar & mNumFixedPatterns;
-        ar & mFixedMat;
-    }*/
-
     bool death(AtomicSupport &domain, AtomicProposal &proposal);
     bool birth(AtomicSupport &domain, AtomicProposal &proposal);
     bool move(AtomicSupport &domain, AtomicProposal &proposal);
@@ -82,7 +57,7 @@ public:
 
 public:
 
-    GibbsSampler(std::ifstream &file);
+    GibbsSampler(unsigned nRow, unsigned nCol, unsigned nFactor);
     GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S, unsigned nFactor,
         double alphaA, double alphaP, double maxGibbsMassA, double maxGibbsMassP,
         bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat, char whichMat);
@@ -102,7 +77,12 @@ public:
 
     Rcpp::NumericMatrix getNormedMatrix(char mat);
 
-    void serializeAndWrite(const std::ofstream &file);
+    unsigned nRow() const {return mDMatrix.nRow();}
+    unsigned nCol() const {return mDMatrix.nCol();}
+    unsigned nFactor() const {return mAMatrix.nCol();}
+
+    friend void operator<<(Archive &ar, GibbsSampler &sampler);
+    friend void operator>>(Archive &ar, GibbsSampler &sampler);
 };
 
 #endif

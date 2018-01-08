@@ -1,5 +1,6 @@
 #include "GibbsSampler.h"
 #include "Matrix.h"
+#include "Archive.h"
 
 #include <Rcpp.h>
 #include <ctime>
@@ -7,6 +8,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+
+#define ARCHIVE_MAGIC_NUM 0xCE45D32A
 
 typedef std::vector<Rcpp::NumericMatrix> SnapshotList;
 
@@ -63,32 +66,59 @@ struct GapsInternalState
             maxGibbsMassA, maxGibbsMassP, singleCellRNASeq, fixedPatterns,
             whichMatrixFixed)
     {}
+
+    GapsInternalState(unsigned nE, unsigned nS, unsigned nRow, unsigned nCol,
+    unsigned nFactor)
+            :
+        chi2VecEquil(nE), nAtomsAEquil(nE), nAtomsPEquil(nE),
+        chi2VecSample(nS), nAtomsASample(nS), nAtomsPSample(nS),
+        sampler(nRow, nCol, nFactor)
+    {}
 };
 
-/*template<class Archive>
-void boost::serialization::serialize(Archive &ar, GapsInternalState &state)
+void operator<<(Archive &ar, GapsInternalState &state)
 {
-    ar & state.chi2VecEquil;
-    ar & state.nAtomsAEquil;
-    ar & state.nAtomsPEquil;
-    ar & state.chi2VecSample;
-    ar & state.nAtomsASample;
-    ar & state.nAtomsPSample;
-    ar & state.nIterA;
-    ar & state.nIterP;
-    ar & state.nEquil;
-    ar & state.nEquilCool;
-    ar & state.nSample;
-    ar & state.nSnapshots;
-    ar & state.nOutputs;
-    ar & state.messages;
-    ar & state.iter;
-    ar & state.phase;
-    ar & state.seed;
-    ar & state.sampler;
-    //ar & state.snapshotsA;
-    //ar & state.snapshotsP;
-}*/
+    ar << state.chi2VecEquil;
+    ar << state.nAtomsAEquil;
+    ar << state.nAtomsPEquil;
+    ar << state.chi2VecSample;
+    ar << state.nAtomsASample;
+    ar << state.nAtomsPSample;
+    ar << state.nIterA;
+    ar << state.nIterP;
+    ar << state.nEquil;
+    ar << state.nEquilCool;
+    ar << state.nSample;
+    ar << state.nSnapshots;
+    ar << state.nOutputs;
+    ar << state.messages;
+    ar << state.iter;
+    ar << state.phase;
+    ar << state.seed;
+    ar << state.sampler;
+}
+
+void operator>>(Archive &ar, GapsInternalState &state)
+{
+    ar >> state.chi2VecEquil;
+    ar >> state.nAtomsAEquil;
+    ar >> state.nAtomsPEquil;
+    ar >> state.chi2VecSample;
+    ar >> state.nAtomsASample;
+    ar >> state.nAtomsPSample;
+    ar >> state.nIterA;
+    ar >> state.nIterP;
+    ar >> state.nEquil;
+    ar >> state.nEquilCool;
+    ar >> state.nSample;
+    ar >> state.nSnapshots;
+    ar >> state.nOutputs;
+    ar >> state.messages;
+    ar >> state.iter;
+    ar >> state.phase;
+    ar >> state.seed;
+    ar >> state.sampler;
+}
 
 static void runGibbsSampler(GapsInternalState &state, unsigned nIterTotal,
 Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
@@ -152,12 +182,16 @@ static Rcpp::List runCogaps(GapsInternalState &state)
         state.phase = GAPS_COOLING;
     }
 
-    std::ofstream ofs("gaps_checkpoint.out");
-    {
-        boost::archive::text_oarchive oa(ofs);
-        //oa << state;
-    }
-    ofs.close();
+    Archive ar("gaps_checkpoint.out", ARCHIVE_WRITE);
+    ar << ARCHIVE_MAGIC_NUM;
+    gaps::random::save(ar);
+    ar << state.nEquil;
+    ar << state.nSample;
+    ar << state.sampler.nRow();
+    ar << state.sampler.nCol();
+    ar << state.sampler.nFactor();
+    ar << state;
+    ar.close();
 
     if (state.phase == GAPS_COOLING)
     {
@@ -222,26 +256,37 @@ unsigned numOutputs, unsigned numSnapshots)
     return runCogaps(state);
 }
 
-/*
+// [[Rcpp::export]]
 Rcpp::List cogapsFromCheckpoint(const std::string &fileName)
 {   
     // open file
-    std::ifstream file(fileName);
+    Archive ar(fileName, ARCHIVE_READ);
 
     // verify magic number
     uint32_t magicNum = 0;
-    file.read(reinterpret_cast<char*>(&magicNum), sizeof(uint32_t));
-    if (magicNum != 0xCE45D32A)
+    ar >> magicNum;
+    if (magicNum != ARCHIVE_MAGIC_NUM)
     {
         std::cout << "invalid checkpoint file" << std::endl;
         return Rcpp::List::create();
     }
     
     // seed random number generator and create internal state
-    gaps::random::load(file);
-    GapsInternalState state(file);
+    gaps::random::load(ar);
+
+    // read needed parameters
+    unsigned nE = 0, nS = 0, nRow = 0, nCol = 0, nFactor = 0;
+    ar >> nE;
+    ar >> nS;
+    ar >> nRow;
+    ar >> nCol;
+    ar >> nFactor;
+    
+    // construct empty state of the correct size, populate from file
+    GapsInternalState state(nE, nS, nRow, nCol, nFactor);
+    ar >> state;
 
     // run cogaps from this internal state
     return runCogaps(state);
 }
-*/
+

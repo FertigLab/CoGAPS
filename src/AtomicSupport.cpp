@@ -193,3 +193,51 @@ MatrixChange AtomicSupport::getMatrixChange(const AtomicProposal &prop) const
         return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1), prop.delta1);
     }
 }
+
+void operator<<(Archive &ar, AtomicSupport &domain)
+{
+    ar << domain.mLabel;
+    ar << domain.mNumAtoms;
+    ar << domain.mMaxNumAtoms;
+    ar << domain.mTotalMass;
+    ar << domain.mNumRows;
+    ar << domain.mNumCols;
+    ar << domain.mNumBins;
+    ar << domain.mBinSize;
+    ar << domain.mAlpha;
+    ar << domain.mLambda;
+    
+    std::map<uint64_t, double>::iterator iter = domain.mAtomicDomain.begin();
+    for (; iter != domain.mAtomicDomain.end(); ++iter)
+    {
+        uint64_t pos = iter->first;
+        double mass = iter->second;
+        ar << pos;
+        ar << mass;
+        //ar << iter->first;
+        //ar << iter->second;
+    }
+}
+
+void operator>>(Archive &ar, AtomicSupport &domain)
+{
+    ar >> domain.mLabel;
+    ar >> domain.mNumAtoms;
+    ar >> domain.mMaxNumAtoms;
+    ar >> domain.mTotalMass;
+    ar >> domain.mNumRows;
+    ar >> domain.mNumCols;
+    ar >> domain.mNumBins;
+    ar >> domain.mBinSize;
+    ar >> domain.mAlpha;
+    ar >> domain.mLambda;
+
+    uint64_t pos = 0;
+    double mass = 0.0;
+    for (unsigned i = 0; i < domain.mNumAtoms; ++i)
+    {
+        ar >> pos;
+        ar >> mass;
+        domain.mAtomicDomain.insert(std::pair<uint64_t, double>(pos, mass));
+    }    
+}

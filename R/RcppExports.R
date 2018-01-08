@@ -5,6 +5,10 @@ cogaps <- function(DMatrix, SMatrix, nFactor, alphaA, alphaP, nEquil, nEquilCool
     .Call('_CoGAPS_cogaps', PACKAGE = 'CoGAPS', DMatrix, SMatrix, nFactor, alphaA, alphaP, nEquil, nEquilCool, nSample, maxGibbsMassA, maxGibbsMassP, fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq, numOutputs, numSnapshots)
 }
 
+cogapsFromCheckpoint <- function(fileName) {
+    .Call('_CoGAPS_cogapsFromCheckpoint', PACKAGE = 'CoGAPS', fileName)
+}
+
 run_catch_unit_tests <- function() {
     .Call('_CoGAPS_run_catch_unit_tests', PACKAGE = 'CoGAPS')
 }

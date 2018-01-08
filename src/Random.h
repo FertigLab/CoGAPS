@@ -1,13 +1,11 @@
 #ifndef __COGAPS_RANDOM_H__
 #define __COGAPS_RANDOM_H__
 
+#include "Archive.h"
+
 #include <stdint.h>
 #include <vector>
 #include <fstream>
-#include <boost/random/mersenne_twister.hpp>
-
-typedef boost::random::mt19937 RNGType;
-//typedef boost::random::mt11213b RNGType; // should be faster
 
 namespace gaps
 {
@@ -33,8 +31,8 @@ namespace random
     double q_norm(double q, double mean, double sd);
     double p_norm(double p, double mean, double sd);
 
-    RNGType getGenerator();
-    void setGenerator(RNGType rng);
+    void save(Archive &ar);
+    void load(Archive &ar);
 }
 
 }

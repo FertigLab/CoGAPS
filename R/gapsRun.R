@@ -138,3 +138,56 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     message(paste("Chi-Squared of Mean:", calcChiSq))
     return(cogapResult);
 }
+
+#' @export
+gapsRunFromCheckpoint <- function(D, S, path)
+{
+    # call to C++ Rcpp code
+    cogapResult <- cogapsFromCheckpoint(path)
+
+    # convert returned files to matrices to simplify visualization and processing
+    cogapResult$Amean <- as.matrix(cogapResult$Amean);
+    cogapResult$Asd <- as.matrix(cogapResult$Asd);
+    cogapResult$Pmean <- as.matrix(cogapResult$Pmean);
+    cogapResult$Psd <- as.matrix(cogapResult$Psd);
+
+    geneNames <- rownames(D);
+    sampleNames <- colnames(D);
+
+    # label patterns as Patt N
+    patternNames <- c("0");
+    for(i in 1:ncol(cogapResult$Amean))
+    {
+        patternNames[i] <- paste('Patt', i);
+    }
+
+    ## label matrices
+    colnames(cogapResult$Amean) <- patternNames;
+    rownames(cogapResult$Amean) <- geneNames;
+    colnames(cogapResult$Asd) <- patternNames;
+    rownames(cogapResult$Asd) <- geneNames;
+    colnames(cogapResult$Pmean) <- sampleNames;
+    rownames(cogapResult$Pmean) <- patternNames;
+    colnames(cogapResult$Psd) <- sampleNames;
+    rownames(cogapResult$Psd) <- patternNames;
+
+    ## calculate chi-squared of mean, this should be smaller than individual
+    ## chi-squared sample values if sampling is good
+    calcChiSq <- c(0);
+    MMatrix <- (cogapResult$Amean %*% cogapResult$Pmean);
+
+    for(i in 1:(nrow(MMatrix)))
+    {
+        for(j in 1:(ncol(MMatrix)))
+        {
+            calcChiSq <- calcChiSq + ((D[i,j] - MMatrix[i,j])/S[i,j])^2;
+        }
+    }
+
+    cogapResult = c(cogapResult, calcChiSq);
+    
+    # names(cogapResult)[13] <- "meanChi2";
+
+    message(paste("Chi-Squared of Mean:", calcChiSq))
+    return(cogapResult);
+}

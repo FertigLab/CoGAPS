@@ -10,21 +10,26 @@
 #include <boost/math/distributions/normal.hpp>
 #include <boost/math/distributions/exponential.hpp>
 
+#include <boost/random/mersenne_twister.hpp>
+
 #include <stdint.h>
 
 #define Q_GAMMA_THRESHOLD 1E-6
 #define Q_GAMMA_MIN_VALUE 0.0
 
+typedef boost::random::mt19937 RNGType;
+//typedef boost::random::mt11213b RNGType; // should be faster
+
 static RNGType rng;
 
-RNGType gaps::random::getGenerator()
+void gaps::random::save(Archive &ar)
 {
-    return rng;
+    ar << rng;
 }
 
-void gaps::random::setGenerator(RNGType temp)
+void gaps::random::load(Archive &ar)
 {
-    rng = temp;
+    ar >> rng;
 }
 
 void gaps::random::setSeed(uint32_t seed)

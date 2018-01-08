@@ -32,6 +32,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cogapsFromCheckpoint
+Rcpp::List cogapsFromCheckpoint(const std::string& fileName);
+RcppExport SEXP _CoGAPS_cogapsFromCheckpoint(SEXP fileNameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type fileName(fileNameSEXP);
+    rcpp_result_gen = Rcpp::wrap(cogapsFromCheckpoint(fileName));
+    return rcpp_result_gen;
+END_RCPP
+}
 // run_catch_unit_tests
 int run_catch_unit_tests();
 RcppExport SEXP _CoGAPS_run_catch_unit_tests() {
@@ -45,6 +56,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_CoGAPS_cogaps", (DL_FUNC) &_CoGAPS_cogaps, 17},
+    {"_CoGAPS_cogapsFromCheckpoint", (DL_FUNC) &_CoGAPS_cogapsFromCheckpoint, 1},
     {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 0},
     {NULL, NULL, 0}
 };

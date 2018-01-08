@@ -50,6 +50,22 @@ void Vector::operator+=(const Vector &vec)
     }
 }
 
+void operator<<(Archive &ar, Vector &vec)
+{
+    for (unsigned i = 0; i < vec.size(); ++i)
+    {
+        ar << vec[i];
+    }
+}
+
+void operator>>(Archive &ar, Vector &vec)
+{
+    for (unsigned i = 0; i < vec.size(); ++i)
+    {
+        ar >> vec.mValues[i];
+    }
+}
+
 /****************************** ROW MATRIX *****************************/
 
 RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
@@ -93,6 +109,22 @@ Rcpp::NumericMatrix RowMatrix::rMatrix() const
     return convertToRMatrix<RowMatrix>(*this);
 }
 
+void operator<<(Archive &ar, RowMatrix &mat)
+{
+    for (unsigned i = 0; i < mat.nRow(); ++i)
+    {
+        ar << mat.mRows[i];
+    }
+}
+
+void operator>>(Archive &ar, RowMatrix &mat)
+{
+    for (unsigned i = 0; i < mat.nRow(); ++i)
+    {
+        ar >> mat.mRows[i];
+    }
+}
+
 /**************************** COLUMN MATRIX ****************************/
 
 ColMatrix::ColMatrix(unsigned nrow, unsigned ncol)
@@ -134,4 +166,34 @@ void ColMatrix::update(const MatrixChange &change)
 Rcpp::NumericMatrix ColMatrix::rMatrix() const
 {
     return convertToRMatrix<ColMatrix>(*this);
+}
+
+void operator<<(Archive &ar, ColMatrix &mat)
+{
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        ar << mat.mCols[j];
+    }
+}
+
+void operator>>(Archive &ar, ColMatrix &mat)
+{
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        ar >> mat.mCols[j];
+    }
+}
+
+/**************************** TWO-WAY MATRIX ***************************/
+
+void operator<<(Archive &ar, TwoWayMatrix &mat)
+{
+    ar << mat.mRowMatrix;
+    ar << mat.mColMatrix;
+}
+
+void operator>>(Archive &ar, TwoWayMatrix &mat)
+{
+    ar >> mat.mRowMatrix;
+    ar >> mat.mColMatrix;
 }
