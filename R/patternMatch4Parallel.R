@@ -39,6 +39,7 @@ if(ignore.NA==TRUE){Ptot<-Ptot[complete.cases(Ptot),]}
 corr.dist=cor(t(Ptot))
 corr.dist=1-corr.dist
 # cluster
+#library(cluster)
 clust=agnes(x=corr.dist,diss=T,method=cluster.method)
 cut=cutree(as.hclust(clust),k=cnt)
 #save.image(file=paste("CoGAPS.",nP,"P.",nS,"Set.CorrClustCut",cnt,".RData"))
@@ -65,21 +66,22 @@ for(i in cls){
   }
 }
 
-#drop n<4 and drop less than .7
+
+#drop n<minNS 
 PByClustDrop <- list()
 RtoMPDrop <- list()
 for(i in cls){
   if(is.null(dim(PByClust[[i]]))==TRUE){next}
   if(dim(PByClust[[i]])[1]<minNS){next}
   else{
-    indx <- which(RtoMeanPattern[[i]]>.7,arr.ind = TRUE)
-    PByClustDrop <- append(PByClustDrop,list(PByClust[[i]][indx,]))
-    RtoMPDrop <- append(RtoMPDrop,list(RtoMeanPattern[[i]][indx]))
+    #indx <- which(RtoMeanPattern[[i]]>.7,arr.ind = TRUE)
+    PByClustDrop <- append(PByClustDrop,list(PByClust[[i]]))
+    RtoMPDrop <- append(RtoMPDrop,list(RtoMeanPattern[[i]]))
   }
 }
 
 
-### split by corr  (build in drop if below 4)
+### split by corr  (build in drop if below minNS)
 PByCDS <- list()
 RtoMPDS <- list()
 for(j in 1:length(PByClustDrop)){
