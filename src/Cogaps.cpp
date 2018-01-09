@@ -1,6 +1,7 @@
 #include "GibbsSampler.h"
 #include "Matrix.h"
 #include "Archive.h"
+#include "InternalState.h"
 
 #include <Rcpp.h>
 #include <ctime>
@@ -11,113 +12,27 @@
 
 #define ARCHIVE_MAGIC_NUM 0xCE45D32A
 
-typedef std::vector<Rcpp::NumericMatrix> SnapshotList;
+namespace bpt = boost::posix_time;
 
-enum GapsPhase
+static bpt::ptime lastCheckpoint;
+
+static void createCheckpoint(GapsInternalState &state)
 {
-    GAPS_CALIBRATION,
-    GAPS_COOLING,
-    GAPS_SAMPLING
-};
-
-struct GapsInternalState
-{
-    Vector chi2VecEquil;
-    Vector nAtomsAEquil;
-    Vector nAtomsPEquil;
-
-    Vector chi2VecSample;
-    Vector nAtomsASample;
-    Vector nAtomsPSample;
-
-    unsigned nIterA;
-    unsigned nIterP;
-    
-    unsigned nEquil;
-    unsigned nEquilCool;
-    unsigned nSample;
-
-    unsigned nSnapshots;
-    unsigned nOutputs;
-    bool messages;
-
-    unsigned iter;
-    GapsPhase phase;
-    uint32_t seed;
-
-    GibbsSampler sampler;
-
-    SnapshotList snapshotsA;
-    SnapshotList snapshotsP;
-
-    GapsInternalState(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
-        unsigned nFactor, double alphaA, double alphaP, unsigned nE,
-        unsigned nEC, unsigned nS, double maxGibbsMassA,
-        double maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns,
-        char whichMatrixFixed, bool msg, bool singleCellRNASeq,
-        unsigned numOutputs, unsigned numSnapshots, uint32_t in_seed)
-            :
-        chi2VecEquil(nE), nAtomsAEquil(nE), nAtomsPEquil(nE),
-        chi2VecSample(nS), nAtomsASample(nS), nAtomsPSample(nS),
-        nIterA(10), nIterP(10), nEquil(nE), nEquilCool(nEC), nSample(nS),
-        nSnapshots(numSnapshots), nOutputs(numOutputs), messages(msg),
-        iter(0), phase(GAPS_CALIBRATION), seed(in_seed),
-        sampler(DMatrix, SMatrix, nFactor, alphaA, alphaP,
-            maxGibbsMassA, maxGibbsMassP, singleCellRNASeq, fixedPatterns,
-            whichMatrixFixed)
-    {}
-
-    GapsInternalState(unsigned nE, unsigned nS, unsigned nRow, unsigned nCol,
-    unsigned nFactor)
-            :
-        chi2VecEquil(nE), nAtomsAEquil(nE), nAtomsPEquil(nE),
-        chi2VecSample(nS), nAtomsASample(nS), nAtomsPSample(nS),
-        sampler(nRow, nCol, nFactor)
-    {}
-};
-
-void operator<<(Archive &ar, GapsInternalState &state)
-{
-    ar << state.chi2VecEquil;
-    ar << state.nAtomsAEquil;
-    ar << state.nAtomsPEquil;
-    ar << state.chi2VecSample;
-    ar << state.nAtomsASample;
-    ar << state.nAtomsPSample;
-    ar << state.nIterA;
-    ar << state.nIterP;
+    std::cout << "creating gaps checkpoint...";
+    bpt::ptime start = bpt::microsec_clock::local_time();
+    Archive ar("gaps_checkpoint.out", ARCHIVE_WRITE);
+    ar << ARCHIVE_MAGIC_NUM;
+    gaps::random::save(ar);
     ar << state.nEquil;
-    ar << state.nEquilCool;
     ar << state.nSample;
-    ar << state.nSnapshots;
-    ar << state.nOutputs;
-    ar << state.messages;
-    ar << state.iter;
-    ar << state.phase;
-    ar << state.seed;
-    ar << state.sampler;
-}
-
-void operator>>(Archive &ar, GapsInternalState &state)
-{
-    ar >> state.chi2VecEquil;
-    ar >> state.nAtomsAEquil;
-    ar >> state.nAtomsPEquil;
-    ar >> state.chi2VecSample;
-    ar >> state.nAtomsASample;
-    ar >> state.nAtomsPSample;
-    ar >> state.nIterA;
-    ar >> state.nIterP;
-    ar >> state.nEquil;
-    ar >> state.nEquilCool;
-    ar >> state.nSample;
-    ar >> state.nSnapshots;
-    ar >> state.nOutputs;
-    ar >> state.messages;
-    ar >> state.iter;
-    ar >> state.phase;
-    ar >> state.seed;
-    ar >> state.sampler;
+    ar << state.sampler.nRow();
+    ar << state.sampler.nCol();
+    ar << state.sampler.nFactor();
+    ar << state;
+    ar.close();
+    bpt::time_duration diff = bpt::microsec_clock::local_time() - start;
+    double elapsed = diff.total_milliseconds() / 1000.;
+    std::cout << " finished in " << elapsed << " seconds\n";
 }
 
 static void runGibbsSampler(GapsInternalState &state, unsigned nIterTotal,
@@ -125,7 +40,13 @@ Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
 {
     for (; state.iter < nIterTotal; ++state.iter)
     {
-        // TODO check if checkpoint should be created
+        bpt::ptime now = bpt::microsec_clock::local_time();
+        bpt::time_duration diff = now - lastCheckpoint;
+        if (state.checkpointInterval > 0 && diff.total_milliseconds() > state.checkpointInterval * 1000)
+        {
+            createCheckpoint(state);
+            lastCheckpoint = bpt::microsec_clock::local_time();
+        }
 
         if (state.phase == GAPS_CALIBRATION)
         {
@@ -174,6 +95,9 @@ Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
 
 static Rcpp::List runCogaps(GapsInternalState &state)
 {
+    // reset the checkpoint timer
+    lastCheckpoint = bpt::microsec_clock::local_time();
+
     if (state.phase == GAPS_CALIBRATION)
     {
         runGibbsSampler(state, state.nEquil, state.chi2VecEquil,
@@ -181,17 +105,6 @@ static Rcpp::List runCogaps(GapsInternalState &state)
         state.iter = 0;
         state.phase = GAPS_COOLING;
     }
-
-    Archive ar("gaps_checkpoint.out", ARCHIVE_WRITE);
-    ar << ARCHIVE_MAGIC_NUM;
-    gaps::random::save(ar);
-    ar << state.nEquil;
-    ar << state.nSample;
-    ar << state.sampler.nRow();
-    ar << state.sampler.nCol();
-    ar << state.sampler.nFactor();
-    ar << state;
-    ar.close();
 
     if (state.phase == GAPS_COOLING)
     {
@@ -233,15 +146,15 @@ unsigned nFactor, double alphaA, double alphaP, unsigned nEquil,
 unsigned nEquilCool, unsigned nSample, double maxGibbsMassA,
 double maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns,
 char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq,
-unsigned numOutputs, unsigned numSnapshots)
+unsigned numOutputs, unsigned numSnapshots, unsigned checkpointInterval)
 {
     // set seed
     uint32_t seedUsed = static_cast<uint32_t>(seed);
     if (seed < 0)
     {
-        boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1)); 
-        boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time();
-        boost::posix_time::time_duration diff = now - epoch;
+        bpt::ptime epoch(boost::gregorian::date(1970,1,1)); 
+        bpt::ptime now = boost::posix_time::microsec_clock::local_time();
+        bpt::time_duration diff = now - epoch;
         seedUsed = static_cast<uint32_t>(diff.total_milliseconds() % 1000);
     }
     gaps::random::setSeed(seedUsed);
@@ -250,7 +163,7 @@ unsigned numOutputs, unsigned numSnapshots)
     GapsInternalState state(DMatrix, SMatrix, nFactor, alphaA, alphaP,
         nEquil, nEquilCool, nSample, maxGibbsMassA, maxGibbsMassP,
         fixedPatterns, whichMatrixFixed, messages, singleCellRNASeq,
-        numOutputs, numSnapshots, seedUsed);
+        numOutputs, numSnapshots, seedUsed, checkpointInterval);
 
     // run cogaps from this internal state
     return runCogaps(state);

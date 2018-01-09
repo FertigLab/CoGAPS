@@ -51,6 +51,8 @@
 #'@param fixedPatterns matrix of fixed values in either A or P matrix
 #'@param whichMatrixFixed character to indicate whether A or P matrix
 #'  contains the fixed patterns
+#'@param checkpoint_file_name name of file to store checkpoint
+#'@param checkpoint_interval time (in seconds) between cogaps checkpoints
 #'@export
 
 #--CHANGES 1/20/15--
@@ -63,7 +65,9 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                     nMaxA = 100000, max_gibbmass_paraA = 100.0,
                     alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0,
                     seed=-1, messages=TRUE, singleCellRNASeq=FALSE,
-                    fixedPatterns = matrix(0), whichMatrixFixed = 'N')
+                    fixedPatterns = matrix(0), whichMatrixFixed = 'N',
+                    checkpoint_file_name = "gaps_checkpoint.out",
+                    checkpoint_interval = 0)
 {
     # Floor the parameters that are integers to prevent allowing doubles.
     nFactor <- floor(nFactor)
@@ -100,7 +104,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     cogapResult <- cogaps(as.matrix(D), as.matrix(S), nFactor, alphaA, alphaP,
         nEquil, floor(nEquil/10), nSample, max_gibbmass_paraA, max_gibbmass_paraP,
         fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq,
-        nOutR, numSnapshots)
+        nOutR, numSnapshots, checkpoint_interval)
 
     # convert returned files to matrices to simplify visualization and processing
     cogapResult$Amean <- as.matrix(cogapResult$Amean);
