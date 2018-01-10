@@ -30,9 +30,6 @@ TEST_CASE("Test Random.h - Random Number Generation")
 
     SECTION("Test uniform distribution over general interval")
     {
-        // invalid bounds
-        REQUIRE_THROWS(gaps::random::uniform(2.0, 1.4));
-
         // bounds equal
         REQUIRE(gaps::random::uniform(4.3,4.3) == 4.3);
 

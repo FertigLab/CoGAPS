@@ -31,4 +31,5 @@ update_remotes.sh
 inst/profiling/callgrind.out.*
 inst/profiling/vgcore.*
 inst/profiling/valgrind_out.txt
->>>>>>> develop
+
+*.temp

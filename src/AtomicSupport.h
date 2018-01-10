@@ -98,12 +98,11 @@ public:
     double totalMass() const {return mTotalMass;}
     uint64_t numAtoms() const {return mNumAtoms;}
     double at(uint64_t loc) const {return mAtomicDomain.at(loc);}
+    double test_at(uint64_t loc) const {return mAtomicDomain.count(loc) ? mAtomicDomain.at(loc) : 0.0;}
 
     // setters
     void setAlpha(double alpha) {mAlpha = alpha;}
     void setLambda(double lambda) {mLambda = lambda;}
-
-    void serializeAndWrite(const std::ofstream &file);
 
     friend void operator<<(Archive &ar, AtomicSupport &sampler);
     friend void operator>>(Archive &ar, AtomicSupport &sampler);

@@ -126,14 +126,10 @@ TEST_CASE("Internal AtomicSupport Tests")
     {
         for (unsigned i = 0; i < 10000; ++i)
         {
-            REQUIRE(Adomain.getRow(gaps::random::uniform64()) >= 0);
             REQUIRE(Adomain.getRow(gaps::random::uniform64()) < nrow);
-            REQUIRE(Adomain.getCol(gaps::random::uniform64()) >= 0);
             REQUIRE(Adomain.getCol(gaps::random::uniform64()) < ncol);
 
-            REQUIRE(Pdomain.getRow(gaps::random::uniform64()) >= 0);
             REQUIRE(Pdomain.getRow(gaps::random::uniform64()) < nrow);
-            REQUIRE(Pdomain.getCol(gaps::random::uniform64()) >= 0);
             REQUIRE(Pdomain.getCol(gaps::random::uniform64()) < ncol);            
         }
     }
