@@ -13,8 +13,7 @@ gapsRun(D, S, ABins = data.frame(), PBins = data.frame(), nFactor = 7,
   max_gibbmass_paraA = 100, alphaP = 0.01, nMaxP = 1e+05,
   max_gibbmass_paraP = 100, seed = -1, messages = TRUE,
   singleCellRNASeq = FALSE, fixedPatterns = matrix(0),
-  whichMatrixFixed = "N", checkpoint_file_name = "gaps_checkpoint.out",
-  checkpoint_interval = 0)
+  whichMatrixFixed = "N", checkpoint_interval = 0)
 }
 \arguments{
 \item{D}{data matrix}
@@ -71,9 +70,9 @@ domain for relative probabilities}
 \item{whichMatrixFixed}{character to indicate whether A or P matrix
 contains the fixed patterns}
 
-\item{checkpoint_file_name}{name of file to store checkpoint}
-
 \item{checkpoint_interval}{time (in seconds) between cogaps checkpoints}
+
+\item{checkpoint_file_name}{name of file to store checkpoint}
 }
 \description{
 \code{gapsRun} calls the C++ MCMC code and performs Bayesian

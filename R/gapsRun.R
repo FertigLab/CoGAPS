@@ -66,7 +66,6 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                     alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0,
                     seed=-1, messages=TRUE, singleCellRNASeq=FALSE,
                     fixedPatterns = matrix(0), whichMatrixFixed = 'N',
-                    checkpoint_file_name = "gaps_checkpoint.out",
                     checkpoint_interval = 0)
 {
     # Floor the parameters that are integers to prevent allowing doubles.

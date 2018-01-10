@@ -41,6 +41,7 @@ struct GapsInternalState
     uint32_t seed;
 
     long checkpointInterval;
+    unsigned numCheckpoints;
 
     GibbsSampler sampler;
 
@@ -60,7 +61,7 @@ struct GapsInternalState
         nIterA(10), nIterP(10), nEquil(nE), nEquilCool(nEC), nSample(nS),
         nSnapshots(numSnapshots), nOutputs(numOutputs), messages(msg),
         iter(0), phase(GAPS_CALIBRATION), seed(in_seed),
-        checkpointInterval(cptInterval),
+        checkpointInterval(cptInterval), numCheckpoints(0),
         sampler(DMatrix, SMatrix, nFactor, alphaA, alphaP,
             maxGibbsMassA, maxGibbsMassP, singleCellRNASeq, fixedPatterns,
             whichMatrixFixed)
@@ -75,7 +76,7 @@ struct GapsInternalState
     {}
 };
 
-void operator<<(Archive &ar, GapsInternalState &state)
+inline void operator<<(Archive &ar, GapsInternalState &state)
 {
     ar << state.chi2VecEquil;
     ar << state.nAtomsAEquil;
@@ -95,10 +96,11 @@ void operator<<(Archive &ar, GapsInternalState &state)
     ar << state.phase;
     ar << state.seed;
     ar << state.checkpointInterval;
+    ar << state.numCheckpoints;
     ar << state.sampler;
 }
 
-void operator>>(Archive &ar, GapsInternalState &state)
+inline void operator>>(Archive &ar, GapsInternalState &state)
 {
     ar >> state.chi2VecEquil;
     ar >> state.nAtomsAEquil;
@@ -117,7 +119,8 @@ void operator>>(Archive &ar, GapsInternalState &state)
     ar >> state.iter;
     ar >> state.phase;
     ar >> state.seed;
-    ar << state.checkpointInterval;
+    ar >> state.checkpointInterval;
+    ar >> state.numCheckpoints;
     ar >> state.sampler;
 }
 

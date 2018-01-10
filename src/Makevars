@@ -11,5 +11,6 @@ OBJECTS =   Algorithms.o \
             cpp_tests/testAtomicSupport.o \
             cpp_tests/testGibbsSampler.o \
             cpp_tests/testMatrix.o \
-            cpp_tests/testRandom.o
+            cpp_tests/testRandom.o \
+            cpp_tests/testSerialization.o
 

@@ -10,6 +10,11 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
+// no C++11 std::to_string
+#include <sstream>
+#define SSTR( x ) static_cast< std::ostringstream & >( \
+        ( std::ostringstream() << std::dec << x ) ).str()
+
 #define ARCHIVE_MAGIC_NUM 0xCE45D32A
 
 namespace bpt = boost::posix_time;
@@ -18,9 +23,11 @@ static bpt::ptime lastCheckpoint;
 
 static void createCheckpoint(GapsInternalState &state)
 {
+    state.numCheckpoints++;
     std::cout << "creating gaps checkpoint...";
     bpt::ptime start = bpt::microsec_clock::local_time();
-    Archive ar("gaps_checkpoint.out", ARCHIVE_WRITE);
+    Archive ar("gaps_checkpoint_" + SSTR(state.numCheckpoints) + ".out",
+        ARCHIVE_WRITE);
     ar << ARCHIVE_MAGIC_NUM;
     gaps::random::save(ar);
     ar << state.nEquil;
