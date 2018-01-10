@@ -65,16 +65,15 @@ for(i in cls){
   }
 }
 
-#drop n<4 and drop less than .7
+#drop n<minNS
 PByClustDrop <- list()
 RtoMPDrop <- list()
 for(i in cls){
   if(is.null(dim(PByClust[[i]]))==TRUE){next}
   if(dim(PByClust[[i]])[1]<minNS){next}
   else{
-    indx <- which(RtoMeanPattern[[i]]>.7,arr.ind = TRUE)
-    PByClustDrop <- append(PByClustDrop,list(PByClust[[i]][indx,]))
-    RtoMPDrop <- append(RtoMPDrop,list(RtoMeanPattern[[i]][indx]))
+    PByClustDrop <- append(PByClustDrop,list(PByClust[[i]]))
+    RtoMPDrop <- append(RtoMPDrop,list(RtoMeanPattern[[i]]))
   }
 }
 
