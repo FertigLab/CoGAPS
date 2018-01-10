@@ -13,4 +13,3 @@ OBJECTS =   Algorithms.o \
             cpp_tests/testMatrix.o \
             cpp_tests/testRandom.o \
             cpp_tests/testSerialization.o
-

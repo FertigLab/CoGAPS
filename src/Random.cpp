@@ -1,3 +1,9 @@
+// [[Rcpp::depends(BH)]]
+
+// need -O0 to run in valgrind
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+
 #include "Random.h"
 
 #include <boost/random/uniform_01.hpp>
@@ -136,3 +142,5 @@ double gaps::random::p_norm(double p, double mean, double sd)
     boost::math::normal_distribution<> norm(mean, sd);
     return cdf(norm, p);
 }
+
+#pragma GCC pop_options
