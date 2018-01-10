@@ -10,10 +10,10 @@ print(packageVersion('CoGAPS'))
 
 # benchmark dimensions
 
-M_dimensions <- c(50, 75, 100, 175, 225, 375, 500, 650, 800, 1000)
+M_dimensions <- c(50, 75, 100, 250, 500, 750, 1000)
 N_dimensions <- M_dimensions
-nFactor_dimensions <- c(5, 7, 10, 15, 20, 25, 30, 40, 50)
-nIter_dimensions <- c(1000, 1250, 1500, 1750, 2000, 2500, 3000, 4000, 5000)
+nFactor_dimensions <- c(5, 10, 15, 20, 30, 40, 50)
+nIter_dimensions <- c(1000, 1250, 1500, 1750, 2000, 2500, 3000)
 
 M_default <- floor(median(M_dimensions))
 N_default <- floor(median(N_dimensions))
@@ -28,6 +28,11 @@ reps_default <- 5
 
 # benchmark function
 
+timeToSeconds <- function(time)
+{
+     time$hour * 3600 + time$min * 60 + time$sec
+}   
+
 data(GIST_TS_20084)
 runBenchmark <- function(m, n, k, iter, seed, reps)
 {
@@ -41,12 +46,12 @@ runBenchmark <- function(m, n, k, iter, seed, reps)
     times <- c()
     for (r in 1:reps)
     {
-        start_time <- Sys.time()
+        start_time <- as.POSIXlt(Sys.time())
         gapsRun(test_mat_D, test_mat_S, nEquil=iter, nSample=iter,
-            nFactor=k, seed=seed+r, messages=TRUE, nOutR = iter/10,
+            nFactor=k, seed=seed+r, messages=TRUE, nOutR = iter/2,
 #            sampleSnapshots=FALSE, numSnapshots=iter / 2)
             numSnapshots=0)
-        times[r] <- as.numeric(Sys.time() - start_time)
+        times[r] <- timeToSeconds(as.POSIXlt(Sys.time())) - timeToSeconds(start_time)
         print(round(times[r], 2))
     }
     params <- c(m, n, k, iter, seed, reps)
