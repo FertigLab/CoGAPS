@@ -10,9 +10,9 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-// need -O0 to run in valgrind
+// need -O0 to run in valgrind, -O2 for performance
 #pragma GCC push_options
-#pragma GCC optimize ("O0")
+#pragma GCC optimize ("O2")
 #include <boost/math/distributions/normal.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <boost/math/distributions/gamma.hpp>
