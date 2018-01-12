@@ -13,14 +13,16 @@ private:
 public:
 #endif
 
+    TwoWayMatrix mDMatrix, mSMatrix, mAPMatrix;
+
+    ColMatrix mAMatrix;
+    RowMatrix mPMatrix;
+
     AtomicSupport mADomain, mPDomain;
 
-    TwoWayMatrix mDMatrix, mSMatrix, mAPMatrix;
-    RowMatrix mPMatrix;
-    ColMatrix mAMatrix;
-
-    RowMatrix mPMeanMatrix, mPStdMatrix;
     ColMatrix mAMeanMatrix, mAStdMatrix;
+    RowMatrix mPMeanMatrix, mPStdMatrix;
+
     unsigned mStatUpdates;
 
     float mMaxGibbsMassA;
@@ -55,6 +57,7 @@ public:
 
 public:
 
+    GibbsSampler(unsigned nRow, unsigned nCol, unsigned nFactor);
     GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S, unsigned nFactor,
         float alphaA, float alphaP, float maxGibbsMassA, float maxGibbsMassP,
         bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat, char whichMat);
@@ -73,6 +76,13 @@ public:
     void updateStatistics();
 
     Rcpp::NumericMatrix getNormedMatrix(char mat);
+
+    unsigned nRow() const {return mDMatrix.nRow();}
+    unsigned nCol() const {return mDMatrix.nCol();}
+    unsigned nFactor() const {return mAMatrix.nCol();}
+
+    friend void operator<<(Archive &ar, GibbsSampler &sampler);
+    friend void operator>>(Archive &ar, GibbsSampler &sampler);
 };
 
 #endif

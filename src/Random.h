@@ -1,8 +1,11 @@
 #ifndef __COGAPS_RANDOM_H__
 #define __COGAPS_RANDOM_H__
 
+#include "Archive.h"
+
 #include <stdint.h>
 #include <vector>
+#include <fstream>
 
 namespace gaps
 {
@@ -27,6 +30,9 @@ namespace random
     float d_norm(float d, float mean, float sd);
     float q_norm(float q, float mean, float sd);
     float p_norm(float p, float mean, float sd);
+
+    void save(Archive &ar);
+    void load(Archive &ar);
 }
 
 }

@@ -51,6 +51,8 @@
 #'@param fixedPatterns matrix of fixed values in either A or P matrix
 #'@param whichMatrixFixed character to indicate whether A or P matrix
 #'  contains the fixed patterns
+#'@param checkpoint_file_name name of file to store checkpoint
+#'@param checkpoint_interval time (in seconds) between cogaps checkpoints
 #'@export
 
 #--CHANGES 1/20/15--
@@ -63,7 +65,8 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                     nMaxA = 100000, max_gibbmass_paraA = 100.0,
                     alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0,
                     seed=-1, messages=TRUE, singleCellRNASeq=FALSE,
-                    fixedPatterns = matrix(0), whichMatrixFixed = 'N')
+                    fixedPatterns = matrix(0), whichMatrixFixed = 'N',
+                    checkpoint_interval = 0)
 {
     # Floor the parameters that are integers to prevent allowing doubles.
     nFactor <- floor(nFactor)
@@ -100,13 +103,66 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     cogapResult <- cogaps(as.matrix(D), as.matrix(S), nFactor, alphaA, alphaP,
         nEquil, floor(nEquil/10), nSample, max_gibbmass_paraA, max_gibbmass_paraP,
         fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq,
-        nOutR, numSnapshots)
+        nOutR, numSnapshots, checkpoint_interval)
 
     # convert returned files to matrices to simplify visualization and processing
     cogapResult$Amean <- as.matrix(cogapResult$Amean);
     cogapResult$Asd <- as.matrix(cogapResult$Asd);
     cogapResult$Pmean <- as.matrix(cogapResult$Pmean);
     cogapResult$Psd <- as.matrix(cogapResult$Psd);
+
+    ## label matrices
+    colnames(cogapResult$Amean) <- patternNames;
+    rownames(cogapResult$Amean) <- geneNames;
+    colnames(cogapResult$Asd) <- patternNames;
+    rownames(cogapResult$Asd) <- geneNames;
+    colnames(cogapResult$Pmean) <- sampleNames;
+    rownames(cogapResult$Pmean) <- patternNames;
+    colnames(cogapResult$Psd) <- sampleNames;
+    rownames(cogapResult$Psd) <- patternNames;
+
+    ## calculate chi-squared of mean, this should be smaller than individual
+    ## chi-squared sample values if sampling is good
+    calcChiSq <- c(0);
+    MMatrix <- (cogapResult$Amean %*% cogapResult$Pmean);
+
+    for(i in 1:(nrow(MMatrix)))
+    {
+        for(j in 1:(ncol(MMatrix)))
+        {
+            calcChiSq <- calcChiSq + ((D[i,j] - MMatrix[i,j])/S[i,j])^2;
+        }
+    }
+
+    cogapResult = c(cogapResult, calcChiSq);
+    
+    # names(cogapResult)[13] <- "meanChi2";
+
+    message(paste("Chi-Squared of Mean:", calcChiSq))
+    return(cogapResult);
+}
+
+#' @export
+gapsRunFromCheckpoint <- function(D, S, path)
+{
+    # call to C++ Rcpp code
+    cogapResult <- cogapsFromCheckpoint(path)
+
+    # convert returned files to matrices to simplify visualization and processing
+    cogapResult$Amean <- as.matrix(cogapResult$Amean);
+    cogapResult$Asd <- as.matrix(cogapResult$Asd);
+    cogapResult$Pmean <- as.matrix(cogapResult$Pmean);
+    cogapResult$Psd <- as.matrix(cogapResult$Psd);
+
+    geneNames <- rownames(D);
+    sampleNames <- colnames(D);
+
+    # label patterns as Patt N
+    patternNames <- c("0");
+    for(i in 1:ncol(cogapResult$Amean))
+    {
+        patternNames[i] <- paste('Patt', i);
+    }
 
     ## label matrices
     colnames(cogapResult$Amean) <- patternNames;

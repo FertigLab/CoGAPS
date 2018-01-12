@@ -42,10 +42,8 @@ TEST_CASE("Test AtomicSupport.h")
             
             REQUIRE(change.label == 'A');
             REQUIRE(change.nChanges == prop.nChanges);
-            cond = change.row1 >= 0 && change.row2 < nrow;
-            REQUIRE(cond);
-            cond = change.col1 >= 0 && change.col2 < ncol;
-            REQUIRE(cond);
+            REQUIRE(change.row2 < nrow);
+            REQUIRE(change.col2 < ncol);
             REQUIRE(change.delta1 == prop.delta1);
             REQUIRE(change.delta2 == prop.delta2);
 
@@ -128,14 +126,10 @@ TEST_CASE("Internal AtomicSupport Tests")
     {
         for (unsigned i = 0; i < 10000; ++i)
         {
-            REQUIRE(Adomain.getRow(gaps::random::uniform64()) >= 0);
             REQUIRE(Adomain.getRow(gaps::random::uniform64()) < nrow);
-            REQUIRE(Adomain.getCol(gaps::random::uniform64()) >= 0);
             REQUIRE(Adomain.getCol(gaps::random::uniform64()) < ncol);
 
-            REQUIRE(Pdomain.getRow(gaps::random::uniform64()) >= 0);
             REQUIRE(Pdomain.getRow(gaps::random::uniform64()) < nrow);
-            REQUIRE(Pdomain.getCol(gaps::random::uniform64()) >= 0);
             REQUIRE(Pdomain.getCol(gaps::random::uniform64()) < ncol);            
         }
     }
