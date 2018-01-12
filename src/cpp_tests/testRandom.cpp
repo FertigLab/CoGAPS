@@ -31,7 +31,7 @@ TEST_CASE("Test Random.h - Random Number Generation")
     SECTION("Test uniform distribution over general interval")
     {
         // bounds equal
-        REQUIRE(gaps::random::uniform(4.3,4.3) == 4.3);
+        REQUIRE(gaps::random::uniform(4.3,4.3) == 4.3f);
 
         // full range possible
         float min = 10., max = 0.;
