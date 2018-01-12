@@ -1,9 +1,5 @@
 // [[Rcpp::depends(BH)]]
 
-// need -O0 to run in valgrind
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
-
 #include "Random.h"
 
 #include <boost/random/uniform_01.hpp>
@@ -12,11 +8,15 @@
 #include <boost/random/poisson_distribution.hpp>
 #include <boost/random/exponential_distribution.hpp>
 
-#include <boost/math/distributions/gamma.hpp>
+#include <boost/random/mersenne_twister.hpp>
+
+// need -O0 to run in valgrind
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
 #include <boost/math/distributions/normal.hpp>
 #include <boost/math/distributions/exponential.hpp>
-
-#include <boost/random/mersenne_twister.hpp>
+#include <boost/math/distributions/gamma.hpp>
+#pragma GCC pop_options
 
 #include <stdint.h>
 
@@ -142,5 +142,3 @@ float gaps::random::p_norm(float p, float mean, float sd)
     boost::math::normal_distribution<> norm(mean, sd);
     return cdf(norm, p);
 }
-
-#pragma GCC pop_options
