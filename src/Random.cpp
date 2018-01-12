@@ -1,8 +1,11 @@
 // [[Rcpp::depends(BH)]]
 
+// need -O0 to run in valgrind
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
+
 #include "Random.h"
 
-#include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -13,6 +16,8 @@
 #include <boost/math/distributions/normal.hpp>
 #include <boost/math/distributions/exponential.hpp>
 
+#include <boost/random/mersenne_twister.hpp>
+
 #include <stdint.h>
 
 #define Q_GAMMA_THRESHOLD 1E-6
@@ -20,7 +25,18 @@
 
 typedef boost::random::mt19937 RNGType;
 //typedef boost::random::mt11213b RNGType; // should be faster
+
 static RNGType rng;
+
+void gaps::random::save(Archive &ar)
+{
+    ar << rng;
+}
+
+void gaps::random::load(Archive &ar)
+{
+    ar >> rng;
+}
 
 void gaps::random::setSeed(uint32_t seed)
 {
@@ -57,7 +73,7 @@ float gaps::random::uniform(float a, float b)
     {
         return a;
     }
-    else if (a < b)
+    else
     {
         boost::random::uniform_real_distribution<> dist(a,b);
         return dist(rng);
@@ -77,7 +93,7 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     {
         return a;
     }
-    else if (a < b)
+    else
     {
         boost::random::uniform_int_distribution<uint64_t> dist(a,b);
         return dist(rng);
@@ -127,3 +143,4 @@ float gaps::random::p_norm(float p, float mean, float sd)
     return cdf(norm, p);
 }
 
+#pragma GCC pop_options

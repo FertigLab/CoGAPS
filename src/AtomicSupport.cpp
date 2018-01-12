@@ -5,10 +5,11 @@ static const float EPSILON = 1.e-10;
 AtomicSupport::AtomicSupport(char label, uint64_t nrow, uint64_t ncol,
 float alpha, float lambda)
     :
-mNumRows(nrow), mNumCols(ncol), mNumBins(nrow * ncol),
-mNumAtoms(0), mTotalMass(0.0), mLabel(label), mAlpha(alpha), 
-mMaxNumAtoms(std::numeric_limits<uint64_t>::max()), mLambda(lambda),
-mBinSize(std::numeric_limits<uint64_t>::max() / (nrow * ncol))
+mLabel(label), mNumAtoms(0),
+mMaxNumAtoms(std::numeric_limits<uint64_t>::max()),
+mTotalMass(0.0), mNumRows(nrow), mNumCols(ncol), mNumBins(nrow * ncol),
+mBinSize(std::numeric_limits<uint64_t>::max() / (nrow * ncol)),
+mAlpha(alpha), mLambda(lambda)
 {}
 
 uint64_t AtomicSupport::getRow(uint64_t pos) const
@@ -113,7 +114,7 @@ AtomicProposal AtomicSupport::proposeExchange() const
     return AtomicProposal(mLabel, 'E', pos1, delta1, pos2, delta2);
 }
 
-float AtomicSupport::updateAtomMass(char type, uint64_t pos, float delta)
+float AtomicSupport::updateAtomMass(uint64_t pos, float delta)
 {
     if (mAtomicDomain.count(pos)) // update atom if it exists
     {
@@ -172,10 +173,10 @@ AtomicProposal AtomicSupport::makeProposal() const
 MatrixChange AtomicSupport::acceptProposal(const AtomicProposal &prop)
 {
     MatrixChange change = getMatrixChange(prop);
-    change.delta1 = updateAtomMass(prop.type, prop.pos1, prop.delta1);
+    change.delta1 = updateAtomMass(prop.pos1, prop.delta1);
     if (prop.nChanges > 1)
     {
-        change.delta2 = updateAtomMass(prop.type, prop.pos2, prop.delta2);
+        change.delta2 = updateAtomMass(prop.pos2, prop.delta2);
     }
     return change;
 }
@@ -191,4 +192,52 @@ MatrixChange AtomicSupport::getMatrixChange(const AtomicProposal &prop) const
     {   
         return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1), prop.delta1);
     }
+}
+
+void operator<<(Archive &ar, AtomicSupport &domain)
+{
+    ar << domain.mLabel;
+    ar << domain.mNumAtoms;
+    ar << domain.mMaxNumAtoms;
+    ar << domain.mTotalMass;
+    ar << domain.mNumRows;
+    ar << domain.mNumCols;
+    ar << domain.mNumBins;
+    ar << domain.mBinSize;
+    ar << domain.mAlpha;
+    ar << domain.mLambda;
+    
+    std::map<uint64_t, float>::iterator iter = domain.mAtomicDomain.begin();
+    for (; iter != domain.mAtomicDomain.end(); ++iter)
+    {
+        uint64_t pos = iter->first;
+        float mass = iter->second;
+        ar << pos;
+        ar << mass;
+        //ar << iter->first;
+        //ar << iter->second;
+    }
+}
+
+void operator>>(Archive &ar, AtomicSupport &domain)
+{
+    ar >> domain.mLabel;
+    ar >> domain.mNumAtoms;
+    ar >> domain.mMaxNumAtoms;
+    ar >> domain.mTotalMass;
+    ar >> domain.mNumRows;
+    ar >> domain.mNumCols;
+    ar >> domain.mNumBins;
+    ar >> domain.mBinSize;
+    ar >> domain.mAlpha;
+    ar >> domain.mLambda;
+
+    uint64_t pos = 0;
+    float mass = 0.0;
+    for (unsigned i = 0; i < domain.mNumAtoms; ++i)
+    {
+        ar >> pos;
+        ar >> mass;
+        domain.mAtomicDomain.insert(std::pair<uint64_t, float>(pos, mass));
+    }    
 }

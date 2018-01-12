@@ -5,19 +5,28 @@
 
 static const float EPSILON = 1.e-10;
 
+GibbsSampler::GibbsSampler(unsigned nRow, unsigned nCol, unsigned nFactor)
+    :
+mDMatrix(nRow, nCol), mSMatrix(nRow, nCol), mAPMatrix(nRow, nCol),
+mAMatrix(nRow, nFactor), mPMatrix(nFactor, nCol), mADomain('A', nRow, nFactor),
+mPDomain('P', nFactor, nCol), mAMeanMatrix(nRow, nFactor),
+mAStdMatrix(nRow, nFactor), mPMeanMatrix(nFactor, nCol),
+mPStdMatrix(nFactor, nCol)
+{}
+
 GibbsSampler::GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S,
 unsigned int nFactor, float alphaA, float alphaP, float maxGibbsMassA,
 float maxGibbsMassP, bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat,
 char whichMat)
     :
-mDMatrix(D), mSMatrix(S), mAMatrix(D.nrow(), nFactor),
-mPMatrix(nFactor, D.ncol()), mAPMatrix(D.nrow(), D.ncol()),
+mDMatrix(D), mSMatrix(S), mAPMatrix(D.nrow(), D.ncol()),
+mAMatrix(D.nrow(), nFactor), mPMatrix(nFactor, D.ncol()), 
 mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
-mMaxGibbsMassA(maxGibbsMassA), mMaxGibbsMassP(maxGibbsMassP),
-mAnnealingTemp(1.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq),
 mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
 mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
-mStatUpdates(0), mFixedMat(whichMat)
+mStatUpdates(0), mMaxGibbsMassA(maxGibbsMassA), mMaxGibbsMassP(maxGibbsMassP),
+mAnnealingTemp(1.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq),
+mFixedMat(whichMat)
 {
     float meanD = mSingleCellRNASeq ? gaps::algo::nonZeroMean(mDMatrix)
         : gaps::algo::mean(mDMatrix);
@@ -30,6 +39,7 @@ mStatUpdates(0), mFixedMat(whichMat)
     mMaxGibbsMassA /= mADomain.lambda();
     mMaxGibbsMassP /= mPDomain.lambda();
 
+    // need to update atomic in order to create checkpoints
     if (mFixedMat == 'A')
     {
         mNumFixedPatterns = fixedPat.ncol();
@@ -436,4 +446,50 @@ void GibbsSampler::updateStatistics()
         mPStdMatrix.getRow(r) += gaps::algo::squaredScalarDivision(mPMatrix.getRow(r),
             normVec[r]);
     }
+}
+
+void operator<<(Archive &ar, GibbsSampler &sampler)
+{
+    ar << sampler.mDMatrix;
+    ar << sampler.mSMatrix;
+    ar << sampler.mAPMatrix;
+    ar << sampler.mAMatrix;
+    ar << sampler.mPMatrix;
+    ar << sampler.mADomain;
+    ar << sampler.mPDomain;
+    ar << sampler.mAMeanMatrix;
+    ar << sampler.mAStdMatrix;
+    ar << sampler.mPMeanMatrix;
+    ar << sampler.mPStdMatrix;
+    ar << sampler.mStatUpdates;
+    ar << sampler.mMaxGibbsMassA;
+    ar << sampler.mMaxGibbsMassP;
+    ar << sampler.mAnnealingTemp;
+    ar << sampler.mChi2;
+    ar << sampler.mSingleCellRNASeq;
+    ar << sampler.mNumFixedPatterns;
+    ar << sampler.mFixedMat;
+}
+
+void operator>>(Archive &ar, GibbsSampler &sampler)
+{
+    ar >> sampler.mDMatrix;
+    ar >> sampler.mSMatrix;
+    ar >> sampler.mAPMatrix;
+    ar >> sampler.mAMatrix;
+    ar >> sampler.mPMatrix;
+    ar >> sampler.mADomain;
+    ar >> sampler.mPDomain;
+    ar >> sampler.mAMeanMatrix;
+    ar >> sampler.mAStdMatrix;
+    ar >> sampler.mPMeanMatrix;
+    ar >> sampler.mPStdMatrix;
+    ar >> sampler.mStatUpdates;
+    ar >> sampler.mMaxGibbsMassA;
+    ar >> sampler.mMaxGibbsMassP;
+    ar >> sampler.mAnnealingTemp;
+    ar >> sampler.mChi2;
+    ar >> sampler.mSingleCellRNASeq;
+    ar >> sampler.mNumFixedPatterns;
+    ar >> sampler.mFixedMat;
 }

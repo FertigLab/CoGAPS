@@ -10,20 +10,28 @@ print(packageVersion('CoGAPS'))
 
 # benchmark dimensions
 
-M_dimensions <- c(10, 25, 50, 100, 250, 500, 750, 1000, 2500, 5000)
-N_dimensions <- c(10, 25, 50, 100, 250, 500, 750, 1000, 2500, 5000)
-nFactor_dimensions <- c(3, 5, 7, 10, 15, 20, 25, 30, 40, 50, 75, 100)
-nIter_dimensions <- c(1000, 1250, 1500, 1750, 2000, 2500, 3000, 4000, 5000)
+M_dimensions <- c(50, 75, 100, 250, 500, 750, 1000)
+N_dimensions <- M_dimensions
+nFactor_dimensions <- c(5, 10, 15, 20, 30, 40, 50)
+nIter_dimensions <- c(1000, 1250, 1500, 1750, 2000, 2500, 3000)
 
 M_default <- floor(median(M_dimensions))
 N_default <- floor(median(N_dimensions))
 nFactor_default <- floor(median(nFactor_dimensions))
-nIter_default <- floor(median(nIter_default))
+nIter_default <- floor(median(nIter_dimensions))
+
+print(paste("Defaults, M=", M_default, " N=", N_default, " K=",
+    nFactor_default, " I=", nIter_default, sep=''))
 
 seed_default <- 12345
 reps_default <- 5
 
 # benchmark function
+
+timeToSeconds <- function(time)
+{
+     time$hour * 3600 + time$min * 60 + time$sec
+}   
 
 data(GIST_TS_20084)
 runBenchmark <- function(m, n, k, iter, seed, reps)
@@ -38,15 +46,13 @@ runBenchmark <- function(m, n, k, iter, seed, reps)
     times <- c()
     for (r in 1:reps)
     {
-        start_time <- Sys.time()
+        start_time <- as.POSIXlt(Sys.time())
         gapsRun(test_mat_D, test_mat_S, nEquil=iter, nSample=iter,
-<<<<<<< HEAD
-            nFactor=k, seed=seed+r, messages=FALSE, sampleSnapshots=FALSE,
-            numSnapshots=iter / 2, nOutR = iter / 2)
-=======
-            nFactor=k, seed=seed+r, messages=FALSE)
->>>>>>> develop
-        times[r] <- as.numeric(Sys.time() - start_time)
+            nFactor=k, seed=seed+r, messages=TRUE, nOutR = iter/2,
+#            sampleSnapshots=FALSE, numSnapshots=iter / 2)
+            numSnapshots=0)
+        times[r] <- timeToSeconds(as.POSIXlt(Sys.time())) - timeToSeconds(start_time)
+        print(round(times[r], 2))
     }
     params <- c(m, n, k, iter, seed, reps)
     secs <- c(min(times), mean(times), median(times), max(times))

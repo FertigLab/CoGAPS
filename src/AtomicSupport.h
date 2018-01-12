@@ -8,6 +8,7 @@
 #include <fstream>
 #include <vector>
 #include <stdint.h>
+//#include <boost/serialization/map.hpp>
 
 struct AtomicProposal
 {
@@ -76,7 +77,7 @@ public:
     AtomicProposal proposeExchange() const;
 
     // update the mass of an atom, return the total amount changed
-    float updateAtomMass(char type, uint64_t pos, float delta);
+    float updateAtomMass(uint64_t pos, float delta);
 
 public:
 
@@ -101,7 +102,9 @@ public:
     // setters
     void setAlpha(float alpha) {mAlpha = alpha;}
     void setLambda(float lambda) {mLambda = lambda;}
-    //void setMaxNumAtoms(uint64_t max) {mMaxNumAtoms = max;}
+
+    friend void operator<<(Archive &ar, AtomicSupport &sampler);
+    friend void operator>>(Archive &ar, AtomicSupport &sampler);
 };
 
 #endif

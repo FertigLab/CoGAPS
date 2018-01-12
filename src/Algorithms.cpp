@@ -56,12 +56,13 @@ matrix_data_t gaps::algo::nonZeroMean(const TwoWayMatrix &mat)
     unsigned int nNonZeros = 0;
     for (unsigned int r = 0; r < mat.nRow(); ++r)
     {
+        const Vector &row = mat.getRow(r);
         for (unsigned int c = 0; c < mat.nCol(); ++c)
         {
-            if (mat(r,c) != 0.0)
+            if (row[c] != 0.0)
             {
                 nNonZeros++;
-                sum += mat(r,c);
+                sum += row[c];
             }
         }
     }
@@ -190,9 +191,12 @@ const TwoWayMatrix &S, const TwoWayMatrix &AP)
     float chi2 = 0.0;
     for (unsigned r = 0; r < D.nRow(); ++r)
     {
+        const Vector &Drow = D.getRow(r);
+        const Vector &Srow = S.getRow(r);
+        const Vector &AProw = AP.getRow(r);
         for (unsigned c = 0; c < D.nCol(); ++c)
         {
-            chi2 += GAPS_SQ(D(r,c) - AP(r,c)) / GAPS_SQ(S(r,c));
+            chi2 += GAPS_SQ(Drow[c] - AProw[c]) / GAPS_SQ(Srow[c]);
         }
     }
     return chi2;
@@ -256,7 +260,6 @@ float gaps::algo::deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
 const TwoWayMatrix &S, const ColMatrix &A, const RowMatrix &P,
 const TwoWayMatrix &AP)
 {
-    // change in A matrix
     if (ch.label == 'A' && ch.nChanges == 2 && ch.row1 != ch.row2)
     {
         return deltaLL_A(D, S, P, AP, ch.row1, ch.col1, ch.delta1)
@@ -267,14 +270,12 @@ const TwoWayMatrix &AP)
         return deltaLL_A(D, S, P, AP, ch.row1, ch.col1, ch.delta1, ch.col2,
             ch.delta2, ch.nChanges == 2);
     }
-
-    // change in P matrix
-    if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
+    else if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
     {
         return deltaLL_P(D, S, A, AP, ch.col1, ch.row1, ch.delta1)
             + deltaLL_P(D, S, A, AP, ch.col2, ch.row2, ch.delta2);
     }
-    else if (ch.label == 'P')
+    else
     {
         return deltaLL_P(D, S, A, AP, ch.col1, ch.row1, ch.delta1, ch.row2,
             ch.delta2, ch.nChanges == 2);
@@ -325,29 +326,24 @@ AlphaParameters gaps::algo::alphaParameters(const MatrixChange &ch,
 const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
 const RowMatrix &P, const TwoWayMatrix &AP)
 {
-    // change in A matrix
-    AlphaParameters p(0,0);
     if (ch.label == 'A' && ch.nChanges == 2 && ch.row1 != ch.row2)
     {
-        p = alphaParameters_A(D, S, P, AP, ch.row1, ch.col1)
+        return alphaParameters_A(D, S, P, AP, ch.row1, ch.col1)
             + alphaParameters_A(D, S, P, AP, ch.row2, ch.col2);
     }
     else if (ch.label == 'A')
     {
-        p = alphaParameters_A(D, S, P, AP, ch.row1, ch.col1, ch.col2,
+        return alphaParameters_A(D, S, P, AP, ch.row1, ch.col1, ch.col2,
             ch.nChanges == 2);
     }
-
-    // change in P matrix
-    if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
+    else if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
     {
-        p = alphaParameters_P(D, S, A, AP, ch.col1, ch.row1)
+        return alphaParameters_P(D, S, A, AP, ch.col1, ch.row1)
             + alphaParameters_P(D, S, A, AP, ch.col2, ch.row2);
     }
-    else if (ch.label == 'P')
+    else
     {
-        p = alphaParameters_P(D, S, A, AP, ch.col1, ch.row1, ch.row2,
+        return alphaParameters_P(D, S, A, AP, ch.col1, ch.row1, ch.row2,
             ch.nChanges == 2);
     }
-    return p;
 }
