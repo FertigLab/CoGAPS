@@ -19,7 +19,7 @@ TEST_CASE("Test Algorithms.h")
         for (unsigned c = 0; c < ncol; ++c)
         {
             D.set(r, c, r + c);
-            S.set(r, c, (r + c) / 100.0);
+            S.set(r, c, (r + c) / 100.f);
             AP.set(r, c, r - c);
             P(r,c) = r * c;
             A(r,c) = r * c;
@@ -38,7 +38,7 @@ TEST_CASE("Test Algorithms.h")
     {
         float dTotal = 300 * 10 + 45 * 25;
     
-        REQUIRE(gaps::algo::mean(D) == gaps::algo::mean(S) * 100.0);
+        REQUIRE(gaps::algo::mean(D) == gaps::algo::mean(S) * 100.f);
         REQUIRE(gaps::algo::mean(D) == dTotal / (nrow * ncol));
         REQUIRE(gaps::algo::nonZeroMean(D) == dTotal / (nrow * ncol - 1));
     }
