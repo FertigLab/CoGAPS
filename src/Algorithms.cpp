@@ -5,118 +5,14 @@
 
 #define GAPS_SQ(x) ((x) * (x))
 
-matrix_data_t gaps::algo::mean(const TwoWayMatrix &mat)
+float gaps::algo::sum(const Vector &vec)
 {
-    return gaps::algo::sum(mat) / (mat.nRow() * mat.nCol());
-}
-
-matrix_data_t gaps::algo::sum(const Vector &vec)
-{
-    matrix_data_t sum = 0.0;
+    float sum = 0.f;
     for (unsigned i = 0; i < vec.size(); ++i)
     {
         sum += vec[i];
     }
     return sum;
-}
-
-matrix_data_t gaps::algo::sum(const TwoWayMatrix &mat)
-{
-    matrix_data_t sum = 0.0;
-    for (unsigned r = 0; r < mat.nRow(); ++r)
-    {
-        sum += gaps::algo::sum(mat.getRow(r));
-    }
-    return sum;
-}
-
-matrix_data_t gaps::algo::sum(const RowMatrix &mat)
-{
-    matrix_data_t sum = 0.0;
-    for (unsigned r = 0; r < mat.nRow(); ++r)
-    {
-        sum += gaps::algo::sum(mat.getRow(r));
-    }
-    return sum;
-}
-
-matrix_data_t gaps::algo::sum(const ColMatrix &mat)
-{
-    matrix_data_t sum = 0.0;
-    for (unsigned c = 0; c < mat.nCol(); ++c)
-    {
-        sum += gaps::algo::sum(mat.getCol(c));
-    }
-    return sum;
-}
-
-matrix_data_t gaps::algo::nonZeroMean(const TwoWayMatrix &mat)
-{
-    matrix_data_t sum = 0.0;
-    unsigned int nNonZeros = 0;
-    for (unsigned int r = 0; r < mat.nRow(); ++r)
-    {
-        const Vector &row = mat.getRow(r);
-        for (unsigned int c = 0; c < mat.nCol(); ++c)
-        {
-            if (row[c] != 0.0)
-            {
-                nNonZeros++;
-                sum += row[c];
-            }
-        }
-    }
-    return sum / nNonZeros;
-}
-
-ColMatrix gaps::algo::computeStdDev(const ColMatrix &stdMat,
-const ColMatrix &meanMat, unsigned nUpdates)
-{
-    ColMatrix retMat(stdMat.nRow(), stdMat.nCol());
-    float meanTerm = 0.0;
-    for (unsigned r = 0; r < retMat.nRow(); ++r)
-    {
-        for (unsigned c = 0; c < retMat.nCol(); ++c)
-        {
-            meanTerm = meanMat(r,c) * meanMat(r,c) / (float)nUpdates;
-            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / ((float)nUpdates - 1.0));
-        }
-    }
-    return retMat;
-}
-
-RowMatrix gaps::algo::computeStdDev(const RowMatrix &stdMat,
-const RowMatrix &meanMat, unsigned nUpdates)
-{
-    RowMatrix retMat(stdMat.nRow(), stdMat.nCol());
-    float meanTerm = 0.0;
-    for (unsigned r = 0; r < retMat.nRow(); ++r)
-    {
-        for (unsigned c = 0; c < retMat.nCol(); ++c)
-        {
-            meanTerm = meanMat(r,c) * meanMat(r,c) / (float)nUpdates;
-            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / ((float)nUpdates - 1.0));
-        }
-    }
-    return retMat;
-}
-
-// horribly slow, don't call often
-void gaps::algo::matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
-const RowMatrix &B)
-{
-    for (unsigned i = 0; i < C.nRow(); ++i)
-    {
-        for (unsigned j = 0; j < C.nCol(); ++j)
-        {
-            float sum = 0.0;
-            for (unsigned k = 0; k < A.nCol(); ++k)
-            {
-                sum += A(i,k) * B(k,j);
-            }
-            C.set(i, j, sum);
-        }
-    }
 }
 
 Vector gaps::algo::scalarMultiple(const Vector &vec, float n)
@@ -139,30 +35,7 @@ Vector gaps::algo::squaredScalarMultiple(const Vector &vec, float n)
     return retVec;
 }
 
-Vector gaps::algo::squaredScalarDivision(const Vector &vec, float n)
-{
-    Vector retVec(vec.size());
-    for (unsigned i = 0; i < vec.size(); ++i)
-    {
-        retVec[i] = GAPS_SQ(vec[i] / n);
-    }
-    return retVec;
-}
-
-ColMatrix gaps::algo::scalarDivision(const ColMatrix &mat, float n)
-{
-    ColMatrix retMat(mat.nRow(), mat.nCol());
-    for (unsigned r = 0; r < retMat.nRow(); ++r)
-    {
-        for (unsigned c = 0; c < retMat.nCol(); ++c)
-        {
-            retMat(r,c) = mat(r,c) / n;
-        }
-    }
-    return retMat;
-}
-
-Vector gaps::algo::scalarDivision(const Vector &vec, matrix_data_t n)
+Vector gaps::algo::scalarDivision(const Vector &vec, float n)
 {
     Vector temp(vec.size());
     for (unsigned i = 0; i < vec.size(); ++i)
@@ -172,34 +45,14 @@ Vector gaps::algo::scalarDivision(const Vector &vec, matrix_data_t n)
     return temp;
 }
 
-RowMatrix gaps::algo::scalarDivision(const RowMatrix &mat, float n)
+Vector gaps::algo::squaredScalarDivision(const Vector &vec, float n)
 {
-    RowMatrix retMat(mat.nRow(), mat.nCol());
-    for (unsigned r = 0; r < retMat.nRow(); ++r)
+    Vector retVec(vec.size());
+    for (unsigned i = 0; i < vec.size(); ++i)
     {
-        for (unsigned c = 0; c < retMat.nCol(); ++c)
-        {
-            retMat(r,c) = mat(r,c) / n;
-        }
+        retVec[i] = GAPS_SQ(vec[i] / n);
     }
-    return retMat;
-}
-
-matrix_data_t gaps::algo::loglikelihood(const TwoWayMatrix &D,
-const TwoWayMatrix &S, const TwoWayMatrix &AP)
-{
-    float chi2 = 0.0;
-    for (unsigned r = 0; r < D.nRow(); ++r)
-    {
-        const Vector &Drow = D.getRow(r);
-        const Vector &Srow = S.getRow(r);
-        const Vector &AProw = AP.getRow(r);
-        for (unsigned c = 0; c < D.nCol(); ++c)
-        {
-            chi2 += GAPS_SQ(Drow[c] - AProw[c]) / GAPS_SQ(Srow[c]);
-        }
-    }
-    return chi2;
+    return retVec;
 }
 
 bool gaps::algo::isRowZero(const RowMatrix &mat, unsigned row)
@@ -212,46 +65,59 @@ bool gaps::algo::isColZero(const ColMatrix &mat, unsigned col)
     return gaps::algo::sum(mat.getCol(col)) == 0;
 }
 
-static float deltaLL_A(const TwoWayMatrix &D, const TwoWayMatrix &S,
-const RowMatrix &P, const TwoWayMatrix &AP, unsigned row,
-unsigned col1, float delta1, unsigned col2=0, float delta2=0.0,
-bool twoChanges=false)
+// horribly slow, don't call often
+void gaps::algo::matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
+const RowMatrix &B)
 {
-    float numer = 0.0, denom = 0.0, delLL = 0.0, d1 = 0.0, d2 = 0.0;
-    const Vector &Drow = D.getRow(row);
-    const Vector &AProw = AP.getRow(row);
-    const Vector &Srow = S.getRow(row);
-    const Vector &Prow1 = P.getRow(col1);
-    const Vector &Prow2 = P.getRow(col2);
-    for (unsigned j = 0; j < D.nCol(); ++j)
+    for (unsigned i = 0; i < C.nRow(); ++i)
     {
-        d1 = delta1 * Prow1[j];
-        d2 = twoChanges ? delta2 * Prow2[j] : 0.0;
-        numer = 2.0 * (Drow[j] - AProw[j]) * (d1 + d2) - GAPS_SQ(d1 + d2);
-        denom = 2.0 * GAPS_SQ(Srow[j]);
-        delLL += numer / denom;
+        for (unsigned j = 0; j < C.nCol(); ++j)
+        {
+            float sum = 0.0;
+            for (unsigned k = 0; k < A.nCol(); ++k)
+            {
+                sum += A(i,k) * B(k,j);
+            }
+            C.set(i, j, sum);
+        }
+    }
+}
+
+float gaps::algo::loglikelihood(const TwoWayMatrix &D,
+const TwoWayMatrix &S, const TwoWayMatrix &AP)
+{
+    float chi2 = 0.f;
+    for (unsigned i = 0; i < D.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < D.nCol(); ++j)
+        {
+            chi2 += GAPS_SQ(D(i,j) - AP(i,j)) / GAPS_SQ(S(i,j));
+        }
+    }
+    return chi2;
+}
+
+static float deltaLL_comp(const Vector &D, const Vector &S,
+const Vector &AP, const Vector &other, float delta)
+{
+    float d = 0.f, delLL = 0.f;
+    for (unsigned i = 0; i < D.size(); ++i)
+    {
+        d = delta * other[i];
+        delLL += (2.f * d * (D[i] - AP[i]) - d * d) / (2.f * S[i] * S[i]);
     }
     return delLL;
 }
 
-static float deltaLL_P(const TwoWayMatrix &D, const TwoWayMatrix &S,
-const ColMatrix &A, const TwoWayMatrix &AP, unsigned col,
-unsigned row1, float delta1, unsigned row2=0, float delta2=0.0,
-bool twoChanges=false)
+static float deltaLL_comp(const Vector &D, const Vector &S,
+const Vector &AP, const Vector &other1, float delta1,
+const Vector &other2, float delta2)
 {
-    float numer = 0.0, denom = 0.0, delLL = 0.0, d1 = 0.0, d2 = 0.0;
-    const Vector &Dcol = D.getCol(col);
-    const Vector &APcol = AP.getCol(col);
-    const Vector &Scol = S.getCol(col);
-    const Vector &Acol1 = A.getCol(row1);
-    const Vector &Acol2 = A.getCol(row2);
-    for (unsigned i = 0; i < D.nRow(); ++i)
+    float d = 0.f, delLL = 0.f;
+    for (unsigned i = 0; i < D.size(); ++i)
     {
-        d1 = delta1 * Acol1[i];
-        d2 = twoChanges ? delta2 * Acol2[i] : 0.0;
-        numer = 2.0 * (Dcol[i] - APcol[i]) * (d1 + d2) - GAPS_SQ(d1 + d2);
-        denom = 2.0 * GAPS_SQ(Scol[i]);
-        delLL += numer / denom;
+        d = delta1 * other1[i] + delta2 * other2[i];
+        delLL += (2.f * d * (D[i] - AP[i]) - d * d) / (2.f * S[i] * S[i]);
     }
     return delLL;
 }
@@ -260,64 +126,67 @@ float gaps::algo::deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
 const TwoWayMatrix &S, const ColMatrix &A, const RowMatrix &P,
 const TwoWayMatrix &AP)
 {
-    if (ch.label == 'A' && ch.nChanges == 2 && ch.row1 != ch.row2)
+    if (ch.label == 'A' && ch.nChanges == 1)
     {
-        return deltaLL_A(D, S, P, AP, ch.row1, ch.col1, ch.delta1)
-            + deltaLL_A(D, S, P, AP, ch.row2, ch.col2, ch.delta2);
+        return deltaLL_comp(D.getRow(ch.row1), S.getRow(ch.row1),
+            AP.getRow(ch.row1), P.getRow(ch.col1), ch.delta1);
+    }
+    else if (ch.label == 'A' && ch.row1 != ch.row2)
+    {
+        return deltaLL_comp(D.getRow(ch.row1), S.getRow(ch.row1),
+            AP.getRow(ch.row1), P.getRow(ch.col1), ch.delta1)
+            + deltaLL_comp(D.getRow(ch.row2), S.getRow(ch.row2),
+            AP.getRow(ch.row2), P.getRow(ch.col2), ch.delta2);
     }
     else if (ch.label == 'A')
     {
-        return deltaLL_A(D, S, P, AP, ch.row1, ch.col1, ch.delta1, ch.col2,
-            ch.delta2, ch.nChanges == 2);
+        return deltaLL_comp(D.getRow(ch.row1), S.getRow(ch.row1),
+            AP.getRow(ch.row1), P.getRow(ch.col1), ch.delta1,
+            P.getRow(ch.col2), ch.delta2);
     }
-    else if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
+    else if (ch.label == 'P' && ch.nChanges == 1)
     {
-        return deltaLL_P(D, S, A, AP, ch.col1, ch.row1, ch.delta1)
-            + deltaLL_P(D, S, A, AP, ch.col2, ch.row2, ch.delta2);
+        return deltaLL_comp(D.getCol(ch.col1), S.getCol(ch.col1),
+            AP.getCol(ch.col1), A.getCol(ch.row1), ch.delta1);
+    }
+    else if (ch.label == 'P' && ch.col1 != ch.col2)
+    {
+        return deltaLL_comp(D.getCol(ch.col1), S.getCol(ch.col1),
+            AP.getCol(ch.col1), A.getCol(ch.row1), ch.delta1)
+            + deltaLL_comp(D.getCol(ch.col2), S.getCol(ch.col2),
+            AP.getCol(ch.col2), A.getCol(ch.row2), ch.delta2);
     }
     else
     {
-        return deltaLL_P(D, S, A, AP, ch.col1, ch.row1, ch.delta1, ch.row2,
-            ch.delta2, ch.nChanges == 2);
+        return deltaLL_comp(D.getCol(ch.col1), S.getCol(ch.col1),
+            AP.getCol(ch.col1), A.getCol(ch.row1), ch.delta1,
+            A.getCol(ch.row2), ch.delta2);
     }
 }
 
-static AlphaParameters alphaParameters_A(const TwoWayMatrix &D,
-const TwoWayMatrix &S, const RowMatrix &P, const TwoWayMatrix &AP,
-unsigned row, unsigned col1, unsigned col2=0, bool twoChanges=false)
+static AlphaParameters alphaParameters_comp(const Vector &D,
+const Vector &S, const Vector &AP, const Vector &other)
 {
-    float s = 0.0, su = 0.0, ratio = 0.0, p2 = 0.0;
-    const Vector &Drow = D.getRow(row);
-    const Vector &AProw = AP.getRow(row);
-    const Vector &Srow = S.getRow(row);
-    const Vector &Prow1 = P.getRow(col1);
-    const Vector &Prow2 = P.getRow(col2);
-    for (unsigned j = 0; j < D.nCol(); ++j)
+    float s = 0.f, su = 0.f, ratio = 0.f;
+    for (unsigned i = 0; i < D.size(); ++i)
     {
-        p2 = twoChanges ? Prow2[j] : 0.0;
-        ratio = (Prow1[j] - p2) / Srow[j];
-        s += GAPS_SQ(ratio);
-        su += ratio * (Drow[j] - AProw[j]) / Srow[j];
+        ratio = other[i] / S[i];
+        s += ratio * ratio;
+        su += ratio * (D[i] - AP[i]) / S[i];
     }
     return AlphaParameters(s, su);
 }
 
-static AlphaParameters alphaParameters_P(const TwoWayMatrix &D,
-const TwoWayMatrix &S, const ColMatrix &A, const TwoWayMatrix &AP,
-unsigned col, unsigned row1, unsigned row2=0, bool twoChanges=false)
+static AlphaParameters alphaParameters_comp(const Vector &D,
+const Vector &S, const Vector &AP, const Vector &other1,
+const Vector &other2)
 {
-    float s = 0.0, su = 0.0, ratio = 0.0, a2 = 0.0;
-    const Vector &Dcol = D.getCol(col);
-    const Vector &APcol = AP.getCol(col);
-    const Vector &Scol = S.getCol(col);
-    const Vector &Acol1 = A.getCol(row1);
-    const Vector &Acol2 = A.getCol(row2);
-    for (unsigned i = 0; i < D.nRow(); ++i)
+    float s = 0.f, su = 0.f, ratio = 0.f;
+    for (unsigned i = 0; i < D.size(); ++i)
     {
-        a2 = twoChanges ? Acol2[i] : 0.0;
-        ratio = (Acol1[i] - a2) / Scol[i];
-        s += GAPS_SQ(ratio);
-        su += ratio * (Dcol[i] - APcol[i]) / Scol[i];
+        ratio = (other1[i] - other2[i]) / S[i];
+        s += ratio * ratio;
+        su += ratio * (D[i] - AP[i]) / S[i];
     }
     return AlphaParameters(s, su);
 }
@@ -326,24 +195,38 @@ AlphaParameters gaps::algo::alphaParameters(const MatrixChange &ch,
 const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
 const RowMatrix &P, const TwoWayMatrix &AP)
 {
-    if (ch.label == 'A' && ch.nChanges == 2 && ch.row1 != ch.row2)
+    if (ch.label == 'A' && ch.nChanges == 1)
     {
-        return alphaParameters_A(D, S, P, AP, ch.row1, ch.col1)
-            + alphaParameters_A(D, S, P, AP, ch.row2, ch.col2);
+        return alphaParameters_comp(D.getRow(ch.row1), S.getRow(ch.row1),
+            AP.getRow(ch.row1), P.getRow(ch.col1));
+    }
+    else if (ch.label == 'A' && ch.row1 != ch.row2)
+    {
+        return alphaParameters_comp(D.getRow(ch.row1), S.getRow(ch.row1),
+            AP.getRow(ch.row1), P.getRow(ch.col1))
+            + alphaParameters_comp(D.getRow(ch.row2), S.getRow(ch.row2),
+            AP.getRow(ch.row2), P.getRow(ch.col2));
     }
     else if (ch.label == 'A')
     {
-        return alphaParameters_A(D, S, P, AP, ch.row1, ch.col1, ch.col2,
-            ch.nChanges == 2);
+        return alphaParameters_comp(D.getRow(ch.row1), S.getRow(ch.row1),
+            AP.getRow(ch.row1), P.getRow(ch.col1), P.getRow(ch.col2));
     }
-    else if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 != ch.col2)
+    else if (ch.label == 'P' && ch.nChanges == 1)
     {
-        return alphaParameters_P(D, S, A, AP, ch.col1, ch.row1)
-            + alphaParameters_P(D, S, A, AP, ch.col2, ch.row2);
+        return alphaParameters_comp(D.getCol(ch.col1), S.getCol(ch.col1),
+            AP.getCol(ch.col1), A.getCol(ch.row1));
+    }
+    else if (ch.label == 'P' && ch.col1 != ch.col2)
+    {
+        return alphaParameters_comp(D.getCol(ch.col1), S.getCol(ch.col1),
+            AP.getCol(ch.col1), A.getCol(ch.row1))
+            + alphaParameters_comp(D.getCol(ch.col2), S.getCol(ch.col2),
+            AP.getCol(ch.col2), A.getCol(ch.row2));
     }
     else
     {
-        return alphaParameters_P(D, S, A, AP, ch.col1, ch.row1, ch.row2,
-            ch.nChanges == 2);
+        return alphaParameters_comp(D.getCol(ch.col1), S.getCol(ch.col1),
+            AP.getCol(ch.col1), A.getCol(ch.row1), A.getCol(ch.row2));
     }
 }
