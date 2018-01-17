@@ -8,6 +8,8 @@
  *  Distributed under the Boost Software License, Version 1.0. (See accompanying
  *  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  */
+#include <Rcpp.h>
+
 #ifndef TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 #define TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 
@@ -7705,10 +7707,10 @@ namespace Catch {
 
 #ifndef CATCH_CONFIG_NOSTDOUT // If you #define this you must implement these functions
     std::ostream& cout() {
-        return std::cout;
+        return Rcpp::Rcout;
     }
     std::ostream& cerr() {
-        return std::cerr;
+        return Rcpp::Rcerr;
     }
     std::ostream& clog() {
         return std::clog;

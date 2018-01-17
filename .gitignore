@@ -4,15 +4,7 @@
 
 # ignore compiled files
 *.so
-*.o*
-*.sw?
-*.dll
-
-# ignore R data
-*.RDS
-
-# ignore PDFs
-*.pdf
+*.o
 
 # ignore OS X files
 *.DS_Store

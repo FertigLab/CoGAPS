@@ -1,4 +1,4 @@
-PKG_CPPFLAGS = -Wall -Wextra -O2
+PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0
 OBJECTS =   Algorithms.o \
             AtomicSupport.o \
             Cogaps.o \

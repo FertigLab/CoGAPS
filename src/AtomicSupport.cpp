@@ -144,7 +144,7 @@ AtomicProposal AtomicSupport::makeProposal() const
     }
 
     float unif = gaps::random::uniform();
-    if ((mNumAtoms < 2 && unif <= 0.6667) || unif <= 0.5) // birth/death
+    if ((mNumAtoms < 2 && unif <= 0.6667f) || unif <= 0.5f) // birth/death
     {
         if (mNumAtoms >= mMaxNumAtoms)
         {

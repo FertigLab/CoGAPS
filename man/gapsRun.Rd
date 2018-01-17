@@ -71,8 +71,6 @@ domain for relative probabilities}
 contains the fixed patterns}
 
 \item{checkpoint_interval}{time (in seconds) between cogaps checkpoints}
-
-\item{checkpoint_file_name}{name of file to store checkpoint}
 }
 \description{
 \code{gapsRun} calls the C++ MCMC code and performs Bayesian
