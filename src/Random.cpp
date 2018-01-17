@@ -7,20 +7,15 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/poisson_distribution.hpp>
 #include <boost/random/exponential_distribution.hpp>
-
 #include <boost/random/mersenne_twister.hpp>
 
-// need -O0 to run in valgrind, -O2 for performance
-#pragma GCC push_options
-#pragma GCC optimize ("O2")
 #include <boost/math/distributions/normal.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <boost/math/distributions/gamma.hpp>
-#pragma GCC pop_options
 
 #include <stdint.h>
 
-#define Q_GAMMA_THRESHOLD 1E-6
+#define Q_GAMMA_THRESHOLD 0.000001f
 #define Q_GAMMA_MIN_VALUE 0.0
 
 typedef boost::random::mt19937 RNGType;

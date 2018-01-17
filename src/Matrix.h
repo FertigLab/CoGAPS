@@ -6,8 +6,6 @@
 #include <Rcpp.h>
 #include <vector>
 
-// use CRTP for different matrix types?
-
 // temporary: used for testing performance of float vs double
 typedef float matrix_data_t;
 

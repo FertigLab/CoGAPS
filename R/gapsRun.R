@@ -51,7 +51,6 @@
 #'@param fixedPatterns matrix of fixed values in either A or P matrix
 #'@param whichMatrixFixed character to indicate whether A or P matrix
 #'  contains the fixed patterns
-#'@param checkpoint_file_name name of file to store checkpoint
 #'@param checkpoint_interval time (in seconds) between cogaps checkpoints
 #'@export
 
@@ -142,7 +141,14 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
     return(cogapResult);
 }
 
+# TODO: remove dependency on D,S matrices
+#' Restart Run from Checkpoint File
 #' @export
+#'
+#' @param D data matrix
+#' @param S uncertainty matrix
+#' @param path path to checkpoint file
+#' @return list containing information about A and P matrix
 gapsRunFromCheckpoint <- function(D, S, path)
 {
     # call to C++ Rcpp code

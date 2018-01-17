@@ -24,7 +24,7 @@ static bpt::ptime lastCheckpoint;
 static void createCheckpoint(GapsInternalState &state)
 {
     state.numCheckpoints++;
-    std::cout << "creating gaps checkpoint...";
+    Rcpp::Rcout << "creating gaps checkpoint...";
     bpt::ptime start = bpt::microsec_clock::local_time();
     Archive ar("gaps_checkpoint_" + SSTR(state.numCheckpoints) + ".out",
         ARCHIVE_WRITE);
@@ -39,7 +39,7 @@ static void createCheckpoint(GapsInternalState &state)
     ar.close();
     bpt::time_duration diff = bpt::microsec_clock::local_time() - start;
     double elapsed = diff.total_milliseconds() / 1000.;
-    std::cout << " finished in " << elapsed << " seconds\n";
+    Rcpp::Rcout << " finished in " << elapsed << " seconds\n";
 }
 
 static void runGibbsSampler(GapsInternalState &state, unsigned nIterTotal,
@@ -92,7 +92,7 @@ Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
             if ((state.iter + 1) % state.nOutputs == 0 && state.messages)
             {
                 std::string temp = state.phase == GAPS_CALIBRATION ? "Equil: " : "Samp: ";
-                std::cout << temp << state.iter + 1 << " of " << nIterTotal
+                Rcpp::Rcout << temp << state.iter + 1 << " of " << nIterTotal
                     << ", Atoms:" << aAtomVec[state.iter] << "(" << pAtomVec[state.iter]
                     << ") Chi2 = " << state.sampler.chi2() << '\n';
             }
@@ -187,7 +187,7 @@ Rcpp::List cogapsFromCheckpoint(const std::string &fileName)
     ar >> magicNum;
     if (magicNum != ARCHIVE_MAGIC_NUM)
     {
-        std::cout << "invalid checkpoint file" << std::endl;
+        Rcpp::Rcout << "invalid checkpoint file" << std::endl;
         return Rcpp::List::create();
     }
     

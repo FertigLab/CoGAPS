@@ -8,7 +8,6 @@
 #include <fstream>
 #include <vector>
 #include <stdint.h>
-//#include <boost/serialization/map.hpp>
 
 struct AtomicProposal
 {
@@ -31,6 +30,18 @@ struct AtomicProposal
     {}
 };
 
+struct Atom
+{
+    uint64_t pos;
+    float mass;
+};
+
+struct AtomNeighbors
+{
+    Atom left;
+    Atom right;
+};
+
 class AtomicSupport 
 {
 private:
@@ -43,6 +54,8 @@ public:
     char mLabel;
 
     // storage of the atomic domain
+    //std::vector<Atom> mAtoms;
+    //std::map<uint64_t, uint64_t> mAtomPositions;
     std::map<uint64_t, float> mAtomicDomain;
     uint64_t mNumAtoms;
     uint64_t mMaxNumAtoms;
@@ -61,6 +74,11 @@ public:
 
     // expected magnitude of each atom (must be > 0)
     float mLambda;
+
+    // functions for dealing with atomic data structure
+    //void addAtom(Atom atom); // O(logN)
+    //void removeAtom(Atom atom); // O(logN)
+    //AtomNeighbors getNeighbors(uint64_t pos); // O(logN)
 
     // convert atomic position to row/col of the matrix
     uint64_t getRow(uint64_t pos) const;
