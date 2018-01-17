@@ -34,12 +34,18 @@ struct Atom
 {
     uint64_t pos;
     float mass;
+    
+    Atom(uint64_t p, float m) : pos(p), mass(m) {}
 };
 
 struct AtomNeighbors
 {
     Atom left;
     Atom right;
+
+    AtomNeighbors(uint64_t lp, float lm, uint64_t rp, float rm)
+        : left(Atom(lp, lm)), right(Atom(rp, rm))
+    {}
 };
 
 class AtomicSupport 
@@ -54,9 +60,8 @@ public:
     char mLabel;
 
     // storage of the atomic domain
-    //std::vector<Atom> mAtoms;
-    //std::map<uint64_t, uint64_t> mAtomPositions;
-    std::map<uint64_t, float> mAtomicDomain;
+    std::vector<Atom> mAtoms;
+    std::map<uint64_t, uint64_t> mAtomPositions;
     uint64_t mNumAtoms;
     uint64_t mMaxNumAtoms;
 
@@ -76,9 +81,9 @@ public:
     float mLambda;
 
     // functions for dealing with atomic data structure
-    //void addAtom(Atom atom); // O(logN)
-    //void removeAtom(Atom atom); // O(logN)
-    //  AtomNeighbors getNeighbors(uint64_t pos); // O(logN)
+    void addAtom(Atom atom); // O(logN)
+    void removeAtom(uint64_t pos); // O(logN)
+    AtomNeighbors getNeighbors(uint64_t pos) const; // O(logN)
 
     // convert atomic position to row/col of the matrix
     uint64_t getRow(uint64_t pos) const;
@@ -115,7 +120,7 @@ public:
     float lambda() const {return mLambda;}
     float totalMass() const {return mTotalMass;}
     uint64_t numAtoms() const {return mNumAtoms;}
-    float at(uint64_t loc) const {return mAtomicDomain.at(loc);}
+    float at(uint64_t pos) const {return mAtoms[mAtomPositions.at(pos)].mass;}
 
     // setters
     void setAlpha(float alpha) {mAlpha = alpha;}
