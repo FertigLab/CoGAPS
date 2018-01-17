@@ -140,6 +140,9 @@ public:
     const Vector& getRow(unsigned row) const {return mRowMatrix.getRow(row);}
     const Vector& getCol(unsigned col) const {return mColMatrix.getCol(col);}
 
+    // not optimal to call this
+    float operator()(unsigned r, unsigned c) const {return mRowMatrix(r,c);}
+
     void set(unsigned row, unsigned col, float value)
     {
         mRowMatrix(row,col) = value;
