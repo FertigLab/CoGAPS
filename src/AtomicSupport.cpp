@@ -12,6 +12,53 @@ mBinSize(std::numeric_limits<uint64_t>::max() / (nrow * ncol)),
 mAlpha(alpha), mLambda(lambda)
 {}
 
+// O(logN)
+void AtomicSupport::addAtom(Atom atom)
+{
+    mAtomPositions.insert(std::pair<uint64_t, uint64_t>(atom.pos, mNumAtoms));
+    mAtoms.push_back(atom);
+    mNumAtoms++;
+}
+
+// O(logN)
+void AtomicSupport::removeAtom(uint64_t pos)
+{
+    uint64_t index = mAtomPositions.at(pos);
+    mAtomPositions.erase(pos);
+
+    // update key of object about to be moved (last one doesn't need to move)
+    if (index < mNumAtoms - 1)
+    {
+        mAtomPositions.erase(mAtoms.back().pos);
+        mAtomPositions.insert(std::pair<uint64_t, uint64_t>(mAtoms.back().pos,
+            index));
+    }
+
+    // delete atom from vector in O(1)
+    mAtoms[index] = mAtoms.back();
+    mAtoms.pop_back();
+    mNumAtoms--;
+}
+
+// O(logN)
+AtomNeighbors AtomicSupport::getNeighbors(uint64_t pos) const
+{
+    // get an iterator to this atom and it's neighbors
+    std::map<uint64_t, uint64_t>::const_iterator it, left, right;
+    it = mAtomPositions.find(pos);
+    left = it; right = it;
+    if (it != mAtomPositions.begin())
+    {
+        --left;
+    }
+    if (++it != mAtomPositions.end())
+    {
+        ++right;
+    }
+    return AtomNeighbors(left->first, mAtoms[left->second].mass,
+        right->first, mAtoms[right->second].mass);
+}
+
 uint64_t AtomicSupport::getRow(uint64_t pos) const
 {
     uint64_t binNum = std::min(pos / mBinSize, mNumBins - 1);
@@ -24,28 +71,28 @@ uint64_t AtomicSupport::getCol(uint64_t pos) const
     return mLabel == 'A' ? binNum % mNumCols : binNum / mNumRows;
 }
 
+// O(logN)
 uint64_t AtomicSupport::randomFreePosition() const
 {
     uint64_t pos = 0;
     do
     {
         pos = gaps::random::uniform64();
-    } while (mAtomicDomain.count(pos) > 0);
+    } while (mAtomPositions.count(pos) > 0);
     return pos;
 }
 
+// O(1)
 uint64_t AtomicSupport::randomAtomPosition() const
 {
     uint64_t num = gaps::random::uniform64(0, mNumAtoms - 1);
-    std::map<uint64_t, float>::const_iterator it = mAtomicDomain.begin();
-    std::advance(it, num);
-    return it->first;
+    return mAtoms[num].pos;
 }
 
 AtomicProposal AtomicSupport::proposeDeath() const
 {
     uint64_t location = randomAtomPosition();
-    float mass = mAtomicDomain.at(location);
+    float mass = mAtoms[mAtomPositions.at(location)].mass;
     return AtomicProposal(mLabel, 'D', location, -mass);
 }
 
@@ -59,47 +106,26 @@ AtomicProposal AtomicSupport::proposeBirth() const
 // move atom between adjacent atoms
 AtomicProposal AtomicSupport::proposeMove() const
 {
-    // get random atom
-    uint64_t location = randomAtomPosition();
-    float mass = mAtomicDomain.at(location);
+    uint64_t pos = randomAtomPosition();
+    AtomNeighbors nbs = getNeighbors(pos);
+    float mass = at(pos);
 
-    // get an iterator to this atom
-    std::map<uint64_t, float>::const_iterator it, left, right;
-    it = mAtomicDomain.find(location);
-    left = it; right = it;
-    uint64_t rbound = mMaxNumAtoms - 1, lbound = 0;
-    if (left != mAtomicDomain.begin())
-    {
-        --left;
-        lbound = left->first;
-    }
-    if (++right != mAtomicDomain.end())
-    {
-        rbound = right->first;
-    }
+    uint64_t lbound = nbs.left.pos != pos ? nbs.left.pos : 0;
+    uint64_t rbound = nbs.right.pos != pos ? nbs.right.pos : mMaxNumAtoms - 1;
 
     uint64_t newLocation = gaps::random::uniform64(lbound, rbound);
-    return AtomicProposal(mLabel, 'M', location, -mass, newLocation, mass);
+    return AtomicProposal(mLabel, 'M', pos, -mass, newLocation, mass);
 }
 
 // exchange with adjacent atom to the right
 AtomicProposal AtomicSupport::proposeExchange() const
 {
-    // get random atom
     uint64_t pos1 = randomAtomPosition();
-    float mass1 = mAtomicDomain.at(pos1);
+    AtomNeighbors nbs = getNeighbors(pos1);
+    float mass1 = at(pos1);
 
-    // find atom to the right, wrap around the end
-    std::map<uint64_t, float>::const_iterator it;
-    it = ++(mAtomicDomain.find(pos1));
-    if (it == mAtomicDomain.end())
-    {
-        it = mAtomicDomain.begin();
-    }
-
-    // get adjacent atom info
-    uint64_t pos2 = it->first;
-    float mass2 = it->second;
+    uint64_t pos2 = nbs.right.pos != pos1 ? nbs.right.pos : mAtomPositions.begin()->first;
+    float mass2 = at(pos2);
 
     // calculate new mass
     float pupper = gaps::random::p_gamma(mass1 + mass2, 2.0, 1.0 / mLambda);
@@ -116,21 +142,19 @@ AtomicProposal AtomicSupport::proposeExchange() const
 
 float AtomicSupport::updateAtomMass(uint64_t pos, float delta)
 {
-    if (mAtomicDomain.count(pos)) // update atom if it exists
+    if (mAtomPositions.count(pos)) // update atom if it exists
     {
-        mAtomicDomain.at(pos) += delta;
+        mAtoms[mAtomPositions.at(pos)].mass += delta;
     }
     else // create a new atom if it doesn't exist
     {
-        mAtomicDomain.insert(std::pair<uint64_t, float>(pos, delta));
-        mNumAtoms++;
+        addAtom(Atom(pos, delta));
     }
 
-    if (mAtomicDomain.at(pos) < EPSILON) // check if atom is too small
+    if (mAtoms[mAtomPositions.at(pos)].mass < EPSILON) // check if atom is too small
     {
-        delta -= mAtomicDomain.at(pos);
-        mAtomicDomain.erase(pos);
-        mNumAtoms--;
+        delta -= at(pos);
+        removeAtom(pos);
     }
     mTotalMass += delta;
     return delta;
@@ -206,16 +230,11 @@ void operator<<(Archive &ar, AtomicSupport &domain)
     ar << domain.mBinSize;
     ar << domain.mAlpha;
     ar << domain.mLambda;
-    
-    std::map<uint64_t, float>::iterator iter = domain.mAtomicDomain.begin();
-    for (; iter != domain.mAtomicDomain.end(); ++iter)
+
+    for (unsigned i = 0; i < domain.mAtoms.size(); ++i)
     {
-        uint64_t pos = iter->first;
-        float mass = iter->second;
-        ar << pos;
-        ar << mass;
-        //ar << iter->first;
-        //ar << iter->second;
+        ar << domain.mAtoms[i].pos;
+        ar << domain.mAtoms[i].mass;
     }
 }
 
@@ -238,6 +257,6 @@ void operator>>(Archive &ar, AtomicSupport &domain)
     {
         ar >> pos;
         ar >> mass;
-        domain.mAtomicDomain.insert(std::pair<uint64_t, float>(pos, mass));
+        domain.addAtom(Atom(pos, mass));
     }    
 }
