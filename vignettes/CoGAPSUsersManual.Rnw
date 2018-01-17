@@ -227,38 +227,6 @@ where $g$ indexes the genes in the set and ${\bf{Asd}}_{gp}$ is the standard dev
 \end{verbatim}
 The input arguments for \texttt{calcCoGAPSStat} are as described in the previous sections.  This function will output a list containing \texttt{GSUpreg}, \texttt{GSDownreg}, and \texttt{GSActEst}.
 
-\subsection{Example: Simulated data}
-
-\par In this example, we have simulated data in SimpSim with three known patterns (SimpSim.P) and corresponding amplitude (SimpSim.A) with specified activity in two gene sets (GSets).  In this data set, each gene set is overexpressed in two of the simulated patterns and underexpressed in one.
-
-<<label=SimCoGAPS,echo=TRUE>>=
-library('CoGAPS')
-data('SimpSim')
-nIter <- 5000 
-results <- CoGAPS(data=SimpSim.D, unc=SimpSim.S, 
-		  GStoGenes=GSets,
-                  nFactor=3,
-                  nEquil=nIter, nSample=nIter,
-                  plot=FALSE)
-plotGAPS(results$Amean, results$Pmean, 'GSFigs')
-@
-
-Figure \ref{fig:GS2} shows the results from running CoGAPS on the GIST data in \cite{Ochs2009} with the option plot set to true.
-\begin{figure}[ht]
-\begin{center}
-\subfigure[Inferred amplitude matrix]{
-\includegraphics[width=0.45\linewidth]{GSFigs-Amplitude}
-}
-\subfigure[Inferred patterns]{
-\includegraphics[width=0.45\linewidth]{GSFigs-Patterns}
-}
-\end{center}
-\caption{Results from GAPS on data of simulated gene set data.}
-\label{fig:GS2}
-\end{figure}
-
-\par Moreover, the gene set activity is provided in \texttt{results\$GSActEst} including p-values for upregulation in \texttt{results\$GSUpreg} and downregulation in \texttt{results\$GSDownreg}.
-
 \subsection{Example: GIST Analysis}
 
 \par We also provide the code that repeats the CoGAPS analysis of GIST data (GIST\_TS\_20084) with gene sets defined by transcription factors (TFGSList), as in the DESIDE analysis of \cite{Ochs2009}.  To minimize time in running the vignette, this is not done live.  However, running the code will complete the analysis and require on the order of an hour on a fast machine.
