@@ -12,8 +12,8 @@ TEST_CASE("Test Random.h - Random Number Generation")
 
     SECTION("Test uniform distribution over unit interval")
     {
-        double min = 1, max = 0;
-        double sum = 0.0;
+        float min = 1, max = 0;
+        float sum = 0.0;
         unsigned N = 10000;
         for (unsigned i = 0; i < N; ++i)
         {
@@ -30,14 +30,11 @@ TEST_CASE("Test Random.h - Random Number Generation")
 
     SECTION("Test uniform distribution over general interval")
     {
-        // invalid bounds
-        REQUIRE_THROWS(gaps::random::uniform(2.0, 1.4));
-
         // bounds equal
-        REQUIRE(gaps::random::uniform(4.3,4.3) == 4.3);
+        REQUIRE(gaps::random::uniform(4.3,4.3) == 4.3f);
 
         // full range possible
-        double min = 10., max = 0.;
+        float min = 10., max = 0.;
         for (unsigned i = 0; i < 1000; ++i)
         {
             min = std::min(gaps::random::uniform(0.0,10.0), min);
@@ -60,8 +57,8 @@ TEST_CASE("Test Random.h - Random Number Generation")
     SECTION("Test normal distribution")
     {
         // sample distribution
-        double mean = 0.0, var = 0.0;
-        double norm[1024];
+        float mean = 0.0, var = 0.0;
+        float norm[1024];
         for (unsigned i = 0; i < 1024; ++i)
         {
             norm[i] = gaps::random::normal(0, 1);        
@@ -81,30 +78,30 @@ TEST_CASE("Test Random.h - Random Number Generation")
 
     SECTION("Test poisson distribution")
     {
-        double total = 0;
+        float total = 0;
         for (unsigned i = 0; i < 10000; ++i)
         {
-            double num = gaps::random::poisson(4);
+            float num = gaps::random::poisson(4);
             total += num;
 
             REQUIRE((int)num == num); // should be integer
             REQUIRE(num >= 0.0); // should be non-negative
         }
-        double mean = total / 10000;
+        float mean = total / 10000;
         REQUIRE(mean == Approx(4).epsilon(0.025));
     }
 
     SECTION("Test exponential distribution")
     {
-        double total = 0;
+        float total = 0;
         for (unsigned i = 0; i < 10000; ++i)
         {
-            double num = gaps::random::exponential(1);
+            float num = gaps::random::exponential(1);
             total += num;
 
             REQUIRE(num >= 0.0); // should be non-negative
         }
-        double mean = total / 10000;
+        float mean = total / 10000;
         REQUIRE(mean == Approx(1).epsilon(0.025));
     }
 }

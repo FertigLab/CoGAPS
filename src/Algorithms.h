@@ -2,13 +2,14 @@
 #define __COGAPS_ALGORITHMS_H__
 
 #include "Matrix.h"
+#include <xmmintrin.h>
 
 struct AlphaParameters
 {
-    double s;
-    double su;
+    float s;
+    float su;
     
-    AlphaParameters(double inS, double inSU)
+    AlphaParameters(float inS, float inSU)
         : s(inS), su(inSU)
     {}
 
@@ -19,6 +20,42 @@ struct AlphaParameters
         return *this;
     }
 };
+
+/*class vec4f
+{
+private:
+    
+    __m128 mValue;
+
+public:
+
+    inline vec4f() {}
+    inline vec4f(float f) : mValue(_mm_set1_ps(f)) {}
+    inline vec4f(float f0, float f1, float f2, float f3)
+        : mValue(_mm_setr_ps(f0,f1,f2,f3))
+    {}
+    inline vec4f(const __m128 &rhs) : mValue(rhs) {}
+    
+    inline vec4f& operator=(const __m128 &rhs)
+    {
+        mValue = rhs;
+        return *this;
+    }
+
+    inline operator __m128() const {return mValue;}
+
+    inline vec4f& operator+=(const vec4f &rhs)
+    {
+        *this = *this + rhs;
+        return *this;
+    }
+};
+*/
+
+/*inline vec4f operator+(const vec4f &lhs, const vec4f &rhs)
+{
+    return _mm_add_ps(lhs,rhs);
+}*/
 
 namespace gaps
 {
@@ -56,7 +93,7 @@ namespace algo
     matrix_data_t loglikelihood(const TwoWayMatrix &D, const TwoWayMatrix &S,
         const TwoWayMatrix &AP);
 
-    double deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
+    float deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
         const TwoWayMatrix &S, const ColMatrix &A,
         const RowMatrix &P, const TwoWayMatrix &AP);
 

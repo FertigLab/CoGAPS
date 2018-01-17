@@ -71,16 +71,16 @@ TEST_CASE("Test Matrix.h")
 
         REQUIRE(rm(3,4) == 3.0);
         REQUIRE(cm(1,2) == 13.0);
-        REQUIRE(rm.getRow(3)(4) == 3.0);
-        REQUIRE(cm.getCol(2)(1) == 13.0);
+        REQUIRE(rm.getRow(3)[4] == 3.0);
+        REQUIRE(cm.getCol(2)[1] == 13.0);
 
         rm.update(MatrixChange('A', 3, 4, 3.0));
         cm.update(MatrixChange('P', 1, 2, 5.0));
         
         REQUIRE(rm(3,4) == 6.0);
         REQUIRE(cm(1,2) == 18.0);
-        REQUIRE(rm.getRow(3)(4) == 6.0);
-        REQUIRE(cm.getCol(2)(1) == 18.0);
+        REQUIRE(rm.getRow(3)[4] == 6.0);
+        REQUIRE(cm.getCol(2)[1] == 18.0);
     }
 
     SECTION("TwoWayMatrix set")
@@ -88,8 +88,8 @@ TEST_CASE("Test Matrix.h")
         TwoWayMatrix mat(100, 300);
         mat.set(0,299,54.0);
         
-        REQUIRE(mat.getRow(0)(299) == 54.0);
-        REQUIRE(mat.getCol(299)(0) == 54.0);
+        REQUIRE(mat.getRow(0)[299] == 54.0);
+        REQUIRE(mat.getCol(299)[0] == 54.0);
     }
 }
 
