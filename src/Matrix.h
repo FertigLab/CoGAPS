@@ -4,10 +4,8 @@
 #include "Archive.h"
 
 #include <Rcpp.h>
+#include <boost/align/aligned_allocator.hpp>
 #include <vector>
-
-// temporary: used for testing performance of float vs double
-typedef float matrix_data_t;
 
 struct MatrixChange
 {
@@ -16,11 +14,11 @@ struct MatrixChange
 
     unsigned row1;
     unsigned col1;
-    matrix_data_t delta1;
+    float delta1;
     
     unsigned row2;
     unsigned col2;
-    matrix_data_t delta2;
+    float delta2;
 
     MatrixChange(char l, unsigned r, unsigned c, float d)
         : label(l), nChanges(1), row1(r), col1(c), delta1(d), row2(0),
@@ -34,25 +32,28 @@ struct MatrixChange
     {}
 };
 
+typedef std::vector<float, boost::alignment::aligned_allocator<float,16> > aligned_vector;
 class Vector
 {
 private:
 
-    std::vector<matrix_data_t> mValues;
+    aligned_vector mValues;
 
 public:
 
-    Vector(unsigned size) : mValues(std::vector<matrix_data_t>(size, 0.0)) {}
-    Vector(const std::vector<matrix_data_t>& v) : mValues(v) {}
+    Vector(unsigned size) : mValues(aligned_vector(size, 0.0)) {}
+    Vector(const aligned_vector &v) : mValues(v) {}
     Vector(const Vector &vec) : mValues(vec.mValues) {}
 
-    matrix_data_t& operator[](unsigned i) {return mValues[i];}
-    matrix_data_t operator[](unsigned i) const {return mValues[i];}
+    float& operator[](unsigned i) {return mValues[i];}
+    float operator[](unsigned i) const {return mValues[i];}
     unsigned size() const {return mValues.size();}
 
     Rcpp::NumericVector rVec() const {return Rcpp::wrap(mValues);}
     void concat(const Vector& vec);
     void operator+=(const Vector &vec);
+
+    const float * ptr() const {return &mValues[0];}
 
     friend void operator<<(Archive &ar, Vector &vec);
     friend void operator>>(Archive &ar, Vector &vec);
@@ -74,11 +75,13 @@ public:
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
 
-    matrix_data_t& operator()(unsigned r, unsigned c) {return mRows[r][c];}
-    matrix_data_t operator()(unsigned r, unsigned c) const {return mRows[r][c];}
+    float& operator()(unsigned r, unsigned c) {return mRows[r][c];}
+    float operator()(unsigned r, unsigned c) const {return mRows[r][c];}
 
     Vector& getRow(unsigned row) {return mRows[row];}
     const Vector& getRow(unsigned row) const {return mRows[row];}
+
+    const float* rowPtr(unsigned row) const {return mRows[row].ptr();}
 
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
@@ -103,11 +106,13 @@ public:
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
 
-    matrix_data_t& operator()(unsigned r, unsigned c) {return mCols[c][r];}
-    matrix_data_t operator()(unsigned r, unsigned c) const {return mCols[c][r];}
+    float& operator()(unsigned r, unsigned c) {return mCols[c][r];}
+    float operator()(unsigned r, unsigned c) const {return mCols[c][r];}
 
     Vector& getCol(unsigned col) {return mCols[col];}
     const Vector& getCol(unsigned col) const {return mCols[col];}
+
+    const float* colPtr(unsigned col) const {return mCols[col].ptr();}
 
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
@@ -139,6 +144,9 @@ public:
     
     const Vector& getRow(unsigned row) const {return mRowMatrix.getRow(row);}
     const Vector& getCol(unsigned col) const {return mColMatrix.getCol(col);}
+
+    const float* rowPtr(unsigned row) const {return mRowMatrix.rowPtr(row);}
+    const float* colPtr(unsigned col) const {return mColMatrix.colPtr(col);}
 
     // not optimal to call this
     float operator()(unsigned r, unsigned c) const {return mRowMatrix(r,c);}
