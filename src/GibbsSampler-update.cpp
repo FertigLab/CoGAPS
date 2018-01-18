@@ -63,6 +63,8 @@ double GibbsSampler::computeDeltaLL(char the_matrix_label,
         } // end of switch-block 'P'
     } // end of switch block
 
+    //Rcpp::Rcout << "DelLL " << DelLL << "\n";
+
     return DelLL;
 } // end of computeDeltaLL
 
@@ -367,9 +369,9 @@ void GibbsSampler::update_sysChi2(double delsysChi2) {
     double pre;
     pre = _sysChi2;
     _sysChi2 -= 2.*delsysChi2;
-    if (pre > 0.0 & _sysChi2 < 0.0) {
-        Rcpp::Rcout << "pre " << pre << " post " << _sysChi2 << " delsysChi2 " << delsysChi2 << "\n";
-    }
+    //if (pre > 0.0 & _sysChi2 < 0.0) {
+        //Rcpp::Rcout << "pre " << pre << " post " << _sysChi2 << " delsysChi2 " << delsysChi2 << "\n";
+    //}
 }
 
 double GibbsSampler::get_sysChi2() {
@@ -416,6 +418,9 @@ bool GibbsSampler::death(char the_matrix_label,
         case 'A': {
             delLL = computeDeltaLL('A', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
             _AAtomicdomain.acceptProposal(false); // "false" only means not to update _iter!
+            if (_sysChi2 > 0 && (_sysChi2 - 2 * delLL) < 0) { 
+                Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLL << " death A\n";
+            }
             update_sysChi2(delLL);      // update system Chi2
             _AMatrix.matrix_Elem_update(_matrixElemChange, _oper_type, _nChange_matrixElemChange);
             break;
@@ -424,6 +429,9 @@ bool GibbsSampler::death(char the_matrix_label,
         case 'P': {
             delLL = computeDeltaLL('P', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
             _PAtomicdomain.acceptProposal(false); // "false" only means not to update _iter!
+            if (_sysChi2 > 0 && (_sysChi2 - 2 * delLL) < 0) { 
+                Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLL << " death P\n";
+            }
             update_sysChi2(delLL);     // update system Chi2
             _PMatrix.matrix_Elem_update(_matrixElemChange, _oper_type, _nChange_matrixElemChange);
             break;
@@ -495,12 +503,19 @@ bool GibbsSampler::death(char the_matrix_label,
         switch (the_matrix_label) {
             case 'A': {
                 _AAtomicdomain.acceptProposal(false);
+                // HERE!!!!!!!
+                if (_sysChi2 > 0 && (_sysChi2 - 2 * delLLnew) < 0) { 
+                    Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLLnew << " death accept A\n";
+                }
                 update_sysChi2(delLLnew);  // update system Chi2
                 return true;
             }
 
             case 'P': {
                 _PAtomicdomain.acceptProposal(false);
+                if (_sysChi2 > 0 && (_sysChi2 - 2 * delLLnew) < 0) { 
+                    Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLLnew << " death accept P\n";
+                }
                 update_sysChi2(delLLnew);  // update system Chi2
                 return true;
             }
@@ -540,6 +555,9 @@ bool GibbsSampler::birth(char the_matrix_label,
             if (!checkOtherMatrix('A', iRow, iCol, POrig)) {
                 _AAtomicdomain.acceptProposal(false); //accept original proposal
                 delLL = computeDeltaLL('A', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
+                if (_sysChi2 > 0 && (_sysChi2 - 2 * delLL) < 0) { 
+                    Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLL << " birth A\n";
+                }
                 update_sysChi2(delLL);  // update system Chi2
                 _new_atomicProposal.insert(pair<unsigned long long, double>(location,
                                            origMass)); //update _new_atomicProposal with original change
@@ -566,6 +584,9 @@ bool GibbsSampler::birth(char the_matrix_label,
             if (!checkOtherMatrix('P', iRow, iCol, AOrig)) {
                 _PAtomicdomain.acceptProposal(false); // accept original proposal
                 delLL = computeDeltaLL('P', D, S, AOrig, POrig, _nChange_matrixElemChange, _matrixElemChange);
+                if (_sysChi2 > 0 && (_sysChi2 - 2 * delLL) < 0) { 
+                    Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLL << " birth P\n";
+                }
                 update_sysChi2(delLL);  // update system Chi2
                 _new_atomicProposal.insert(pair<unsigned long long, double>(location, origMass));
                 extract_new_atomicProposal('P');
@@ -586,12 +607,18 @@ bool GibbsSampler::birth(char the_matrix_label,
     switch (the_matrix_label) {
         case 'A': {
             _AAtomicdomain.acceptProposal(false);
+            if (_sysChi2 > 0 && (_sysChi2 - 2 * delLLnew) < 0) { 
+                Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLLnew << " birth accept A\n";
+            }
             update_sysChi2(delLLnew);  // update system Chi2
             return true;
         }
 
         case 'P': {
             _PAtomicdomain.acceptProposal(false);
+            if (_sysChi2 > 0 && (_sysChi2 - 2 * delLLnew) < 0) { 
+                Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLLnew << " birth accept P\n";
+            }
             update_sysChi2(delLLnew);  // update system Chi2
             return true;
         }
@@ -760,12 +787,18 @@ bool GibbsSampler::move(char the_matrix_label,
         switch (the_matrix_label) {
             case 'A': {
                 _AAtomicdomain.acceptProposal(false);
+                if (_sysChi2 > 0 && (_sysChi2 - 2 * delLLnew) < 0) { 
+                    Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLLnew << " move accept A\n";
+                }
                 update_sysChi2(delLLnew);  // update system Chi2
                 return true;
             }
 
             case 'P': {
                 _PAtomicdomain.acceptProposal(false);
+                if (_sysChi2 > 0 && (_sysChi2 - 2 * delLLnew) < 0) { 
+                    Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLLnew << " move accept P\n";
+                }
                 update_sysChi2(delLLnew);  // update system Chi2
                 return true;
             }
@@ -1021,6 +1054,9 @@ bool GibbsSampler::exchange(char the_matrix_label,
                     delLLnew = computeDeltaLL('A', D, S, AOrig, POrig, _new_nChange_matrixElemChange, _new_matrixElemChange);
                     _AAtomicdomain.setProposedAtomMass(_new_atomicProposal, false);
                     _AAtomicdomain.acceptProposal(false);
+                    if (_sysChi2 > 0 && (_sysChi2 - 2 * delLLnew) < 0) { 
+                        Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLLnew << " exchange gibbs A\n";
+                    }
                     update_sysChi2(delLLnew);  // update system Chi2
                     break;
                 }
@@ -1030,6 +1066,9 @@ bool GibbsSampler::exchange(char the_matrix_label,
                     delLLnew = computeDeltaLL('P', D, S, AOrig, POrig, _new_nChange_matrixElemChange, _new_matrixElemChange);
                     _PAtomicdomain.setProposedAtomMass(_new_atomicProposal, false);
                     _PAtomicdomain.acceptProposal(false);
+                    if (_sysChi2 > 0 && (_sysChi2 - 2 * delLLnew) < 0) { 
+                        Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLLnew << " exchange gibbs P\n";
+                    }
                     update_sysChi2(delLLnew);  // update system Chi2
                     break;
                 }
@@ -1149,12 +1188,18 @@ bool GibbsSampler::exchange(char the_matrix_label,
         switch (the_matrix_label) {
             case 'A': {
                 _AAtomicdomain.acceptProposal(false);
+                if (_sysChi2 > 0 && (_sysChi2 - 2 * delLLnew) < 0) { 
+                    Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLLnew << " exchange mh A\n";
+                }
                 update_sysChi2(delLLnew);  // update system Chi2
                 return true;
             }
 
             case 'P': {
                 _PAtomicdomain.acceptProposal(false);
+                if (_sysChi2 > 0 && (_sysChi2 - 2 * delLLnew) < 0) { 
+                    Rcpp::Rcout << "current " << _sysChi2 << " new " << _sysChi2 - 2 * delLLnew << " exchange mh P\n";
+                }
                 update_sysChi2(delLLnew);  // update system Chi2
                 return true;
             }

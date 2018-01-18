@@ -168,7 +168,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     P_prime(row_num - 1, Rcpp::_) = P_prime(row_num - 1, Rcpp::_) / Pnorm;
     A_prime(Rcpp::_, row_num - 1) = A_prime(Rcpp::_, row_num - 1) * Pnorm / Pnorm_old;
 
-    Rcpp::Rcout << "Current: " << _theta_truth << " Proposed " << theta_prime << " Pnorm " << Pnorm << " Pnorm_old " << Pnorm_old << "\n";
+    //Rcpp::Rcout << "Current: " << _theta_truth << " Proposed " << theta_prime << " Pnorm " << Pnorm << " Pnorm_old " << Pnorm_old << "\n";
 
     arma::mat D_prime = Rcpp::as<arma::mat>(A_prime) * Rcpp::as<arma::mat>(P_prime);
     arma::mat D_orig = Rcpp::as<arma::mat>(A) * Rcpp::as<arma::mat>(P);
@@ -184,7 +184,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     arma::mat orig = Rcpp::as<arma::mat>(_D) - D_orig; 
     rho_thresh = norm(orig, 2);// + eps_prime;
 
-    Rcpp::Rcout << "D_diff " << D_diff << " rho " << rho << " rho_thresh " << rho_thresh << "\n";
+    //Rcpp::Rcout << "D_diff " << D_diff << " rho " << rho << " rho_thresh " << rho_thresh << "\n";
 
     // calculate acceptance probability
     //if (rho < eps_prime) {
