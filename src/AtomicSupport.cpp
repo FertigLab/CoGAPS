@@ -124,6 +124,7 @@ AtomicProposal AtomicSupport::proposeExchange() const
     AtomNeighbors nbs = getNeighbors(pos1);
     float mass1 = at(pos1);
 
+    // find right neighbor, wrap around to beginning if this atom is end
     uint64_t pos2 = nbs.right.pos != pos1 ? nbs.right.pos : mAtomPositions.begin()->first;
     float mass2 = at(pos2);
 
