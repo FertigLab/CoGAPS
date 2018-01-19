@@ -62,6 +62,7 @@ float gaps::random::uniform()
     return dist();
 }
 
+// open interval
 float gaps::random::uniform(float a, float b)
 {
     if (a == b)
@@ -71,7 +72,12 @@ float gaps::random::uniform(float a, float b)
     else
     {
         boost::random::uniform_real_distribution<> dist(a,b);
-        return dist(rng);
+        float result = dist(rng);
+        while (result == b)
+        {
+            result = dist(rng);
+        }
+        return result;
     }
 }
 
