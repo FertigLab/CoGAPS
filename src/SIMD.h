@@ -21,53 +21,24 @@
         #define SSE_INSTR_SET 6
     #elif defined ( __SSE4_1__ )
         #define SSE_INSTR_SET 5
-    #elif defined ( __SSSE3__ )
-        #define SSE_INSTR_SET 4
-    #elif defined ( __SSE3__ )
-        #define SSE_INSTR_SET 3
-    #elif defined ( __SSE2__ ) || defined ( __x86_64__ )
-        #define SSE_INSTR_SET 2
-    #elif defined ( __SSE__ )
-        #define SSE_INSTR_SET 1
-    #elif defined ( _M_IX86_FP )  // Defined in MS compiler on 32bits system. 1: SSE, 2: SSE2
-        #define SSE_INSTR_SET _M_IX86_FP
     #else
         #error "SIMD not supported"
         #define SSE_INSTR_SET 0
-    #endif // instruction set defines
-#endif // SSE_INSTR_SET
+    #endif
+#endif
 
-// Include the appropriate header file for intrinsic functions
-#if SSE_INSTR_SET > 7                  // AVX2 and later
-    #pragma message "AVX2 enabled"
-    #ifdef __GNUC__
-        #include <x86intrin.h>         // x86intrin.h includes header files for whatever instruction
-                                       // sets are specified on the compiler command line, such as:
-                                       // xopintrin.h, fma4intrin.h
-    #else
-        #include <immintrin.h>         // MS version of immintrin.h covers AVX, AVX2 and FMA3
-    #endif // __GNUC__
-#elif SSE_INSTR_SET == 7
+#if SSE_INSTR_SET == 7
+    #define __GAPS_AVX__
     #pragma message "AVX enabled"
     #include <immintrin.h>
 #elif SSE_INSTR_SET == 6
+    #define __GAPS_SSE__
     #pragma message "SSE4.2 enabled"
     #include <nmmintrin.h>
 #elif SSE_INSTR_SET == 5
+    #define __GAPS_SSE__
     #pragma message "SSE4.1 enabled"
     #include <smmintrin.h>
-#elif SSE_INSTR_SET == 4
-    #pragma message "SSSE3 enabled"
-    #include <tmmintrin.h>
-#elif SSE_INSTR_SET == 3
-    #pragma message "SSE3 enabled"
-    #include <pmmintrin.h>
-#elif SSE_INSTR_SET == 2
-    #pragma message "SSE2 enabled"
-    #include <emmintrin.h>
-#elif SSE_INSTR_SET == 1
-    #pragma message "SSE enabled"
-    #include <xmmintrin.h>
 #endif
 
 namespace gaps
@@ -75,12 +46,33 @@ namespace gaps
 namespace simd
 {
 
-#if SSE_INSTR_SET == 0
-    const unsigned index_increment = 1;
-#elif SSE_INSTR_SET == 7
+#if defined( __GAPS_AVX__ )
+    typedef __m256 gaps_packed_t;
     const unsigned index_increment = 8;
+    #define SET_SCALAR(x) _mm256_set1_ps(x)
+    #define LOAD_PACKED(x) _mm256_load_ps(x)
+    #define ADD_PACKED(a,b) _mm256_add_ps(a,b)
+    #define SUB_PACKED(a,b) _mm256_sub_ps(a,b)
+    #define MUL_PACKED(a,b) _mm256_mul_ps(a,b)
+    #define DIV_PACKED(a,b) _mm256_div_ps(a,b)
+#elif defined( __GAPS_SSE__ )
+    typedef __m128 gaps_packed_t;
+    const unsigned index_increment = 4;
+    #define SET_SCALAR(x) _mm_set1_ps(x)
+    #define LOAD_PACKED(x) _mm_load_ps(x)
+    #define ADD_PACKED(a,b) _mm_add_ps(a,b)
+    #define SUB_PACKED(a,b) _mm_sub_ps(a,b)
+    #define MUL_PACKED(a,b) _mm_mul_ps(a,b)
+    #define DIV_PACKED(a,b) _mm_div_ps(a,b)
 #else
+    typedef float gaps_packed_t;
     const unsigned index_increment = 1;
+    #define SET_SCALAR(x) x
+    #define LOAD_PACKED(x) *(x)
+    #define ADD_PACKED(a,b) (a+b)
+    #define SUB_PACKED(a,b) (a-b)
+    #define MUL_PACKED(a,b) (a*b)
+    #define DIV_PACKED(a,b) (a/b)
 #endif
 
 class Index
@@ -95,74 +87,52 @@ public:
     friend const float* operator+(const float *ptr, Index ndx);
 };
 
-inline const float* operator+(const float *ptr, Index ndx)
-{
-    return ptr + ndx.index;
-}
-
-#ifdef SIMD
-
-#include <immintrin.h>
+inline const float* operator+(const float *ptr, Index ndx) { return ptr + ndx.index; }
 
 class packedFloat
 {
 private:
-    __m128 mVec;
+
+    gaps_packed_t mData;
+
 public:
-    vec4f() {}
-    vec4f(float val) : mVec(_mm_load_ps1(&val)) {}
-    vec4f(const float *ptr) : mVec(_mm_load_ps(ptr)) {}
-    vec4f(__m128 val) : mVec(val) {}
-    void operator=(float val) { mVec = _mm_load_ps1(&val); }
-    void operator+=(vec4f val) { mVec = mVec + val.mVec; }
 
-    void load(const float* ptr) { mVec = _mm_load_ps(ptr); }
+    packedFloat() {}
+    packedFloat(float val) : mData(SET_SCALAR(val)) {}
+#if defined( __GAPS_SSE__ ) || defined( __GAPS_AVX__ )
+    packedFloat(gaps_packed_t val) : mData(val) {}
+#endif
 
-    vec4f operator+(vec4f b) const { return _mm_add_ps(mVec, b.mVec); }
-    vec4f operator-(vec4f b) const { return _mm_sub_ps(mVec, b.mVec); }
-    vec4f operator*(vec4f b) const { return _mm_mul_ps(mVec, b.mVec); }
-    vec4f operator/(vec4f b) const { return _mm_div_ps(mVec, b.mVec); }
+    packedFloat operator+(packedFloat b) const { return ADD_PACKED(mData, b.mData); }
+    packedFloat operator-(packedFloat b) const { return SUB_PACKED(mData, b.mData); }
+    packedFloat operator*(packedFloat b) const { return MUL_PACKED(mData, b.mData); }
+    packedFloat operator/(packedFloat b) const { return DIV_PACKED(mData, b.mData); }
 
-    friend float scalar(vec4f val);
-};
+    void operator+=(packedFloat val) { mData = ADD_PACKED(mData, val.mData); }
+    void load(const float *ptr) { mData = LOAD_PACKED(ptr); }
 
-inline float scalar(vec4f val)
-{
-    val.mVec = _mm_hadd_ps(val.mVec, val.mVec);
-    val.mVec = _mm_hadd_ps(val.mVec, val.mVec);
-    float ret;
-    _mm_store_ss(&ret, val.mVec);
-    return ret;
-}
-
+#if defined( __GAPS_AVX__ )
+    float scalar()
+    {
+        float* ra = (float*)&mData;
+        return ra[0] + ra[1] + ra[2] + ra[3] + ra[4] + ra[5] + ra[6] + ra[7];
+    }
+#elif defined( __GAPS_SSE__ )
+    float scalar()
+    {
+        float* ra = (float*)&mData;
+        return ra[0] + ra[1] + ra[2] + ra[3];
+    }
 #else
-#warning "SIMD not being used"
-
-class packedFloat
-{
-private:
-    float mVec;
-public:
-    vec4f() {}
-    vec4f(float val) : mVec(val) {}
-    vec4f(const float *ptr) : mVec(*ptr) {}
-    void operator=(float val) { mVec = val; }
-    void operator+=(vec4f val) { mVec += val.mVec; }
-
-    vec4f operator+(vec4f b) { return mVec + b.mVec; }
-    vec4f operator-(vec4f b) { return mVec - b.mVec; }
-    vec4f operator*(vec4f b) { return mVec * b.mVec; }
-    vec4f operator/(vec4f b) { return mVec / b.mVec; }
-
-    friend float scalar(vec4f val);
+    float scalar()
+    {
+        return mData;
+    }
+#endif
 };
-
-inline vec4f load(const float* ptr) { return *ptr; }
-inline float scalar(vec4f val) { return val.mVec; }
-
-#endif // SIMD
 
 } // namespace simd
 } // namespace gaps
 
 #endif // __COGAPS_SIMD_H__
+

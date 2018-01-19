@@ -98,41 +98,11 @@ const TwoWayMatrix &S, const TwoWayMatrix &AP)
     return chi2;
 }
 
-#ifdef RAW_SIMD
-#include <immintrin.h>
-#endif
-
 static float deltaLL_comp(unsigned size, const float *D, const float *S,
 const float *AP, const float *other, float delta)
 {
-#ifdef RAW_SISD
-    float d = 0.f, delLL = 0.f;
-    for (unsigned i = 0; i < size; ++i)
-    {
-        d = delta * other[i];
-        delLL += (d * (2.f * (D[i] - AP[i]) - d)) / (2.f * S[i] * S[i]);
-    }
-    return delLL;
-#elif defined(RAW_SIMD)
-    float result = 0.f;
-    float two_scalar = 2.f;
-    const __m128 two_vec = _mm_load_ps1(&two_scalar);
-    const __m128 delta_vec = _mm_load_ps1(&delta);
-    __m128 sum = _mm_xor_ps(two_vec, two_vec); // zero out sum
-    __m128 d, pS;
-    for (unsigned i = 0; i < size; i += 4)
-    {
-        d = _mm_mul_ps(delta_vec, _mm_load_ps(other + i));
-        pS = _mm_load_ps(S + i);
-        sum = _mm_add_ps(sum, _mm_div_ps(_mm_mul_ps(_mm_sub_ps(_mm_mul_ps(two_vec, _mm_sub_ps(_mm_load_ps(D + i), _mm_load_ps(AP + i))), d), d)), _mm_mul_ps(two_vec, _mm_mul_ps(pS, pS)));
-    }
-    sum = _mm_hadd_ps(sum,sum);
-    sum = _mm_hadd_ps(sum,sum);
-    _mm_store_ss(&result, sum);
-    return result;
-#else
-    const gaps::simd::vec4f pDelta = delta, two = 2.f;
-    gaps::simd::vec4f d, pOther, pD, pAP, pS, delLL = 0.f;
+    const gaps::simd::packedFloat pDelta = delta, two = 2.f;
+    gaps::simd::packedFloat d, pOther, pD, pAP, pS, delLL = 0.f;
     for (gaps::simd::Index i = 0; i < size; ++i)
     {   
         pOther.load(other + i);
@@ -142,43 +112,15 @@ const float *AP, const float *other, float delta)
         d = pDelta * pOther;
         delLL += (d * (two * (pD - pAP) - d)) / (two * pS * pS);
     }
-    return gaps::simd::scalar(delLL);
-#endif
+    return delLL.scalar();
 }
 
 static float deltaLL_comp(unsigned size, const float *D, const float *S,
 const float *AP, const float *other1, float delta1, const float *other2,
 float delta2)
 {
-#ifdef RAW_SISD
-    float d = 0.f, delLL = 0.f;
-    for (unsigned i = 0; i < size; ++i)
-    {
-        d = delta1 * other1[i] + delta2 * other2[i];
-        delLL += (d * (2.f * (D[i] - AP[i]) - d)) / (2.f * S[i] * S[i]);
-    }
-    return delLL;
-#elif defined(RAW_SIMD)
-    float result = 0.f;
-    float two_scalar = 2.f;
-    const __m128 two_vec = _mm_load_ps1(&two_scalar);
-    const __m128 delta1_vec = _mm_load_ps1(&delta1);
-    const __m128 delta2_vec = _mm_load_ps1(&delta2);
-    __m128 sum = _mm_xor_ps(two_vec, two_vec); // zero out sum //_mm_set_zero ??
-    __m128 d;
-    for (unsigned i = 0; i < size; i += 4)
-    {
-        d = _mm_add_ps(_mm_mul_ps(delta1_vec, _mm_load_ps(other1 + i)), _mm_mul_ps(delta2_vec, _mm_load_ps(other2 + i)));
-        pS = _mm_load_ps(S + i);
-        sum = _mm_add_ps(sum, _mm_div_ps(_mm_mul_ps(_mm_sub_ps(_mm_mul_ps(two_vec, _mm_sub_ps(_mm_load_ps(D + i), _mm_load_ps(AP + i))), d), d)), _mm_mul_ps(two_vec, _mm_mul_ps(pS, pS)));
-    }
-    sum = _mm_hadd_ps(sum,sum);
-    sum = _mm_hadd_ps(sum,sum);
-    _mm_store_ss(&result, sum);
-    return result;
-#else
-    const gaps::simd::vec4f pDelta1 = delta1, pDelta2 = delta2, two = 2.f;
-    gaps::simd::vec4f d, pOther1, pOther2, pD, pAP, pS, delLL = 0.f;
+    const gaps::simd::packedFloat pDelta1 = delta1, pDelta2 = delta2, two = 2.f;
+    gaps::simd::packedFloat d, pOther1, pOther2, pD, pAP, pS, delLL = 0.f;
     for (gaps::simd::Index i = 0; i < size; ++i)
     {   
         pOther1.load(other1 + i);
@@ -189,8 +131,7 @@ float delta2)
         d = pDelta1 * pOther1 + pDelta2 * pOther2;
         delLL += (d * (two * (pD - pAP) - d)) / (two * pS * pS);
     }
-    return gaps::simd::scalar(delLL);
-#endif
+    return delLL.scalar();
 }
 
 float gaps::algo::deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,

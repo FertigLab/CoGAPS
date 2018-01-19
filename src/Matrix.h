@@ -32,7 +32,7 @@ struct MatrixChange
     {}
 };
 
-typedef std::vector<float, boost::alignment::aligned_allocator<float,16> > aligned_vector;
+typedef std::vector<float, boost::alignment::aligned_allocator<float,32> > aligned_vector;
 class Vector
 {
 private:
