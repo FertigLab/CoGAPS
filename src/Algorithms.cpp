@@ -102,17 +102,24 @@ static float deltaLL_comp(unsigned size, const float *D, const float *S,
 const float *AP, const float *other, float delta)
 {
     const gaps::simd::packedFloat pDelta = delta, two = 2.f;
-    gaps::simd::packedFloat d, pOther, pD, pAP, pS, delLL = 0.f;
-    for (gaps::simd::Index i = 0; i < size; ++i)
+    gaps::simd::packedFloat d, pOther, pD, pAP, pS, partialSum = 0.f;
+    gaps::simd::Index i = 0;
+    for (; i <= size - i.increment(); ++i)
     {   
         pOther.load(other + i);
         pD.load(D + i);
         pAP.load(AP + i);
         pS.load(S + i);
         d = pDelta * pOther;
-        delLL += (d * (two * (pD - pAP) - d)) / (two * pS * pS);
+        partialSum += (d * (two * (pD - pAP) - d)) / (two * pS * pS);
     }
-    return delLL.scalar();
+    float fd, delLL = partialSum.scalar();
+    for (unsigned j = i.value(); j < size; ++j)
+    {
+        fd = delta * other[j];
+        delLL += (fd * (2.f * (D[j] - AP[j]) - fd)) / (2.f * S[j] * S[j]);
+    }    
+    return delLL;
 }
 
 static float deltaLL_comp(unsigned size, const float *D, const float *S,
@@ -120,8 +127,9 @@ const float *AP, const float *other1, float delta1, const float *other2,
 float delta2)
 {
     const gaps::simd::packedFloat pDelta1 = delta1, pDelta2 = delta2, two = 2.f;
-    gaps::simd::packedFloat d, pOther1, pOther2, pD, pAP, pS, delLL = 0.f;
-    for (gaps::simd::Index i = 0; i < size; ++i)
+    gaps::simd::packedFloat d, pOther1, pOther2, pD, pAP, pS, partialSum = 0.f;
+    gaps::simd::Index i = 0;
+    for (; i <= size - i.increment(); ++i)
     {   
         pOther1.load(other1 + i);
         pOther2.load(other2 + i);
@@ -129,9 +137,15 @@ float delta2)
         pAP.load(AP + i);
         pS.load(S + i);
         d = pDelta1 * pOther1 + pDelta2 * pOther2;
-        delLL += (d * (two * (pD - pAP) - d)) / (two * pS * pS);
+        partialSum += (d * (two * (pD - pAP) - d)) / (two * pS * pS);
     }
-    return delLL.scalar();
+    float fd, delLL = partialSum.scalar();
+    for (unsigned j = i.value(); j < size; ++j)
+    {
+        fd = delta1 * other1[j] + delta2 * other2[j];
+        delLL += (fd * (2.f * (D[j] - AP[j]) - fd)) / (2.f * S[j] * S[j]);
+    }    
+    return delLL;
 }
 
 float gaps::algo::deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,

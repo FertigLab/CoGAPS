@@ -82,8 +82,10 @@ private:
 public:
     Index(unsigned i) : index(i) {}
     void operator=(unsigned val) { index = val; }
-    bool operator<(unsigned comp) { return index < comp; }
+    bool operator<=(unsigned comp) { return index <= comp; }
     void operator++() { index += index_increment; }
+    unsigned value() const { return index; }
+    unsigned increment() const { return index_increment; }
     friend const float* operator+(const float *ptr, Index ndx);
 };
 
