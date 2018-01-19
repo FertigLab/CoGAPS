@@ -1,4 +1,4 @@
-PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -DSIMD -msse4.1
+PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -DNO_SIMD
 OBJECTS =   Algorithms.o \
             AtomicSupport.o \
             Cogaps.o \
