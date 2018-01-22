@@ -60,12 +60,14 @@ Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
             state.sampler.setAnnealingTemp(std::min(1.0,
                 ((float)state.iter + 2.0) / ((float)state.nEquil / 2.0)));
         }
-
+        
+        state.nUpdatesA += state.nIterA;
         for (unsigned j = 0; j < state.nIterA; ++j)
         {
             state.sampler.update('A');
         }
 
+        state.nUpdatesP += state.nIterP;
         for (unsigned j = 0; j < state.nIterP; ++j)
         {
             state.sampler.update('P');
@@ -143,7 +145,8 @@ static Rcpp::List runCogaps(GapsInternalState &state)
         Rcpp::Named("atomsPEquil") = state.nAtomsPEquil.rVec(),
         Rcpp::Named("atomsPSamp") = state.nAtomsPSample.rVec(),
         Rcpp::Named("chiSqValues") = chi2Vec.rVec(),
-        Rcpp::Named("randSeed") = state.seed
+        Rcpp::Named("randSeed") = state.seed,
+        Rcpp::Named("numUpdates") = state.nUpdatesA + state.nUpdatesP
     );
 }
 
