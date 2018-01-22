@@ -25,7 +25,7 @@ mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
 mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
 mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
 mStatUpdates(0), mMaxGibbsMassA(maxGibbsMassA), mMaxGibbsMassP(maxGibbsMassP),
-mAnnealingTemp(1.0), mChi2(0.0), mSingleCellRNASeq(singleCellRNASeq),
+mAnnealingTemp(1.0), mSingleCellRNASeq(singleCellRNASeq),
 mFixedMat(whichMat)
 {
     float meanD = mSingleCellRNASeq ? gaps::algo::nonZeroMean(mDMatrix)
@@ -61,7 +61,6 @@ mFixedMat(whichMat)
         }
     }
     gaps::algo::matrixMultiplication(mAPMatrix, mAMatrix, mPMatrix);
-    mChi2 = 2.0 * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);
 }
 
 Rcpp::NumericMatrix GibbsSampler::getNormedMatrix(char mat)
@@ -188,14 +187,9 @@ uint64_t GibbsSampler::totalNumAtoms(char matrixLabel) const
     return matrixLabel == 'A' ? mADomain.numAtoms() : mPDomain.numAtoms();
 }
 
-void GibbsSampler::setChi2(float chi2)
-{
-    mChi2 = chi2;
-}
-
 float GibbsSampler::chi2() const
 {
-    return mChi2;
+    return 2.f * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);
 }
 
 void GibbsSampler::setAnnealingTemp(float temp)
@@ -207,13 +201,13 @@ bool GibbsSampler::evaluateChange(AtomicSupport &domain,
 const AtomicProposal &proposal, float threshold, bool accept)
 {
     MatrixChange change = domain.getMatrixChange(proposal);
+    //float delLL = accept ? 0.f : computeDeltaLL(change);
     float delLL = computeDeltaLL(change);
     if (accept || delLL * mAnnealingTemp >= threshold)
     {
         change = domain.acceptProposal(proposal);
         change.label == 'A' ? mAMatrix.update(change) : mPMatrix.update(change);
         updateAPMatrix(change);
-        setChi2(chi2() - 2 * delLL);
         return true;
     }
     return false;
@@ -467,7 +461,6 @@ void operator<<(Archive &ar, GibbsSampler &sampler)
     ar << sampler.mMaxGibbsMassA;
     ar << sampler.mMaxGibbsMassP;
     ar << sampler.mAnnealingTemp;
-    ar << sampler.mChi2;
     ar << sampler.mSingleCellRNASeq;
     ar << sampler.mNumFixedPatterns;
     ar << sampler.mFixedMat;
@@ -490,7 +483,6 @@ void operator>>(Archive &ar, GibbsSampler &sampler)
     ar >> sampler.mMaxGibbsMassA;
     ar >> sampler.mMaxGibbsMassP;
     ar >> sampler.mAnnealingTemp;
-    ar >> sampler.mChi2;
     ar >> sampler.mSingleCellRNASeq;
     ar >> sampler.mNumFixedPatterns;
     ar >> sampler.mFixedMat;
