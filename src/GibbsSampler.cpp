@@ -219,6 +219,7 @@ const AtomicProposal &proposal, float threshold, bool accept)
     return false;
 }
 
+// simd?
 void GibbsSampler::updateAPMatrix_A(unsigned row, unsigned col, float delta)
 {
     const Vector &APvec = mAPMatrix.getRow(row);
@@ -229,6 +230,7 @@ void GibbsSampler::updateAPMatrix_A(unsigned row, unsigned col, float delta)
     }
 }
 
+// simd?
 void GibbsSampler::updateAPMatrix_P(unsigned row, unsigned col, float delta)
 {
     const Vector &APvec = mAPMatrix.getCol(col);

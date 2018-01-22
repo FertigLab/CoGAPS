@@ -43,6 +43,9 @@ struct GapsInternalState
     long checkpointInterval;
     unsigned numCheckpoints;
 
+    unsigned nUpdatesA;
+    unsigned nUpdatesP;
+
     GibbsSampler sampler;
 
     SnapshotList snapshotsA;
@@ -62,11 +65,13 @@ struct GapsInternalState
         nSnapshots(numSnapshots), nOutputs(numOutputs), messages(msg),
         iter(0), phase(GAPS_CALIBRATION), seed(in_seed),
         checkpointInterval(cptInterval), numCheckpoints(0),
+        nUpdatesA(0), nUpdatesP(0),
         sampler(DMatrix, SMatrix, nFactor, alphaA, alphaP,
             maxGibbsMassA, maxGibbsMassP, singleCellRNASeq, fixedPatterns,
             whichMatrixFixed)
     {}
 
+    // empty internal state, ready to be loaded
     GapsInternalState(unsigned nE, unsigned nS, unsigned nRow, unsigned nCol,
     unsigned nFactor)
             :
@@ -97,6 +102,8 @@ inline void operator<<(Archive &ar, GapsInternalState &state)
     ar << state.seed;
     ar << state.checkpointInterval;
     ar << state.numCheckpoints;
+    ar << state.nUpdatesA;
+    ar << state.nUpdatesP;
     ar << state.sampler;
 }
 
@@ -121,6 +128,8 @@ inline void operator>>(Archive &ar, GapsInternalState &state)
     ar >> state.seed;
     ar >> state.checkpointInterval;
     ar >> state.numCheckpoints;
+    ar >> state.nUpdatesA;
+    ar >> state.nUpdatesP;
     ar >> state.sampler;
 }
 
