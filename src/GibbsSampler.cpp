@@ -201,8 +201,7 @@ bool GibbsSampler::evaluateChange(AtomicSupport &domain,
 const AtomicProposal &proposal, float threshold, bool accept)
 {
     MatrixChange change = domain.getMatrixChange(proposal);
-    //float delLL = accept ? 0.f : computeDeltaLL(change);
-    float delLL = computeDeltaLL(change);
+    float delLL = accept ? 0.f : computeDeltaLL(change);
     if (accept || delLL * mAnnealingTemp >= threshold)
     {
         change = domain.acceptProposal(proposal);
