@@ -190,36 +190,37 @@ const TwoWayMatrix &AP)
     }
 }
 
-static AlphaParameters alphaParameters_comp(const Vector &D,
-const Vector &S, const Vector &AP, const Vector &other)
+static AlphaParameters alphaParameters_comp(unsigned size, const float *D,
+const float *S, const float *AP, const float *other)
 {
-    float s = 0.f, su = 0.f, ratio = 0.f;
-    for (unsigned i = 0; i < D.size(); ++i)
-    {
-        ratio = other[i] / S[i];
-        s += ratio * ratio;
-        su += ratio * (D[i] - AP[i]) / S[i];
+    gaps::simd::packedFloat ratio, pOther, pD, pAP, pS;
+    gaps::simd::packedFloat partialS = 0.f, partialSU = 0.f;
+    gaps::simd::Index i = 0;
+    for (; i <= size - i.increment(); ++i)
+    {   
+        pOther.load(other + i);
+        pD.load(D + i);
+        pAP.load(AP + i);
+        pS.load(S + i);
+        ratio = pOther / pS;
+        partialS += ratio * ratio;
+        partialSU += ratio * (pD - pAP) / pS;
     }
-    return AlphaParameters(s, su);
+    float fratio, s = partialS.scalar(), su = partialSU.scalar();
+    for (unsigned j = i.value(); j < size; ++j)
+    {
+        fratio = other[j] / S[j];
+        s += fratio * fratio;
+        su += fratio * (D[j] - AP[j]) / S[j];
+    }
+    return AlphaParameters(s,su);
 }
 
-static AlphaParameters alphaParameters_comp(const Vector &D,
-const Vector &S, const Vector &AP, const Vector &other1,
-const Vector &other2)
+static AlphaParameters alphaParameters_comp(unsigned size, const float *D,
+const float *S, const float *AP, const float *other1, const float *other2)
 {
-    float s = 0.f, su = 0.f, ratio = 0.f;
-    for (unsigned i = 0; i < D.size(); ++i)
-    {
-        ratio = (other1[i] - other2[i]) / S[i];
-        s += ratio * ratio;
-        su += ratio * (D[i] - AP[i]) / S[i];
-    }
-    return AlphaParameters(s, su);
-}
-/*
-{
-    const gaps::simd::packedFloat pDelta1 = delta1, pDelta2 = delta2, two = 2.f;
-    gaps::simd::packedFloat d, pOther1, pOther2, pD, pAP, pS, partialSum = 0.f;
+    gaps::simd::packedFloat ratio, pOther1, pOther2, pD, pAP, pS;
+    gaps::simd::packedFloat partialS = 0.f, partialSU = 0.f;
     gaps::simd::Index i = 0;
     for (; i <= size - i.increment(); ++i)
     {   
@@ -228,54 +229,56 @@ const Vector &other2)
         pD.load(D + i);
         pAP.load(AP + i);
         pS.load(S + i);
-        d = pDelta1 * pOther1 + pDelta2 * pOther2;
-        partialSum += (d * (two * (pD - pAP) - d)) / (two * pS * pS);
+        ratio = (pOther1 - pOther2) / pS;
+        partialS += ratio * ratio;
+        partialSU += ratio * (pD - pAP) / pS;
     }
-    float fd, delLL = partialSum.scalar();
+    float fratio, s = partialS.scalar(), su = partialSU.scalar();
     for (unsigned j = i.value(); j < size; ++j)
     {
-        fd = delta1 * other1[j] + delta2 * other2[j];
-        delLL += (fd * (2.f * (D[j] - AP[j]) - fd)) / (2.f * S[j] * S[j]);
-    }    
+        fratio = (other1[j] - other2[j]) / S[j];
+        s += fratio * fratio;
+        su += fratio * (D[j] - AP[j]) / S[j];
+    }
     return AlphaParameters(s,su);
 }
-*/
+
 AlphaParameters gaps::algo::alphaParameters(const MatrixChange &ch,
 const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
 const RowMatrix &P, const TwoWayMatrix &AP)
 {
-    if (ch.label == 'A' && ch.nChanges == 1)
+    if (ch.label == 'A' && ch.nChanges == 2 && ch.row1 == ch.row2)
     {
-        return alphaParameters_comp(D.getRow(ch.row1), S.getRow(ch.row1),
-            AP.getRow(ch.row1), P.getRow(ch.col1));
+        return alphaParameters_comp(D.nCol(), D.rowPtr(ch.row1), S.rowPtr(ch.row1),
+            AP.rowPtr(ch.row1), P.rowPtr(ch.col1), P.rowPtr(ch.col2));
     }
-    else if (ch.label == 'A' && ch.row1 != ch.row2)
+    else if (ch.label == 'A') // single change, or two independent changes
     {
-        return alphaParameters_comp(D.getRow(ch.row1), S.getRow(ch.row1),
-            AP.getRow(ch.row1), P.getRow(ch.col1))
-            + alphaParameters_comp(D.getRow(ch.row2), S.getRow(ch.row2),
-            AP.getRow(ch.row2), P.getRow(ch.col2));
+        AlphaParameters a1(0.f, 0.f), a2(0.f, 0.f);
+        a1 = alphaParameters_comp(D.nCol(), D.rowPtr(ch.row1), S.rowPtr(ch.row1),
+            AP.rowPtr(ch.row1), P.rowPtr(ch.col1));
+        if (ch.nChanges == 2)
+        {
+            a2 = alphaParameters_comp(D.nCol(), D.rowPtr(ch.row2), S.rowPtr(ch.row2),
+            AP.rowPtr(ch.row2), P.rowPtr(ch.col2));
+        }
+        return a1 + a2;
     }
-    else if (ch.label == 'A')
+    else if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 == ch.col2)
     {
-        return alphaParameters_comp(D.getRow(ch.row1), S.getRow(ch.row1),
-            AP.getRow(ch.row1), P.getRow(ch.col1), P.getRow(ch.col2));
+        return alphaParameters_comp(D.nRow(), D.colPtr(ch.col1), S.colPtr(ch.col1),
+            AP.colPtr(ch.col1), A.colPtr(ch.row1), A.colPtr(ch.row2));
     }
-    else if (ch.label == 'P' && ch.nChanges == 1)
+    else // single change, or two independent changes
     {
-        return alphaParameters_comp(D.getCol(ch.col1), S.getCol(ch.col1),
-            AP.getCol(ch.col1), A.getCol(ch.row1));
-    }
-    else if (ch.label == 'P' && ch.col1 != ch.col2)
-    {
-        return alphaParameters_comp(D.getCol(ch.col1), S.getCol(ch.col1),
-            AP.getCol(ch.col1), A.getCol(ch.row1))
-            + alphaParameters_comp(D.getCol(ch.col2), S.getCol(ch.col2),
-            AP.getCol(ch.col2), A.getCol(ch.row2));
-    }
-    else
-    {
-        return alphaParameters_comp(D.getCol(ch.col1), S.getCol(ch.col1),
-            AP.getCol(ch.col1), A.getCol(ch.row1), A.getCol(ch.row2));
+        AlphaParameters a1(0.f, 0.f), a2(0.f, 0.f);
+        a1 = alphaParameters_comp(D.nRow(), D.colPtr(ch.col1), S.colPtr(ch.col1),
+            AP.colPtr(ch.col1), A.colPtr(ch.row1));
+        if (ch.nChanges == 2)
+        {
+            a2 = alphaParameters_comp(D.nRow(), D.colPtr(ch.col2), S.colPtr(ch.col2),
+            AP.colPtr(ch.col2), A.colPtr(ch.row2));
+        }
+        return a1 + a2;
     }
 }

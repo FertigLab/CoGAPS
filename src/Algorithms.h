@@ -12,11 +12,11 @@ struct AlphaParameters
         : s(inS), su(inSU)
     {}
 
-    AlphaParameters& operator+(const AlphaParameters &other)
+    AlphaParameters operator+(const AlphaParameters &other) const
     {
-        s += other.s;
-        su -= other.su; // weird
-        return *this;
+        float rs = s + other.s;
+        float rsu = su - other.su; // weird
+        return AlphaParameters(rs, rsu);
     }
 };
 
