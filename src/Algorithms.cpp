@@ -118,7 +118,7 @@ const float *AP, const float *other, float delta)
     {
         fd = delta * other[j];
         delLL += (fd * (2.f * (D[j] - AP[j]) - fd)) / (2.f * S[j] * S[j]);
-    }    
+    }
     return delLL;
 }
 
@@ -144,7 +144,7 @@ float delta2)
     {
         fd = delta1 * other1[j] + delta2 * other2[j];
         delLL += (fd * (2.f * (D[j] - AP[j]) - fd)) / (2.f * S[j] * S[j]);
-    }    
+    }
     return delLL;
 }
 
@@ -152,41 +152,41 @@ float gaps::algo::deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
 const TwoWayMatrix &S, const ColMatrix &A, const RowMatrix &P,
 const TwoWayMatrix &AP)
 {
-    if (ch.label == 'A' && ch.nChanges == 1)
-    {
-        return deltaLL_comp(D.nCol(), D.rowPtr(ch.row1), S.rowPtr(ch.row1),
-            AP.rowPtr(ch.row1), P.rowPtr(ch.col1), ch.delta1);
-    }
-    else if (ch.label == 'A' && ch.row1 != ch.row2)
-    {
-        return deltaLL_comp(D.nCol(), D.rowPtr(ch.row1), S.rowPtr(ch.row1),
-            AP.rowPtr(ch.row1), P.rowPtr(ch.col1), ch.delta1)
-            + deltaLL_comp(D.nCol(), D.rowPtr(ch.row2), S.rowPtr(ch.row2),
-            AP.rowPtr(ch.row2), P.rowPtr(ch.col2), ch.delta2);
-    }
-    else if (ch.label == 'A')
+    if (ch.label == 'A' && ch.nChanges == 2 && ch.row1 == ch.row2)
     {
         return deltaLL_comp(D.nCol(), D.rowPtr(ch.row1), S.rowPtr(ch.row1),
             AP.rowPtr(ch.row1), P.rowPtr(ch.col1), ch.delta1,
             P.rowPtr(ch.col2), ch.delta2);
     }
-    else if (ch.label == 'P' && ch.nChanges == 1)
+    else if (ch.label == 'A') // single change, or two independent changes
     {
-        return deltaLL_comp(D.nRow(), D.colPtr(ch.col1), S.colPtr(ch.col1),
-            AP.colPtr(ch.col1), A.colPtr(ch.row1), ch.delta1);
+        float d1 = 0.f, d2 = 0.f;
+        d1 = deltaLL_comp(D.nCol(), D.rowPtr(ch.row1), S.rowPtr(ch.row1),
+            AP.rowPtr(ch.row1), P.rowPtr(ch.col1), ch.delta1);
+        if (ch.nChanges == 2)
+        {
+            d2 = deltaLL_comp(D.nCol(), D.rowPtr(ch.row2), S.rowPtr(ch.row2),
+            AP.rowPtr(ch.row2), P.rowPtr(ch.col2), ch.delta2);
+        }
+        return d1 + d2;
     }
-    else if (ch.label == 'P' && ch.col1 != ch.col2)
-    {
-        return deltaLL_comp(D.nRow(), D.colPtr(ch.col1), S.colPtr(ch.col1),
-            AP.colPtr(ch.col1), A.colPtr(ch.row1), ch.delta1)
-            + deltaLL_comp(D.nRow(), D.colPtr(ch.col2), S.colPtr(ch.col2),
-            AP.colPtr(ch.col2), A.colPtr(ch.row2), ch.delta2);
-    }
-    else
+    else if (ch.label == 'P' && ch.nChanges == 2 && ch.col1 == ch.col2)
     {
         return deltaLL_comp(D.nRow(), D.colPtr(ch.col1), S.colPtr(ch.col1),
             AP.colPtr(ch.col1), A.colPtr(ch.row1), ch.delta1,
             A.colPtr(ch.row2), ch.delta2);
+    }
+    else // single change, or two independent changes
+    {
+        float d1 = 0.f, d2 = 0.f;
+        d1 = deltaLL_comp(D.nRow(), D.colPtr(ch.col1), S.colPtr(ch.col1),
+            AP.colPtr(ch.col1), A.colPtr(ch.row1), ch.delta1);
+        if (ch.nChanges == 2)
+        {
+            d2 = deltaLL_comp(D.nRow(), D.colPtr(ch.col2), S.colPtr(ch.col2),
+            AP.colPtr(ch.col2), A.colPtr(ch.row2), ch.delta2);
+        }
+        return d1 + d2;
     }
 }
 
@@ -216,7 +216,30 @@ const Vector &other2)
     }
     return AlphaParameters(s, su);
 }
-
+/*
+{
+    const gaps::simd::packedFloat pDelta1 = delta1, pDelta2 = delta2, two = 2.f;
+    gaps::simd::packedFloat d, pOther1, pOther2, pD, pAP, pS, partialSum = 0.f;
+    gaps::simd::Index i = 0;
+    for (; i <= size - i.increment(); ++i)
+    {   
+        pOther1.load(other1 + i);
+        pOther2.load(other2 + i);
+        pD.load(D + i);
+        pAP.load(AP + i);
+        pS.load(S + i);
+        d = pDelta1 * pOther1 + pDelta2 * pOther2;
+        partialSum += (d * (two * (pD - pAP) - d)) / (two * pS * pS);
+    }
+    float fd, delLL = partialSum.scalar();
+    for (unsigned j = i.value(); j < size; ++j)
+    {
+        fd = delta1 * other1[j] + delta2 * other2[j];
+        delLL += (fd * (2.f * (D[j] - AP[j]) - fd)) / (2.f * S[j] * S[j]);
+    }    
+    return AlphaParameters(s,su);
+}
+*/
 AlphaParameters gaps::algo::alphaParameters(const MatrixChange &ch,
 const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
 const RowMatrix &P, const TwoWayMatrix &AP)
