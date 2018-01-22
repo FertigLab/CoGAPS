@@ -29,7 +29,6 @@ public:
     float mMaxGibbsMassP;
 
     float mAnnealingTemp;
-    float mChi2;
 
     bool mSingleCellRNASeq;
 
@@ -53,7 +52,6 @@ public:
     void updateAPMatrix(const MatrixChange &change);
 
     bool canUseGibbs(const MatrixChange &ch);
-    void setChi2(float chi2);
 
 public:
 
