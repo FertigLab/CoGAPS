@@ -1,92 +1,112 @@
-# CoGAPS: function to call gapsRun and calculate gene set
-#         statistics on result, also to produce A and P plots
-# History: v1.0 - EJF original CoGAPS, MFO modified to to match
-#                 new variable names
-
-# Inputs: data - data matrix
-#         unc - uncertainty matrix (std devs for chi-squared of Log Likelihood)
-#         GStoGenes - data.frame or list of gene sets
-#         nFactor - number of patterns (basis vectors, metagenes)
-#         nEquil - number of iterations for burn-in
-#         nSample - number of iterations for sampling
-#         nOutR - how often to print status into R by iterations
-#         output_atomic - whether to write atom files (large)
-#         simulation_id - name to attach to atoms files if created
-#         plot - logical to determine if plots produced
-#         nPerm - number of permutations for gene set test
-#         alphaA, alphaP - sparsity parameters for A and P domains
-#         max_gibbmass_paraA(P) - limit truncated normal to max size
-#         nMaxA, nMaxP - PRESENTLY UNUSED, future = limit number of atoms
-
-
-# Output: list with matrices, mean chi-squared value, and gene set
-#         results
-
-#'\code{CoGAPS} calls the C++ MCMC code through gapsRun and performs Bayesian
+#' CoGAPS Matrix Factorization Algorithm
+#' 
+#' @details calls the C++ MCMC code and performs Bayesian
 #'matrix factorization returning the two matrices that reconstruct
-#'the data matrix and then calls calcCoGAPSStat to estimate gene set
-#'activity with nPerm set to 500
+#'the data matrix
+#' @param D data matrix
+#' @param S uncertainty matrix (std devs for chi-squared of Log Likelihood)
+#' @param params GapsParams object 
+#' @return list with A and P matrix estimates
+#' @export
+CoGaps <- function(D, S, params = new('GapsParams', 7, 1000, 1000), ...)
+{
+    # process v2 style arguments for backwards compatibility
+    params <- oldParams(params, list(...))
+
+    # check data
+    checkParamsWithData(params, nrow(D), ncol(D), nrow(S), ncol(S))
+    if (any(D) < 0 | any(S) < 0) # too slow for large matrices ?
+        stop('D and S matrix must be non-negative')
+
+    # run algorithm
+    result <- cogaps_cpp(as.matrix(D), as.matrix(S), nFactor, alphaA,
+        alphaP, nEquil, floor(nEquil/10), nSample, max_gibbmass_paraA,
+        max_gibbmass_paraP, fixedPatterns, whichMatrixFixed, seed, messages,
+        singleCellRNASeq, nOutR, numSnapshots, checkpoint_interval)
+
+    # backwards compatible with v2
+    if (length(list(...)$GStoGenes))
+    {
+        warning('the GStoGenes argument is depracted with v3.0,')
+        if (list(...)$plot)
+            plotGAPS(result$Amean, result$Pmean)
+        GSP <- calcCoGAPSStat(result$Amean, result$Asd, list(...)$GStoGenes,
+            list(...)$nPerm)
+        result <- list(meanChi2=result$meanChi2, D=D, Sigma=S,
+            Amean=result$Amean, Asd=result$Asd, Pmean=result$Pmean,
+            Psd=result$Psd, GSUpreg=GSP$GSUpreg, GSDownreg=GSP$GSDownreg,
+            GSActEst=GSP$GSActEst)
+    }
+
+    return(result)
+}
+
+#' Restart CoGAPS from Checkpoint File
 #'
-#'@param data data matrix
-#'@param unc uncertainty matrix (std devs for chi-squared of Log Likelihood)
-#'@param ABins a matrix of same size as A which gives relative
-#' probability of that element being non-zero
-#'@param PBins a matrix of same size as P which gives relative
-#' probability of that element being non-zero
-#'@param GStoGenes data.frame or list with gene sets
-#'@param nFactor number of patterns (basis vectors, metagenes)
-#'@param simulation_id name to attach to atoms files if created
-#'@param nEquil number of iterations for burn-in
-#'@param nSample number of iterations for sampling
-#'@param nOutR how often to print status into R by iterations
-#'@param output_atomic whether to write atom files (large)
-#'@param fixedBinProbs Boolean for using relative probabilities
-#' given in Abins and Pbins
-#'@param fixedDomain character to indicate whether A or P is
-#' domain for relative probabilities
-#'@param sampleSnapshots Boolean to indicate whether to capture
-#' individual samples from Markov chain during sampling
-#'@param numSnapshots the number of individual samples to capture
-#'@param plot Boolean to indicate whether to produce output graphics
-#'@param nPerm number of permutations in gene set test
-#'@param alphaA sparsity parameter for A domain
-#'@param nMaxA PRESENTLY UNUSED, future = limit number of atoms
-#'@param alphaP sparsity parameter for P domain
-#'@param max_gibbmass_paraA limit truncated normal to max size
-#'@param nMaxP PRESENTLY UNUSED, future = limit number of atoms
-#'@param max_gibbmass_paraP limit truncated normal to max size
-#'@export
+#' @details loads the state of a previous CoGAPS run from a file and
+#'  continues the run from that point
+#' @param D data matrix
+#' @param S uncertainty matrix
+#' @param path path to checkpoint file
+#' @return list with A and P matrix estimates
+#' @export
+CoGapsFromCheckpoint <- function(D, S, path)
+{
+    # TODO add checksum to make sure D,S are correct
+    cogapsFromCheckpoint_cpp(D, S, path)
+}
 
-CoGAPS <- function(data, unc, ABins = data.frame(), PBins = data.frame(), GStoGenes, nFactor = 7, simulation_id="simulation", nEquil=1000,
-                nSample=1000, nOutR=1000, output_atomic=FALSE,
-                fixedBinProbs = FALSE, fixedDomain = "N",
-                sampleSnapshots = TRUE, numSnapshots = 100,
-                plot=TRUE, nPerm=500,
-                alphaA = 0.01,  nMaxA = 100000,
-                max_gibbmass_paraA = 100.0,
-                alphaP = 0.01, nMaxP = 100000,
-                max_gibbmass_paraP = 100.0) {
+#' Backwards Compatibility with v2
+#'
+#' @param D data matrix
+#' @param S uncertainty matrix
+#' @param ... v2 style parameters
+#' @return list with A and P matrix estimates
+#' @export
+gapsRun <- function(D, S, ...)
+{
+    warning('gapsRun is depracated with v3.0, use CoGAPS')
+    params <- new('GapsParams', 7, 1000, 1000)
+    params <- oldParams(params, list(...))
+    CoGAPS(D, S, params)
+}
 
+#' Backwards Compatibility with v2
+#'
+#' @param D data matrix
+#' @param S uncertainty matrix
+#' @param FP data.frame with rows giving fixed patterns for P
+#' @param ... v2 style parameters
+#' @return list with A and P matrix estimates
+#' @export
+gapsMapRun <- function(D, S, FP, ...)
+{
+    warning('gapsMapRun is depracated with v3.0, use CoGaps')
+    params <- new('GapsParams', 7, 1000, 1000)
+    params <- oldParams(params, list(...))
+    CoGAPS(D, S, params)
+}
 
-  # decompose the data
-  matrixDecomp <- gapsRun(data, unc, ABins, PBins, nFactor, simulation_id,
-                    nEquil, nSample, nOutR, output_atomic, fixedBinProbs,
-                    fixedDomain, sampleSnapshots, numSnapshots, alphaA,  nMaxA, max_gibbmass_paraA,
-                    alphaP, nMaxP, max_gibbmass_paraP)
+# helper function to process v2 parameters
+oldParams <- function(params, args)
+{
+    # standard params
+    if (length(args$nFactor))      params@nFactor    <- args$nFactor
+    if (length(args$nEquil))       params@nEquil     <- args$nEquil
+    if (length(args$nSample))      params@nSample    <- args$nSample
+    if (length(args$numSnapshots)) params@nSnapshots <- args$numSnapshots
+    if (length(args$alphaA))       params@alphaA     <- args$alphaA
+    if (length(args$alphaP))       params@alphaP     <- args$alphaP
+    if (length(args$seed))         params@seed       <- args$seed
+    if (length(args$messages))     params@messages   <- args$messages
 
-  # plot patterns and show heatmap of Anorm
-  if (plot) {
-    plotGAPS(matrixDecomp$Amean, matrixDecomp$Pmean)
-  }
+    # gapsMap params
+    if (length(args$FP))
+    {
+        params@fixedPatterns <- as.matrix(args$FP)
+        params@whichMatrixFixed <- 'P'
+    }
 
-  # compute the gene set scores
-  GSP <- calcCoGAPSStat(matrixDecomp$Amean, matrixDecomp$Asd, GStoGenes, nPerm)
-
-  return(list(meanChi2=matrixDecomp$calcChiSq,
-              D=data, Sigma=unc,
-              Amean=matrixDecomp$Amean, Asd=matrixDecomp$Asd,
-              Pmean=matrixDecomp$Pmean, Psd=matrixDecomp$Psd,
-              GSUpreg=GSP$GSUpreg, GSDownreg=GSP$GSDownreg, GSActEst=GSP$GSActEst))
-
-
+    # return v3 style GapsParams
+    return(params)    
 }
