@@ -133,6 +133,27 @@ static Rcpp::List runCogaps(GapsInternalState &state)
     Vector chi2Vec(state.chi2VecEquil);
     chi2Vec.concat(state.chi2VecSample);
 
+    Rcpp::NumericMatrix AMean = state.sampler.AMeanRMatrix();
+    Rcpp::NumericMatrix AStd = state.sampler.AStdRMatrix();
+    Rcpp::NumericMatrix PMean = state.sampler.PMeanRMatrix();
+    Rcpp::NumericMatrix PStd = state.sampler.PStdRMatrix();
+
+    double meanChiSq = 0.f;
+    for (unsigned i = 0; i < state.sampler.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < state.sampler.nCol(); ++j)
+        {
+            double M = 0.f;
+            for (unsigned k = 0; k < state.sampler.nFactor(); ++k)
+            {
+                M += AMean(i,k) * PMean(k,j);
+            }
+            meanChiSq += GAPS_SQ((DMatrix(i,j) - M) / SMatrix(i,j));
+        }
+    }
+
+    // TODO print final chi-sq value
+
     return Rcpp::List::create(
         Rcpp::Named("Amean") = state.sampler.AMeanRMatrix(),
         Rcpp::Named("Asd") = state.sampler.AStdRMatrix(),
@@ -146,24 +167,27 @@ static Rcpp::List runCogaps(GapsInternalState &state)
         Rcpp::Named("atomsPSamp") = state.nAtomsPSample.rVec(),
         Rcpp::Named("chiSqValues") = chi2Vec.rVec(),
         Rcpp::Named("randSeed") = state.seed,
-        Rcpp::Named("numUpdates") = state.nUpdatesA + state.nUpdatesP
+        Rcpp::Named("numUpdates") = state.nUpdatesA + state.nUpdatesP,
+        Rcpp::Named("meanChi2") = meanChiSq
     );
 }
 
 // [[Rcpp::export]]
-Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
+Rcpp::List cogaps_cpp(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
 unsigned nFactor, float alphaA, float alphaP, unsigned nEquil,
 unsigned nEquilCool, unsigned nSample, float maxGibbsMassA,
 float maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns,
 char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq,
 unsigned numOutputs, unsigned numSnapshots, unsigned checkpointInterval)
 {
+    // TODO save row/col names of DMatrix to set in output matrices
+    
     // set seed
     uint32_t seedUsed = static_cast<uint32_t>(seed);
     if (seed < 0)
     {
         bpt::ptime epoch(boost::gregorian::date(1970,1,1)); 
-        bpt::ptime now = boost::posix_time::microsec_clock::local_time();
+        bpt::ptime now = bpt::microsec_clock::local_time();
         bpt::time_duration diff = now - epoch;
         seedUsed = static_cast<uint32_t>(diff.total_milliseconds() % 1000);
     }
@@ -180,7 +204,7 @@ unsigned numOutputs, unsigned numSnapshots, unsigned checkpointInterval)
 }
 
 // [[Rcpp::export]]
-Rcpp::List cogapsFromCheckpoint(const std::string &fileName)
+Rcpp::List cogapsFromCheckpoint_cpp(const std::string &fileName)
 {   
     // open file
     Archive ar(fileName, ARCHIVE_READ);

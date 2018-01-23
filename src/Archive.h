@@ -1,7 +1,6 @@
 #ifndef __COGAPS_ARCHIVE_H__
 #define __COGAPS_ARCHIVE_H__
 
-#include <boost/random/mersenne_twister.hpp>
 #include <fstream>
 
 #define ARCHIVE_READ  std::ios::in
@@ -22,22 +21,24 @@ public:
     void close() {mStream.close();}
 
     template<typename T>
-    friend void operator<<(Archive &ar, T val);
+    friend Archive& operator<<(Archive &ar, T val);
 
     template<typename T>
-    friend void operator>>(Archive &ar, T &val);
+    friend Archive& operator>>(Archive &ar, T &val);
 };
 
 template<typename T>
-void operator<<(Archive &ar, T val)
+Archive& operator<<(Archive &ar, T val)
 {
     ar.mStream.write(reinterpret_cast<char*>(&val), sizeof(T));
+    return ar;
 }
 
 template<typename T>
-void operator>>(Archive &ar, T &val)
+Archive& operator>>(Archive &ar, T &val)
 {
     ar.mStream.read(reinterpret_cast<char*>(&val), sizeof(T));
+    return ar;
 }
 
 #endif
