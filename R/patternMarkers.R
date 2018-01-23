@@ -45,9 +45,11 @@ if(!is.na(lp)){
     if(length(lp)!=dim(Amatrix)[2]){
         warning("lp length must equal the number of columns of the Amatrix")
     }
+        for (i in 1:nP){
         sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
         ssranks[order(sstat),i] <- 1:length(sstat)
         ssgenes[,i]<-names(sort(sstat,decreasing=FALSE))
+	}
 } else {
     for(i in 1:nP){
         lp <- rep(0,dim(Amatrix)[2])
