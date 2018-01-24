@@ -19,4 +19,3 @@ list containing information about A and P matrix
 \description{
 Restart Run from Checkpoint File
 }
-

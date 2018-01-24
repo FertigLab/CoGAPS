@@ -1,5 +1,5 @@
 #Calculates significant genes in each pattern according to certain threshold
-#Returns the significant gene names as well as well as the means of these matrices and number of genes in each
+#Returns the significant gene names as well as the means of these matrices and number of genes in each
 
 gapsInterPattern <- function(Amean, Asd, sdThreshold = 3)
 {

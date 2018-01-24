@@ -31,7 +31,9 @@ concensus pattern is also returned.
 \description{
 patternMatch4Parallel
 }
+\examples{
+
+}
 \seealso{
 \code{\link{agnes}}
 }
-

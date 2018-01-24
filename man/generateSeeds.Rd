@@ -18,10 +18,5 @@ vector of randomly generated seeds for use with gapsRun, gapsMapRun, or GWCoGAPS
 generateSeeds
 }
 \examples{
-\dontrun{
-generateSeeds(chains=2, seed=-1)
+generateSeeds(chains=2, seed=-1) 
 }
-
-
-}
-

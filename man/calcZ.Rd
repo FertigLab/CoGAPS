@@ -16,4 +16,9 @@ calcZ(meanMat, sdMat)
 \code{calcZ} calculates the Z-score for each element based
 on input mean and standard deviation matrices
 }
-
+\examples{
+# Load the simulated data
+data('SimpSim')
+# Run calcZ
+calcZ(SimpSim.D,SimpSim.S)
+}

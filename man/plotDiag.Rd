@@ -12,4 +12,9 @@ plotDiag(gapsRes)
 \description{
 \code{plotDiag} plots a series of diagnostic plots
 }
-
+\examples{
+# Load the outputs from gapsRun
+data('results')
+# Run plotDiag
+plotDiag(results)
+}

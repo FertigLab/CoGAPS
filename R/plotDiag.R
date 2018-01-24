@@ -6,6 +6,11 @@
 #'\code{plotDiag} plots a series of diagnostic plots
 #'
 #'@param gapsRes list returned by gapsRun, gapsMapRun, or CoGAPS
+#'@examples
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run plotDiag
+#' plotDiag(results)
 #'@export
 
 

@@ -12,6 +12,8 @@
 #'
 #' @return a matrix of concensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
 #' concensus pattern is also returned.
+#' @examples
+#' 
 #' @export
 #' @seealso \code{\link{agnes}}
 #'

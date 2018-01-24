@@ -19,4 +19,9 @@ the D' estimate of a gene or set of genes
 \description{
 reconstruct Gene
 }
-
+\examples{
+# Load the simulated data
+data('SimpSim')
+# Run reconstructGene
+reconstructGene(A=SimpSim.A,P=SimpSim.P)
+}

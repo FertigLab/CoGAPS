@@ -8,13 +8,13 @@
 #         simulation_id - name to attach to atoms files if created
 #         nEquil - number of iterations for burn-in
 #         nSample - number of iterations for sampling
+#         numSnapshots - number of individual samples to capture
 #         nOutR - how often to print status into R by iterations
 #         output_atomic - whether to write atom files (large)
 #         alphaA, alphaP - sparsity parameters for A and P domains
 #         max_gibbmass_paraA(P) - limit truncated normal to max size
 #         nMaxA, nMaxP - PRESENTLY UNUSED, future = limit number of atoms
-
-
+#
 # Output: list with A and P matrix estimates, chi-squared and atom
 #         numbers of sample by iteration, and chi-squared of mean
 #'\code{gapsRun} calls the C++ MCMC code and performs Bayesian
@@ -52,6 +52,11 @@
 #'@param whichMatrixFixed character to indicate whether A or P matrix
 #'  contains the fixed patterns
 #'@param checkpoint_interval time (in seconds) between cogaps checkpoints
+#'@examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Run gapsRun
+#' gapsRun(SimpSim.D,SimpSim.S,nFactor=3,nEquil=100,nSample=100)
 #'@export
 
 #--CHANGES 1/20/15--
@@ -60,7 +65,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
                     nFactor = 7, simulation_id = "simulation",
                     nEquil = 1000, nSample = 1000, nOutR = 1000,
                     output_atomic = FALSE, fixedBinProbs = FALSE,
-                    fixedDomain = "N", numSnapshots = 0, alphaA = 0.01,
+                    fixedDomain = "N", numSnapshots = 5, alphaA = 0.01,
                     nMaxA = 100000, max_gibbmass_paraA = 100.0,
                     alphaP = 0.01, nMaxP = 100000, max_gibbmass_paraP = 100.0,
                     seed=-1, messages=TRUE, singleCellRNASeq=FALSE,
@@ -100,9 +105,7 @@ gapsRun <- function(D, S, ABins = data.frame(), PBins = data.frame(),
 
     # call to C++ Rcpp code
     cogapResult <- cogaps(as.matrix(D), as.matrix(S), nFactor, alphaA, alphaP,
-        nEquil, floor(nEquil/10), nSample, max_gibbmass_paraA, max_gibbmass_paraP,
-        fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq,
-        nOutR, numSnapshots, checkpoint_interval)
+        nEquil, floor(nEquil/10), nSample, nOutR, numSnapshots, max_gibbmass_paraA, max_gibbmass_paraP,fixedPatterns, whichMatrixFixed, seed, messages)
 
     # convert returned files to matrices to simplify visualization and processing
     cogapResult$Amean <- as.matrix(cogapResult$Amean);

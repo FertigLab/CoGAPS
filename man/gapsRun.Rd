@@ -9,7 +9,7 @@ the data matrix}
 gapsRun(D, S, ABins = data.frame(), PBins = data.frame(), nFactor = 7,
   simulation_id = "simulation", nEquil = 1000, nSample = 1000,
   nOutR = 1000, output_atomic = FALSE, fixedBinProbs = FALSE,
-  fixedDomain = "N", numSnapshots = 0, alphaA = 0.01, nMaxA = 1e+05,
+  fixedDomain = "N", numSnapshots = 5, alphaA = 0.01, nMaxA = 1e+05,
   max_gibbmass_paraA = 100, alphaP = 0.01, nMaxP = 1e+05,
   max_gibbmass_paraP = 100, seed = -1, messages = TRUE,
   singleCellRNASeq = FALSE, fixedPatterns = matrix(0),
@@ -77,4 +77,9 @@ contains the fixed patterns}
 matrix factorization returning the two matrices that reconstruct
 the data matrix
 }
-
+\examples{
+# Load the simulated data
+data('SimpSim')
+# Run gapsRun
+gapsRun(SimpSim.D,SimpSim.S,nFactor=3,nEquil=100,nSample=100)
+}

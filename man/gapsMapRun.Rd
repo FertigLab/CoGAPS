@@ -7,11 +7,11 @@ matrix factorization returning the two matrices that reconstruct
 the data matrix; as opposed to gapsRun, this method takes an
 additional input specifying set patterns in the P matrix}
 \usage{
-gapsMapRun(D, S, FP, ABins = data.frame(), PBins = data.frame(),
+gapsMapRun(D, S, fixedPatterns, ABins = data.frame(), PBins = data.frame(),
   nFactor = 7, simulation_id = "simulation", nEquil = 1000,
   nSample = 1000, nOutR = 1000, output_atomic = FALSE,
-  fixedMatrix = "P", fixedBinProbs = FALSE, fixedDomain = "N",
-  sampleSnapshots = TRUE, numSnapshots = 100, alphaA = 0.01,
+  whichMatrixFixed = "P", fixedBinProbs = FALSE, fixedDomain = "N",
+  sampleSnapshots = TRUE, numSnapshots = 5, alphaA = 0.01,
   nMaxA = 1e+05, max_gibbmass_paraA = 100, alphaP = 0.01, nMaxP = 1e+05,
   max_gibbmass_paraP = 100, seed = -1, messages = TRUE)
 }
@@ -20,7 +20,7 @@ gapsMapRun(D, S, FP, ABins = data.frame(), PBins = data.frame(),
 
 \item{S}{uncertainty matrix (std devs for chi-squared of Log Likelihood)}
 
-\item{FP}{data.frame with rows giving fixed patterns for P}
+\item{fixedPatterns}{data.frame with rows giving fixed patterns for P}
 
 \item{ABins}{a matrix of same size as A which gives relative
 probability of that element being non-zero}
@@ -41,7 +41,7 @@ greater than or equal to the number of rows of FP}
 
 \item{output_atomic}{whether to write atom files (large)}
 
-\item{fixedMatrix}{character indicating whether A or P matrix
+\item{whichMatrixFixed}{character indicating whether A or P matrix
 has fixed columns or rows respectively}
 
 \item{fixedBinProbs}{Boolean for using relative probabilities
@@ -77,4 +77,14 @@ matrix factorization returning the two matrices that reconstruct
 the data matrix; as opposed to gapsRun, this method takes an
 additional input specifying set patterns in the P matrix
 }
-
+\examples{
+# Load the simulated data
+data('SimpSim')
+# Create a fixed pattern matrix with correct dimensions
+mtx <- matrix(0,nrow=3,ncol=20)
+mtx[1,1:10] <- 1
+mtx[2,11:20] <- 1
+mtx[3,6:15] <- 1
+# Run gapsMapRun
+gapsMapRun(SimpSim.D,SimpSim.S,mtx,nFactor=3,nEquil=1000,nSample=1000)
+}

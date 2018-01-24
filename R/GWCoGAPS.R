@@ -18,16 +18,16 @@
 #'@param ... additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}
 #'@export
 #'@seealso \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
-#' @examples \dontrun{
-#' GWCoGAPS(nCores=NA, D, S, nFactor, nSets,saveBySetResults=TRUE, fname=fname,
-#' PatternsMatchFN = patternMatch4Parallel,numSnapshots=numSnapshots,minNS=minNS)
-#' }
-#'
+#' @examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Run GWCoGAPS
+#' GWCoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nSets=2, numSnapshots = 5)
 
 GWCoGAPS <- function(D, S, nFactor, nSets, nCores=NA,
                                  saveBySetResults=FALSE, fname="GWCoGAPS.AP.fixed",
                                  PatternsMatchFN = patternMatch4Parallel,
-                                 Cut=NA, minNS=NA, ...) {
+                                 Cut=NA, minNS=NA, numSnapshots = 5, ...) {
 
 # establish the number of cores that you are able to use
 if(is.na(nCores)){nCores<-nSets}
@@ -46,7 +46,7 @@ nut<-generateSeeds(chains=nSets, seed=-1)
 AP <- foreach(i=1:nSets) %dopar% {
      D <- as.matrix(D[genesInSets[[i]],])
      S <- as.matrix(S[genesInSets[[i]],])
-     gapsRun(D=D, S=S, nFactor=nFactor,seed=nut[i],...)
+     gapsRun(D=D, S=S, nFactor=nFactor,seed=nut[i],numSnapshots = numSnapshots,...)
 }
 
 BySet<-reOrderBySet(AP=AP,nFactor=nFactor,nSets=nSets)
@@ -75,7 +75,7 @@ nFactorFinal<-dim(matchedPs)[1]
 Fixed <- foreach(i=1:nSets) %dopar% {
 	D <- as.matrix(D[genesInSets[[i]],])
 	S <- as.matrix(S[genesInSets[[i]],])
-	AP <- gapsMapRun(D, S, FP=matchedPs, nFactor=nFactorFinal, fixedMatrix = "P",seed=nut[i],...)
+	AP <- gapsMapRun(D, S, FP=matchedPs, nFactor=nFactorFinal, fixedMatrix = "P",seed=nut[i],numSnapshots = numSnapshots,...)
     }
 
 #extract A and Asds

@@ -55,24 +55,34 @@
 #'@param max_gibbmass_paraA limit truncated normal to max size
 #'@param nMaxP PRESENTLY UNUSED, future = limit number of atoms
 #'@param max_gibbmass_paraP limit truncated normal to max size
+#'@examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Run CoGAPS
+#' CoGAPS(data=SimpSim.D,unc=SimpSim.S,GStoGenes=GSets,nFactor=3,nEquil=100,nSample=100,plot=FALSE) 
 #'@export
 
 CoGAPS <- function(data, unc, ABins = data.frame(), PBins = data.frame(), GStoGenes, nFactor = 7, simulation_id="simulation", nEquil=1000,
                 nSample=1000, nOutR=1000, output_atomic=FALSE,
                 fixedBinProbs = FALSE, fixedDomain = "N",
-                sampleSnapshots = TRUE, numSnapshots = 100,
+                sampleSnapshots = TRUE, numSnapshots = 5,
                 plot=TRUE, nPerm=500,
                 alphaA = 0.01,  nMaxA = 100000,
                 max_gibbmass_paraA = 100.0,
                 alphaP = 0.01, nMaxP = 100000,
-                max_gibbmass_paraP = 100.0) {
+                max_gibbmass_paraP = 100.0, 
+                seed=-1, messages=TRUE,
+                singleCellRNASeq=FALSE,
+                fixedPatterns=matrix(0),
+                whichMatrixFixed='N',
+                checkpoint_interval = 0) {
 
 
   # decompose the data
   matrixDecomp <- gapsRun(data, unc, ABins, PBins, nFactor, simulation_id,
                     nEquil, nSample, nOutR, output_atomic, fixedBinProbs,
-                    fixedDomain, sampleSnapshots, numSnapshots, alphaA,  nMaxA, max_gibbmass_paraA,
-                    alphaP, nMaxP, max_gibbmass_paraP)
+                    fixedDomain, numSnapshots, alphaA,  nMaxA, max_gibbmass_paraA,
+                    alphaP, nMaxP, max_gibbmass_paraP, seed, messages, singleCellRNASeq, fixedPatterns, whichMatrixFixed, checkpoint_interval)
 
   # plot patterns and show heatmap of Anorm
   if (plot) {

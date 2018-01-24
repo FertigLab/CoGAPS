@@ -21,6 +21,13 @@
 #'@param numPerm number of permutations for null
 #'@param Pw weight on genes
 #'@param nullGenes - logical indicating gene adjustment
+#'@examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run calcGeneGSStat with the correct arguments from 'results'
+#' calcGeneGSStat(results$Amean,results$Asd,GSGenes=GSets[[1]],numPerm=500)
 #'@export
 
 calcGeneGSStat  <- function(Amean, Asd, GSGenes, numPerm, Pw=rep(1,ncol(Amean)), nullGenes=F) {

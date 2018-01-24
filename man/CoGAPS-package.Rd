@@ -18,14 +18,13 @@ Date: \tab 2014-07-23\cr
 License: \tab LGPL\cr
 }
 }
-\author{
-Maintainer: Elana J. Fertig \email{ejfertig@jhmi.edu},
-            Michael F. Ochs \email{ochsm@tcnj.edu}
-}
 \references{
 Fertig EJ, Ding J, Favorov AV, Parmigiani G, Ochs MF.
 CoGAPS: an R/C++ package to identify patterns and biological
 process activity in transcriptomic data.
 Bioinformatics. 2010 Nov 1;26(21):2792-3
 }
-
+\author{
+Maintainer: Elana J. Fertig \email{ejfertig@jhmi.edu},
+            Michael F. Ochs \email{ochsm@tcnj.edu}
+}
