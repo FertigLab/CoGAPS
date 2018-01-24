@@ -8,6 +8,11 @@
 #'@param Asd the standard deviations on Amean
 #'@param threshold the number of standard deviations above zero
 #'that an element of Amean must be to get a value of 1
+#'@examples
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run binaryA with the correct arguments from 'results'
+#' binaryA(results$Amean,results$Asd,threshold=3)
 #'@export
 binaryA <-function(Amean, Asd, threshold=3) {
 

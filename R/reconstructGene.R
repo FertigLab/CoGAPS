@@ -5,6 +5,11 @@
 #' @param genes an indx of the gene or genes of interest. If \code{NA}, the default, all genes contained in A will be returned.
 #'
 #' @return the D' estimate of a gene or set of genes
+#' @examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Run reconstructGene
+#' reconstructGene(A=SimpSim.A,P=SimpSim.P)
 #' @export
 #'
 reconstructGene<-function(A=NA,P=NA,genes=NA){

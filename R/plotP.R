@@ -11,6 +11,11 @@
 #'
 #'@param PMean_Mat matrix of mean values of P
 #'@param P_SD matrix of standard deviation values of P
+#'@examples
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run plotP with the correct arguments from 'results'
+#' plotP(results$Pmean,results$Psd)
 #'@export
 
 

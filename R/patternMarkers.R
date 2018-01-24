@@ -10,12 +10,13 @@
 #'
 #' @return By default a non-overlapping list of genes associated with each \code{lp}. If \code{full=TRUE} a data.frame of
 #' genes rankings with a column for each \code{lp} will also be returned.
-#' @export
-#'
-#' @examples \dontrun{
-#' patternMarkers(Amatrix=AP$Amean,scaledPmatrix=FALSE,Pmatrix=NA,threshold="All",full=TRUE)
-#' }
-#'
+#' @examples
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run patternMarkers with the correct arguments from 'results'
+#' patternMarkers(Amatrix=results$Amean,scaledPmatrix=FALSE,
+#'Pmatrix=results$Pmean,threshold="all",full=TRUE)
+#'@export
 patternMarkers <- function(
     Amatrix=NA, #A matrix of genes by weights resulting from CoGAPS or other NMF decomposition
     scaledPmatrix=FALSE, # logical indicating whether the corresponding pattern matrix was fixed to have max 1 during decomposition

@@ -11,9 +11,11 @@ CoGAPS(data, unc, ABins = data.frame(), PBins = data.frame(), GStoGenes,
   nFactor = 7, simulation_id = "simulation", nEquil = 1000,
   nSample = 1000, nOutR = 1000, output_atomic = FALSE,
   fixedBinProbs = FALSE, fixedDomain = "N", sampleSnapshots = TRUE,
-  numSnapshots = 100, plot = TRUE, nPerm = 500, alphaA = 0.01,
+  numSnapshots = 5, plot = TRUE, nPerm = 500, alphaA = 0.01,
   nMaxA = 1e+05, max_gibbmass_paraA = 100, alphaP = 0.01, nMaxP = 1e+05,
-  max_gibbmass_paraP = 100)
+  max_gibbmass_paraP = 100, seed = -1, messages = TRUE,
+  singleCellRNASeq = FALSE, fixedPatterns = matrix(0),
+  whichMatrixFixed = "N", checkpoint_interval = 0)
 }
 \arguments{
 \item{data}{data matrix}
@@ -73,4 +75,9 @@ matrix factorization returning the two matrices that reconstruct
 the data matrix and then calls calcCoGAPSStat to estimate gene set
 activity with nPerm set to 500
 }
-
+\examples{
+# Load the simulated data
+data('SimpSim')
+# Run CoGAPS
+CoGAPS(data=SimpSim.D,unc=SimpSim.S,GStoGenes=GSets,nFactor=3,nEquil=100,nSample=100,plot=FALSE) 
+}

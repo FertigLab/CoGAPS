@@ -8,10 +8,11 @@
 #'@param keep logical indicating whether or not to save gene set list. Default is TRUE.
 #'@export
 #'@return list with randomly generated sets of genes from whole genome data
-#'@examples \dontrun{
-#'createGWCoGAPSSet(D,nSets=nSets)
-#'}
-#'
+#'@examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Run createGWCoGAPSSets
+#' createGWCoGAPSSets(SimpSim.D,nSets=2)
 
 createGWCoGAPSSets<-function(data=D, #data matrix with unique rownames
 	nSets=nSets, #number of sets for parallelization

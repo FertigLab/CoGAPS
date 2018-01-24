@@ -22,4 +22,11 @@ calcCoGAPSStat(Amean, Asd, GStoGenes, numPerm = 500)
 column of A using a Z-score from the elements of the A matrix,
 the input gene set, and permutation tests
 }
-
+\examples{
+# Load the simulated data
+data('SimpSim')
+# Load the outputs from gapsRun
+data('results')
+# Run calcCoGAPSStat with the correct arguments from 'results'
+calcCoGAPSStat(results$Amean,results$Asd,GStoGenes=GSets,numPerm=500)
+}

@@ -27,4 +27,11 @@ calcGeneGSStat(Amean, Asd, GSGenes, numPerm, Pw = rep(1, ncol(Amean)),
 listed in a gene set behaves like other genes in the set within
 the given data set
 }
-
+\examples{
+# Load the simulated data
+data('SimpSim')
+# Load the outputs from gapsRun
+data('results')
+# Run calcGeneGSStat with the correct arguments from 'results'
+calcGeneGSStat(results$Amean,results$Asd,GSGenes=GSets[[1]],numPerm=500)
+}

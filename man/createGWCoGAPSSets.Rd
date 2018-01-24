@@ -23,9 +23,8 @@ list with randomly generated sets of genes from whole genome data
 \code{createGWCoGAPSSets} factors whole genome data into randomly generated sets for indexing;
 }
 \examples{
-\dontrun{
-createGWCoGAPSSet(D,nSets=nSets)
+# Load the simulated data
+data('SimpSim')
+# Run createGWCoGAPSSets
+createGWCoGAPSSets(SimpSim.D,nSets=2)
 }
-
-}
-

@@ -6,11 +6,8 @@
 #' @return vector of randomly generated seeds for use with gapsRun, gapsMapRun, or GWCoGAPS
 #' @export
 #'
-#' @examples \dontrun{
-#' generateSeeds(chains=2, seed=-1)
-#' }
-#' 
-#' 
+#' @examples
+#' generateSeeds(chains=2, seed=-1) 
 generateSeeds <- function(chains=2, seed=-1){
     if (chains < 2 || (as.integer(chains) != chains)) {
         stop("chains must be >= 2 and an integer")

@@ -18,4 +18,9 @@ atom numbers}
 \code{plotAtoms} a simple plot of the number of atoms
 from one of the vectors returned with atom numbers
 }
-
+\examples{
+# Load the outputs from gapsRun
+data('results')
+# Run plotAtoms
+plotAtoms(results,type="sampA")
+}

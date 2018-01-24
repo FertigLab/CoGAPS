@@ -38,13 +38,11 @@ matrix factorization returning the two matrices that reconstruct
 the data matrix for whole genome data;
 }
 \examples{
-\dontrun{
-GWCoGAPS(nCores=NA, D, S, nFactor, nSets,saveBySetResults=TRUE, fname=fname,
-PatternsMatchFN = patternMatch4Parallel,numSnapshots=numSnapshots,minNS=minNS)
-}
-
+# Load the simulated data
+data('SimpSim')
+# Run GWCoGAPS
+GWCoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nSets=2)
 }
 \seealso{
 \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
 }
-

@@ -11,6 +11,11 @@
 #'
 #'@param meanMat matrix of mean values
 #'@param sdMat matrix of standard deviation values
+#'@examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Run calcZ
+#' calcZ(SimpSim.D,SimpSim.S)
 #'@export
 
 calcZ <- function (meanMat, sdMat) {
