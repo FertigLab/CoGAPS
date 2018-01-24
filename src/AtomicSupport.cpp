@@ -219,45 +219,33 @@ MatrixChange AtomicSupport::getMatrixChange(const AtomicProposal &prop) const
     }
 }
 
-void operator<<(Archive &ar, AtomicSupport &domain)
+Archive& operator<<(Archive &ar, AtomicSupport &domain)
 {
-    ar << domain.mLabel;
-    ar << domain.mNumAtoms;
-    ar << domain.mMaxNumAtoms;
-    ar << domain.mTotalMass;
-    ar << domain.mNumRows;
-    ar << domain.mNumCols;
-    ar << domain.mNumBins;
-    ar << domain.mBinSize;
-    ar << domain.mAlpha;
-    ar << domain.mLambda;
+    ar << domain.mLabel << domain.mNumAtoms << domain.mMaxNumAtoms
+        << domain.mTotalMass << domain.mNumRows << domain.mNumCols
+        << domain.mNumBins << domain.mBinSize << domain.mAlpha
+        << domain.mLambda;
 
     for (unsigned i = 0; i < domain.mAtoms.size(); ++i)
     {
-        ar << domain.mAtoms[i].pos;
-        ar << domain.mAtoms[i].mass;
+        ar << domain.mAtoms[i].pos << domain.mAtoms[i].mass;
     }
+    return ar;
 }
 
-void operator>>(Archive &ar, AtomicSupport &domain)
+Archive& operator>>(Archive &ar, AtomicSupport &domain)
 {
-    ar >> domain.mLabel;
-    ar >> domain.mNumAtoms;
-    ar >> domain.mMaxNumAtoms;
-    ar >> domain.mTotalMass;
-    ar >> domain.mNumRows;
-    ar >> domain.mNumCols;
-    ar >> domain.mNumBins;
-    ar >> domain.mBinSize;
-    ar >> domain.mAlpha;
-    ar >> domain.mLambda;
+    uint64_t nAtoms = 0;
+    ar >> domain.mLabel >> nAtoms >> domain.mMaxNumAtoms >> domain.mTotalMass
+        >> domain.mNumRows >> domain.mNumCols >> domain.mNumBins
+        >> domain.mBinSize >> domain.mAlpha >> domain.mLambda;
 
     uint64_t pos = 0;
     float mass = 0.0;
-    for (unsigned i = 0; i < domain.mNumAtoms; ++i)
+    for (unsigned i = 0; i < nAtoms; ++i)
     {
-        ar >> pos;
-        ar >> mass;
-        domain.addAtom(Atom(pos, mass));
-    }    
+        ar >> pos >> mass;
+        domain.addAtom(Atom(pos, mass)); // this will increment mNumAtoms
+    }
+    return ar;
 }

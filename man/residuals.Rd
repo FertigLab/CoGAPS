@@ -2,20 +2,23 @@
 % Please edit documentation in R/residuals.R
 \name{residuals}
 \alias{residuals}
-\title{\code{residuals} calculate residuals and produce heatmap}
+\title{Plot of Residuals}
 \usage{
 residuals(AMean_Mat, PMean_Mat, D, S)
 }
 \arguments{
-\item{AMean_Mat}{matrix of mean values for A from GAPS}
-
-\item{PMean_Mat}{matrix of mean values for P from GAPS}
-
 \item{D}{original data matrix run through GAPS}
 
 \item{S}{original standard deviation matrix run through GAPS}
+
+\item{Amean}{matrix of mean values for A from GAPS}
+
+\item{Pmean}{matrix of mean values for P from GAPS}
 }
 \description{
-\code{residuals} calculate residuals and produce heatmap
+Plot of Residuals
+}
+\details{
+calculate residuals and produce heatmap
 }
 

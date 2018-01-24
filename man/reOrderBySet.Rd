@@ -23,6 +23,5 @@ a list containing the \code{nSets} sets solution for Amean under "A", Pmean unde
 \dontrun{
 reOrderBySet(AP,nFactor,nSets)
 }
-
 }
 

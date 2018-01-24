@@ -5,9 +5,9 @@
 \title{\code{plotSmoothPatterns} plots the output A and P matrices as a
 heatmap and line plot respectively}
 \usage{
-plotSmoothPatterns(P, x = NULL, breaks = NULL, breakStyle = T,
-  orderP = !all(is.null(x)), plotPTS = F, pointCol = "black",
-  lineCol = "grey", add = F, ...)
+plotSmoothPatterns(P, x = NULL, breaks = NULL, breakStyle = TRUE,
+  orderP = !all(is.null(x)), plotPTS = FALSE, pointCol = "black",
+  lineCol = "grey", add = FALSE, ...)
 }
 \arguments{
 \item{P}{the mean A matrix}

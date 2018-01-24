@@ -2,26 +2,23 @@
 % Please edit documentation in R/generateSeeds.R
 \name{generateSeeds}
 \alias{generateSeeds}
-\title{generateSeeds}
+\title{Generate Seeds for Multiple Concurrent Runs}
 \usage{
 generateSeeds(chains = 2, seed = -1)
 }
 \arguments{
-\item{chains}{number of MCMC chains to be used}
+\item{chains}{number of seeds to generate (number of chains to run)}
 
-\item{seed}{numeric indicating whether to generate seed from system clock. Default is -1.}
+\item{seed}{positive values are kept, negative values will be overwritten
+by a seed generated from the current time}
 }
 \value{
-vector of randomly generated seeds for use with gapsRun, gapsMapRun, or GWCoGAPS
+vector of randomly generated seeds
 }
 \description{
-generateSeeds
+Generate Seeds for Multiple Concurrent Runs
 }
 \examples{
-\dontrun{
 generateSeeds(chains=2, seed=-1)
-}
-
-
 }
 

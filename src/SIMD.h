@@ -1,11 +1,6 @@
 #ifndef __COGAPS_SIMD_H__
 #define __COGAPS_SIMD_H__
 
-#define STR_HELPER(x) #x
-#define STR(x) STR_HELPER(x)
-
-#pragma message "GCC Version: " STR(__GNUC__) "." STR(__GNUC_MINOR__)
-
 #if (defined(_M_AMD64) || defined(_M_X64) || defined(__amd64)) && ! defined(__x86_64__)
     #define __x86_64__ 1
 #endif
@@ -29,15 +24,12 @@
 
 #if SSE_INSTR_SET == 7
     #define __GAPS_AVX__
-    #pragma message "AVX enabled"
     #include <immintrin.h>
 #elif SSE_INSTR_SET == 6
     #define __GAPS_SSE__
-    #pragma message "SSE4.2 enabled"
     #include <nmmintrin.h>
 #elif SSE_INSTR_SET == 5
     #define __GAPS_SSE__
-    #pragma message "SSE4.1 enabled"
     #include <smmintrin.h>
 #endif
 

@@ -2,9 +2,7 @@
 % Please edit documentation in R/binaryA.R
 \name{binaryA}
 \alias{binaryA}
-\title{\code{binaryA} creates a binarized heatmap of the A matrix
-in which the value is 1 if the value in Amean is greater than
-threshold * Asd and 0 otherwise}
+\title{Binary Heatmap for Standardized A Matrix}
 \usage{
 binaryA(Amean, Asd, threshold = 3)
 }
@@ -17,8 +15,11 @@ binaryA(Amean, Asd, threshold = 3)
 that an element of Amean must be to get a value of 1}
 }
 \description{
-\code{binaryA} creates a binarized heatmap of the A matrix
-in which the value is 1 if the value in Amean is greater than
-threshold * Asd and 0 otherwise
+Binary Heatmap for Standardized A Matrix
+}
+\details{
+creates a binarized heatmap of the A matrix
+ in which the value is 1 if the value in Amean is greater than
+ threshold * Asd and 0 otherwise
 }
 

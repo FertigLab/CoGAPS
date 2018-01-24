@@ -2,8 +2,7 @@
 % Please edit documentation in R/calcZ.R
 \name{calcZ}
 \alias{calcZ}
-\title{\code{calcZ} calculates the Z-score for each element based
-on input mean and standard deviation matrices}
+\title{Compute Z-Score Matrix}
 \usage{
 calcZ(meanMat, sdMat)
 }
@@ -13,7 +12,10 @@ calcZ(meanMat, sdMat)
 \item{sdMat}{matrix of standard deviation values}
 }
 \description{
-\code{calcZ} calculates the Z-score for each element based
-on input mean and standard deviation matrices
+Compute Z-Score Matrix
+}
+\details{
+calculates the Z-score for each element based on input mean
+ and standard deviation matrices
 }
 

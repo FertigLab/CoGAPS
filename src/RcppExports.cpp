@@ -5,43 +5,40 @@
 
 using namespace Rcpp;
 
-// cogaps
-Rcpp::List cogaps(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix, unsigned nFactor, float alphaA, float alphaP, unsigned nEquil, unsigned nEquilCool, unsigned nSample, float maxGibbsMassA, float maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns, char whichMatrixFixed, int seed, bool messages, bool singleCellRNASeq, unsigned numOutputs, unsigned numSnapshots, unsigned checkpointInterval);
-RcppExport SEXP _CoGAPS_cogaps(SEXP DMatrixSEXP, SEXP SMatrixSEXP, SEXP nFactorSEXP, SEXP alphaASEXP, SEXP alphaPSEXP, SEXP nEquilSEXP, SEXP nEquilCoolSEXP, SEXP nSampleSEXP, SEXP maxGibbsMassASEXP, SEXP maxGibbsMassPSEXP, SEXP fixedPatternsSEXP, SEXP whichMatrixFixedSEXP, SEXP seedSEXP, SEXP messagesSEXP, SEXP singleCellRNASeqSEXP, SEXP numOutputsSEXP, SEXP numSnapshotsSEXP, SEXP checkpointIntervalSEXP) {
+// cogaps_cpp
+Rcpp::List cogaps_cpp(const Rcpp::NumericMatric& DMatrix, const Rcpp::NumericMatrix& SMatrix, const Rcpp::NumericMatrix& fixedPatterns, const Rcpp::S4& params);
+RcppExport SEXP _CoGAPS_cogaps_cpp(SEXP DMatrixSEXP, SEXP SMatrixSEXP, SEXP fixedPatternsSEXP, SEXP paramsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type DMatrix(DMatrixSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type SMatrix(SMatrixSEXP);
-    Rcpp::traits::input_parameter< unsigned >::type nFactor(nFactorSEXP);
-    Rcpp::traits::input_parameter< float >::type alphaA(alphaASEXP);
-    Rcpp::traits::input_parameter< float >::type alphaP(alphaPSEXP);
-    Rcpp::traits::input_parameter< unsigned >::type nEquil(nEquilSEXP);
-    Rcpp::traits::input_parameter< unsigned >::type nEquilCool(nEquilCoolSEXP);
-    Rcpp::traits::input_parameter< unsigned >::type nSample(nSampleSEXP);
-    Rcpp::traits::input_parameter< float >::type maxGibbsMassA(maxGibbsMassASEXP);
-    Rcpp::traits::input_parameter< float >::type maxGibbsMassP(maxGibbsMassPSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type fixedPatterns(fixedPatternsSEXP);
-    Rcpp::traits::input_parameter< char >::type whichMatrixFixed(whichMatrixFixedSEXP);
-    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
-    Rcpp::traits::input_parameter< bool >::type messages(messagesSEXP);
-    Rcpp::traits::input_parameter< bool >::type singleCellRNASeq(singleCellRNASeqSEXP);
-    Rcpp::traits::input_parameter< unsigned >::type numOutputs(numOutputsSEXP);
-    Rcpp::traits::input_parameter< unsigned >::type numSnapshots(numSnapshotsSEXP);
-    Rcpp::traits::input_parameter< unsigned >::type checkpointInterval(checkpointIntervalSEXP);
-    rcpp_result_gen = Rcpp::wrap(cogaps(DMatrix, SMatrix, nFactor, alphaA, alphaP, nEquil, nEquilCool, nSample, maxGibbsMassA, maxGibbsMassP, fixedPatterns, whichMatrixFixed, seed, messages, singleCellRNASeq, numOutputs, numSnapshots, checkpointInterval));
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatric& >::type DMatrix(DMatrixSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type SMatrix(SMatrixSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type fixedPatterns(fixedPatternsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::S4& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cogaps_cpp(DMatrix, SMatrix, fixedPatterns, params));
     return rcpp_result_gen;
 END_RCPP
 }
-// cogapsFromCheckpoint
-Rcpp::List cogapsFromCheckpoint(const std::string& fileName);
-RcppExport SEXP _CoGAPS_cogapsFromCheckpoint(SEXP fileNameSEXP) {
+// cogapsFromCheckpoint_cpp
+Rcpp::List cogapsFromCheckpoint_cpp(const Rcpp::NumericMatrix& D, const Rcpp::NumericMatrix& S, const std::string& fileName);
+RcppExport SEXP _CoGAPS_cogapsFromCheckpoint_cpp(SEXP DSEXP, SEXP SSEXP, SEXP fileNameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type D(DSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type S(SSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type fileName(fileNameSEXP);
-    rcpp_result_gen = Rcpp::wrap(cogapsFromCheckpoint(fileName));
+    rcpp_result_gen = Rcpp::wrap(cogapsFromCheckpoint_cpp(D, S, fileName));
     return rcpp_result_gen;
+END_RCPP
+}
+// displayBuildReport_cpp
+void displayBuildReport_cpp();
+RcppExport SEXP _CoGAPS_displayBuildReport_cpp() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    displayBuildReport_cpp();
+    return R_NilValue;
 END_RCPP
 }
 // run_catch_unit_tests
@@ -56,8 +53,9 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_CoGAPS_cogaps", (DL_FUNC) &_CoGAPS_cogaps, 18},
-    {"_CoGAPS_cogapsFromCheckpoint", (DL_FUNC) &_CoGAPS_cogapsFromCheckpoint, 1},
+    {"_CoGAPS_cogaps_cpp", (DL_FUNC) &_CoGAPS_cogaps_cpp, 4},
+    {"_CoGAPS_cogapsFromCheckpoint_cpp", (DL_FUNC) &_CoGAPS_cogapsFromCheckpoint_cpp, 3},
+    {"_CoGAPS_displayBuildReport_cpp", (DL_FUNC) &_CoGAPS_displayBuildReport_cpp, 0},
     {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 0},
     {NULL, NULL, 0}
 };

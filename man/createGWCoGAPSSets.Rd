@@ -2,7 +2,7 @@
 % Please edit documentation in R/createGWCoGAPSSets.R
 \name{createGWCoGAPSSets}
 \alias{createGWCoGAPSSets}
-\title{createGWCoGAPSSets}
+\title{Create Gene Sets for GWCoGAPS}
 \usage{
 createGWCoGAPSSets(data = D, nSets = nSets,
   outRDA = "GenesInCoGAPSSets.Rda", keep = TRUE)
@@ -14,18 +14,20 @@ createGWCoGAPSSets(data = D, nSets = nSets,
 
 \item{outRDA}{name of output file}
 
-\item{keep}{logical indicating whether or not to save gene set list. Default is TRUE.}
+\item{keep}{logical indicating whether or not to save gene set list.}
 }
 \value{
 list with randomly generated sets of genes from whole genome data
 }
 \description{
-\code{createGWCoGAPSSets} factors whole genome data into randomly generated sets for indexing;
+Create Gene Sets for GWCoGAPS
+}
+\details{
+factors whole genome data into randomly generated sets for indexing
 }
 \examples{
 \dontrun{
 createGWCoGAPSSet(D,nSets=nSets)
 }
-
 }
 

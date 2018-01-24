@@ -2,8 +2,7 @@
 % Please edit documentation in R/plotGAPS.R
 \name{plotGAPS}
 \alias{plotGAPS}
-\title{\code{plotGAPS} plots the output A and P matrices as a
-heatmap and line plot respectively}
+\title{Plot Decomposed A and P Matrices}
 \usage{
 plotGAPS(A, P, outputPDF = "")
 }
@@ -16,7 +15,10 @@ plotGAPS(A, P, outputPDF = "")
 not specified, output goes to screen}
 }
 \description{
-\code{plotGAPS} plots the output A and P matrices as a
+Plot Decomposed A and P Matrices
+}
+\details{
+plots the output A and P matrices as a
 heatmap and line plot respectively
 }
 

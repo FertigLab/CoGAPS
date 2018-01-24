@@ -8,8 +8,8 @@
 #' \tabular{ll}{
 #' Package: \tab CoGAPS\cr
 #' Type: \tab Package\cr
-#' Version: \tab 1.0\cr
-#' Date: \tab 2014-07-23\cr
+#' Version: \tab 2.99.0\cr
+#' Date: \tab 2018-01-24\cr
 #' License: \tab LGPL\cr
 #' }
 #' @author Maintainer: Elana J. Fertig \email{ejfertig@jhmi.edu},

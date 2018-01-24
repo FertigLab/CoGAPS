@@ -2,12 +2,10 @@
 % Please edit documentation in R/calcGeneGSStat.R
 \name{calcGeneGSStat}
 \alias{calcGeneGSStat}
-\title{\code{calcGeneGSStat} calculates the probability that a gene
-listed in a gene set behaves like other genes in the set within
-the given data set}
+\title{Probability Gene Belongs in Gene Set}
 \usage{
 calcGeneGSStat(Amean, Asd, GSGenes, numPerm, Pw = rep(1, ncol(Amean)),
-  nullGenes = F)
+  nullGenes = FALSE)
 }
 \arguments{
 \item{Amean}{A matrix mean values}
@@ -23,8 +21,11 @@ calcGeneGSStat(Amean, Asd, GSGenes, numPerm, Pw = rep(1, ncol(Amean)),
 \item{nullGenes}{- logical indicating gene adjustment}
 }
 \description{
-\code{calcGeneGSStat} calculates the probability that a gene
-listed in a gene set behaves like other genes in the set within
-the given data set
+Probability Gene Belongs in Gene Set
+}
+\details{
+calculates the probability that a gene
+ listed in a gene set behaves like other genes in the set within
+ the given data set
 }
 

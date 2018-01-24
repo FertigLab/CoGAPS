@@ -55,10 +55,12 @@ public:
 
 public:
 
-    GibbsSampler(unsigned nRow, unsigned nCol, unsigned nFactor);
-    GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S, unsigned nFactor,
-        float alphaA, float alphaP, float maxGibbsMassA, float maxGibbsMassP,
-        bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat, char whichMat);
+    GibbsSampler(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
+        unsigned nFactor);
+    GibbsSampler(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
+        unsigned nFactor, float alphaA, float alphaP, float maxGibbsMassA,
+        float maxGibbsMassP, bool singleCellRNASeq,
+        const Rcpp::NumericMatrix &fixedPat, char whichMat);
 
     void update(char matrixLabel);
 
@@ -70,6 +72,7 @@ public:
     Rcpp::NumericMatrix AStdRMatrix() const;
     Rcpp::NumericMatrix PMeanRMatrix() const;
     Rcpp::NumericMatrix PStdRMatrix() const;
+    float meanChiSq() const;
 
     void updateStatistics();
 
@@ -79,8 +82,8 @@ public:
     unsigned nCol() const {return mDMatrix.nCol();}
     unsigned nFactor() const {return mAMatrix.nCol();}
 
-    friend void operator<<(Archive &ar, GibbsSampler &sampler);
-    friend void operator>>(Archive &ar, GibbsSampler &sampler);
+    friend Archive& operator<<(Archive &ar, GibbsSampler &sampler);
+    friend Archive& operator>>(Archive &ar, GibbsSampler &sampler);
 };
 
 #endif
