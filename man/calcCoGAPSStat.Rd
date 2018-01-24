@@ -2,9 +2,7 @@
 % Please edit documentation in R/calcCoGAPSStat.R
 \name{calcCoGAPSStat}
 \alias{calcCoGAPSStat}
-\title{\code{calcCoGAPSStat} calculates the gene set statistics for each
-column of A using a Z-score from the elements of the A matrix,
-the input gene set, and permutation tests}
+\title{Calculate Gene Set Statistics}
 \usage{
 calcCoGAPSStat(Amean, Asd, GStoGenes, numPerm = 500)
 }
@@ -18,8 +16,11 @@ calcCoGAPSStat(Amean, Asd, GStoGenes, numPerm = 500)
 \item{numPerm}{number of permutations for null}
 }
 \description{
-\code{calcCoGAPSStat} calculates the gene set statistics for each
-column of A using a Z-score from the elements of the A matrix,
-the input gene set, and permutation tests
+Calculate Gene Set Statistics
+}
+\details{
+calculates the gene set statistics for each
+ column of A using a Z-score from the elements of the A matrix,
+ the input gene set, and permutation tests
 }
 

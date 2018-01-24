@@ -2,8 +2,7 @@
 % Please edit documentation in R/plotAtoms.R
 \name{plotAtoms}
 \alias{plotAtoms}
-\title{\code{plotAtoms} a simple plot of the number of atoms
-from one of the vectors returned with atom numbers}
+\title{Plot Number of Atoms}
 \usage{
 plotAtoms(gapsRes, type = "sampA")
 }
@@ -15,7 +14,10 @@ plotAtoms(gapsRes, type = "sampA")
 atom numbers}
 }
 \description{
-\code{plotAtoms} a simple plot of the number of atoms
-from one of the vectors returned with atom numbers
+Plot Number of Atoms
+}
+\details{
+a simple plot of the number of atoms
+ from one of the vectors returned with atom numbers
 }
 

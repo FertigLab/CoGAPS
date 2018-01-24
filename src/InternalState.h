@@ -10,9 +10,9 @@ typedef std::vector<Rcpp::NumericMatrix> SnapshotList;
 
 enum GapsPhase
 {
-    GAPS_CALIBRATION,
-    GAPS_COOLING,
-    GAPS_SAMPLING
+    GAPS_BURN,
+    GAPS_COOL,
+    GAPS_SAMP
 };
 
 struct GapsInternalState
@@ -50,87 +50,69 @@ struct GapsInternalState
 
     SnapshotList snapshotsA;
     SnapshotList snapshotsP;
-
-    GapsInternalState(Rcpp::NumericMatrix DMatrix, Rcpp::NumericMatrix SMatrix,
-        unsigned nFactor, float alphaA, float alphaP, unsigned nE,
-        unsigned nEC, unsigned nS, float maxGibbsMassA,
-        float maxGibbsMassP, Rcpp::NumericMatrix fixedPatterns,
-        char whichMatrixFixed, bool msg, bool singleCellRNASeq,
-        unsigned numOutputs, unsigned numSnapshots, uint32_t in_seed,
-        unsigned cptInterval)
+    
+    GapsInternalState(const Rcpp::NumericMatrix &D,
+        const Rcpp::NumericMatrix &S, const Rcpp::NumericMatrix &fixedPatterns,
+        const Rcpp::S4 &params)
             :
-        chi2VecEquil(nE), nAtomsAEquil(nE), nAtomsPEquil(nE),
-        chi2VecSample(nS), nAtomsASample(nS), nAtomsPSample(nS),
-        nIterA(10), nIterP(10), nEquil(nE), nEquilCool(nEC), nSample(nS),
-        nSnapshots(numSnapshots), nOutputs(numOutputs), messages(msg),
-        iter(0), phase(GAPS_CALIBRATION), seed(in_seed),
-        checkpointInterval(cptInterval), numCheckpoints(0),
-        nUpdatesA(0), nUpdatesP(0),
-        sampler(DMatrix, SMatrix, nFactor, alphaA, alphaP,
-            maxGibbsMassA, maxGibbsMassP, singleCellRNASeq, fixedPatterns,
-            whichMatrixFixed)
+        chi2VecEquil(params.slot("nEquil")),
+        nAtomsAEquil(params.slot("nEquil")),
+        nAtomsPEquil(params.slot("nEquil")),
+        chi2VecSample(params.slot("nSample")),
+        nAtomsASample(params.slot("nSample")),
+        nAtomsPSample(params.slot("nSample")),
+        nIterA(10),
+        nIterP(10),
+        nEquil(params.slot("nEquil")),
+        nEquilCool(params.slot("nEquilCool")),
+        nSample(params.slot("nSample")),
+        nSnapshots(params.slot("nSnapshots")),
+        nOutputs(params.slot("nOutput")),
+        messages(params.slot("messages")),
+        iter(0),
+        phase(GAPS_BURN),
+        seed(params.slot("seed")), 
+        checkpointInterval(params.slot("checkpointInterval")),
+        numCheckpoints(0),
+        nUpdatesA(0),
+        nUpdatesP(0),
+        sampler(D, S, params.slot("nFactor"), params.slot("alphaA"),
+            params.slot("alphaP"), params.slot("maxGibbMassA"),
+            params.slot("maxGibbMassP"), params.slot("singleCellRNASeq"),
+            fixedPatterns, params.slot("whichMatrixFixed"))
     {}
 
-    // empty internal state, ready to be loaded
-    GapsInternalState(unsigned nE, unsigned nS, unsigned nRow, unsigned nCol,
-    unsigned nFactor)
+    GapsInternalState(const Rcpp::NumericMatrix &D,
+        const Rcpp::NumericMatrix &S, unsigned nF, unsigned nE, unsigned nS)
             :
         chi2VecEquil(nE), nAtomsAEquil(nE), nAtomsPEquil(nE),
         chi2VecSample(nS), nAtomsASample(nS), nAtomsPSample(nS),
-        sampler(nRow, nCol, nFactor)
+        sampler(D, S, nF)
     {}
 };
 
-inline void operator<<(Archive &ar, GapsInternalState &state)
+inline Archive& operator<<(Archive &ar, GapsInternalState &state)
 {
-    ar << state.chi2VecEquil;
-    ar << state.nAtomsAEquil;
-    ar << state.nAtomsPEquil;
-    ar << state.chi2VecSample;
-    ar << state.nAtomsASample;
-    ar << state.nAtomsPSample;
-    ar << state.nIterA;
-    ar << state.nIterP;
-    ar << state.nEquil;
-    ar << state.nEquilCool;
-    ar << state.nSample;
-    ar << state.nSnapshots;
-    ar << state.nOutputs;
-    ar << state.messages;
-    ar << state.iter;
-    ar << state.phase;
-    ar << state.seed;
-    ar << state.checkpointInterval;
-    ar << state.numCheckpoints;
-    ar << state.nUpdatesA;
-    ar << state.nUpdatesP;
-    ar << state.sampler;
+    ar << state.chi2VecEquil << state.nAtomsAEquil << state.nAtomsPEquil
+        << state.chi2VecSample << state.nAtomsASample << state.nAtomsPSample
+        << state.nIterA << state.nIterP << state.nEquil << state.nEquilCool
+        << state.nSample << state.nSnapshots << state.nOutputs << state.messages
+        << state.iter << state.phase << state.seed << state.checkpointInterval
+        << state.numCheckpoints << state.nUpdatesA << state.nUpdatesP
+        << state.sampler;
+    return ar;
 }
 
-inline void operator>>(Archive &ar, GapsInternalState &state)
+inline Archive& operator>>(Archive &ar, GapsInternalState &state)
 {
-    ar >> state.chi2VecEquil;
-    ar >> state.nAtomsAEquil;
-    ar >> state.nAtomsPEquil;
-    ar >> state.chi2VecSample;
-    ar >> state.nAtomsASample;
-    ar >> state.nAtomsPSample;
-    ar >> state.nIterA;
-    ar >> state.nIterP;
-    ar >> state.nEquil;
-    ar >> state.nEquilCool;
-    ar >> state.nSample;
-    ar >> state.nSnapshots;
-    ar >> state.nOutputs;
-    ar >> state.messages;
-    ar >> state.iter;
-    ar >> state.phase;
-    ar >> state.seed;
-    ar >> state.checkpointInterval;
-    ar >> state.numCheckpoints;
-    ar >> state.nUpdatesA;
-    ar >> state.nUpdatesP;
-    ar >> state.sampler;
+    ar >> state.chi2VecEquil >> state.nAtomsAEquil >> state.nAtomsPEquil
+        >> state.chi2VecSample >> state.nAtomsASample >> state.nAtomsPSample
+        >> state.nIterA >> state.nIterP >> state.nEquil >> state.nEquilCool
+        >> state.nSample >> state.nSnapshots >> state.nOutputs >> state.messages
+        >> state.iter >> state.phase >> state.seed >> state.checkpointInterval
+        >> state.numCheckpoints >> state.nUpdatesA >> state.nUpdatesP
+        >> state.sampler;
+    return ar;
 }
 
 #endif

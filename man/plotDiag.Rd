@@ -2,14 +2,17 @@
 % Please edit documentation in R/plotDiag.R
 \name{plotDiag}
 \alias{plotDiag}
-\title{\code{plotDiag} plots a series of diagnostic plots}
+\title{Diagnostic Plots}
 \usage{
 plotDiag(gapsRes)
 }
 \arguments{
-\item{gapsRes}{list returned by gapsRun, gapsMapRun, or CoGAPS}
+\item{gapsRes}{list returned by CoGAPS}
 }
 \description{
-\code{plotDiag} plots a series of diagnostic plots
+Diagnostic Plots
+}
+\details{
+plots a series of diagnostic plots
 }
 

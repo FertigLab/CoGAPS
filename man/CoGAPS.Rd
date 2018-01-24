@@ -2,75 +2,24 @@
 % Please edit documentation in R/CoGAPS.R
 \name{CoGAPS}
 \alias{CoGAPS}
-\title{\code{CoGAPS} calls the C++ MCMC code through gapsRun and performs Bayesian
-matrix factorization returning the two matrices that reconstruct
-the data matrix and then calls calcCoGAPSStat to estimate gene set
-activity with nPerm set to 500}
+\title{CoGAPS Matrix Factorization Algorithm}
 \usage{
-CoGAPS(data, unc, ABins = data.frame(), PBins = data.frame(), GStoGenes,
-  nFactor = 7, simulation_id = "simulation", nEquil = 1000,
-  nSample = 1000, nOutR = 1000, output_atomic = FALSE,
-  fixedBinProbs = FALSE, fixedDomain = "N", sampleSnapshots = TRUE,
-  numSnapshots = 100, plot = TRUE, nPerm = 500, alphaA = 0.01,
-  nMaxA = 1e+05, max_gibbmass_paraA = 100, alphaP = 0.01, nMaxP = 1e+05,
-  max_gibbmass_paraP = 100)
+CoGAPS(D, S, ...)
 }
 \arguments{
-\item{data}{data matrix}
+\item{D}{data matrix}
 
-\item{unc}{uncertainty matrix (std devs for chi-squared of Log Likelihood)}
-
-\item{ABins}{a matrix of same size as A which gives relative
-probability of that element being non-zero}
-
-\item{PBins}{a matrix of same size as P which gives relative
-probability of that element being non-zero}
-
-\item{GStoGenes}{data.frame or list with gene sets}
-
-\item{nFactor}{number of patterns (basis vectors, metagenes)}
-
-\item{simulation_id}{name to attach to atoms files if created}
-
-\item{nEquil}{number of iterations for burn-in}
-
-\item{nSample}{number of iterations for sampling}
-
-\item{nOutR}{how often to print status into R by iterations}
-
-\item{output_atomic}{whether to write atom files (large)}
-
-\item{fixedBinProbs}{Boolean for using relative probabilities
-given in Abins and Pbins}
-
-\item{fixedDomain}{character to indicate whether A or P is
-domain for relative probabilities}
-
-\item{sampleSnapshots}{Boolean to indicate whether to capture
-individual samples from Markov chain during sampling}
-
-\item{numSnapshots}{the number of individual samples to capture}
-
-\item{plot}{Boolean to indicate whether to produce output graphics}
-
-\item{nPerm}{number of permutations in gene set test}
-
-\item{alphaA}{sparsity parameter for A domain}
-
-\item{nMaxA}{PRESENTLY UNUSED, future = limit number of atoms}
-
-\item{max_gibbmass_paraA}{limit truncated normal to max size}
-
-\item{alphaP}{sparsity parameter for P domain}
-
-\item{nMaxP}{PRESENTLY UNUSED, future = limit number of atoms}
-
-\item{max_gibbmass_paraP}{limit truncated normal to max size}
+\item{S}{uncertainty matrix (std devs for chi-squared of Log Likelihood)}
+}
+\value{
+list with A and P matrix estimates
 }
 \description{
-\code{CoGAPS} calls the C++ MCMC code through gapsRun and performs Bayesian
+CoGAPS Matrix Factorization Algorithm
+}
+\details{
+calls the C++ MCMC code and performs Bayesian
 matrix factorization returning the two matrices that reconstruct
-the data matrix and then calls calcCoGAPSStat to estimate gene set
-activity with nPerm set to 500
+the data matrix
 }
 

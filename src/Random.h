@@ -15,7 +15,6 @@ namespace random
     void setSeed(uint32_t seed);
 
     int poisson(float lambda);
-    int uniformInt(int a, int b);
     uint64_t uniform64();
     uint64_t uniform64(uint64_t a, uint64_t b);
 

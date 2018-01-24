@@ -134,7 +134,7 @@ TEST_CASE("Test Archive.h")
     {
         AtomicSupport domain_read('A',100,100), domain_write('A',100,100);
         std::vector<uint64_t> locations;
-        for (unsigned i = 0; i < 10000; ++i)
+        for (unsigned i = 0; i < 100; ++i)
         {
             AtomicProposal prop = domain_write.makeProposal();
             locations.push_back(prop.pos1);
@@ -154,19 +154,6 @@ TEST_CASE("Test Archive.h")
         REQUIRE(domain_read.lambda() == domain_write.lambda());
         REQUIRE(domain_read.totalMass() == domain_write.totalMass());
         REQUIRE(domain_read.numAtoms() == domain_write.numAtoms());
-
-#ifdef GAPS_INTERNAL_TESTS
-        std::map<uint64_t, float>::iterator readIter, writeIter;
-        readIter = domain_read.mAtomicDomain.begin();
-        writeIter = domain_write.mAtomicDomain.begin();        
-        while (readIter != domain_read.mAtomicDomain.end())
-        {
-            REQUIRE(readIter->first == writeIter->first);   
-            REQUIRE(readIter->second == writeIter->second);
-            ++readIter;
-            ++writeIter;
-        }
-#endif
     }
 
     SECTION("GibbsSampler Serialization")

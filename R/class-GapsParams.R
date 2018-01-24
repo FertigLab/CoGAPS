@@ -23,40 +23,44 @@
 setClass('GapsParams', slots = c(
     nFactor = 'integer',
     nEquil = 'integer',
+    nEquilCool = 'integer',
     nSample = 'integer',
     nOutput = 'integer',
     nSnapshots = 'integer',
-    alphaA  = 'numeric',
-    alphaP  = 'numeric',
+    alphaA = 'numeric',
+    alphaP = 'numeric',
     maxGibbmassA = 'numeric',
     maxGibbmassP = 'numeric',
     seed = 'integer',
     messages  = 'logical',
-    singleCelLRNASeq = 'logical',
+    singleCellRNASeq = 'logical',
     fixedPatterns = 'matrix',
     whichMatrixFixed = 'character',
     checkpointInterval = 'integer',
     nCores = 'integer'
 ))
 
+#' @importFrom methods callNextMethod
 setMethod('initialize', 'GapsParams', 
     function(.Object, nFactor, nEquil, nSample, ...)
     {
-        .Object@nFactor <- nFactor
-        .Object@nEquil <- nEquil
-        .Object@nSample <- nSample
-        .Object@nOutput <- 1000
-        .Object@numSnapshots <- 0
+        .Object@nFactor <- as.integer(nFactor)
+        .Object@nEquil <- as.integer(nEquil)
+        .Object@nEquil <- as.integer(floor(nEquil/10))
+        .Object@nSample <- as.integer(nSample)
+        .Object@nOutput <- as.integer(1000)
+        .Object@nSnapshots <- as.integer(0)
         .Object@alphaA <- 0.01
         .Object@alphaP <- 0.01
         .Object@maxGibbmassA <- 100.0
         .Object@maxGibbmassP <- 100.0
-        .Object@seed <- -1
+        .Object@seed <- as.integer(-1)
         .Object@messages <- TRUE
-        .Object@singleCelLRNASeq <- FALSE
+        .Object@singleCellRNASeq <- FALSE
         .Object@fixedPatterns <- matrix(0)
         .Object@whichMatrixFixed <- 'N'
-        .Object@checkpointInterval <- 0
+        .Object@checkpointInterval <- as.integer(0)
+        .Object@nCores <- as.integer(1)
 
         .Object <- callNextMethod(.Object, ...)
         .Object
@@ -73,14 +77,24 @@ setValidity('GapsParams',
     }
 )
 
-#' @rdname getParam
+##################### Generics ###################
+
+#' @export
+setGeneric('getParam', function(object, name)
+    {standardGeneric('getParam')})
+
+#' @export
+setGeneric('setParam', function(object, name, value)
+    {standardGeneric('setParam')})
+
+##################### Methods ####################
+
 #' @importFrom methods slot
 setMethod("getParam", "GapsParams", function(object, name)
 {
     slot(object, name)
 })
 
-#' @rdname setParam
 #' @importFrom methods slot<- validObject
 setMethod("setParam", "GapsParams", function(object, name, value)
 {
@@ -89,7 +103,6 @@ setMethod("setParam", "GapsParams", function(object, name, value)
     return(object)
 })
 
-#' @importFrom methods slotNames
 setMethod("show", "GapsParams", function(object)
 {
     cat("CoGAPS Parameters Object\n")
@@ -104,4 +117,4 @@ checkParamsWithData <- function(params, nRD, nCD, nRS, nCS)
         stop('invalid fixed pattern length')
     if (params@whichMatrixFixed == 'P' & ncol(params@fixedPatterns) != nCD)
         stop('invalid fixed pattern length')
-})
+}

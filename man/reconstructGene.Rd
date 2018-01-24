@@ -2,7 +2,7 @@
 % Please edit documentation in R/reconstructGene.R
 \name{reconstructGene}
 \alias{reconstructGene}
-\title{reconstruct Gene}
+\title{Reconstruct Gene}
 \usage{
 reconstructGene(A = NA, P = NA, genes = NA)
 }
@@ -11,12 +11,12 @@ reconstructGene(A = NA, P = NA, genes = NA)
 
 \item{P}{corresponding P matrix estimates}
 
-\item{genes}{an indx of the gene or genes of interest. If \code{NA}, the default, all genes contained in A will be returned.}
+\item{genes}{an index of the gene or genes of interest}
 }
 \value{
 the D' estimate of a gene or set of genes
 }
 \description{
-reconstruct Gene
+Reconstruct Gene
 }
 

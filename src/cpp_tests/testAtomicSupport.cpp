@@ -1,6 +1,8 @@
 #include "catch.h"
 #include "../AtomicSupport.h"
 
+#define TEST_APPROX(x) Approx(x).epsilon(0.001)
+
 TEST_CASE("Test AtomicSupport.h")
 {
     unsigned nrow = 100, ncol = 500;
@@ -92,7 +94,6 @@ TEST_CASE("Test AtomicSupport.h")
         }
         REQUIRE(domain.numAtoms() > 100);
         REQUIRE(nB > 500);
-        //REQUIRE(nD > 500);
         REQUIRE(nM > 500);
         REQUIRE(nE > 500);
     }
@@ -158,7 +159,7 @@ TEST_CASE("Internal AtomicSupport Tests")
         }
     }
 
-/*    SECTION("updateAtomMass")
+    SECTION("updateAtomMass")
     {
         float oldMass = 0.0;
         uint64_t posA = 0, posP = 0;
@@ -166,16 +167,16 @@ TEST_CASE("Internal AtomicSupport Tests")
         {
             posA = Adomain.randomAtomPosition();
             oldMass = Adomain.at(posA);
-            REQUIRE_NOTHROW(Adomain.updateAtomMass(posA, 0.05));
-            REQUIRE(Adomain.at(posA) == oldMass + 0.05);
+            REQUIRE_NOTHROW(Adomain.updateAtomMass(posA, 0.05f));
+            REQUIRE(Adomain.at(posA) == TEST_APPROX(oldMass + 0.05f));
 
             posP = Pdomain.randomAtomPosition();
             oldMass = Pdomain.at(posP);
-            REQUIRE_NOTHROW(Pdomain.updateAtomMass(posP, 0.05));
-            REQUIRE(Pdomain.at(posP) == oldMass + 0.05);
+            REQUIRE_NOTHROW(Pdomain.updateAtomMass(posP, 0.05f));
+            REQUIRE(Pdomain.at(posP) == TEST_APPROX(oldMass + 0.05f));
         }
     }
-*/
+
     SECTION("proposeBirth")
     {
         for (unsigned i = 0; i < 1000; ++i)

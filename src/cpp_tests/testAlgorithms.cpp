@@ -2,89 +2,70 @@
 #include "../Matrix.h"
 #include "../Algorithms.h"
 
+#define MAT_SUM(nR, nC) ((nR + nC - 2) * nR * nC / 2.f)
 
 TEST_CASE("Test Algorithms.h")
 {
     unsigned nrow = 25;
-    unsigned ncol = 10;
-
+    unsigned ncol = 20;
+    unsigned nfactor = 7;
     Vector v(nrow);
     TwoWayMatrix D(nrow, ncol), S(nrow, ncol), AP(nrow, ncol);
-    RowMatrix P(nrow, ncol);
-    ColMatrix A(nrow, ncol);
+    ColMatrix A(nrow, nfactor);
+    RowMatrix P(nfactor, ncol);
 
-    for (unsigned r = 0; r < nrow; ++r)
+    for (unsigned i = 0; i < nrow; ++i)
     {
-        v[r] = r;
-        for (unsigned c = 0; c < ncol; ++c)
+        v[i] = i;
+        for (unsigned j = 0; j < ncol; ++j)
         {
-            D.set(r, c, r + c);
-            S.set(r, c, (r + c) / 100.f);
-            AP.set(r, c, r - c);
-            P(r,c) = r * c;
-            A(r,c) = r * c;
+            D.set(i, j, (i + j) / 10.f);
+            S.set(i, j, (i + j) / 100.f);
+            for (unsigned k = 1; k < nfactor; ++k)
+            {
+                A(i,k) = i + k;
+                P(k,j) = k + j;
+            }
         }
     }
+    gaps::algo::matrixMultiplication(AP, A, P);
+
+    float Dsum = MAT_SUM(nrow, ncol) / 10.f;
+    float Ssum = MAT_SUM(nrow, ncol) / 100.f;
 
     SECTION("sum")
     {
         REQUIRE(gaps::algo::sum(v) == 300);
-        REQUIRE(gaps::algo::sum(D) == 300 * 10 + 45 * 25);
-        REQUIRE(gaps::algo::sum(D) == gaps::algo::sum(S) * 100.0);
-        REQUIRE(gaps::algo::sum(A) == gaps::algo::sum(P));
+        REQUIRE(gaps::algo::sum(D) == Approx(Dsum).epsilon(0.001));
+        REQUIRE(gaps::algo::sum(S) == Approx(Ssum).epsilon(0.001));
     }
 
     SECTION("mean")
     {
-        float dTotal = 300 * 10 + 45 * 25;
-    
-        REQUIRE(gaps::algo::mean(D) == gaps::algo::mean(S) * 100.f);
-        REQUIRE(gaps::algo::mean(D) == dTotal / (nrow * ncol));
-        REQUIRE(gaps::algo::nonZeroMean(D) == dTotal / (nrow * ncol - 1));
+        REQUIRE(gaps::algo::mean(D) == Dsum / (nrow * ncol));
+        REQUIRE(gaps::algo::nonZeroMean(D) == Dsum / (nrow * ncol - 1));
     }
 
     SECTION("scalar multiplication/division")
     {
-        REQUIRE(gaps::algo::sum(gaps::algo::scalarMultiple(v, 3.5))
-            == 3.5 * 300.0);
+        float vsqSum = 24.f * 25.f * (2.f * 24.f + 1.f) / 6.f;
 
-        float vsqSum = 24.0 * 25.0 * (2.0 * 24.0 + 1.0) / 6.0;
-        REQUIRE(gaps::algo::sum(gaps::algo::squaredScalarMultiple(v, 4.0))
-            == 16.0 * vsqSum);
-/*
-        REQUIRE(gaps::algo::sum(gaps::algo::scalarDivision(v, 1.3))
-            == 300.0 / 1.3);
-
-        REQUIRE(gaps::algo::sum(gaps::algo::squaredScalarDivision(v, 1.3))
-            == vsqSum / (1.3 * 1.3));*/
+        REQUIRE(gaps::algo::sum(gaps::algo::scalarMultiple(v, 3.5f))
+            == 3.5f * 300.f);
+        REQUIRE(gaps::algo::sum(gaps::algo::squaredScalarMultiple(v, 4.f))
+            == 16.f * vsqSum);
+        REQUIRE(gaps::algo::sum(gaps::algo::scalarDivision(v, 1.3f))
+            == 300.f / 1.3f);
+        REQUIRE(gaps::algo::sum(gaps::algo::squaredScalarDivision(v, 1.3f))
+            == Approx(vsqSum / (1.3f * 1.3f)).epsilon(0.01));
     }
-/*        REQUIRE(gaps::algo::sum(D) == 467500);
-        
-        REQUIRE(gaps::algo::mean(D) == 3.74);
 
-        REQUIRE(gaps::algo::nonZeroMean(D) > 3.74);
-        REQUIRE(gaps::algo::nonZeroMean(D) < 3.75);
-
+    SECTION("is row/col zero")
+    {
         REQUIRE(gaps::algo::isRowZero(P, 0));
         REQUIRE(!gaps::algo::isRowZero(P, 1));
         
         REQUIRE(gaps::algo::isColZero(A, 0));
         REQUIRE(!gaps::algo::isColZero(A, 1));
     }
-
-    SECTION("delLL calculation")
-    {
-        REQUIRE(gaps::algo::deltaLL(MatrixChange('A', 3, 2, 2.5), D, S, A, P, AP)
-            == Approx(-83583201873.509).epsilon(0.001));
-    }
-
-    SECTION("alpha parameters calculation")
-    {
-        AlphaParameters ap = gaps::algo::alphaParameters(
-            MatrixChange('A', 3, 2, 2.5), D, S, A, P, AP);
-        REQUIRE(ap.s == Approx(1887.023).epsilon(0.001));
-        REQUIRE(ap.su == Approx(-33433278390.625).epsilon(0.001));
-    }
-*/
 }
-

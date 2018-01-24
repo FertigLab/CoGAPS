@@ -22,7 +22,7 @@ struct MatrixChange
 
     MatrixChange(char l, unsigned r, unsigned c, float d)
         : label(l), nChanges(1), row1(r), col1(c), delta1(d), row2(0),
-        col2(0), delta2(0.0)
+        col2(0), delta2(0.f)
     {}
 
     MatrixChange(char l, unsigned r1, unsigned c1, float d1, unsigned r2,
@@ -32,7 +32,9 @@ struct MatrixChange
     {}
 };
 
-typedef std::vector<float, boost::alignment::aligned_allocator<float,32> > aligned_vector;
+namespace bal = boost::alignment;
+typedef std::vector<float, bal::aligned_allocator<float,32> > aligned_vector;
+
 class Vector
 {
 private:
@@ -41,7 +43,7 @@ private:
 
 public:
 
-    Vector(unsigned size) : mValues(aligned_vector(size, 0.0)) {}
+    Vector(unsigned size) : mValues(aligned_vector(size, 0.f)) {}
     Vector(const aligned_vector &v) : mValues(v) {}
     Vector(const Vector &vec) : mValues(vec.mValues) {}
 
@@ -53,10 +55,10 @@ public:
     void concat(const Vector& vec);
     void operator+=(const Vector &vec);
 
-    const float * ptr() const {return &mValues[0];}
+    const float* ptr() const {return &mValues[0];}
 
-    friend void operator<<(Archive &ar, Vector &vec);
-    friend void operator>>(Archive &ar, Vector &vec);
+    friend Archive& operator<<(Archive &ar, Vector &vec);
+    friend Archive& operator>>(Archive &ar, Vector &vec);
 };
 
 class RowMatrix
@@ -69,7 +71,7 @@ private:
 public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
-    RowMatrix(const Rcpp::NumericMatrix& rmat);
+    RowMatrix(const Rcpp::NumericMatrix &rmat);
     RowMatrix(const RowMatrix &mat);
 
     unsigned nRow() const {return mNumRows;}
@@ -86,8 +88,8 @@ public:
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
 
-    friend void operator<<(Archive &ar, RowMatrix &mat);
-    friend void operator>>(Archive &ar, RowMatrix &mat);
+    friend Archive& operator<<(Archive &ar, RowMatrix &mat);
+    friend Archive& operator>>(Archive &ar, RowMatrix &mat);
 };
 
 class ColMatrix
@@ -100,7 +102,7 @@ private:
 public:
 
     ColMatrix(unsigned nrow, unsigned ncol);
-    ColMatrix(const Rcpp::NumericMatrix& rmat);
+    ColMatrix(const Rcpp::NumericMatrix &rmat);
     ColMatrix(const ColMatrix &mat);
 
     unsigned nRow() const {return mNumRows;}
@@ -117,8 +119,8 @@ public:
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
 
-    friend void operator<<(Archive &ar, ColMatrix &mat);
-    friend void operator>>(Archive &ar, ColMatrix &mat);
+    friend Archive& operator<<(Archive &ar, ColMatrix &mat);
+    friend Archive& operator>>(Archive &ar, ColMatrix &mat);
 };
 
 // gain performance at the expense of memory
@@ -148,7 +150,7 @@ public:
     const float* rowPtr(unsigned row) const {return mRowMatrix.rowPtr(row);}
     const float* colPtr(unsigned col) const {return mColMatrix.colPtr(col);}
 
-    // not optimal to call this
+    // not optimal to call this when operating on a column
     float operator()(unsigned r, unsigned c) const {return mRowMatrix(r,c);}
 
     void set(unsigned row, unsigned col, float value)
@@ -161,9 +163,6 @@ public:
     {
         return mRowMatrix.rMatrix();
     }
-
-    friend void operator<<(Archive &ar, TwoWayMatrix &mat);
-    friend void operator>>(Archive &ar, TwoWayMatrix &mat);
 };
 
 #endif

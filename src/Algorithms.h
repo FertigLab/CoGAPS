@@ -3,6 +3,8 @@
 
 #include "Matrix.h"
 
+#define GAPS_SQ(x) ((x) * (x))
+
 struct AlphaParameters
 {
     float s;
@@ -22,7 +24,6 @@ struct AlphaParameters
 
 namespace gaps
 {
-
 namespace algo
 {
     // vector algorithms    
@@ -68,9 +69,8 @@ namespace algo
     AlphaParameters alphaParameters(const MatrixChange &ch,
         const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
         const RowMatrix &P, const TwoWayMatrix &AP);
-}
-
-}
+} // namespace algo
+} // namespace gaps
 
 template<class GenericMatrix>
 float gaps::algo::sum(const GenericMatrix &mat)
@@ -136,7 +136,7 @@ const GenericMatrix &meanMat, unsigned nUpdates)
         for (unsigned c = 0; c < retMat.nCol(); ++c)
         {
             meanTerm = meanMat(r,c) * meanMat(r,c) / (float)nUpdates;
-            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / ((float)nUpdates - 1.0));
+            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / ((float)nUpdates - 1.f));
         }
     }
     return retMat;

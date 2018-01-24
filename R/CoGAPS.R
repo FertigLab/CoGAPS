@@ -5,39 +5,43 @@
 #'the data matrix
 #' @param D data matrix
 #' @param S uncertainty matrix (std devs for chi-squared of Log Likelihood)
-#' @param params GapsParams object 
 #' @return list with A and P matrix estimates
+#' @importFrom methods new
 #' @export
-CoGaps <- function(D, S, params = new('GapsParams', 7, 1000, 1000), ...)
+CoGAPS <- function(D, S, ...)
 {
     # process v2 style arguments for backwards compatibility
-    params <- oldParams(params, list(...))
+    extraArgs <- list(...)
+    params <- oldParams(new('GapsParams', 7, 1000, 1000), extraArgs)
 
     # check data
-    checkParamsWithData(params, nrow(D), ncol(D), nrow(S), ncol(S))
-    if (any(D) < 0 | any(S) < 0) # too slow for large matrices ?
+    if (missing(D) & length(extraArgs$data))
+        D <- extraArgs$data
+    if (missing(S) & length(extraArgs$unc))
+        S <- extraArgs$unc
+    if (any(D < 0) | any(S < 0))
         stop('D and S matrix must be non-negative')
+    checkParamsWithData(params, nrow(D), ncol(D), nrow(S), ncol(S))
 
-    # run algorithm
-    result <- cogaps_cpp(as.matrix(D), as.matrix(S), nFactor, alphaA,
-        alphaP, nEquil, floor(nEquil/10), nSample, max_gibbmass_paraA,
-        max_gibbmass_paraP, fixedPatterns, whichMatrixFixed, seed, messages,
-        singleCellRNASeq, nOutR, numSnapshots, checkpoint_interval)
+    # run algorithm with call to C++ code
+    result <- cogaps_cpp(as.matrix(D), as.matrix(S),
+        as.matrix(params$fixedPatterns), params)
 
     # backwards compatible with v2
-    if (length(list(...)$GStoGenes))
+    if (!is.null(extraArgs$GStoGenes))
     {
-        warning('the GStoGenes argument is depracted with v3.0,')
-        if (list(...)$plot)
+        #warning('the GStoGenes argument is deprecated with v3.0')
+        if (is.null(extraArgs$plot) | extraArgs$plot)
             plotGAPS(result$Amean, result$Pmean)
-        GSP <- calcCoGAPSStat(result$Amean, result$Asd, list(...)$GStoGenes,
-            list(...)$nPerm)
+        if (is.null(extraArgs$nPerm))
+            extraArgs$nPerm <- 500
+        GSP <- calcCoGAPSStat(result$Amean, result$Asd, extraArgs$GStoGenes,
+            extraArgs$nPerm)
         result <- list(meanChi2=result$meanChi2, D=D, Sigma=S,
             Amean=result$Amean, Asd=result$Asd, Pmean=result$Pmean,
             Psd=result$Psd, GSUpreg=GSP$GSUpreg, GSDownreg=GSP$GSDownreg,
             GSActEst=GSP$GSActEst)
     }
-
     return(result)
 }
 
@@ -52,8 +56,19 @@ CoGaps <- function(D, S, params = new('GapsParams', 7, 1000, 1000), ...)
 #' @export
 CoGapsFromCheckpoint <- function(D, S, path)
 {
-    # TODO add checksum to make sure D,S are correct
     cogapsFromCheckpoint_cpp(D, S, path)
+}
+
+GWCoGapsFromCheckpoint <- function(fname)
+{
+    #TODO
+}
+
+#' Display Information About Package Compilation
+#' @export
+displayBuildReport <- function()
+{
+    displayBuildReport_cpp()
 }
 
 #' Backwards Compatibility with v2
@@ -62,12 +77,12 @@ CoGapsFromCheckpoint <- function(D, S, path)
 #' @param S uncertainty matrix
 #' @param ... v2 style parameters
 #' @return list with A and P matrix estimates
+#' @importFrom methods new
 #' @export
 gapsRun <- function(D, S, ...)
 {
-    warning('gapsRun is depracated with v3.0, use CoGAPS')
-    params <- new('GapsParams', 7, 1000, 1000)
-    params <- oldParams(params, list(...))
+    #warning('gapsRun is deprecated with v3.0, use CoGAPS')
+    params <- oldParams(new('GapsParams', 7, 1000, 1000), list(...))
     CoGAPS(D, S, params)
 }
 
@@ -78,12 +93,12 @@ gapsRun <- function(D, S, ...)
 #' @param FP data.frame with rows giving fixed patterns for P
 #' @param ... v2 style parameters
 #' @return list with A and P matrix estimates
+#' @importFrom methods new
 #' @export
 gapsMapRun <- function(D, S, FP, ...)
 {
-    warning('gapsMapRun is depracated with v3.0, use CoGaps')
-    params <- new('GapsParams', 7, 1000, 1000)
-    params <- oldParams(params, list(...))
+    #warning('gapsMapRun is deprecated with v3.0, use CoGaps')
+    params <- oldParams(new('GapsParams', 7, 1000, 1000), list(...))
     CoGAPS(D, S, params)
 }
 
@@ -91,14 +106,15 @@ gapsMapRun <- function(D, S, FP, ...)
 oldParams <- function(params, args)
 {
     # standard params
-    if (length(args$nFactor))      params@nFactor    <- args$nFactor
-    if (length(args$nEquil))       params@nEquil     <- args$nEquil
-    if (length(args$nSample))      params@nSample    <- args$nSample
-    if (length(args$numSnapshots)) params@nSnapshots <- args$numSnapshots
+    if (length(args$nFactor))      params@nFactor    <- as.integer(args$nFactor)
+    if (length(args$nEquil))       params@nEquil     <- as.integer(args$nEquil)
+    if (length(args$nSample))      params@nSample    <- as.integer(args$nSample)
     if (length(args$alphaA))       params@alphaA     <- args$alphaA
     if (length(args$alphaP))       params@alphaP     <- args$alphaP
-    if (length(args$seed))         params@seed       <- args$seed
+    if (length(args$seed))         params@seed       <- as.integer(args$seed)
     if (length(args$messages))     params@messages   <- args$messages
+    if (length(args$numSnapshots))
+        params@nSnapshots <- as.integer(args$numSnapshots)
 
     # gapsMap params
     if (length(args$FP))

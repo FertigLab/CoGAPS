@@ -4,8 +4,6 @@
 
 #include <algorithm>
 
-#define GAPS_SQ(x) ((x) * (x))
-
 float gaps::algo::sum(const Vector &vec)
 {
     float sum = 0.f;
@@ -95,7 +93,7 @@ const TwoWayMatrix &S, const TwoWayMatrix &AP)
             chi2 += GAPS_SQ(D(i,j) - AP(i,j)) / GAPS_SQ(S(i,j));
         }
     }
-    return chi2;
+    return chi2 / 2.f;
 }
 
 static float deltaLL_comp(unsigned size, const float *D, const float *S,
@@ -104,7 +102,7 @@ const float *AP, const float *other, float delta)
     const gaps::simd::packedFloat pDelta = delta, two = 2.f;
     gaps::simd::packedFloat d, pOther, pD, pAP, pS, partialSum = 0.f;
     gaps::simd::Index i = 0;
-    for (; i <= size - i.increment(); ++i)
+    /*for (; i <= size - i.increment(); ++i)
     {   
         pOther.load(other + i);
         pD.load(D + i);
@@ -112,7 +110,7 @@ const float *AP, const float *other, float delta)
         pS.load(S + i);
         d = pDelta * pOther;
         partialSum += (d * (two * (pD - pAP) - d)) / (two * pS * pS);
-    }
+    }*/
     float fd, delLL = partialSum.scalar();
     for (unsigned j = i.value(); j < size; ++j)
     {
@@ -129,7 +127,7 @@ float delta2)
     const gaps::simd::packedFloat pDelta1 = delta1, pDelta2 = delta2, two = 2.f;
     gaps::simd::packedFloat d, pOther1, pOther2, pD, pAP, pS, partialSum = 0.f;
     gaps::simd::Index i = 0;
-    for (; i <= size - i.increment(); ++i)
+    /*for (; i <= size - i.increment(); ++i)
     {   
         pOther1.load(other1 + i);
         pOther2.load(other2 + i);
@@ -138,7 +136,7 @@ float delta2)
         pS.load(S + i);
         d = pDelta1 * pOther1 + pDelta2 * pOther2;
         partialSum += (d * (two * (pD - pAP) - d)) / (two * pS * pS);
-    }
+    }*/
     float fd, delLL = partialSum.scalar();
     for (unsigned j = i.value(); j < size; ++j)
     {
@@ -166,7 +164,7 @@ const TwoWayMatrix &AP)
         if (ch.nChanges == 2)
         {
             d2 = deltaLL_comp(D.nCol(), D.rowPtr(ch.row2), S.rowPtr(ch.row2),
-            AP.rowPtr(ch.row2), P.rowPtr(ch.col2), ch.delta2);
+                AP.rowPtr(ch.row2), P.rowPtr(ch.col2), ch.delta2);
         }
         return d1 + d2;
     }
@@ -184,7 +182,7 @@ const TwoWayMatrix &AP)
         if (ch.nChanges == 2)
         {
             d2 = deltaLL_comp(D.nRow(), D.colPtr(ch.col2), S.colPtr(ch.col2),
-            AP.colPtr(ch.col2), A.colPtr(ch.row2), ch.delta2);
+                AP.colPtr(ch.col2), A.colPtr(ch.row2), ch.delta2);
         }
         return d1 + d2;
     }

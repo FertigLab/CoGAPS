@@ -22,7 +22,7 @@ struct AtomicProposal
     float delta2;
 
     AtomicProposal(char l, char t, uint64_t p1, float m1)
-        : label(l), type(t), nChanges(1), pos1(p1), delta1(m1), pos2(0), delta2(0.0)
+        : label(l), type(t), nChanges(1), pos1(p1), delta1(m1), pos2(0), delta2(0.f)
     {}
 
     AtomicProposal(char l, char t, uint64_t p1, float m1, uint64_t p2, float m2)
@@ -126,8 +126,8 @@ public:
     void setAlpha(float alpha) {mAlpha = alpha;}
     void setLambda(float lambda) {mLambda = lambda;}
 
-    friend void operator<<(Archive &ar, AtomicSupport &sampler);
-    friend void operator>>(Archive &ar, AtomicSupport &sampler);
+    friend Archive& operator<<(Archive &ar, AtomicSupport &sampler);
+    friend Archive& operator>>(Archive &ar, AtomicSupport &sampler);
 };
 
 #endif

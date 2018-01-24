@@ -50,22 +50,24 @@ void Vector::operator+=(const Vector &vec)
     }
 }
 
-void operator<<(Archive &ar, Vector &vec)
+Archive& operator<<(Archive &ar, Vector &vec)
 {
     for (unsigned i = 0; i < vec.size(); ++i)
     {
         ar << vec[i];
     }
+    return ar;
 }
 
-void operator>>(Archive &ar, Vector &vec)
+Archive& operator>>(Archive &ar, Vector &vec)
 {
     for (unsigned i = 0; i < vec.size(); ++i)
     {
         ar >> vec.mValues[i];
     }
+    return ar;
 }
-
+    
 /****************************** ROW MATRIX *****************************/
 
 RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
@@ -109,20 +111,22 @@ Rcpp::NumericMatrix RowMatrix::rMatrix() const
     return convertToRMatrix<RowMatrix>(*this);
 }
 
-void operator<<(Archive &ar, RowMatrix &mat)
+Archive& operator<<(Archive &ar, RowMatrix &mat)
 {
     for (unsigned i = 0; i < mat.nRow(); ++i)
     {
         ar << mat.mRows[i];
     }
+    return ar;
 }
 
-void operator>>(Archive &ar, RowMatrix &mat)
+Archive& operator>>(Archive &ar, RowMatrix &mat)
 {
     for (unsigned i = 0; i < mat.nRow(); ++i)
     {
         ar >> mat.mRows[i];
     }
+    return ar;
 }
 
 /**************************** COLUMN MATRIX ****************************/
@@ -168,32 +172,20 @@ Rcpp::NumericMatrix ColMatrix::rMatrix() const
     return convertToRMatrix<ColMatrix>(*this);
 }
 
-void operator<<(Archive &ar, ColMatrix &mat)
+Archive& operator<<(Archive &ar, ColMatrix &mat)
 {
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
         ar << mat.mCols[j];
     }
+    return ar;
 }
 
-void operator>>(Archive &ar, ColMatrix &mat)
+Archive& operator>>(Archive &ar, ColMatrix &mat)
 {
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
         ar >> mat.mCols[j];
     }
-}
-
-/**************************** TWO-WAY MATRIX ***************************/
-
-void operator<<(Archive &ar, TwoWayMatrix &mat)
-{
-    ar << mat.mRowMatrix;
-    ar << mat.mColMatrix;
-}
-
-void operator>>(Archive &ar, TwoWayMatrix &mat)
-{
-    ar >> mat.mRowMatrix;
-    ar >> mat.mColMatrix;
+    return ar;
 }

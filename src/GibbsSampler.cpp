@@ -5,19 +5,20 @@
 
 static const float EPSILON = 1.e-10;
 
-GibbsSampler::GibbsSampler(unsigned nRow, unsigned nCol, unsigned nFactor)
+GibbsSampler::GibbsSampler(const Rcpp::NumericMatrix &D,
+const Rcpp::NumericMatrix &S, unsigned nFactor)
     :
-mDMatrix(nRow, nCol), mSMatrix(nRow, nCol), mAPMatrix(nRow, nCol),
-mAMatrix(nRow, nFactor), mPMatrix(nFactor, nCol), mADomain('A', nRow, nFactor),
-mPDomain('P', nFactor, nCol), mAMeanMatrix(nRow, nFactor),
-mAStdMatrix(nRow, nFactor), mPMeanMatrix(nFactor, nCol),
-mPStdMatrix(nFactor, nCol)
+mDMatrix(D), mSMatrix(S), mAPMatrix(D.nrow(), D.ncol()),
+mAMatrix(D.nrow(), nFactor), mPMatrix(nFactor, D.ncol()),
+mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
+mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
+mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol())
 {}
 
-GibbsSampler::GibbsSampler(Rcpp::NumericMatrix D, Rcpp::NumericMatrix S,
-unsigned int nFactor, float alphaA, float alphaP, float maxGibbsMassA,
-float maxGibbsMassP, bool singleCellRNASeq, Rcpp::NumericMatrix fixedPat,
-char whichMat)
+GibbsSampler::GibbsSampler(const Rcpp::NumericMatrix &D,
+const Rcpp::NumericMatrix &S, unsigned int nFactor, float alphaA, float alphaP,
+float maxGibbsMassA, float maxGibbsMassP, bool singleCellRNASeq,
+const Rcpp::NumericMatrix &fixedPat, char whichMat)
     :
 mDMatrix(D), mSMatrix(S), mAPMatrix(D.nrow(), D.ncol()),
 mAMatrix(D.nrow(), nFactor), mPMatrix(nFactor, D.ncol()), 
@@ -408,7 +409,15 @@ Rcpp::NumericMatrix GibbsSampler::PStdRMatrix() const
         mStatUpdates).rMatrix();
 }
 
-// TODO cache matrices used in these calculations
+float GibbsSampler::meanChiSq() const
+{
+    ColMatrix Amean = gaps::algo::scalarDivision(mAMeanMatrix, mStatUpdates);
+    RowMatrix Pmean = gaps::algo::scalarDivision(mPMeanMatrix, mStatUpdates);
+    TwoWayMatrix Mmean(Amean.nRow(), Pmean.nCol());
+    gaps::algo::matrixMultiplication(Mmean, Amean, Pmean);
+    return 2.f * gaps::algo::loglikelihood(mDMatrix, mSMatrix, Mmean);
+}
+
 void GibbsSampler::updateStatistics()
 {
     mStatUpdates++;
@@ -418,17 +427,13 @@ void GibbsSampler::updateStatistics()
     for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
     {
         normVec[r] = gaps::algo::sum(mPMatrix.getRow(r));
-        if (normVec[r] == 0)
-        {
-            normVec[r] = 1.0;
-        }
+        normVec[r] = normVec[r] == 0 ? 1.f : normVec[r];
     }
 
     for (unsigned c = 0; c < mAMeanMatrix.nCol(); ++c)
     {
         mAMeanMatrix.getCol(c) += gaps::algo::scalarMultiple(mAMatrix.getCol(c),
             normVec[c]);
-
         mAStdMatrix.getCol(c) += gaps::algo::squaredScalarMultiple(mAMatrix.getCol(c),
             normVec[c]);
     }
@@ -437,52 +442,34 @@ void GibbsSampler::updateStatistics()
     {
         mPMeanMatrix.getRow(r) += gaps::algo::scalarDivision(mPMatrix.getRow(r),
             normVec[r]);
-
         mPStdMatrix.getRow(r) += gaps::algo::squaredScalarDivision(mPMatrix.getRow(r),
             normVec[r]);
     }
 }
 
-void operator<<(Archive &ar, GibbsSampler &sampler)
+Archive& operator<<(Archive &ar, GibbsSampler &sampler)
 {
-    ar << sampler.mDMatrix;
-    ar << sampler.mSMatrix;
-    ar << sampler.mAPMatrix;
-    ar << sampler.mAMatrix;
-    ar << sampler.mPMatrix;
-    ar << sampler.mADomain;
-    ar << sampler.mPDomain;
-    ar << sampler.mAMeanMatrix;
-    ar << sampler.mAStdMatrix;
-    ar << sampler.mPMeanMatrix;
-    ar << sampler.mPStdMatrix;
-    ar << sampler.mStatUpdates;
-    ar << sampler.mMaxGibbsMassA;
-    ar << sampler.mMaxGibbsMassP;
-    ar << sampler.mAnnealingTemp;
-    ar << sampler.mSingleCellRNASeq;
-    ar << sampler.mNumFixedPatterns;
-    ar << sampler.mFixedMat;
+    ar << sampler.mAMatrix << sampler.mPMatrix << sampler.mADomain
+        << sampler.mPDomain << sampler.mAMeanMatrix << sampler.mAStdMatrix
+        << sampler.mPMeanMatrix << sampler.mPStdMatrix << sampler.mStatUpdates
+        << sampler.mMaxGibbsMassA << sampler.mMaxGibbsMassP
+        << sampler.mAnnealingTemp << sampler.mSingleCellRNASeq
+        << sampler.mNumFixedPatterns << sampler.mFixedMat;
+
+    return ar;
 }
 
-void operator>>(Archive &ar, GibbsSampler &sampler)
+Archive& operator>>(Archive &ar, GibbsSampler &sampler)
 {
-    ar >> sampler.mDMatrix;
-    ar >> sampler.mSMatrix;
-    ar >> sampler.mAPMatrix;
-    ar >> sampler.mAMatrix;
-    ar >> sampler.mPMatrix;
-    ar >> sampler.mADomain;
-    ar >> sampler.mPDomain;
-    ar >> sampler.mAMeanMatrix;
-    ar >> sampler.mAStdMatrix;
-    ar >> sampler.mPMeanMatrix;
-    ar >> sampler.mPStdMatrix;
-    ar >> sampler.mStatUpdates;
-    ar >> sampler.mMaxGibbsMassA;
-    ar >> sampler.mMaxGibbsMassP;
-    ar >> sampler.mAnnealingTemp;
-    ar >> sampler.mSingleCellRNASeq;
-    ar >> sampler.mNumFixedPatterns;
-    ar >> sampler.mFixedMat;
+    ar >> sampler.mAMatrix >> sampler.mPMatrix >> sampler.mADomain
+        >> sampler.mPDomain >> sampler.mAMeanMatrix >> sampler.mAStdMatrix
+        >> sampler.mPMeanMatrix >> sampler.mPStdMatrix >> sampler.mStatUpdates
+        >> sampler.mMaxGibbsMassA >> sampler.mMaxGibbsMassP
+        >> sampler.mAnnealingTemp >> sampler.mSingleCellRNASeq
+        >> sampler.mNumFixedPatterns >> sampler.mFixedMat;
+
+    gaps::algo::matrixMultiplication(sampler.mAPMatrix, sampler.mAMatrix,
+        sampler.mPMatrix);
+    
+    return ar;
 }

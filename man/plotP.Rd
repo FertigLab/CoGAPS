@@ -2,18 +2,19 @@
 % Please edit documentation in R/plotP.R
 \name{plotP}
 \alias{plotP}
-\title{\code{plotP} plots the P matrix in a line plot
-with error bars}
+\title{Plot the P Matrix}
 \usage{
-plotP(PMean_Mat, P_SD)
+plotP(Pmean, Psd)
 }
 \arguments{
-\item{PMean_Mat}{matrix of mean values of P}
+\item{Pmean}{matrix of mean values of P}
 
-\item{P_SD}{matrix of standard deviation values of P}
+\item{Psd}{matrix of standard deviation values of P}
 }
 \description{
-\code{plotP} plots the P matrix in a line plot
-with error bars
+Plot the P Matrix
+}
+\details{
+plots the P matrix in a line plot with error bars
 }
 
