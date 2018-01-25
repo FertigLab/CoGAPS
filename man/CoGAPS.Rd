@@ -4,7 +4,11 @@
 \alias{CoGAPS}
 \title{CoGAPS Matrix Factorization Algorithm}
 \usage{
-CoGAPS(D, S, ...)
+CoGAPS(D, S, nFactor = 7, nEquil = 1000, nSample = 1000,
+  nOutputs = 1000, nSnapshots = 0, alphaA = 0.01, alphaP = 0.01,
+  maxGibbmassA = 100, maxGibbmassP = 100, seed = -1, messages = TRUE,
+  singleCellRNASeq = FALSE, whichMatrixFixed = "N",
+  fixedPatterns = matrix(0), checkpointInterval = 0, ...)
 }
 \arguments{
 \item{D}{data matrix}

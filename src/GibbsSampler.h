@@ -57,10 +57,11 @@ public:
 
     GibbsSampler(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
         unsigned nFactor);
-    GibbsSampler(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
-        unsigned nFactor, float alphaA, float alphaP, float maxGibbsMassA,
-        float maxGibbsMassP, bool singleCellRNASeq,
-        const Rcpp::NumericMatrix &fixedPat, char whichMat);
+    GibbsSampler(const Rcpp::NumericMatrix &D,
+        const Rcpp::NumericMatrix &S, unsigned nFactor, float alphaA,
+        float alphaP, float maxGibbmassA, float maxGibbmassP,
+        bool singleCellRNASeq, char whichMatrixFixed,
+        const Rcpp::NumericMatrix &FP);
 
     void update(char matrixLabel);
 

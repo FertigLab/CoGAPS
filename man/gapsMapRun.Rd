@@ -4,7 +4,13 @@
 \alias{gapsMapRun}
 \title{Backwards Compatibility with v2}
 \usage{
-gapsMapRun(D, S, FP, ...)
+gapsMapRun(D, S, FP, ABins = data.frame(), PBins = data.frame(),
+  nFactor = 5, simulation_id = "simulation", nEquil = 1000,
+  nSample = 1000, nOutR = 1000, output_atomic = FALSE,
+  fixedMatrix = "P", fixedBinProbs = FALSE, fixedDomain = "N",
+  sampleSnapshots = TRUE, numSnapshots = 100, alphaA = 0.01,
+  nMaxA = 1e+05, max_gibbmass_paraA = 100, alphaP = 0.01, nMaxP = 1e+05,
+  max_gibbmass_paraP = 100, seed = -1, messages = TRUE)
 }
 \arguments{
 \item{D}{data matrix}

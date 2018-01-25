@@ -16,13 +16,16 @@
 #define SSTR(x) static_cast<std::ostringstream&>( \
     (std::ostringstream() << std::dec << x)).str()
 
+// used to convert defined macro values into strings
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define ARCHIVE_MAGIC_NUM 0xCE45D32A
-
+// boost time helpers
 namespace bpt = boost::posix_time;
-static bpt::ptime lastCheckpoint; // keep track of when checkpoints are made
+#define bpt_now() bpt::microsec_clock::local_time()
+
+// keeps track of when checkpoints are made
+static bpt::ptime lastCheckpoint; 
 
 // save the current internal state to a file
 static void createCheckpoint(GapsInternalState &state)
@@ -31,82 +34,112 @@ static void createCheckpoint(GapsInternalState &state)
     state.numCheckpoints++;
 
     // record starting time
-    bpt::ptime start = bpt::microsec_clock::local_time();
+    bpt::ptime start = bpt_now();
 
     // save state to file, write magic number at beginning
-    Archive ar("gaps_checkpoint_" + SSTR(state.numCheckpoints) + ".out",
-        ARCHIVE_WRITE);
-    ar << ARCHIVE_MAGIC_NUM;
+    std::string fname("gaps_checkpoint_" + SSTR(state.numCheckpoints) + ".out");
+    Archive ar(fname, ARCHIVE_WRITE);
     gaps::random::save(ar);
     ar << state.sampler.nFactor() << state.nEquil << state.nSample << state;
     ar.close();
 
     // display time it took to create checkpoint
-    bpt::time_duration diff = bpt::microsec_clock::local_time() - start;
+    bpt::time_duration diff = bpt_now() - start;
     double elapsed = diff.total_milliseconds() / 1000.;
     Rcpp::Rcout << " finished in " << elapsed << " seconds\n";
 }
 
-static void runGibbsSampler(GapsInternalState &state, unsigned nIterTotal,
-Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
+static void updateSampler(GapsInternalState &state)
 {
-    for (; state.iter < nIterTotal; ++state.iter)
+    state.nUpdatesA += state.nIterA;
+    for (unsigned j = 0; j < state.nIterA; ++j)
     {
-        bpt::ptime now = bpt::microsec_clock::local_time();
-        bpt::time_duration diff = now - lastCheckpoint;
-        if (diff.total_milliseconds() > state.checkpointInterval * 1000
-        && state.checkpointInterval > 0)
-        {
-            createCheckpoint(state);
-            lastCheckpoint = bpt::microsec_clock::local_time();
-        }
+        state.sampler.update('A');
+    }
 
-        if (state.phase == GAPS_BURN)
-        {
-            state.sampler.setAnnealingTemp(std::min(1.f,
-                ((float)state.iter + 2.f) / ((float)state.nEquil / 2.f)));
-        }
-        
-        state.nUpdatesA += state.nIterA;
-        state.nUpdatesP += state.nIterP;
-        for (unsigned j = 0; j < state.nIterA; ++j)
-        {
-            state.sampler.update('A');
-        }
-        for (unsigned j = 0; j < state.nIterP; ++j)
-        {
-            state.sampler.update('P');
-        }
+    state.nUpdatesP += state.nIterP;
+    for (unsigned j = 0; j < state.nIterP; ++j)
+    {
+        state.sampler.update('P');
+    }
+}
 
-        if (state.phase == GAPS_SAMP)
-        {
-            state.sampler.updateStatistics();
-            if (state.nSnapshots && !((state.iter + 1) %
-            (nIterTotal / state.nSnapshots)))
-            {
-                state.snapshotsA.push_back(state.sampler.getNormedMatrix('A'));
-                state.snapshotsP.push_back(state.sampler.getNormedMatrix('P'));
-            }
-        }
+static void makeCheckpointIfNeeded(GapsInternalState &state)
+{
+    bpt::time_duration diff = bpt_now() - lastCheckpoint;
+    int diff_sec = diff.total_milliseconds() / 1000;
+    if (diff_sec > state.checkpointInterval && state.checkpointInterval > 0)
+    {
+        createCheckpoint(state);
+        lastCheckpoint = bpt_now();
+    }
+}
 
-        if (state.phase != GAPS_COOL)
-        {
-            float nAtomsA = state.sampler.totalNumAtoms('A');
-            float nAtomsP = state.sampler.totalNumAtoms('P');
-            aAtomVec[state.iter] = nAtomsA;
-            pAtomVec[state.iter] = nAtomsP;
-            state.nIterA = gaps::random::poisson(std::max(nAtomsA, 10.f));
-            state.nIterP = gaps::random::poisson(std::max(nAtomsP, 10.f));
+static void storeSamplerInfo(GapsInternalState &state, Vector &atomsA,
+Vector &atomsP, Vector &chi2)
+{
+    chi2[state.iter] = state.sampler.chi2();
+    atomsA[state.iter] = state.sampler.totalNumAtoms('A');
+    atomsP[state.iter] = state.sampler.totalNumAtoms('P');
+    state.nIterA = gaps::random::poisson(std::max(atomsA[state.iter], 10.f));
+    state.nIterP = gaps::random::poisson(std::max(atomsP[state.iter], 10.f));
+}
 
-            if ((state.iter + 1) % state.nOutputs == 0 && state.messages)
-            {
-                std::string ph(state.phase == GAPS_BURN ? "Equil: " : "Samp: ");
-                Rcpp::Rcout << ph << state.iter + 1 << " of " << nIterTotal
-                    << ", Atoms:" << aAtomVec[state.iter] << "("
-                    << pAtomVec[state.iter] << ") Chi2 = "
-                    << state.sampler.chi2() << '\n';
-            }
-        }
+static void displayStatus(GapsInternalState &state, const std::string &type,
+unsigned nIterTotal)
+{
+    if ((state.iter + 1) % state.nOutputs == 0 && state.messages)
+    {
+        Rcpp::Rcout << type << state.iter + 1 << " of " << nIterTotal
+            << ", Atoms:" << state.sampler.totalNumAtoms('A') << "("
+            << state.sampler.totalNumAtoms('P') << ") Chi2 = "
+            << state.sampler.chi2() << '\n';
+    }
+}
+
+static void takeSnapshots(GapsInternalState &state)
+{
+    if (state.nSnapshots && !((state.iter+1)%(state.nSample/state.nSnapshots)))
+    {
+        state.snapshotsA.push_back(state.sampler.getNormedMatrix('A'));
+        state.snapshotsP.push_back(state.sampler.getNormedMatrix('P'));
+    }    
+}
+
+static void runBurnPhase(GapsInternalState &state)
+{
+    for (; state.iter < state.nEquil; ++state.iter)
+    {
+        makeCheckpointIfNeeded(state);
+        float temp = ((float)state.iter + 2.f) / ((float)state.nEquil * 2.f);
+        state.sampler.setAnnealingTemp(std::min(1.f,temp));
+        updateSampler(state);
+        displayStatus(state, "Equil: ", state.nEquil);
+        storeSamplerInfo(state, state.nAtomsAEquil, state.nAtomsPEquil,
+            state.chi2VecEquil);
+    }
+}
+
+static void runCoolPhase(GapsInternalState &state)
+{
+    for (; state.iter < state.nEquilCool; ++state.iter)
+    {
+        makeCheckpointIfNeeded(state);
+        updateSampler(state);
+    }
+}
+
+static void runSampPhase(GapsInternalState &state)
+{
+    for (; state.iter < state.nSample; ++state.iter)
+    {
+        makeCheckpointIfNeeded(state);
+        updateSampler(state);
+        state.sampler.updateStatistics();
+        takeSnapshots(state);
+        displayStatus(state, "Samp: ", state.nSample);
+        storeSamplerInfo(state, state.nAtomsASample, state.nAtomsPSample,
+            state.chi2VecSample);
     }
 }
 
@@ -114,25 +147,24 @@ Vector &chi2Vec, Vector &aAtomVec, Vector &pAtomVec)
 static Rcpp::List runCogaps(GapsInternalState &state)
 {
     // reset the checkpoint timer
-    lastCheckpoint = bpt::microsec_clock::local_time();
+    lastCheckpoint = bpt_now();
 
     // cascade down the various phases of the algorithm
     // this allows for starting in the middle of the algorithm
-    Vector trash(1);
     switch (state.phase)
     {
         case GAPS_BURN:
-            runGibbsSampler(state, state.nEquil, state.chi2VecEquil,
-                state.nAtomsAEquil, state.nAtomsPEquil);
+            runBurnPhase(state);
             state.iter = 0;
             state.phase = GAPS_COOL;
+
         case GAPS_COOL:
-            runGibbsSampler(state, state.nEquilCool, trash, trash, trash);
+            runCoolPhase(state);
             state.iter = 0;
             state.phase = GAPS_SAMP;
+
         case GAPS_SAMP:
-            runGibbsSampler(state, state.nSample, state.chi2VecSample,
-                state.nAtomsASample, state.nAtomsPSample);
+            runSampPhase(state);
     }
 
     // combine chi2 vectors
@@ -165,43 +197,36 @@ static Rcpp::List runCogaps(GapsInternalState &state)
 }
 
 // [[Rcpp::export]]
-Rcpp::List cogaps_cpp(const Rcpp::NumericMatric &DMatrix,
-const Rcpp::NumericMatrix &SMatrix, const Rcpp::NumericMatrix &fixedPatterns,
-const Rcpp::S4 &params)
+Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D,
+const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil, unsigned nEquilCool,
+unsigned nSample, unsigned nOutputs, unsigned nSnapshots, float alphaA,
+float alphaP, float maxGibbmassA, float maxGibbmassP, int seed, bool messages,
+bool singleCellRNASeq, char whichMatrixFixed, const Rcpp::NumericMatrix &FP,
+unsigned checkpointInterval)
 {
     // set seed
     uint32_t seedUsed = static_cast<uint32_t>(seed);
     if (seed < 0)
     {
-        bpt::ptime epoch(boost::gregorian::date(1970,1,1)); 
-        bpt::time_duration diff = bpt::microsec_clock::local_time() - epoch;
+        bpt::ptime epoch(boost::gregorian::date(1970,1,1));
+        bpt::time_duration diff = bpt_now() - epoch;
         seedUsed = static_cast<uint32_t>(diff.total_milliseconds() % 1000);
     }
     gaps::random::setSeed(seedUsed);
 
     // create internal state from parameters and run from there
-    GapsInternalState state(DMatrix, SMatrix, fixedPatterns, params);
-    return runCogaps(state);    
+    GapsInternalState state(D, S, nFactor, nEquil, nEquilCool, nSample, nOutputs, nSnapshots,
+        alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
+        singleCellRNASeq, whichMatrixFixed, FP, checkpointInterval);
+    return runCogaps(state);
 }
 
+// TODO add checksum to verify D,S matrices
 // [[Rcpp::export]]
 Rcpp::List cogapsFromCheckpoint_cpp(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, const std::string &fileName)
 {   
-    // open file
     Archive ar(fileName, ARCHIVE_READ);
-
-    // verify checkpoint file is valid by checking first 4 bytes
-    // TODO add checksum to verify D,S matrices
-    uint32_t magicNum = 0;
-    ar >> magicNum;
-    if (magicNum != ARCHIVE_MAGIC_NUM)
-    {
-        Rcpp::Rcout << "invalid checkpoint file" << std::endl;
-        return Rcpp::List::create();
-    }
-    
-    // seed random number generator
     gaps::random::load(ar);
 
     // read parameters needed to calculate the size of the internal state

@@ -48,12 +48,20 @@ nullGenes=FALSE)
 
 #' Compute Gene Probability
 #'
+#' @details Computes the p-value for gene set membership using the CoGAPS-based
+#'  statistics developed in Fertig et al. (2012).  This statistic refines set
+#'  membership for each candidate gene in a set specified in \code{GSGenes} by
+#'  comparing the inferred activity of that gene to the average activity of the
+#'  set.
 #' @param Amean A matrix mean values
 #' @param Asd A matrix standard deviations
 #' @param GSGenes data.frame or list with gene sets
 #' @param Pw weight on genes
 #' @param numPerm number of permutations for null
 #' @param PwNull - logical indicating gene adjustment
+#' @return A vector of length GSGenes containing the p-values of set membership
+#'  for each gene containined in the set specified in GSGenes.
+#' @export
 computeGeneGSProb <- function(Amean, Asd, GSGenes, Pw=rep(1,ncol(Amean)),
 numPerm=500, PwNull=FALSE)
 {

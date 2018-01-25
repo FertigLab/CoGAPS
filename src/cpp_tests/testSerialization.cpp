@@ -88,7 +88,6 @@ TEST_CASE("Test Archive.h")
     {
         RowMatrix rMat_read(100,100), rMat_write(100,100);
         ColMatrix cMat_read(100,100), cMat_write(100,100);
-        TwoWayMatrix twMat_read(100,100), twMat_write(100,100);
 
         for (unsigned i = 0; i < 100; ++i)
         {
@@ -96,28 +95,23 @@ TEST_CASE("Test Archive.h")
             {
                 rMat_write(i,j) = gaps::random::normal(0.0, 2.0);
                 cMat_write(i,j) = gaps::random::normal(0.0, 2.0);
-                twMat_write.set(i,j,gaps::random::normal(0.0, 2.0));
             }
         }
 
         Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
         arWrite << rMat_write;
         arWrite << cMat_write;
-        arWrite << twMat_write;
         arWrite.close();
 
         Archive arRead("test_ar.temp", ARCHIVE_READ);
         arRead >> rMat_read;
         arRead >> cMat_read;
-        arRead >> twMat_read;
         arRead.close();
 
         REQUIRE(rMat_read.nRow() == rMat_write.nRow());
         REQUIRE(rMat_read.nCol() == rMat_write.nCol());
         REQUIRE(cMat_read.nRow() == cMat_write.nRow());
         REQUIRE(cMat_read.nCol() == cMat_write.nCol());
-        REQUIRE(twMat_read.nRow() == twMat_write.nRow());
-        REQUIRE(twMat_read.nCol() == twMat_write.nCol());
     
         for (unsigned i = 0; i < 100; ++i)
         {
@@ -125,7 +119,6 @@ TEST_CASE("Test Archive.h")
             {
                 REQUIRE(rMat_read(i,j) == rMat_write(i,j));
                 REQUIRE(cMat_read(i,j) == cMat_write(i,j));
-                REQUIRE(twMat_read.getRow(i)[j] == twMat_write.getRow(i)[j]);
             }
         }
     }
