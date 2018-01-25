@@ -4,14 +4,17 @@
 \alias{gapsRun}
 \title{Backwards Compatibility with v2}
 \usage{
-gapsRun(D, S, ...)
+gapsRun(D, S, ABins = data.frame(), PBins = data.frame(), nFactor = 7,
+  simulation_id = "simulation", nEquil = 1000, nSample = 1000,
+  nOutR = 1000, output_atomic = FALSE, fixedBinProbs = FALSE,
+  fixedDomain = "N", sampleSnapshots = TRUE, numSnapshots = 100,
+  alphaA = 0.01, nMaxA = 1e+05, max_gibbmass_paraA = 100, alphaP = 0.01,
+  nMaxP = 1e+05, max_gibbmass_paraP = 100, seed = -1, messages = TRUE)
 }
 \arguments{
 \item{D}{data matrix}
 
 \item{S}{uncertainty matrix}
-
-\item{...}{v2 style parameters}
 }
 \value{
 list with A and P matrix estimates

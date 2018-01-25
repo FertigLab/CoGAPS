@@ -52,34 +52,20 @@ struct GapsInternalState
     SnapshotList snapshotsP;
     
     GapsInternalState(const Rcpp::NumericMatrix &D,
-        const Rcpp::NumericMatrix &S, const Rcpp::NumericMatrix &fixedPatterns,
-        const Rcpp::S4 &params)
+        const Rcpp::NumericMatrix &S, unsigned nF, unsigned nE, unsigned nEC,
+        unsigned nS, unsigned nOut, unsigned nSnap, float alphaA, float alphaP,
+        float maxGibbmassA, float maxGibbmassP, int sd, bool msgs,
+        bool singleCellRNASeq, char whichMatrixFixed,
+        const Rcpp::NumericMatrix &FP, unsigned cptInterval)
             :
-        chi2VecEquil(params.slot("nEquil")),
-        nAtomsAEquil(params.slot("nEquil")),
-        nAtomsPEquil(params.slot("nEquil")),
-        chi2VecSample(params.slot("nSample")),
-        nAtomsASample(params.slot("nSample")),
-        nAtomsPSample(params.slot("nSample")),
-        nIterA(10),
-        nIterP(10),
-        nEquil(params.slot("nEquil")),
-        nEquilCool(params.slot("nEquilCool")),
-        nSample(params.slot("nSample")),
-        nSnapshots(params.slot("nSnapshots")),
-        nOutputs(params.slot("nOutput")),
-        messages(params.slot("messages")),
-        iter(0),
-        phase(GAPS_BURN),
-        seed(params.slot("seed")), 
-        checkpointInterval(params.slot("checkpointInterval")),
-        numCheckpoints(0),
-        nUpdatesA(0),
-        nUpdatesP(0),
-        sampler(D, S, params.slot("nFactor"), params.slot("alphaA"),
-            params.slot("alphaP"), params.slot("maxGibbMassA"),
-            params.slot("maxGibbMassP"), params.slot("singleCellRNASeq"),
-            fixedPatterns, params.slot("whichMatrixFixed"))
+        chi2VecEquil(nE), nAtomsAEquil(nE), nAtomsPEquil(nE),
+        chi2VecSample(nS), nAtomsASample(nS), nAtomsPSample(nS),
+        nIterA(10), nIterP(10), nEquil(nE), nEquilCool(nEC), nSample(nS),
+        nSnapshots(nSnap), nOutputs(nOut), messages(msgs), iter(0),
+        phase(GAPS_BURN), seed(sd), checkpointInterval(cptInterval),
+        numCheckpoints(0), nUpdatesA(0), nUpdatesP(0),
+        sampler(D, S, nF, alphaA, alphaP, maxGibbmassA, maxGibbmassP,
+            singleCellRNASeq, whichMatrixFixed, FP)
     {}
 
     GapsInternalState(const Rcpp::NumericMatrix &D,

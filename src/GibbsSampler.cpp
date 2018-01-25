@@ -16,18 +16,18 @@ mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol())
 {}
 
 GibbsSampler::GibbsSampler(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned int nFactor, float alphaA, float alphaP,
-float maxGibbsMassA, float maxGibbsMassP, bool singleCellRNASeq,
-const Rcpp::NumericMatrix &fixedPat, char whichMat)
+const Rcpp::NumericMatrix &S, unsigned nFactor, float alphaA, float alphaP,
+float maxGibbmassA, float maxGibbmassP, bool singleCellRNASeq,
+char whichMatrixFixed, const Rcpp::NumericMatrix &FP)
     :
 mDMatrix(D), mSMatrix(S), mAPMatrix(D.nrow(), D.ncol()),
-mAMatrix(D.nrow(), nFactor), mPMatrix(nFactor, D.ncol()), 
+mAMatrix(D.nrow(), nFactor), mPMatrix(nFactor, D.ncol()),
 mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
 mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
 mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
-mStatUpdates(0), mMaxGibbsMassA(maxGibbsMassA), mMaxGibbsMassP(maxGibbsMassP),
+mStatUpdates(0), mMaxGibbsMassA(maxGibbmassA), mMaxGibbsMassP(maxGibbmassP),
 mAnnealingTemp(1.0), mSingleCellRNASeq(singleCellRNASeq),
-mFixedMat(whichMat)
+mNumFixedPatterns(0), mFixedMat(whichMatrixFixed)
 {
     float meanD = mSingleCellRNASeq ? gaps::algo::nonZeroMean(mDMatrix)
         : gaps::algo::mean(mDMatrix);
@@ -40,11 +40,10 @@ mFixedMat(whichMat)
     mMaxGibbsMassA /= mADomain.lambda();
     mMaxGibbsMassP /= mPDomain.lambda();
 
-    // need to update atomic in order to create checkpoints
     if (mFixedMat == 'A')
     {
-        mNumFixedPatterns = fixedPat.ncol();
-        ColMatrix temp(fixedPat);
+        mNumFixedPatterns = FP.ncol();
+        ColMatrix temp(FP);
         for (unsigned j = 0; j < mNumFixedPatterns; ++j)
         {
             mAMatrix.getCol(j) = gaps::algo::scalarDivision(temp.getCol(j),
@@ -53,8 +52,8 @@ mFixedMat(whichMat)
     }
     else if (mFixedMat == 'P')
     {
-        mNumFixedPatterns = fixedPat.nrow();
-        RowMatrix temp(fixedPat);
+        mNumFixedPatterns = FP.nrow();
+        RowMatrix temp(FP);
         for (unsigned i = 0; i < mNumFixedPatterns; ++i)
         {
             mPMatrix.getRow(i) = gaps::algo::scalarDivision(temp.getRow(i),

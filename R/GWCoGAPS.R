@@ -94,3 +94,8 @@ minNS=NA, ...)
     save(AP.fixed, file=paste(fname,".Rda",sep=""))
     message(paste(fname,".Rda",sep=""))
 }
+
+GWCoGapsFromCheckpoint <- function(fname)
+{
+    #TODO
+}
