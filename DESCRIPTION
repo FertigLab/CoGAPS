@@ -12,7 +12,7 @@ Description: Coordinated Gene Activity in Pattern Sets (CoGAPS)
     analysis.
 Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>
 Depends:
-    R (>= 3.0.1),
+    R (>= 3.4.0),
     Rcpp (>= 0.11.0)
 Imports:
     RColorBrewer (>= 1.0.5),
@@ -32,6 +32,7 @@ Suggests:
     testthat,
     lintr
 LinkingTo: Rcpp, BH
+VignetteBuilder: knitr
 License: GPL (==2)
 biocViews: GeneExpression, Transcription, GeneSetEnrichment,
     DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray,
