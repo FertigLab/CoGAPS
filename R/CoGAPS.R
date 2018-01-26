@@ -37,7 +37,10 @@ fixedPatterns = matrix(0), checkpointInterval=0, ...)
         stop('D and S matrix must be non-negative')
 
     # run algorithm with call to C++ code
-    result <- cogaps_cpp(D, S, nFactor, nEquil, nEquil/10, nSample, nOutputs, nSnapshots,
+    nFactor <- floor(nFactor)
+    nEquil <- floor(nEquil)
+    nSample <- floor(nSample)
+    result <- cogaps_cpp(D, S, nFactor, nEquil, floor(nEquil/10), nSample, nOutputs, nSnapshots,
         alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
         singleCellRNASeq, whichMatrixFixed, fixedPatterns, checkpointInterval)
 

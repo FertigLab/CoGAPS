@@ -111,7 +111,7 @@ static void runBurnPhase(GapsInternalState &state)
     for (; state.iter < state.nEquil; ++state.iter)
     {
         makeCheckpointIfNeeded(state);
-        float temp = ((float)state.iter + 2.f) / ((float)state.nEquil * 2.f);
+        float temp = ((float)state.iter + 2.f) / ((float)state.nEquil / 2.f);
         state.sampler.setAnnealingTemp(std::min(1.f,temp));
         updateSampler(state);
         displayStatus(state, "Equil: ", state.nEquil);
