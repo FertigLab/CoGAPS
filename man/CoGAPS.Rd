@@ -14,6 +14,39 @@ CoGAPS(D, S, nFactor = 7, nEquil = 1000, nSample = 1000,
 \item{D}{data matrix}
 
 \item{S}{uncertainty matrix (std devs for chi-squared of Log Likelihood)}
+
+\item{nFactor}{number of patterns (basis vectors, metagenes), which must be
+greater than or equal to the number of rows of FP}
+
+\item{nEquil}{number of iterations for burn-in}
+
+\item{nSample}{number of iterations for sampling}
+
+\item{nOutputs}{how often to print status into R by iterations}
+
+\item{nSnapshots}{the number of individual samples to capture}
+
+\item{alphaA}{sparsity parameter for A domain}
+
+\item{alphaP}{sparsity parameter for P domain}
+
+\item{maxGibbmassA}{limit truncated normal to max size}
+
+\item{maxGibbmassP}{limit truncated normal to max size}
+
+\item{seed}{a positive seed is used as-is, while any negative seed tells
+the algorithm to pick a seed based on the current time}
+
+\item{messages}{display progress messages}
+
+\item{singleCellRNASeq}{indicates if the data is single cell RNA-seq data}
+
+\item{whichMatrixFixed}{character to indicate whether A or P matric contains
+the fixed patterns}
+
+\item{fixedPatterns}{matrix of fixed values in either A or P matrix}
+
+\item{checkpointInterval}{time (in seconds) between creating a checkpoint}
 }
 \value{
 list with A and P matrix estimates
@@ -23,7 +56,7 @@ CoGAPS Matrix Factorization Algorithm
 }
 \details{
 calls the C++ MCMC code and performs Bayesian
-matrix factorization returning the two matrices that reconstruct
-the data matrix
+ matrix factorization returning the two matrices that reconstruct
+ the data matrix
 }
 

@@ -1,8 +1,8 @@
 #' Plot of Residuals
 #'
 #' @details calculate residuals and produce heatmap
-#' @param Amean matrix of mean values for A from GAPS
-#' @param Pmean matrix of mean values for P from GAPS
+#' @param AMean_Mat matrix of mean values for A from GAPS
+#' @param PMean_Mat matrix of mean values for P from GAPS
 #' @param D original data matrix run through GAPS
 #' @param S original standard deviation matrix run through GAPS
 #' @export
