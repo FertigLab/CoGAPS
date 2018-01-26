@@ -34,8 +34,8 @@ the given data set
 \examples{
 # Load the sample data from CoGAPS
 data('SimpSim')
-# Run calcGeneGSStat with the correct arguments from 'results'
+# Run calcGeneGSStat
 calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, 
-GSGenes=GSets[[1]], numPerm=500)
+GSGenes=GSets[[1]], numPerm=500, nullGenes=TRUE)
 }
 
