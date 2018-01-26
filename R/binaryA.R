@@ -1,17 +1,18 @@
 #' Binary Heatmap for Standardized A Matrix
 #'
 #' @details creates a binarized heatmap of the A matrix
-#'  in which the value is 1 if the value in Amean is greater than
-#'  threshold * Asd and 0 otherwise
+#' in which the value is 1 if the value in Amean is greater than
+#' threshold * Asd and 0 otherwise
 #' @param Amean the mean estimate for the A matrix
 #' @param Asd the standard deviations on Amean
 #' @param threshold the number of standard deviations above zero
-#'  that an element of Amean must be to get a value of 1
+#' that an element of Amean must be to get a value of 1
+#' @return plots a heatmap of the A Matrix
 #' @examples
-#' # Load the outputs from gapsRun
-#' data('results')
+#' # Load the sample data from CoGAPS
+#' data(SimpSim)
 #' # Run binaryA with the correct arguments from 'results'
-#' binaryA(results$Amean,results$Asd,threshold=3)
+#' binaryA(SimpSim.result$Amean, SimpSim.result$Asd, threshold=3)
 #' @export
 binaryA <-function(Amean, Asd, threshold=3)
 {

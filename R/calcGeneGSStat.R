@@ -1,21 +1,21 @@
 #' Probability Gene Belongs in Gene Set
 #'
 #' @details calculates the probability that a gene
-#'  listed in a gene set behaves like other genes in the set within
-#'  the given data set
+#' listed in a gene set behaves like other genes in the set within
+#' the given data set
 #' @param Amean A matrix mean values
 #' @param Asd A matrix standard deviations
 #' @param GSGenes data.frame or list with gene sets
 #' @param numPerm number of permutations for null
 #' @param Pw weight on genes
-#' @param nullGenes - logical indicating gene adjustment
+#' @param nullGenes logical indicating gene adjustment
+#' @return gene similiarity statistic
 #' @examples
-#' # Load the simulated data
+#' # Load the sample data from CoGAPS
 #' data('SimpSim')
-#' # Load the outputs from gapsRun
-#' data('results')
 #' # Run calcGeneGSStat with the correct arguments from 'results'
-#' calcGeneGSStat(results$Amean,results$Asd,GSGenes=GSets[[1]],numPerm=500)
+#' calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, 
+#' GSGenes=GSets[[1]], numPerm=500)
 #' @export
 calcGeneGSStat  <- function(Amean, Asd, GSGenes, numPerm, Pw=rep(1,ncol(Amean)),
 nullGenes=FALSE)
@@ -56,10 +56,10 @@ nullGenes=FALSE)
 #' Compute Gene Probability
 #'
 #' @details Computes the p-value for gene set membership using the CoGAPS-based
-#'  statistics developed in Fertig et al. (2012).  This statistic refines set
-#'  membership for each candidate gene in a set specified in \code{GSGenes} by
-#'  comparing the inferred activity of that gene to the average activity of the
-#'  set.
+#' statistics developed in Fertig et al. (2012).  This statistic refines set
+#' membership for each candidate gene in a set specified in \code{GSGenes} by
+#' comparing the inferred activity of that gene to the average activity of the
+#' set.
 #' @param Amean A matrix mean values
 #' @param Asd A matrix standard deviations
 #' @param GSGenes data.frame or list with gene sets
@@ -67,7 +67,13 @@ nullGenes=FALSE)
 #' @param numPerm number of permutations for null
 #' @param PwNull - logical indicating gene adjustment
 #' @return A vector of length GSGenes containing the p-values of set membership
-#'  for each gene containined in the set specified in GSGenes.
+#' for each gene containined in the set specified in GSGenes.
+#' @examples
+#' # Load the sample data from CoGAPS
+#' data('SimpSim')
+#' # Run calcGeneGSStat with the correct arguments from 'results'
+#' calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, 
+#' GSGenes=GSets[[1]], numPerm=500)
 #' @export
 computeGeneGSProb <- function(Amean, Asd, GSGenes, Pw=rep(1,ncol(Amean)),
 numPerm=500, PwNull=FALSE)

@@ -2,11 +2,11 @@
 #'
 #' @param chains number of seeds to generate (number of chains to run)
 #' @param seed positive values are kept, negative values will be overwritten
-#'  by a seed generated from the current time
+#' by a seed generated from the current time
 #' @return vector of randomly generated seeds
-#' @export
 #' @examples
-#' generateSeeds(chains=2, seed=-1)
+#' seeds <- generateSeeds(chains=2, seed=-1)
+#' @export
 generateSeeds <- function(chains=2, seed=-1)
 {
     if (chains < 2 || (as.integer(chains) != chains))

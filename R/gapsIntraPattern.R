@@ -1,6 +1,5 @@
 #Calculates significant genes in each pattern according to certain threshold
 #Returns the significant gene names as well as well as the correlation matrices between these genes and the means of these matrices
-
 gapsIntraPattern <- function(Amean, Asd, DMatrix, sdThreshold = 3)
 {
     #number of rows and cols of Asd

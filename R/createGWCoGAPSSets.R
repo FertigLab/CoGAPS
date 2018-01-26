@@ -8,10 +8,10 @@
 #' @param keep logical indicating whether or not to save gene set list.
 #' @return list with randomly generated sets of genes from whole genome data
 #' @examples
-#' # Load the simulated data
-#' data('SimpSim')
+#' # Load the sample data from CoGAPS
+#' data(SimpSim)
 #' # Run createGWCoGAPSSets
-#' createGWCoGAPSSets(SimpSim.D,nSets=2)
+#' createGWCoGAPSSets(SimpSim.D, nSets=2)
 #' @export
 createGWCoGAPSSets<-function(data=D, nSets=nSets,
 outRDA="GenesInCoGAPSSets.Rda", keep=TRUE)

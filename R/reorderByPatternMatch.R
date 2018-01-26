@@ -1,15 +1,15 @@
-#'\code{reorderByPatternMatch} plots the output A and P matrices as a
-#' heatmap and line plot respectively
+#' Reorder By Pattern Match
 #'
-#'@param P matrix to be matched
-#'@param matchTo matrix to match P to
-#'@export
+#' @param P matrix to be matched
+#' @param matchTo matrix to match P to
+#' @return matched patterns
+#' @export
 reorderByPatternMatch <- function(P, matchTo)
 {
-    # check that P and the matchTo matrix have the same dimensions for valid matching
+    # check that P and the matchTo matrix have the same dimensions
     if (nrow(matchTo) != nrow(P) | ncol(matchTo) != ncol(P))
     {
-       stop('CoGAPS: reorderByPatternMatch: dimensions of P and matchTo must agree')
+        stop('dimensions of P and matchTo must agree')
     }
 
     # ensuring that rownames match for simplicty of matching process

@@ -8,7 +8,6 @@
 #' @param ignore.NA logical indicating whether or not to ignore NAs from potential over dimensionalization. Default is FALSE.
 #' @param bySet logical indicating whether to return list of matched set solutions from \code{Ptot}
 #' @param ... additional parameters for \code{agnes}
-#'
 #' @return a matrix of concensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
 #' concensus pattern is also returned.
 #' @export

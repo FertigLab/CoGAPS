@@ -1,10 +1,10 @@
-#' postFixed4Parallel
+#' Post Processing of Parallel Output
 #'
 #' @param AP.fixed output of parallel gapsMapRun calls with same FP
-#' @param setPs data.frame with rows giving fixed patterns for P used as input for gapsMapRun
-#'
-#' @return list of two data.frames containing the A matrix estimates or their corresponding standard deviations
-#' from output of parallel gapsMapRun
+#' @param setPs data.frame with rows giving fixed patterns for P used as input
+#' for gapsMapRun
+#' @return list of two data.frames containing the A matrix estimates or their
+#' corresponding standard deviations from output of parallel CoGAPS
 #' @export
 postFixed4Parallel <- function(AP.fixed=NA, setPs=NA)
 {

@@ -15,6 +15,9 @@ residuals(AMean_Mat, PMean_Mat, D, S)
 
 \item{S}{original standard deviation matrix run through GAPS}
 }
+\value{
+creates a residual plot
+}
 \description{
 Plot of Residuals
 }
@@ -22,11 +25,9 @@ Plot of Residuals
 calculate residuals and produce heatmap
 }
 \examples{
-# Load the simulated data
-data('SimpSim')
-# Load the outputs from gapsRun
-data('results')
+# Load the sample data from CoGAPS
+data(SimpSim)
 # Run residuals with the correct arguments
-residuals(results$Amean,results$Pmean,SimpSim.D,SimpSim.S)
+residuals(SimpSim.result$Amean, SimpSim.result$Pmean, SimpSim.D, SimpSim.S)
 }
 

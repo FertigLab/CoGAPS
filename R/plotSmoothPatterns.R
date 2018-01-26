@@ -1,6 +1,7 @@
-#'\code{plotSmoothPatterns} plots the output A and P matrices as a
-#' heatmap and line plot respectively
+#' Plot Smooth Patterns
 #'
+#' @details plots the output A and P matrices as a heatmap and a
+#' line plot respectively
 #' @param P the mean A matrix
 #' @param x optional variables
 #' @param breaks breaks in plots
@@ -10,11 +11,12 @@
 #' @param pointCol color of points
 #' @param lineCol color of line
 #' @param add logical specifying if bars should be added to an already existing
-#'  plot; defaults to `FALSE'.
+#' plot; defaults to `FALSE'.
 #' @param ... arguments to be passed to/from other methods.  For the default
-#'  method these can include further arguments (such as `axes', `asp' and
-#'  `main') and graphical parameters (see `par') which are passed to
-#"  `plot.window()', `title()' and `axis'.
+#' method these can include further arguments (such as `axes', `asp' and
+#' `main') and graphical parameters (see `par') which are passed to
+#' `plot.window()', `title()' and `axis'.
+#' @return plot
 #' @export
 plotSmoothPatterns <- function(P, x=NULL, breaks=NULL, breakStyle=TRUE,
 orderP=!all(is.null(x)), plotPTS=FALSE, pointCol='black', lineCol='grey',
@@ -54,7 +56,7 @@ add=FALSE, ...)
             }
             else
             {
-                stop('CoGAPS: plotSmoothPatterns: number of plot boundaries must match number of breaks in the plot')
+                stop('number of plot boundaries must match number of breaks')
             }
         }
     }
@@ -62,14 +64,15 @@ add=FALSE, ...)
     # check that dimensions agree
     if (ncol(P) != length(x))
     {
-        stop('CoGAPS: plotSmoothPatterns: length of x coordinates must match number of samples in the columns of the P matrix')
+        stop('length of x coordinates must match number of samples')
     }
 
-    # If desired, reorder samples according to the group in which they obtain their maximum
+    # reorder samples according to the group in which they obtain their maximum
     if (orderP)
     {
         PMax <- apply(P,1,max)
-        xMax <- seq(from=ncol(P)+1,length.out=nrow(P))[order(PMax,decreasing=TRUE)]
+        xMax <- seq(from=ncol(P)+1, length.out=nrow(P))
+        xMax <- xMax[order(PMax,decreasing=TRUE)]
         xTmp <- x
         PTmp <- P
         for (iP in order(PMax,decreasing=TRUE))

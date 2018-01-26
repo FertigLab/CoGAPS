@@ -19,6 +19,6 @@ vector of randomly generated seeds
 Generate Seeds for Multiple Concurrent Runs
 }
 \examples{
-generateSeeds(chains=2, seed=-1)
+seeds <- generateSeeds(chains=2, seed=-1)
 }
 

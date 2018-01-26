@@ -2,8 +2,7 @@
 % Please edit documentation in R/plotSmoothPatterns.R
 \name{plotSmoothPatterns}
 \alias{plotSmoothPatterns}
-\title{\code{plotSmoothPatterns} plots the output A and P matrices as a
-heatmap and line plot respectively}
+\title{Plot Smooth Patterns}
 \usage{
 plotSmoothPatterns(P, x = NULL, breaks = NULL, breakStyle = TRUE,
   orderP = !all(is.null(x)), plotPTS = FALSE, pointCol = "black",
@@ -31,10 +30,17 @@ plot; defaults to `FALSE'.}
 
 \item{...}{arguments to be passed to/from other methods.  For the default
 method these can include further arguments (such as `axes', `asp' and
-`main') and graphical parameters (see `par') which are passed to}
+`main') and graphical parameters (see `par') which are passed to
+`plot.window()', `title()' and `axis'.}
+}
+\value{
+plot
 }
 \description{
-\code{plotSmoothPatterns} plots the output A and P matrices as a
-heatmap and line plot respectively
+Plot Smooth Patterns
+}
+\details{
+plots the output A and P matrices as a heatmap and a
+line plot respectively
 }
 

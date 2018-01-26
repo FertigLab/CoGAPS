@@ -5,13 +5,12 @@
 #' @param PMean_Mat matrix of mean values for P from GAPS
 #' @param D original data matrix run through GAPS
 #' @param S original standard deviation matrix run through GAPS
+#' @return creates a residual plot
 #' @examples
-#' # Load the simulated data
-#' data('SimpSim')
-#' # Load the outputs from gapsRun
-#' data('results')
+#' # Load the sample data from CoGAPS
+#' data(SimpSim)
 #' # Run residuals with the correct arguments
-#' residuals(results$Amean,results$Pmean,SimpSim.D,SimpSim.S)
+#' residuals(SimpSim.result$Amean, SimpSim.result$Pmean, SimpSim.D, SimpSim.S)
 #' @export
 residuals <- function(AMean_Mat, PMean_Mat, D, S)
 {

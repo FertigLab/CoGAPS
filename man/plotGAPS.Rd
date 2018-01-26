@@ -14,6 +14,9 @@ plotGAPS(A, P, outputPDF = "")
 \item{outputPDF}{optional root name for PDF output, if
 not specified, output goes to screen}
 }
+\value{
+plot
+}
 \description{
 Plot Decomposed A and P Matrices
 }
@@ -22,9 +25,9 @@ plots the output A and P matrices as a
 heatmap and line plot respectively
 }
 \examples{
-# Load the outputs from gapsRun
-data('results')
-# Run plotGAPS with the correct arguments from 'results'
-plotGAPS(results$Amean,results$Pmean)
+# Load the sample data from CoGAPS
+data(SimpSim)
+# Run plotGAPS with arguments from CoGAPS results list
+plotGAPS(SimpSim.result$Amean, SimpSim.result$Pmean)
 }
 

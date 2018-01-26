@@ -3,16 +3,17 @@
 #' @details plots the P matrix in a line plot with error bars
 #' @param Pmean matrix of mean values of P
 #' @param Psd matrix of standard deviation values of P
+#' @return plot
 #' @examples
-#' # Load the outputs from gapsRun
-#' data('results')
-#' # Run plotP with the correct arguments from 'results'
-#' plotP(results$Pmean,results$Psd)
+#' # Load the sample data from CoGAPS
+#' data(SimpSim)
+#' # Run plotP with arguments from CoGAPS results list
+#' plotP(SimpSim.result$Pmean, SimpSim.result$Psd)
 #' @export
 plotP <- function(Pmean, Psd)
 {
-    Nfactor=dim(Pmean)[1]
-    Nobs=dim(Pmean)[2]
+    Nfactor <- nrow(Pmean)
+    Nobs <- ncol(Pmean)
     RowP <- 1:Nobs
     colors <- rainbow(Nfactor)
     ylimits <- c(0,(max(Pmean + Psd)*1.05))

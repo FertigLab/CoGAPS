@@ -11,17 +11,20 @@ calcZ(meanMat, sdMat)
 
 \item{sdMat}{matrix of standard deviation values}
 }
+\value{
+matrix of z-scores
+}
 \description{
 Compute Z-Score Matrix
 }
 \details{
 calculates the Z-score for each element based on input mean
- and standard deviation matrices
+and standard deviation matrices
 }
 \examples{
-# Load the simulated data
-data('SimpSim')
+# Load the sample data from CoGAPS
+data(SimpSim)
 # Run calcZ
-calcZ(SimpSim.D,SimpSim.S)
+calcZ(SimpSim.result$Amean, SimpSim.result$Asd)
 }
 

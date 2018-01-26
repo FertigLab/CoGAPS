@@ -26,9 +26,9 @@ Create Gene Sets for GWCoGAPS
 factors whole genome data into randomly generated sets for indexing
 }
 \examples{
-# Load the simulated data
-data('SimpSim')
+# Load the sample data from CoGAPS
+data(SimpSim)
 # Run createGWCoGAPSSets
-createGWCoGAPSSets(SimpSim.D,nSets=2)
+createGWCoGAPSSets(SimpSim.D, nSets=2)
 }
 
