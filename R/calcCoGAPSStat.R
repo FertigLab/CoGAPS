@@ -19,10 +19,7 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500)
 {
     # test for std dev of zero, possible mostly in simple simulations
     if (sum(Asd==0) > 0)
-    {
-        #temp <- min(Asd[Asd>0])
-        Asd[Asd==0] <- .Machine$double.eps
-    }
+        Asd[Asd==0] <- 1e-6
 
     # calculate Z scores
     zMatrix <- calcZ(Amean,Asd)

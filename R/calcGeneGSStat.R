@@ -13,9 +13,9 @@
 #' @examples
 #' # Load the sample data from CoGAPS
 #' data('SimpSim')
-#' # Run calcGeneGSStat with the correct arguments from 'results'
+#' # Run calcGeneGSStat
 #' calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, 
-#' GSGenes=GSets[[1]], numPerm=500)
+#' GSGenes=GSets[[1]], numPerm=500, nullGenes=TRUE)
 #' @export
 calcGeneGSStat  <- function(Amean, Asd, GSGenes, numPerm, Pw=rep(1,ncol(Amean)),
 nullGenes=FALSE)
@@ -44,12 +44,12 @@ nullGenes=FALSE)
     }
     outStats <- apply(sweep(ZD,2,gsStat,FUN="*"),1,sum) / (sum(gsStat))
     outStats <- outStats / apply(ZD,1,sum)
-    outStats[which(apply(ZD,1,sum) < .Machine$double.eps)] <- 0
+    outStats[which(apply(ZD,1,sum) < 1e-6)] <- 0
 
-    if (sum(gsStat) < .Machine$double.eps)
-    {
-        return(0)
-    }
+    #if (sum(gsStat) < 1e-6)
+    #{
+    #    return(0)
+    #}
     return(outStats)
 }
 
