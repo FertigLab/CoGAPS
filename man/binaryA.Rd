@@ -22,4 +22,10 @@ creates a binarized heatmap of the A matrix
  in which the value is 1 if the value in Amean is greater than
  threshold * Asd and 0 otherwise
 }
+\examples{
+# Load the outputs from gapsRun
+data('results')
+# Run binaryA with the correct arguments from 'results'
+binaryA(results$Amean,results$Asd,threshold=3)
+}
 

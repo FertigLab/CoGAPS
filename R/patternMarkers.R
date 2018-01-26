@@ -6,15 +6,15 @@
 #' @param threshold # the type of threshold to be used. The default "all" will distribute genes into pattern with the lowest ranking. The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern.
 #' @param lp a vector of weights for each pattern to be used for finding markers. If NA markers for each pattern of the A matrix will be used.
 #' @param full logical indicating whether to return the ranks of each gene for each pattern
-#'
 #' @return By default a non-overlapping list of genes associated with each \code{lp}. If \code{full=TRUE} a data.frame of
 #' genes rankings with a column for each \code{lp} will also be returned.
+#' @examples
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run patternMarkers with the correct arguments from 'results'
+#' patternMarkers(Amatrix=results$Amean,scaledPmatrix=FALSE,
+#' Pmatrix=results$Pmean,threshold="all",full=TRUE)
 #' @export
-#'
-#' @examples \dontrun{
-#' patternMarkers(Amatrix=AP$Amean,scaledPmatrix=FALSE,Pmatrix=NA,threshold="All",full=TRUE)
-#' }
-#'
 patternMarkers <- function(Amatrix=NA, scaledPmatrix=FALSE, Pmatrix=NA,
 threshold="all", lp=NA, full=FALSE)
 {

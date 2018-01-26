@@ -6,6 +6,11 @@
 #' @param P the mean P matrix
 #' @param outputPDF optional root name for PDF output, if
 #'  not specified, output goes to screen
+#' @examples
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run plotGAPS with the correct arguments from 'results'
+#' plotGAPS(results$Amean,results$Pmean)
 #' @export
 plotGAPS <- function(A, P, outputPDF="")
 {
@@ -43,4 +48,3 @@ plotGAPS <- function(A, P, outputPDF="")
         dev.off()
     }
 }
-

@@ -7,6 +7,13 @@
 #' @param Asd A matrix standard deviations
 #' @param GStoGenes data.frame or list with gene sets
 #' @param numPerm number of permutations for null
+#' @examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run calcCoGAPSStat with the correct arguments from 'results'
+#' calcCoGAPSStat(results$Amean,results$Asd,GStoGenes=GSets,numPerm=500)
 #' @export
 calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500)
 {
@@ -125,3 +132,4 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500)
 
     return(results)
 }
+

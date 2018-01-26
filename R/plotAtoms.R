@@ -6,6 +6,11 @@
 #' @param type the atoms to plot, values are "sampA", "sampP" ,
 #'  "equilA", or "equilP" to plot sampling or equilibration teop
 #'  atom numbers
+#' @examples
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run plotAtoms
+#' plotAtoms(results,type="sampA")
 #'@export
 plotAtoms<-function(gapsRes, type='sampA')
 {

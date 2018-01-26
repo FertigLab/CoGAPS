@@ -4,25 +4,25 @@
 #'matrix factorization returning the two matrices that reconstruct
 #'the data matrix for whole genome data;
 #'
-#'@param D data matrix
-#'@param S uncertainty matrix (std devs for chi-squared of Log Likelihood)
-#'@param nFactor number of patterns (basis vectors, metagenes), which must be
-#'greater than or equal to the number of rows of FP
-#'@param nSets number of sets for parallelization
-#'@param nCores number of cores for parallelization. If left to the default NA, nCores = nSets.
-#'@param saveBySetResults logical indicating whether to save by intermediary by set results. Default is FALSE.
-#'@param fname character string used to label file output. Default is "GWCoGAPS.AP.fixed"
-#'@param PatternsMatchFN function to use for pattern matching across sets
-#'@param Cut number of branches at which to cut dendrogram used in patternMatch4Parallel
-#'@param minNS minimum of individual set contributions a cluster must contain
-#'@param ... additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}
-#'@export
-#'@seealso \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
-#' @examples \dontrun{
-#' GWCoGAPS(nCores=NA, D, S, nFactor, nSets,saveBySetResults=TRUE, fname=fname,
-#' PatternsMatchFN = patternMatch4Parallel,numSnapshots=numSnapshots,minNS=minNS)
-#' }
-#'
+#' @param D data matrix
+#' @param S uncertainty matrix (std devs for chi-squared of Log Likelihood)
+#' @param nFactor number of patterns (basis vectors, metagenes), which must be
+#'  greater than or equal to the number of rows of FP
+#' @param nSets number of sets for parallelization
+#' @param nCores number of cores for parallelization. If left to the default NA, nCores = nSets.
+#' @param saveBySetResults logical indicating whether to save by intermediary by set results. Default is FALSE.
+#' @param fname character string used to label file output. Default is "GWCoGAPS.AP.fixed"
+#' @param PatternsMatchFN function to use for pattern matching across sets
+#' @param Cut number of branches at which to cut dendrogram used in patternMatch4Parallel
+#' @param minNS minimum of individual set contributions a cluster must contain
+#' @param ... additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}
+#' @seealso \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
+#' @examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Run GWCoGAPS
+#' GWCoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nSets=2, numSnapshots = 5)
+#' @export
 GWCoGAPS <- function(D, S, nFactor, nSets, nCores=NA, saveBySetResults=FALSE,
 fname="GWCoGAPS.AP.fixed", PatternsMatchFN = patternMatch4Parallel, Cut=NA,
 minNS=NA, ...)
