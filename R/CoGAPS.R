@@ -23,6 +23,7 @@
 #'  the fixed patterns
 #' @param fixedPatterns matrix of fixed values in either A or P matrix
 #' @param checkpointInterval time (in seconds) between creating a checkpoint
+#' @param ... keeps backwards compatibility with arguments from older versions
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
 #' @export
@@ -55,11 +56,8 @@ fixedPatterns = matrix(0), checkpointInterval=0, ...)
         stop('D and S matrix must be non-negative')
 
     # run algorithm with call to C++ code
-    nFactor <- floor(nFactor)
-    nEquil <- floor(nEquil)
-    nSample <- floor(nSample)
-    result <- cogaps_cpp(D, S, nFactor, nEquil, floor(nEquil/10), nSample, nOutputs, nSnapshots,
-        alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
+    result <- cogaps_cpp(D, S, nFactor, nEquil, nEquil/10, nSample, nOutputs,
+        nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
         singleCellRNASeq, whichMatrixFixed, fixedPatterns, checkpointInterval)
 
     # backwards compatible with v2
@@ -94,8 +92,22 @@ displayBuildReport <- function()
 #'
 #' @param D data matrix
 #' @param S uncertainty matrix
+#' @param ABins unused
+#' @param PBins unused
+#' @param simulation_id unused
+#' @param nOutR number of output messages
+#' @param output_atomic unused
+#' @param fixedBinProbs unused
+#' @param fixedDomain unused
+#' @param sampleSnapshots indicates if snapshots should be made
+#' @param numSnapshots how many snapshots to take
+#' @param nMaxA unused
+#' @param nMaxP unused
+#' @param max_gibbmass_paraA limit truncated normal to max size
+#' @param max_gibbmass_paraP limit truncated normal to max size
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
+#' @inheritParams CoGAPS
 #' @export
 gapsRun <- function(D, S, ABins=data.frame(), PBins=data.frame(), nFactor=7,
 simulation_id="simulation", nEquil=1000, nSample=1000, nOutR=1000,
@@ -115,9 +127,11 @@ alphaP=0.01, nMaxP=100000, max_gibbmass_paraP=100.0, seed=-1, messages=TRUE)
 #' @param D data matrix
 #' @param S uncertainty matrix
 #' @param FP data.frame with rows giving fixed patterns for P
+#' @param fixedMatrix unused
 #' @param ... v2 style parameters
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
+#' @inheritParams gapsRun
 #' @export
 gapsMapRun <- function(D, S, FP, ABins=data.frame(), PBins=data.frame(),
 nFactor=5, simulation_id="simulation", nEquil=1000, nSample=1000, nOutR=1000,

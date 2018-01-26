@@ -1,13 +1,15 @@
 ---
 title: "GWCoGAPS and PatternMarkers Vignette"
 author: "Genevieve L. Stein-O'Brien"
-date: \today
-output: BiocStyle::pdf_document
+date: "`r doc_date()`"
+package: "`r pkg_ver('CoGAPS')`"
 bibliography: AppNote.bib
 vignette: >
-  %\VignetteIndexEntry{Overview of CNPBayes package}
+  %\VignetteIndexEntry{GWCoGAPS and PatternMarkers}
   %\VignetteEngine{knitr::rmarkdown}
-  %\usepackage[utf8]{inputenc} 
+  %\VignetteEncoding{UTF-8}
+output: 
+  BiocStyle::html_document
 ---
 
 # Introduction
@@ -25,11 +27,13 @@ pipeline for genome wide NMF analysis.
 The GWCoGAPS algorithm is run by calling the GWCoGAPS function in the CoGAPS
 R package as follows:
 
-```{r, eval=FALSE}
-library(CoGAPS) 
+```{r}
+library(CoGAPS)
+```
+***
 GWCoGAPS(D, S, nFactor, nSets, nCores, saveBySetResults, fname,
     PatternsMatchFN = patternMatch4Parallel, Cut, minNS, ...)
-```
+***
 
 **Input Arguments**
 The inputs that must be set each time are only the nSets, nFactor, and data and standard deviation matrices, with all other inputs having default values. Additional inputs to the gapsRun function, as outlined previously, can be used to taylor the analysis based on the expected dimensionality of the data. GWCoGAPS specific arguments are as follows:
@@ -54,14 +58,15 @@ greater than or equal to the number of rows of FP}
 
 \par In this example, we use the same simulated data in SimpSim (SimpSim.D), as previously described, with three known patterns (SimpSim.P) and corresponding amplitude (SimpSim.A) with specified activity in two gene sets (GSets).
 
-```{r , eval=FALSE}
+***
 library('CoGAPS')
 data('SimpSim')
 GWCoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nCores=NA, nSets=2,
             fname="test" ,PatternsMatchFN = postCoGAPSPatternMatch,
             sampleSnapshots = "TRUE", numSnapshots = 3)
 plotGAPS(AP.Fixed$A, AP.Fixed$P, 'ModSimFigs')
-```
+***
+
 Figure \ref{fig:ModSim} shows the results from plotting the GWCoGAPS estimates of ${\bf{A}}$ and ${\bf{P}}$ using \texttt{plotGAPS}.  
 \begin{figure}[ht]
   \begin{center}
@@ -113,11 +118,14 @@ Parallelizing the GAPS using the doParallel package returns a list containing th
 \item[PSnapshots]{Samples of P matrices taken during sampling.}
 \end{description}
 To ease accross set pattern comparisons, the reOrderBySet function restructures this list such that all nSets sets solution for Amean, Pmean, and Asd are listed under ${\bf{A}} ,{\bf{P}}$, and ${\bf{Asd}}$, respectively. NMF solutions using the same syntax can also be imput to reOrderBySet via the AP arguement as follows:
-```{r, eval=FALSE}
+
+***
 BySet<-reOrderBySet(AP=AP,nFactor=nFactor,nSets=nSets)
-```
+***
+
 The resulting list of pattern matrixes, i.e. BySet$P, can serve as input for the patternMatch4Parallel function or further transformed for alternative accross set pattern matching techniques. Manual curration of pattern matching can be accomplished by iterating between the patternMatch4Parallel function and visual editting using the PatternMatcher as follows: 
-```{r , eval=FALSE}
+
+***
 matchedPs<-patternMatch4Parallel(Ptot=BySet$P,nP=nFactor,nS=nSets,
                                  cnt=nFactor,minNS=minNS,bySet=TRUE)
 selectPBySet<-PatternMatcher(PBySet=matchedPs[["PBySet"]])
@@ -127,13 +135,14 @@ rownames(selectPBySet)<-selectPBySet$BySet
 selectPBySet<-as.matrix(selectPBySet[,-1])
 matchedPs<-patternMatch4Parallel(Ptot=selectPBySet,nP=nFactor,nS=nSets,
                                  cnt=nFactor,minNS=minNS,bySet=FALSE)
-```
+***
+
 The output of this process, matchedPs, is a data.frame of consensus patterns which can be directly read into the FP arguement of gapsMapRun. These patterns are scaled to have a maximum of one to allow for direct accross pattern comparisions of the ${\bf{A}}$ values both within and accross parallel sets. 
 
 ### Example: Simulated data
 \par This example will manually generate the same result as calling the GWCoGAPS function as given in the example in the previous section.
 
-```{r , eval=FALSE}
+***
 data('SimpSim')
 D<-SimpSim.D
 S<-SimpSim.S
@@ -190,8 +199,7 @@ Fixed <- foreach(i=1:nSets) %dopar% {
 
 #extract A and Asds
 As4fixPs <- postFixed(AP.fixed=Fixed,setPs=matchedPs)
-```
-
+***
 
 # PatternMarkers
 
@@ -212,10 +220,10 @@ where  are the elements of the $\bf{A}$ matrix for the $\textit{i}^{th}$ gene sc
 
 The PatternMarkers statistic is run by calling thepatternMarkers function in the CoGAPS R package as follows:
 
-```{r , eval=FALSE}
+***
  patternMarkers(Amatrix = AP$Amean, scaledPmatrix = FALSE, Pmatrix = NA,
   threshold = "All", lp = NA, full = FALSE, ...)
-```
+***
 
 **Input Arguments**
 \begin{description}
@@ -229,11 +237,11 @@ The PatternMarkers statistic is run by calling thepatternMarkers function in the
 
 Once the PatternMarkers statistic has been run, a heatmap of each markers expression level can be displayed using the plotPatternMarkers function as follows:
 
-```{r , eval=FALSE}
+***
 plotPatternMarkers(data = NA, patternMarkers = PatternMarkers,
       patternPalette = NA, sampleNames = NA, samplePalette = NA,
       colDenogram = TRUE, heatmapCol = "bluered", scale = "row", ...)
-```
+***
  
 **Input Arguments**
 \begin{description}
@@ -246,10 +254,10 @@ plotPatternMarkers(data = NA, patternMarkers = PatternMarkers,
 
 ### Example: Simulated data
 
-```{r , eval=FALSE}
+***
 PatternMarkers<-patternMarkers(Amatrix=AP.fixed$A,scaledPmatrix=TRUE,threshold="cut")
 plotPatternMarkers(data=D,patternMarkers=PatternMarkers,patternPalette=c("grey","navy","orange"))
-```
+***
 
 Figure \ref{fig:PM1} shows the results from running plotPatternMarkers on the PatternMarkers generated from the the GWCoGAPS results generated from the simulated data as previously illustrated.
 \begin{figure}[h]

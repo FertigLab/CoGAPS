@@ -1,17 +1,21 @@
 #'\code{plotSmoothPatterns} plots the output A and P matrices as a
 #' heatmap and line plot respectively
 #'
-#'@param P the mean A matrix
-#'@param x optional variables
-#'@param breaks breaks in plots
-#'@param breakStyle style of breaks
-#'@param orderP whether to order patterns
-#'@param plotPTS whether to plot points on lines
-#'@param pointCol color of points
-#'@param lineCol color of line
-#'@param add logical specifying if bars should be added to an already existing plot; defaults to `FALSE'.
-#'@param ... arguments to be passed to/from other methods.  For the default method these can include further arguments (such as `axes', `asp' and `main') and graphical parameters (see `par') which are passed to `plot.window()', `title()' and `axis'.
-#'@export
+#' @param P the mean A matrix
+#' @param x optional variables
+#' @param breaks breaks in plots
+#' @param breakStyle style of breaks
+#' @param orderP whether to order patterns
+#' @param plotPTS whether to plot points on lines
+#' @param pointCol color of points
+#' @param lineCol color of line
+#' @param add logical specifying if bars should be added to an already existing
+#'  plot; defaults to `FALSE'.
+#' @param ... arguments to be passed to/from other methods.  For the default
+#'  method these can include further arguments (such as `axes', `asp' and
+#'  `main') and graphical parameters (see `par') which are passed to
+#"  `plot.window()', `title()' and `axis'.
+#' @export
 plotSmoothPatterns <- function(P, x=NULL, breaks=NULL, breakStyle=TRUE,
 orderP=!all(is.null(x)), plotPTS=FALSE, pointCol='black', lineCol='grey',
 add=FALSE, ...)
@@ -31,7 +35,8 @@ add=FALSE, ...)
     # make the breaks in a uniform format
     if (length(breaks)==1)
     {
-        breaks <- as.numeric(unique(unlist(strsplit(sub("\\(","",sub("\\]","",levels(cut(x,breaks)))),split=","))))
+        breaks <- as.numeric(unique(unlist(strsplit(sub("\\(","",sub("\\]","",
+            levels(cut(x,breaks)))),split=","))))
     }
 
     # check that the style of breaks matches the number of groups
@@ -67,7 +72,7 @@ add=FALSE, ...)
         xMax <- seq(from=ncol(P)+1,length.out=nrow(P))[order(PMax,decreasing=TRUE)]
         xTmp <- x
         PTmp <- P
-        for (iP in order(PMax,decreasing=T))
+        for (iP in order(PMax,decreasing=TRUE))
         {
             if (length(xTmp) < 1)
             {
@@ -92,7 +97,7 @@ add=FALSE, ...)
     }
     else
     {
-        split.screen(c(nrow(P), length(which(breakStyle))), erase=F)
+        split.screen(c(nrow(P), length(which(breakStyle))), erase=FALSE)
     }
 
     scr <- 1
@@ -119,7 +124,7 @@ add=FALSE, ...)
 
             if (add)
             {
-                plot(x[idxTmp], loess(P[iP,idxTmp]~x[idxTmp])$fit, col=lineCol, type='l', axes=F, xlab='', ylab='',lwd=3,
+                plot(x[idxTmp], loess(P[iP,idxTmp]~x[idxTmp])$fit, col=lineCol, type='l', axes=FALSE, xlab='', ylab='',lwd=3,
                     ylim=c(0,max(P[iP,])),xlim=xBorders,...)
             }
             else

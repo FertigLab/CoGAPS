@@ -34,7 +34,7 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
     corr.dist=1-corr.dist
     # cluster
     #library(cluster)
-    clust=agnes(x=corr.dist,diss=T,method=cluster.method)
+    clust=agnes(x=corr.dist,diss=TRUE,method=cluster.method)
     cut=cutree(as.hclust(clust),k=cnt)
     #save.image(file=paste("CoGAPS.",nP,"P.",nS,"Set.CorrClustCut",cnt,".RData"))
 

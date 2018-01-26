@@ -47,6 +47,8 @@ the fixed patterns}
 \item{fixedPatterns}{matrix of fixed values in either A or P matrix}
 
 \item{checkpointInterval}{time (in seconds) between creating a checkpoint}
+
+\item{...}{keeps backwards compatibility with arguments from older versions}
 }
 \value{
 list with A and P matrix estimates
