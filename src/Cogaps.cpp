@@ -198,11 +198,11 @@ static Rcpp::List runCogaps(GapsInternalState &state)
 
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil, unsigned nEquilCool,
-unsigned nSample, unsigned nOutputs, unsigned nSnapshots, float alphaA,
-float alphaP, float maxGibbmassA, float maxGibbmassP, int seed, bool messages,
-bool singleCellRNASeq, char whichMatrixFixed, const Rcpp::NumericMatrix &FP,
-unsigned checkpointInterval)
+const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil,
+unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots,
+float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP, int seed,
+bool messages, bool singleCellRNASeq, char whichMatrixFixed,
+const Rcpp::NumericMatrix &FP, unsigned checkpointInterval)
 {
     // set seed
     uint32_t seedUsed = static_cast<uint32_t>(seed);
@@ -215,9 +215,9 @@ unsigned checkpointInterval)
     gaps::random::setSeed(seedUsed);
 
     // create internal state from parameters and run from there
-    GapsInternalState state(D, S, nFactor, nEquil, nEquilCool, nSample, nOutputs, nSnapshots,
-        alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
-        singleCellRNASeq, whichMatrixFixed, FP, checkpointInterval);
+    GapsInternalState state(D, S, nFactor, nEquil, nEquilCool, nSample,
+        nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
+        messages, singleCellRNASeq, whichMatrixFixed, FP, checkpointInterval);
     return runCogaps(state);
 }
 

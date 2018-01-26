@@ -7,13 +7,13 @@
 residuals(AMean_Mat, PMean_Mat, D, S)
 }
 \arguments{
+\item{AMean_Mat}{matrix of mean values for A from GAPS}
+
+\item{PMean_Mat}{matrix of mean values for P from GAPS}
+
 \item{D}{original data matrix run through GAPS}
 
 \item{S}{original standard deviation matrix run through GAPS}
-
-\item{Amean}{matrix of mean values for A from GAPS}
-
-\item{Pmean}{matrix of mean values for P from GAPS}
 }
 \description{
 Plot of Residuals

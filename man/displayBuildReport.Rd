@@ -9,4 +9,8 @@ displayBuildReport()
 \description{
 Display Information About Package Compilation
 }
+\details{
+displays information about how the package was compiled, i.e. which
+ compiler/version was used, which compile time options were enabled, etc...
+}
 

@@ -1,10 +1,28 @@
 #' CoGAPS Matrix Factorization Algorithm
 #' 
 #' @details calls the C++ MCMC code and performs Bayesian
-#'matrix factorization returning the two matrices that reconstruct
-#'the data matrix
+#'  matrix factorization returning the two matrices that reconstruct
+#'  the data matrix
 #' @param D data matrix
 #' @param S uncertainty matrix (std devs for chi-squared of Log Likelihood)
+#' @param nFactor number of patterns (basis vectors, metagenes), which must be
+#'  greater than or equal to the number of rows of FP
+#' @param nEquil number of iterations for burn-in
+#' @param nSample number of iterations for sampling
+#' @param nOutputs how often to print status into R by iterations
+#' @param nSnapshots the number of individual samples to capture
+#' @param alphaA sparsity parameter for A domain
+#' @param alphaP sparsity parameter for P domain
+#' @param maxGibbmassA limit truncated normal to max size
+#' @param maxGibbmassP limit truncated normal to max size
+#' @param seed a positive seed is used as-is, while any negative seed tells
+#'  the algorithm to pick a seed based on the current time
+#' @param messages display progress messages
+#' @param singleCellRNASeq indicates if the data is single cell RNA-seq data
+#' @param whichMatrixFixed character to indicate whether A or P matric contains
+#'  the fixed patterns
+#' @param fixedPatterns matrix of fixed values in either A or P matrix
+#' @param checkpointInterval time (in seconds) between creating a checkpoint
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
 #' @export
@@ -63,6 +81,9 @@ CoGapsFromCheckpoint <- function(D, S, path)
 }
 
 #' Display Information About Package Compilation
+#'
+#' @details displays information about how the package was compiled, i.e. which
+#'  compiler/version was used, which compile time options were enabled, etc...
 #' @export
 displayBuildReport <- function()
 {
