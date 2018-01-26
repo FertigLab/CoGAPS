@@ -21,4 +21,12 @@ Plot of Residuals
 \details{
 calculate residuals and produce heatmap
 }
+\examples{
+# Load the simulated data
+data('SimpSim')
+# Load the outputs from gapsRun
+data('results')
+# Run residuals with the correct arguments
+residuals(results$Amean,results$Pmean,SimpSim.D,SimpSim.S)
+}
 

@@ -28,9 +28,10 @@ genes rankings with a column for each \code{lp} will also be returned.
 patternMarkers
 }
 \examples{
-\dontrun{
-patternMarkers(Amatrix=AP$Amean,scaledPmatrix=FALSE,Pmatrix=NA,threshold="All",full=TRUE)
-}
-
+# Load the outputs from gapsRun
+data('results')
+# Run patternMarkers with the correct arguments from 'results'
+patternMarkers(Amatrix=results$Amean,scaledPmatrix=FALSE,
+Pmatrix=results$Pmean,threshold="all",full=TRUE)
 }
 

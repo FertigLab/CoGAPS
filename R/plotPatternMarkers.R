@@ -12,10 +12,16 @@
 #' @param ... additional graphical parameters to be passed to \code{heatmap.2}
 #' @return heatmap of the \code{data} values for the \code{patternMarkers}
 #' @seealso  \code{\link{heatmap.2}}
-#' @examples \dontrun{
-#' plotPatternMarkers(data=p,patternMarkers=PatternMarkers,patternPalette=NA,sampleNames=pd$sample,
-#' samplePalette=pd$color,colDenogram=TRUE,heatmapCol="bluered", scale='row')
-#'}
+#' @examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run patternMarkers and save the outputs
+#' PM <- patternMarkers(Amatrix=results$Amean,scaledPmatrix=FALSE,
+#' Pmatrix=results$Pmean,threshold="all",full=TRUE)
+#' # Run plotPatternMarkers with the correct argument from 'PM'
+#' plotPatternMarkers(data=SimpSim.D,patternMarkers=PM$PatternMarkers)
 #' @export
 plotPatternMarkers <- function(data=NA, patternMarkers=NA, patternPalette=NA,
 sampleNames=NA, samplePalette=NULL, colDenogram=TRUE, heatmapCol="bluered",

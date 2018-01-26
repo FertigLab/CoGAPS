@@ -21,4 +21,10 @@ Plot Decomposed A and P Matrices
 plots the output A and P matrices as a
 heatmap and line plot respectively
 }
+\examples{
+# Load the outputs from gapsRun
+data('results')
+# Run plotGAPS with the correct arguments from 'results'
+plotGAPS(results$Amean,results$Pmean)
+}
 

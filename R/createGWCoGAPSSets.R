@@ -7,9 +7,11 @@
 #' @param outRDA name of output file
 #' @param keep logical indicating whether or not to save gene set list.
 #' @return list with randomly generated sets of genes from whole genome data
-#' @examples \dontrun{
-#'createGWCoGAPSSet(D,nSets=nSets)
-#'}
+#' @examples
+#' # Load the simulated data
+#' data('SimpSim')
+#' # Run createGWCoGAPSSets
+#' createGWCoGAPSSets(SimpSim.D,nSets=2)
 #' @export
 createGWCoGAPSSets<-function(data=D, nSets=nSets,
 outRDA="GenesInCoGAPSSets.Rda", keep=TRUE)
@@ -31,4 +33,3 @@ outRDA="GenesInCoGAPSSets.Rda", keep=TRUE)
         save(list=c('genesInSets'),file=outRDA)
     return(genesInSets)
 }
-

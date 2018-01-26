@@ -17,4 +17,10 @@ Plot the P Matrix
 \details{
 plots the P matrix in a line plot with error bars
 }
+\examples{
+# Load the outputs from gapsRun
+data('results')
+# Run plotP with the correct arguments from 'results'
+plotP(results$Pmean,results$Psd)
+}
 

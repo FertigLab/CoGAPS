@@ -13,8 +13,6 @@
 #' concensus pattern is also returned.
 #' @export
 #' @seealso \code{\link{agnes}}
-#'
-#'
 patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS, 
 cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
 {
@@ -134,4 +132,3 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
         return(PByCDSWavgScaled)
     }
 }
-

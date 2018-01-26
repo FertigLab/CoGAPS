@@ -2,6 +2,11 @@
 #'
 #' @details plots a series of diagnostic plots
 #' @param gapsRes list returned by CoGAPS
+#' @examples
+#' # Load the outputs from gapsRun
+#' data('results')
+#' # Run plotDiag
+#' plotDiag(results)
 #' @export
 plotDiag <-function(gapsRes)
 {
