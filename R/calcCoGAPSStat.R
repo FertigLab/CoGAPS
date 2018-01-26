@@ -1,19 +1,19 @@
 #' Calculate Gene Set Statistics
 #'
 #' @details calculates the gene set statistics for each
-#'  column of A using a Z-score from the elements of the A matrix,
-#'  the input gene set, and permutation tests
+#' column of A using a Z-score from the elements of the A matrix,
+#' the input gene set, and permutation tests
 #' @param Amean A matrix mean values
 #' @param Asd A matrix standard deviations
 #' @param GStoGenes data.frame or list with gene sets
 #' @param numPerm number of permutations for null
+#' @return gene set statistics for each column of A
 #' @examples
-#' # Load the simulated data
-#' data('SimpSim')
-#' # Load the outputs from gapsRun
-#' data('results')
+#' # Load the sample data from CoGAPS
+#' data(SimpSim)
 #' # Run calcCoGAPSStat with the correct arguments from 'results'
-#' calcCoGAPSStat(results$Amean,results$Asd,GStoGenes=GSets,numPerm=500)
+#' calcCoGAPSStat(SimpSim.result$Amean, SimpSim.result$Asd,
+#' GStoGenes=GSets, numPerm=500)
 #' @export
 calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500)
 {

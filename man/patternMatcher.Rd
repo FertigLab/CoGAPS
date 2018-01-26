@@ -22,11 +22,4 @@ either an index of selected sets' contributions or the editted \code{PBySet} obj
 \description{
 PatternMatcher Shiny Ap
 }
-\examples{
-\dontrun{
-patternMatcher(PBySet,out,order,sample.color)
-}
-
-
-}
 

@@ -1,12 +1,12 @@
 #' CoGAPS Matrix Factorization Algorithm
 #' 
 #' @details calls the C++ MCMC code and performs Bayesian
-#'  matrix factorization returning the two matrices that reconstruct
-#'  the data matrix
+#' matrix factorization returning the two matrices that reconstruct
+#' the data matrix
 #' @param D data matrix
 #' @param S uncertainty matrix (std devs for chi-squared of Log Likelihood)
 #' @param nFactor number of patterns (basis vectors, metagenes), which must be
-#'  greater than or equal to the number of rows of FP
+#' greater than or equal to the number of rows of FP
 #' @param nEquil number of iterations for burn-in
 #' @param nSample number of iterations for sampling
 #' @param nOutputs how often to print status into R by iterations
@@ -16,16 +16,19 @@
 #' @param maxGibbmassA limit truncated normal to max size
 #' @param maxGibbmassP limit truncated normal to max size
 #' @param seed a positive seed is used as-is, while any negative seed tells
-#'  the algorithm to pick a seed based on the current time
+#' the algorithm to pick a seed based on the current time
 #' @param messages display progress messages
 #' @param singleCellRNASeq indicates if the data is single cell RNA-seq data
 #' @param whichMatrixFixed character to indicate whether A or P matric contains
-#'  the fixed patterns
+#' the fixed patterns
 #' @param fixedPatterns matrix of fixed values in either A or P matrix
 #' @param checkpointInterval time (in seconds) between creating a checkpoint
 #' @param ... keeps backwards compatibility with arguments from older versions
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
+#' @examples
+#' data(SimpSim)
+#' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 #' @export
 CoGAPS <- function(D, S, nFactor=7, nEquil=1000, nSample=1000, nOutputs=1000,
 nSnapshots=0, alphaA=0.01, alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100,
@@ -59,9 +62,13 @@ fixedPatterns = matrix(0), checkpointInterval=0, ...)
     result <- cogaps_cpp(D, S, nFactor, nEquil, nEquil/10, nSample, nOutputs,
         nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
         singleCellRNASeq, whichMatrixFixed, fixedPatterns, checkpointInterval)
-
-    # backwards compatible with v2
-    return(v2CoGAPS(result, ...))
+    
+    patternNames <- paste('Patt', 1:nFactor, sep='')
+    rownames(result$Amean) <- rownames(result$Asd) <- rownames(D)
+    colnames(result$Amean) <- colnames(result$Asd) <- patternNames
+    rownames(result$Pmean) <- rownames(result$Psd) <- patternNames
+    colnames(result$Pmean) <- colnames(result$Psd) <- colnames(D)
+    return(v2CoGAPS(result, ...)) # backwards compatible with v2
 }
 
 #' Restart CoGAPS from Checkpoint File
@@ -82,6 +89,9 @@ CoGapsFromCheckpoint <- function(D, S, path)
 #'
 #' @details displays information about how the package was compiled, i.e. which
 #'  compiler/version was used, which compile time options were enabled, etc...
+#' @return display builds information
+#' @examples
+#'  CoGAPS::displayBuildReport()
 #' @export
 displayBuildReport <- function()
 {
@@ -116,10 +126,10 @@ numSnapshots=100, alphaA=0.01, nMaxA=100000, max_gibbmass_paraA=100.0,
 alphaP=0.01, nMaxP=100000, max_gibbmass_paraP=100.0, seed=-1, messages=TRUE)
 {
     #warning('gapsRun is deprecated with v3.0, use CoGAPS')
-    CoGAPS(D, S, nFactor=nFactor, nEquil=nEquil, nSample=nSample, nOutputs=nOutR,
-        nSnapshots=ifelse(sampleSnapshots,numSnapshots,0), alphaA=alphaA,
-        alphaP=alphaP, maxGibbmassA=max_gibbmass_paraA, messages=messages,
-        maxGibbmassP=max_gibbmass_paraP, seed=seed)
+    CoGAPS(D, S, nFactor=nFactor, nEquil=nEquil, nSample=nSample,
+        nOutputs=nOutR, nSnapshots=ifelse(sampleSnapshots,numSnapshots,0),
+        alphaA=alphaA, alphaP=alphaP, maxGibbmassA=max_gibbmass_paraA,
+        messages=messages, maxGibbmassP=max_gibbmass_paraP, seed=seed)
 }
 
 #' Backwards Compatibility with v2
@@ -141,18 +151,35 @@ max_gibbmass_paraA=100.0, alphaP=0.01, nMaxP=100000, max_gibbmass_paraP=100.0,
 seed=-1, messages=TRUE)
 {
     #warning('gapsMapRun is deprecated with v3.0, use CoGaps')
-    CoGAPS(D, S, nFactor=nFactor, nEquil=nEquil, nSample=nSample, nOutputs=nOutR,
-        nSnapshots=ifelse(sampleSnapshots,numSnapshots,0), alphaA=alphaA,
-        alphaP=alphaP, maxGibbmassA=max_gibbmass_paraA, messages=messages,
-        maxGibbmassP=max_gibbmass_paraP, seed=seed, whichMatrixFixed='P',
-        fixedPatterns=as.matrix(FP))
+    CoGAPS(D, S, nFactor=nFactor, nEquil=nEquil, nSample=nSample,
+        nOutputs=nOutR, nSnapshots=ifelse(sampleSnapshots,numSnapshots,0),
+        alphaA=alphaA, alphaP=alphaP, maxGibbmassA=max_gibbmass_paraA,
+        messages=messages, maxGibbmassP=max_gibbmass_paraP, seed=seed,
+        whichMatrixFixed='P', fixedPatterns=as.matrix(FP))
 }
 
+# helper function for backwards compatibility
 v2CoGAPS <- function(result, ...)
 {
     if (!is.null(list(...)$GStoGenes))
     {
-
+        if (is.null(list(...)$plot) | list(...)$plot)
+        {
+            plotGAPS(result$Amean, result$Pmean)
+        }
+        if (is.null(list(...)$nPerm))
+        {
+            nPerm <- 500
+        }
+        else
+        {
+            nPerm <- list(...)$nPerm
+        }
+        GSP <- calcCoGAPSStat(result$Amean, result$Asd, list(...)$GStoGenes,
+            nPerm)
+        result <- list(meanChi2=result$meanChi2, Amean=result$Amean,
+            Asd=result$Asd, Pmean=result$Pmean, Psd=result$Psd,
+            GSUpreg=GSP$GSUpreg, GSDownreg=GSP$GSDownreg, GSActEst=GSP$GSActEst)
     }
     return(result)
 }

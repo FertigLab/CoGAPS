@@ -1,16 +1,13 @@
 #' reOrderBySet
 #'
-#' @description <restructures output of gapsRun into a list containing each sets solution for Amean, Pmean, and Asd>
-#' @param AP output of gapsRun in parallel
+#' @details restructures output of CoGAPS into a list containing each sets
+#' solution for Amean, Pmean, and Asd
+#' @param AP output of GWCoGAPS in parallel
 #' @param nFactor number of patterns
 #' @param nSets number of sets
-#'
-#' @return a list containing the \code{nSets} sets solution for Amean under "A", Pmean under "P", and Asd under "Asd"
+#' @return a list containing the \code{nSets} sets solution for Amean under "A",
+#' Pmean under "P", and Asd under "Asd"
 #' @export
-#'
-#' @examples \dontrun{
-#' reOrderBySet(AP,nFactor,nSets)
-#' }
 reOrderBySet<-function(AP, nFactor, nSets)
 {
     P<-do.call(rbind,lapply(AP, function(x) x$Pmean))

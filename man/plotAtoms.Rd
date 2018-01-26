@@ -13,16 +13,19 @@ plotAtoms(gapsRes, type = "sampA")
 "equilA", or "equilP" to plot sampling or equilibration teop
 atom numbers}
 }
+\value{
+plot
+}
 \description{
 Plot Number of Atoms
 }
 \details{
 a simple plot of the number of atoms
- from one of the vectors returned with atom numbers
+from one of the vectors returned with atom numbers
 }
 \examples{
-# Load the outputs from gapsRun
-data('results')
+# Load the sample data from CoGAPS
+data(SimpSim)
 # Run plotAtoms
 plotAtoms(results,type="sampA")
 }

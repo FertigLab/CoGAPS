@@ -2,8 +2,7 @@
 % Please edit documentation in R/reorderByPatternMatch.R
 \name{reorderByPatternMatch}
 \alias{reorderByPatternMatch}
-\title{\code{reorderByPatternMatch} plots the output A and P matrices as a
-heatmap and line plot respectively}
+\title{Reorder By Pattern Match}
 \usage{
 reorderByPatternMatch(P, matchTo)
 }
@@ -12,8 +11,10 @@ reorderByPatternMatch(P, matchTo)
 
 \item{matchTo}{matrix to match P to}
 }
+\value{
+matched patterns
+}
 \description{
-\code{reorderByPatternMatch} plots the output A and P matrices as a
-heatmap and line plot respectively
+Reorder By Pattern Match
 }
 

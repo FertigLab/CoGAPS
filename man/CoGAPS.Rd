@@ -58,7 +58,11 @@ CoGAPS Matrix Factorization Algorithm
 }
 \details{
 calls the C++ MCMC code and performs Bayesian
- matrix factorization returning the two matrices that reconstruct
- the data matrix
+matrix factorization returning the two matrices that reconstruct
+the data matrix
+}
+\examples{
+data(SimpSim)
+result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 }
 

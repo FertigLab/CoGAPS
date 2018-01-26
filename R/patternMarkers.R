@@ -9,8 +9,8 @@
 #' @return By default a non-overlapping list of genes associated with each \code{lp}. If \code{full=TRUE} a data.frame of
 #' genes rankings with a column for each \code{lp} will also be returned.
 #' @examples
-#' # Load the outputs from gapsRun
-#' data('results')
+#' # Load the sample data from CoGAPS
+#' data(SimpSim)
 #' # Run patternMarkers with the correct arguments from 'results'
 #' patternMarkers(Amatrix=results$Amean,scaledPmatrix=FALSE,
 #' Pmatrix=results$Pmean,threshold="all",full=TRUE)

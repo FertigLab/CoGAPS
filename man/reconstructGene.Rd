@@ -4,7 +4,7 @@
 \alias{reconstructGene}
 \title{Reconstruct Gene}
 \usage{
-reconstructGene(A = NA, P = NA, genes = NA)
+reconstructGene(A, P, genes = NA)
 }
 \arguments{
 \item{A}{A matrix estimates}
@@ -20,9 +20,9 @@ the D' estimate of a gene or set of genes
 Reconstruct Gene
 }
 \examples{
-# Load the simulated data
-data('SimpSim')
+# Load the sample data from CoGAPS
+data(SimpSim)
 # Run reconstructGene
-reconstructGene(A=SimpSim.A,P=SimpSim.P)
+reconstructGene(SimpSim.result$Amean, SimpSim.result$Pmean)
 }
 

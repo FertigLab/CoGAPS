@@ -7,21 +7,21 @@
 reOrderBySet(AP, nFactor, nSets)
 }
 \arguments{
-\item{AP}{output of gapsRun in parallel}
+\item{AP}{output of GWCoGAPS in parallel}
 
 \item{nFactor}{number of patterns}
 
 \item{nSets}{number of sets}
 }
 \value{
-a list containing the \code{nSets} sets solution for Amean under "A", Pmean under "P", and Asd under "Asd"
+a list containing the \code{nSets} sets solution for Amean under "A",
+Pmean under "P", and Asd under "Asd"
 }
 \description{
-<restructures output of gapsRun into a list containing each sets solution for Amean, Pmean, and Asd>
+reOrderBySet
 }
-\examples{
-\dontrun{
-reOrderBySet(AP,nFactor,nSets)
-}
+\details{
+restructures output of CoGAPS into a list containing each sets
+solution for Amean, Pmean, and Asd
 }
 

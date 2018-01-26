@@ -5,12 +5,13 @@
 #' @param A the mean A matrix
 #' @param P the mean P matrix
 #' @param outputPDF optional root name for PDF output, if
-#'  not specified, output goes to screen
+#' not specified, output goes to screen
+#' @return plot
 #' @examples
-#' # Load the outputs from gapsRun
-#' data('results')
-#' # Run plotGAPS with the correct arguments from 'results'
-#' plotGAPS(results$Amean,results$Pmean)
+#' # Load the sample data from CoGAPS
+#' data(SimpSim)
+#' # Run plotGAPS with arguments from CoGAPS results list
+#' plotGAPS(SimpSim.result$Amean, SimpSim.result$Pmean)
 #' @export
 plotGAPS <- function(A, P, outputPDF="")
 {

@@ -31,7 +31,8 @@ Imports:
     reshape2
 Suggests:
     testthat,
-    lintr
+    lintr,
+    knitr
 LinkingTo: Rcpp, BH
 VignetteBuilder: knitr
 License: GPL (==2)

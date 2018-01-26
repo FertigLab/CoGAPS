@@ -35,10 +35,8 @@ heatmap of the \code{data} values for the \code{patternMarkers}
 plotPatternMarkers
 }
 \examples{
-# Load the simulated data
-data('SimpSim')
-# Load the outputs from gapsRun
-data('results')
+# Load the sample data from CoGAPS
+data(SimpSim)
 # Run patternMarkers and save the outputs
 PM <- patternMarkers(Amatrix=results$Amean,scaledPmatrix=FALSE,
 Pmatrix=results$Pmean,threshold="all",full=TRUE)

@@ -32,16 +32,22 @@ greater than or equal to the number of rows of FP}
 
 \item{...}{additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}}
 }
+\value{
+list of A and P estimates
+}
 \description{
-\code{GWCoGAPS} calls the C++ MCMC code and performs Bayesian
+GWCoGAPS
+}
+\details{
+calls the C++ MCMC code and performs Bayesian
 matrix factorization returning the two matrices that reconstruct
 the data matrix for whole genome data;
 }
 \examples{
-# Load the simulated data
-data('SimpSim')
+# Load the sample data from CoGAPS
+data(SimpSim)
 # Run GWCoGAPS
-GWCoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nSets=2, numSnapshots = 5)
+GWCoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nSets=2)
 }
 \seealso{
 \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}

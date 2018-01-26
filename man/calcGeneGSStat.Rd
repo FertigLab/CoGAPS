@@ -18,22 +18,24 @@ calcGeneGSStat(Amean, Asd, GSGenes, numPerm, Pw = rep(1, ncol(Amean)),
 
 \item{Pw}{weight on genes}
 
-\item{nullGenes}{- logical indicating gene adjustment}
+\item{nullGenes}{logical indicating gene adjustment}
+}
+\value{
+gene similiarity statistic
 }
 \description{
 Probability Gene Belongs in Gene Set
 }
 \details{
 calculates the probability that a gene
- listed in a gene set behaves like other genes in the set within
- the given data set
+listed in a gene set behaves like other genes in the set within
+the given data set
 }
 \examples{
-# Load the simulated data
+# Load the sample data from CoGAPS
 data('SimpSim')
-# Load the outputs from gapsRun
-data('results')
 # Run calcGeneGSStat with the correct arguments from 'results'
-calcGeneGSStat(results$Amean,results$Asd,GSGenes=GSets[[1]],numPerm=500)
+calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, 
+GSGenes=GSets[[1]], numPerm=500)
 }
 

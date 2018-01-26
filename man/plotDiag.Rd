@@ -9,6 +9,9 @@ plotDiag(gapsRes)
 \arguments{
 \item{gapsRes}{list returned by CoGAPS}
 }
+\value{
+plot
+}
 \description{
 Diagnostic Plots
 }
@@ -16,9 +19,9 @@ Diagnostic Plots
 plots a series of diagnostic plots
 }
 \examples{
-# Load the outputs from gapsRun
-data('results')
+# Load the sample data from CoGAPS
+data(SimpSim)
 # Run plotDiag
-plotDiag(results)
+plotDiag(SimpSim.result)
 }
 

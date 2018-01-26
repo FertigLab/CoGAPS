@@ -1,37 +1,23 @@
 #' Compute Z-Score Matrix
 #'
 #' @details calculates the Z-score for each element based on input mean
-#'  and standard deviation matrices
+#' and standard deviation matrices
 #' @param meanMat matrix of mean values
 #' @param sdMat matrix of standard deviation values
+#' @return matrix of z-scores
 #' @examples
-#' # Load the simulated data
-#' data('SimpSim')
+#' # Load the sample data from CoGAPS
+#' data(SimpSim)
 #' # Run calcZ
-#' calcZ(SimpSim.D,SimpSim.S)
+#' calcZ(SimpSim.result$Amean, SimpSim.result$Asd)
 #' @export
 calcZ <- function(meanMat, sdMat)
 {
-    # find matrix dimensions
-    nrows <- dim(meanMat)[1]
-    ncols <- dim(meanMat)[2]
+    if (nrow(meanMat) != nrow(sdMat) | ncol(meanMat) != ncol(sdMat))
+        stop("meanMat and sdMat dimensions don't match")
 
-    check <- dim(sdMat)[1]
-    if (nrows != check)
-    {
-        stop("Number of rows in the mean and standard deviation of A do not agree.")
-    }
-
-    check <- dim(sdMat)[2]
-    if (ncols != check)
-    {
-        stop("Number of columns in the mean and standard deviation of A do not agree.")
-    }
-
-    # compute the matrix of z scores
-    zMat <- meanMat/sdMat
+    zMat <- meanMat / sdMat
     rownames(zMat) <- rownames(meanMat)
     colnames(zMat) <- colnames(meanMat)
-
     return(zMat)
 }

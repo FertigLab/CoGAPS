@@ -11,6 +11,9 @@ plotP(Pmean, Psd)
 
 \item{Psd}{matrix of standard deviation values of P}
 }
+\value{
+plot
+}
 \description{
 Plot the P Matrix
 }
@@ -18,9 +21,9 @@ Plot the P Matrix
 plots the P matrix in a line plot with error bars
 }
 \examples{
-# Load the outputs from gapsRun
-data('results')
-# Run plotP with the correct arguments from 'results'
-plotP(results$Pmean,results$Psd)
+# Load the sample data from CoGAPS
+data(SimpSim)
+# Run plotP with arguments from CoGAPS results list
+plotP(SimpSim.result$Pmean, SimpSim.result$Psd)
 }
 
