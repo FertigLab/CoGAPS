@@ -69,10 +69,7 @@ Rcpp::NumericMatrix GibbsSampler::getNormedMatrix(char mat)
     for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
     {
         normVec[r] = gaps::algo::sum(mPMatrix.getRow(r));
-        if (normVec[r] == 0)
-        {
-            normVec[r] = 1.0;
-        }
+        normVec[r] = (normVec[r] == 0) ? 1.f : normVec[r];
     }
 
     if (mat == 'A')

@@ -64,4 +64,8 @@ list with A and P matrix estimates
 \description{
 Backwards Compatibility with v2
 }
+\examples{
+data(SimpSim)
+result <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3)
+}
 

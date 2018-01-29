@@ -10,7 +10,6 @@
 #' @param ... additional parameters for \code{agnes}
 #' @return a matrix of concensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
 #' concensus pattern is also returned.
-#' @export
 #' @seealso \code{\link{agnes}}
 patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS, 
 cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)

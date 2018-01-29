@@ -27,6 +27,6 @@ from one of the vectors returned with atom numbers
 # Load the sample data from CoGAPS
 data(SimpSim)
 # Run plotAtoms
-plotAtoms(results,type="sampA")
+plotAtoms(SimpSim.result, type="sampA")
 }
 

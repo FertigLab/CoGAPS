@@ -118,6 +118,9 @@ displayBuildReport <- function()
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
 #' @inheritParams CoGAPS
+#' @examples
+#' data(SimpSim)
+#' result <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3)
 #' @export
 gapsRun <- function(D, S, ABins=data.frame(), PBins=data.frame(), nFactor=7,
 simulation_id="simulation", nEquil=1000, nSample=1000, nOutR=1000,
@@ -142,6 +145,11 @@ alphaP=0.01, nMaxP=100000, max_gibbmass_paraP=100.0, seed=-1, messages=TRUE)
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
 #' @inheritParams gapsRun
+#' @examples
+#' data(SimpSim)
+#' nC <- ncol(SimpSim.D)
+#' patterns <- matrix(runif(nC, 0, 1), nrow=1, ncol=nC)
+#' result <- gapsMapRun(SimpSim.D, SimpSim.S, FP=patterns, nFactor=3)
 #' @export
 gapsMapRun <- function(D, S, FP, ABins=data.frame(), PBins=data.frame(),
 nFactor=5, simulation_id="simulation", nEquil=1000, nSample=1000, nOutR=1000,
@@ -163,6 +171,7 @@ v2CoGAPS <- function(result, ...)
 {
     if (!is.null(list(...)$GStoGenes))
     {
+        #warning('GStoGenes is deprecated with v3.0, see CoGAPS documentation')
         if (is.null(list(...)$plot) | list(...)$plot)
         {
             plotGAPS(result$Amean, result$Pmean)

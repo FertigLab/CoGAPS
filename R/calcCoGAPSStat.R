@@ -8,13 +8,6 @@
 #' @param GStoGenes data.frame or list with gene sets
 #' @param numPerm number of permutations for null
 #' @return gene set statistics for each column of A
-#' @examples
-#' # Load the sample data from CoGAPS
-#' data(SimpSim)
-#' # Run calcCoGAPSStat with the correct arguments from 'results'
-#' calcCoGAPSStat(SimpSim.result$Amean, SimpSim.result$Asd,
-#' GStoGenes=GSets, numPerm=500)
-#' @export
 calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500)
 {
     # test for std dev of zero, possible mostly in simple simulations
@@ -24,28 +17,29 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500)
     # calculate Z scores
     zMatrix <- calcZ(Amean,Asd)
 
+    # check input arguments
+    if (!is(GStoGenes, "data.frame") && !is(GStoGenes, "list") && !is(GStoGenes,"GSA.genesets"))
+    {
+        stop("GStoGenes must be a data.frame,GSA.genesets, or list with format specified in the users manual.")
+    }
+
     if (is(GStoGenes, "GSA.genesets"))
     {
         names(GStoGenes$genesets) <- GStoGenes$geneset.names
         GStoGenes <- GStoGenes$genesets
     }
-    else if (is(GStoGenes, "list"))
+
+    if (is(GStoGenes, "list"))
     {
         GStoGenesList <- GStoGenes
     }
-    else if (is(GStoGenes, "data.frame"))
+    else
     {
         GStoGenesList <- list()
         for (i in 1:dim(GStoGenes)[2])
         {
-            GStoGenesList[[as.character(colnames(GStoGenes)[i])]] <- 
-                as.character(unique(GStoGenes[,i]))
+            GStoGenesList[[as.character(colnames(GStoGenes)[i])]] <- as.character(unique(GStoGenes[,i]))
         }
-    }
-    else
-    {
-        stop(paste("GStoGenes must be a data.frame, GSA.genesets, or list with",
-            "format specified in the users manual."))
     }
 
     # get dimensions

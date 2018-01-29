@@ -17,7 +17,6 @@
 #' `main') and graphical parameters (see `par') which are passed to
 #' `plot.window()', `title()' and `axis'.
 #' @return plot
-#' @export
 plotSmoothPatterns <- function(P, x=NULL, breaks=NULL, breakStyle=TRUE,
 orderP=!all(is.null(x)), plotPTS=FALSE, pointCol='black', lineCol='grey',
 add=FALSE, ...)

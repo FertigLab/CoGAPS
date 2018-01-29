@@ -5,7 +5,6 @@
 #' @param order optional vector indicating order of samples for plotting. Default is NULL.
 #' @param sample.color optional vector of colors of same length as colnames. Default is NULL.
 #' @return either an index of selected sets' contributions or the editted \code{PBySet} object
-#' @export
 patternMatcher<-function(PBySet=NULL,out=NULL,order=NULL, sample.color=NULL)
 {
     runApp(list(

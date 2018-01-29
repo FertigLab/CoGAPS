@@ -27,11 +27,4 @@ genes rankings with a column for each \code{lp} will also be returned.
 \description{
 patternMarkers
 }
-\examples{
-# Load the sample data from CoGAPS
-data(SimpSim)
-# Run patternMarkers with the correct arguments from 'results'
-patternMarkers(Amatrix=results$Amean,scaledPmatrix=FALSE,
-Pmatrix=results$Pmean,threshold="all",full=TRUE)
-}
 
