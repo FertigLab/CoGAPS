@@ -31,11 +31,4 @@ calculates the probability that a gene
 listed in a gene set behaves like other genes in the set within
 the given data set
 }
-\examples{
-# Load the sample data from CoGAPS
-data('SimpSim')
-# Run calcGeneGSStat
-calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, 
-GSGenes=GSets[[1]], numPerm=500, nullGenes=TRUE)
-}
 

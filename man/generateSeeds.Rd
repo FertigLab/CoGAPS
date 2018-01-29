@@ -18,7 +18,4 @@ vector of randomly generated seeds
 \description{
 Generate Seeds for Multiple Concurrent Runs
 }
-\examples{
-seeds <- generateSeeds(chains=2, seed=-1)
-}
 

@@ -3,7 +3,6 @@
 #' @param P matrix to be matched
 #' @param matchTo matrix to match P to
 #' @return matched patterns
-#' @export
 reorderByPatternMatch <- function(P, matchTo)
 {
     # check that P and the matchTo matrix have the same dimensions

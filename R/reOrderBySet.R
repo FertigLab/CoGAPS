@@ -7,7 +7,6 @@
 #' @param nSets number of sets
 #' @return a list containing the \code{nSets} sets solution for Amean under "A",
 #' Pmean under "P", and Asd under "Asd"
-#' @export
 reOrderBySet<-function(AP, nFactor, nSets)
 {
     P<-do.call(rbind,lapply(AP, function(x) x$Pmean))

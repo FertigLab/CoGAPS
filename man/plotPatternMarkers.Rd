@@ -34,15 +34,6 @@ heatmap of the \code{data} values for the \code{patternMarkers}
 \description{
 plotPatternMarkers
 }
-\examples{
-# Load the sample data from CoGAPS
-data(SimpSim)
-# Run patternMarkers and save the outputs
-PM <- patternMarkers(Amatrix=results$Amean,scaledPmatrix=FALSE,
-Pmatrix=results$Pmean,threshold="all",full=TRUE)
-# Run plotPatternMarkers with the correct argument from 'PM'
-plotPatternMarkers(data=SimpSim.D,patternMarkers=PM$PatternMarkers)
-}
 \seealso{
 \code{\link{heatmap.2}}
 }

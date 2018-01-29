@@ -11,8 +11,8 @@
 #' # Load the sample data from CoGAPS
 #' data(SimpSim)
 #' # Run plotAtoms
-#' plotAtoms(results,type="sampA")
-#'@export
+#' plotAtoms(SimpSim.result, type="sampA")
+#' @export
 plotAtoms<-function(gapsRes, type='sampA')
 {
     if (type == 'sampA')       atoms <- gapsRes$atomsASamp
