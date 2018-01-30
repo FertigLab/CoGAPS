@@ -2,34 +2,38 @@
 #'
 #' @details factors whole genome data into randomly generated sets for indexing
 #'
-#' @param data data matrix with unique rownames
-#' @param nSets number of sets for parallelization
-#' @param outRDA name of output file
-#' @param keep logical indicating whether or not to save gene set list.
-#' @return list with randomly generated sets of genes from whole genome data
+#' @param D data matrix
+#' @param S uncertainty matrix
+#' @param nSets number of sets to partition the data into
+#' @param simulatioName name used to identify files created by this simulation
+#' @return simulationName used to identify saved files
 #' @examples
-#' # Load the sample data from CoGAPS
-#' data(SimpSim)
-#' # Run createGWCoGAPSSets
-#' createGWCoGAPSSets(SimpSim.D, nSets=2)
+#' data(SimpSim) # Load the sample data from CoGAPS
+#' createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
 #' @export
-createGWCoGAPSSets<-function(data=D, nSets=nSets,
-outRDA="GenesInCoGAPSSets.Rda", keep=TRUE)
+createGWCoGAPSSets <- function(D, S, nSets, simulationName)
 {
-    genes=rownames(data)
-    setSize=floor(length(genes)/nSets)
-    genesInSets <- list()
+    # check gene names
+    if (length(unique(rownames(D))) != length(rownames(D)))
+    {
+        warning("Gene identifiers not unique!")
+    }
+
+    # partition data by sampling random sets of genes
+    genes <- 1:nrow(D)
+    setSize <- floor(length(genes) / nSets)
     for (set in 1:nSets)
     {
-        if(set!=nSets)
-            genesInSets[[set]] <- sample(genes,setSize)
-        if(set==nSets)
-            genesInSets[[set]] <- genes
-        genes=genes[!genes%in%genesInSets[[set]]]
+        # sample gene names
+        sampleSize <- ifelse(set == nSets, length(genes), setSize)
+        geneSet <- sample(genes, sampleSize, replace=FALSE)
+        genes <- genes[!(genes %in% geneSet)]
+
+        # partition data
+        sampleD <- D[geneSet,]
+        sampleS <- S[geneSet,]
+        save(sampleD, sampleS, file=paste(simulationName, "_partition_", set,
+            ".RData", sep=""));
     }
-    if (!identical(sort(unlist(genesInSets)),sort(rownames(data))))
-        message("Gene identifiers not unique!")
-    if (keep==TRUE)
-        save(list=c('genesInSets'),file=outRDA)
-    return(genesInSets)
+    return(simulationName)
 }
