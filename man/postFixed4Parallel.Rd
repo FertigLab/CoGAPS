@@ -4,7 +4,7 @@
 \alias{postFixed4Parallel}
 \title{Post Processing of Parallel Output}
 \usage{
-postFixed4Parallel(AP.fixed = NA, setPs = NA)
+postFixed4Parallel(AP.fixed, setPs)
 }
 \arguments{
 \item{AP.fixed}{output of parallel gapsMapRun calls with same FP}

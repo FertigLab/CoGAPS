@@ -5,7 +5,7 @@
 #' for gapsMapRun
 #' @return list of two data.frames containing the A matrix estimates or their
 #' corresponding standard deviations from output of parallel CoGAPS
-postFixed4Parallel <- function(AP.fixed=NA, setPs=NA)
+postFixed4Parallel <- function(AP.fixed, setPs)
 {
     ASummary <- do.call(rbind,lapply(AP.fixed, function(x) x$Amean))
     Asd <- do.call(rbind,lapply(AP.fixed, function(x) x$Asd))

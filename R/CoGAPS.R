@@ -23,6 +23,7 @@
 #' the fixed patterns
 #' @param fixedPatterns matrix of fixed values in either A or P matrix
 #' @param checkpointInterval time (in seconds) between creating a checkpoint
+#' @param checkpointFile name of the checkpoint file
 #' @param ... keeps backwards compatibility with arguments from older versions
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
@@ -32,8 +33,9 @@
 #' @export
 CoGAPS <- function(D, S, nFactor=7, nEquil=1000, nSample=1000, nOutputs=1000,
 nSnapshots=0, alphaA=0.01, alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100,
-seed=-1, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed = 'N',
-fixedPatterns = matrix(0), checkpointInterval=0, ...)
+seed=-1, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed='N',
+fixedPatterns=matrix(0), checkpointInterval=0, checkpointFile="gaps_checkpoint.out",
+...)
 {
     # get v2 arguments
     oldArgs <- list(...)
@@ -57,12 +59,24 @@ fixedPatterns = matrix(0), checkpointInterval=0, ...)
         stop('D and S must be matrices')
     if (any(D < 0) | any(S < 0))
         stop('D and S matrix must be non-negative')
+    if (nrow(D) != nrow(S) | ncol(D) != ncol(S))
+        stop('D and S matrix have different dimensions')
+    if (whichMatrixFixed == 'A' & nrow(fixedPatterns) != nrow(D))
+        stop('invalid number of rows for fixedPatterns')
+    if (whichMatrixFixed == 'A' & ncol(fixedPatterns) > nFactor)
+        stop('invalid number of columns for fixedPatterns')
+    if (whichMatrixFixed == 'P' & nrow(fixedPatterns) > nFactor)
+        stop('invalid number of rows for fixedPatterns')
+    if (whichMatrixFixed == 'P' & ncol(fixedPatterns) != ncol(D))
+        stop('invalid number of columns for fixedPatterns')
 
     # run algorithm with call to C++ code
     result <- cogaps_cpp(D, S, nFactor, nEquil, nEquil/10, nSample, nOutputs,
         nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
-        singleCellRNASeq, whichMatrixFixed, fixedPatterns, checkpointInterval)
+        singleCellRNASeq, whichMatrixFixed, fixedPatterns, checkpointInterval,
+        checkpointFile)
     
+    # label matrices and return list
     patternNames <- paste('Patt', 1:nFactor, sep='')
     rownames(result$Amean) <- rownames(result$Asd) <- rownames(D)
     colnames(result$Amean) <- colnames(result$Asd) <- patternNames
@@ -80,9 +94,9 @@ fixedPatterns = matrix(0), checkpointInterval=0, ...)
 #' @param path path to checkpoint file
 #' @return list with A and P matrix estimates
 #' @export
-CoGapsFromCheckpoint <- function(D, S, path)
+CoGapsFromCheckpoint <- function(D, S, path, checkpointFile="gaps_checkpoint.out")
 {
-    cogapsFromCheckpoint_cpp(D, S, path)
+    cogapsFromCheckpoint_cpp(D, S, path, checkpointFile)
 }
 
 #' Display Information About Package Compilation
