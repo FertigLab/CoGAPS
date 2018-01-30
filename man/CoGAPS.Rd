@@ -8,7 +8,8 @@ CoGAPS(D, S, nFactor = 7, nEquil = 1000, nSample = 1000,
   nOutputs = 1000, nSnapshots = 0, alphaA = 0.01, alphaP = 0.01,
   maxGibbmassA = 100, maxGibbmassP = 100, seed = -1, messages = TRUE,
   singleCellRNASeq = FALSE, whichMatrixFixed = "N",
-  fixedPatterns = matrix(0), checkpointInterval = 0, ...)
+  fixedPatterns = matrix(0), checkpointInterval = 0,
+  checkpointFile = "gaps_checkpoint.out", ...)
 }
 \arguments{
 \item{D}{data matrix}
@@ -47,6 +48,8 @@ the fixed patterns}
 \item{fixedPatterns}{matrix of fixed values in either A or P matrix}
 
 \item{checkpointInterval}{time (in seconds) between creating a checkpoint}
+
+\item{checkpointFile}{name of the checkpoint file}
 
 \item{...}{keeps backwards compatibility with arguments from older versions}
 }

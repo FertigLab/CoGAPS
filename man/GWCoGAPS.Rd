@@ -4,29 +4,15 @@
 \alias{GWCoGAPS}
 \title{GWCoGAPS}
 \usage{
-GWCoGAPS(D, S, nFactor, nSets, nCores = NA, saveBySetResults = FALSE,
-  fname = "GWCoGAPS.AP.fixed", PatternsMatchFN = patternMatch4Parallel,
-  Cut = NA, minNS = NA, ...)
+GWCoGAPS(simulationName, nFactor, nCores = NA, cut = NA, minNS = NA, ...)
 }
 \arguments{
-\item{D}{data matrix}
-
-\item{S}{uncertainty matrix (std devs for chi-squared of Log Likelihood)}
-
 \item{nFactor}{number of patterns (basis vectors, metagenes), which must be
 greater than or equal to the number of rows of FP}
 
-\item{nSets}{number of sets for parallelization}
-
 \item{nCores}{number of cores for parallelization. If left to the default NA, nCores = nSets.}
 
-\item{saveBySetResults}{logical indicating whether to save by intermediary by set results. Default is FALSE.}
-
-\item{fname}{character string used to label file output. Default is "GWCoGAPS.AP.fixed"}
-
-\item{PatternsMatchFN}{function to use for pattern matching across sets}
-
-\item{Cut}{number of branches at which to cut dendrogram used in patternMatch4Parallel}
+\item{cut}{number of branches at which to cut dendrogram used in patternMatch4Parallel}
 
 \item{minNS}{minimum of individual set contributions a cluster must contain}
 
