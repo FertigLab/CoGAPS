@@ -7,14 +7,10 @@
 #include <Rcpp.h>
 #include <ctime>
 #include <fstream>
+#include <cstdio>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-
-// no C++11 std::to_string
-#include <sstream>
-#define SSTR(x) static_cast<std::ostringstream&>( \
-    (std::ostringstream() << std::dec << x)).str()
 
 // used to convert defined macro values into strings
 #define STR_HELPER(x) #x
@@ -26,20 +22,19 @@ namespace bpt = boost::posix_time;
 
 // keeps track of when checkpoints are made
 static bpt::ptime lastCheckpoint; 
+static std::string checkpointFile;
 
 // save the current internal state to a file
-// TODO - delete old backup file, rename current checkpoint to backup name,
-// then create the new checkpoint with the correct name
 static void createCheckpoint(GapsInternalState &state)
 {
-    Rcpp::Rcout << "creating gaps checkpoint...";
-    state.numCheckpoints++;
+    // create backup file
+    std::rename(checkpointFile.c_str(), (checkpointFile + ".backup").c_str());
 
     // record starting time
     bpt::ptime start = bpt_now();
 
     // save state to file, write magic number at beginning
-    std::string fname("gaps_checkpoint_" + SSTR(state.numCheckpoints) + ".out");
+    std::string fname(checkpointFile);
     Archive ar(fname, ARCHIVE_WRITE);
     gaps::random::save(ar);
     ar << state.sampler.nFactor() << state.nEquil << state.nSample << state;
@@ -48,7 +43,10 @@ static void createCheckpoint(GapsInternalState &state)
     // display time it took to create checkpoint
     bpt::time_duration diff = bpt_now() - start;
     double elapsed = diff.total_milliseconds() / 1000.;
-    Rcpp::Rcout << " finished in " << elapsed << " seconds\n";
+    Rprintf("created checkpoint in %.3f seconds\n", elapsed);
+
+    // delete backup file
+    std::remove((checkpointFile + ".backup").c_str());
 }
 
 static void updateSampler(GapsInternalState &state)
@@ -92,10 +90,9 @@ unsigned nIterTotal)
 {
     if ((state.iter + 1) % state.nOutputs == 0 && state.messages)
     {
-        Rcpp::Rcout << type << state.iter + 1 << " of " << nIterTotal
-            << ", Atoms:" << state.sampler.totalNumAtoms('A') << "("
-            << state.sampler.totalNumAtoms('P') << ") Chi2 = "
-            << state.sampler.chi2() << '\n';
+        Rprintf("%s %d of %d, Atoms:%d(%d) Chi2 = %.2f\n", type.c_str(),
+            state.iter + 1, nIterTotal, state.sampler.totalNumAtoms('A'),
+            state.sampler.totalNumAtoms('P'), state.sampler.chi2());
     }
 }
 
@@ -177,7 +174,7 @@ static Rcpp::List runCogaps(GapsInternalState &state)
     float meanChiSq = state.sampler.meanChiSq();
     if (state.messages)
     {
-        Rcpp::Rcout << "Chi-Squared of Mean: " << meanChiSq << '\n';
+        Rprintf("Chi-Squared of Mean: %.2f\n", meanChiSq);
     }
 
     return Rcpp::List::create(
@@ -204,7 +201,8 @@ const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil,
 unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots,
 float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP, int seed,
 bool messages, bool singleCellRNASeq, char whichMatrixFixed,
-const Rcpp::NumericMatrix &FP, unsigned checkpointInterval)
+const Rcpp::NumericMatrix &FP, unsigned checkpointInterval,
+const std::string &cptFile)
 {
     // set seed
     uint32_t seedUsed = static_cast<uint32_t>(seed);
@@ -220,13 +218,15 @@ const Rcpp::NumericMatrix &FP, unsigned checkpointInterval)
     GapsInternalState state(D, S, nFactor, nEquil, nEquilCool, nSample,
         nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
         messages, singleCellRNASeq, whichMatrixFixed, FP, checkpointInterval);
+    checkpointFile = cptFile;
     return runCogaps(state);
 }
 
 // TODO add checksum to verify D,S matrices
 // [[Rcpp::export]]
 Rcpp::List cogapsFromCheckpoint_cpp(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, const std::string &fileName)
+const Rcpp::NumericMatrix &S, const std::string &fileName,
+const std::string &cptFile)
 {   
     Archive ar(fileName, ARCHIVE_READ);
     gaps::random::load(ar);
@@ -240,6 +240,7 @@ const Rcpp::NumericMatrix &S, const std::string &fileName)
     ar >> state;
 
     // run cogaps from this internal state
+    checkpointFile = cptFile;
     return runCogaps(state);
 }
 
