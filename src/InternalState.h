@@ -41,7 +41,6 @@ struct GapsInternalState
     uint32_t seed;
 
     long checkpointInterval;
-    unsigned numCheckpoints;
 
     unsigned nUpdatesA;
     unsigned nUpdatesP;
@@ -50,7 +49,7 @@ struct GapsInternalState
 
     SnapshotList snapshotsA;
     SnapshotList snapshotsP;
-    
+
     GapsInternalState(const Rcpp::NumericMatrix &D,
         const Rcpp::NumericMatrix &S, unsigned nF, unsigned nE, unsigned nEC,
         unsigned nS, unsigned nOut, unsigned nSnap, float alphaA, float alphaP,
@@ -63,7 +62,7 @@ struct GapsInternalState
         nIterA(10), nIterP(10), nEquil(nE), nEquilCool(nEC), nSample(nS),
         nSnapshots(nSnap), nOutputs(nOut), messages(msgs), iter(0),
         phase(GAPS_BURN), seed(sd), checkpointInterval(cptInterval),
-        numCheckpoints(0), nUpdatesA(0), nUpdatesP(0),
+        nUpdatesA(0), nUpdatesP(0),
         sampler(D, S, nF, alphaA, alphaP, maxGibbmassA, maxGibbmassP,
             singleCellRNASeq, whichMatrixFixed, FP)
     {}
@@ -84,8 +83,7 @@ inline Archive& operator<<(Archive &ar, GapsInternalState &state)
         << state.nIterA << state.nIterP << state.nEquil << state.nEquilCool
         << state.nSample << state.nSnapshots << state.nOutputs << state.messages
         << state.iter << state.phase << state.seed << state.checkpointInterval
-        << state.numCheckpoints << state.nUpdatesA << state.nUpdatesP
-        << state.sampler;
+        << state.nUpdatesA << state.nUpdatesP << state.sampler;
     return ar;
 }
 
@@ -96,8 +94,7 @@ inline Archive& operator>>(Archive &ar, GapsInternalState &state)
         >> state.nIterA >> state.nIterP >> state.nEquil >> state.nEquilCool
         >> state.nSample >> state.nSnapshots >> state.nOutputs >> state.messages
         >> state.iter >> state.phase >> state.seed >> state.checkpointInterval
-        >> state.numCheckpoints >> state.nUpdatesA >> state.nUpdatesP
-        >> state.sampler;
+        >> state.nUpdatesA >> state.nUpdatesP >> state.sampler;
     return ar;
 }
 

@@ -41,24 +41,18 @@ public:
     void close() {mStream.close();}
 
     template<typename T>
-    friend Archive& operator<<(Archive &ar, T val);
+    friend Archive& operator<<(Archive &ar, T val)
+    {
+        ar.mStream.write(reinterpret_cast<char*>(&val), sizeof(T));
+        return ar;
+    }
 
     template<typename T>
-    friend Archive& operator>>(Archive &ar, T &val);
+    friend Archive& operator>>(Archive &ar, T &val)
+    {
+        ar.mStream.read(reinterpret_cast<char*>(&val), sizeof(T));
+        return ar;
+    }
 };
-
-template<typename T>
-Archive& operator<<(Archive &ar, T val)
-{
-    ar.mStream.write(reinterpret_cast<char*>(&val), sizeof(T));
-    return ar;
-}
-
-template<typename T>
-Archive& operator>>(Archive &ar, T &val)
-{
-    ar.mStream.read(reinterpret_cast<char*>(&val), sizeof(T));
-    return ar;
-}
 
 #endif
