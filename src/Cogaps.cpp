@@ -28,6 +28,8 @@ namespace bpt = boost::posix_time;
 static bpt::ptime lastCheckpoint; 
 
 // save the current internal state to a file
+// TODO - delete old backup file, rename current checkpoint to backup name,
+// then create the new checkpoint with the correct name
 static void createCheckpoint(GapsInternalState &state)
 {
     Rcpp::Rcout << "creating gaps checkpoint...";

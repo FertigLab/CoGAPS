@@ -9,6 +9,7 @@
 #define ARCHIVE_WRITE std::ios::out | std::ios::trunc
 
 // magic number written to beginning of archive files
+// needs to be updated everytime to method of checkpointing changes
 #define ARCHIVE_MAGIC_NUM 0xCE45D32A
 
 class Archive
@@ -32,7 +33,7 @@ public:
             *this >> magicNum;
             if (magicNum != ARCHIVE_MAGIC_NUM)
             {
-                Rcpp::Rcout << "warning: invalid checkpoint file" << std::endl;
+                Rcpp::Rcout << "warning: invalid/old checkpoint file" << std::endl;
             }
         }*/
     }

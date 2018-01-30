@@ -61,7 +61,6 @@ nullGenes=FALSE)
 #' @param PwNull - logical indicating gene adjustment
 #' @return A vector of length GSGenes containing the p-values of set membership
 #' for each gene containined in the set specified in GSGenes.
-#' @examples
 computeGeneGSProb <- function(Amean, Asd, GSGenes, Pw=rep(1,ncol(Amean)),
 numPerm=500, PwNull=FALSE)
 {

@@ -4,20 +4,19 @@
 \alias{createGWCoGAPSSets}
 \title{Create Gene Sets for GWCoGAPS}
 \usage{
-createGWCoGAPSSets(data = D, nSets = nSets,
-  outRDA = "GenesInCoGAPSSets.Rda", keep = TRUE)
+createGWCoGAPSSets(D, S, nSets, simulationName)
 }
 \arguments{
-\item{data}{data matrix with unique rownames}
+\item{D}{data matrix}
 
-\item{nSets}{number of sets for parallelization}
+\item{S}{uncertainty matrix}
 
-\item{outRDA}{name of output file}
+\item{nSets}{number of sets to partition the data into}
 
-\item{keep}{logical indicating whether or not to save gene set list.}
+\item{simulatioName}{name used to identify files created by this simulation}
 }
 \value{
-list with randomly generated sets of genes from whole genome data
+simulationName used to identify saved files
 }
 \description{
 Create Gene Sets for GWCoGAPS
@@ -26,9 +25,7 @@ Create Gene Sets for GWCoGAPS
 factors whole genome data into randomly generated sets for indexing
 }
 \examples{
-# Load the sample data from CoGAPS
-data(SimpSim)
-# Run createGWCoGAPSSets
-createGWCoGAPSSets(SimpSim.D, nSets=2)
+data(SimpSim) # Load the sample data from CoGAPS
+createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
 }
 
