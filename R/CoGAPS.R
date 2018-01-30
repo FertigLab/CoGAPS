@@ -94,8 +94,10 @@ fixedPatterns=matrix(0), checkpointInterval=0, checkpointFile="gaps_checkpoint.o
 #' @param path path to checkpoint file
 #' @return list with A and P matrix estimates
 #' @export
-CoGapsFromCheckpoint <- function(D, S, path, checkpointFile="gaps_checkpoint.out")
+CoGapsFromCheckpoint <- function(D, S, path, checkpointFile=NA)
 {
+    if (is.na(checkpointFile))
+        checkpointFile <- path
     cogapsFromCheckpoint_cpp(D, S, path, checkpointFile)
 }
 

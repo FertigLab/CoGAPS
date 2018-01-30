@@ -3,6 +3,7 @@
 export(CoGAPS)
 export(CoGapsFromCheckpoint)
 export(GWCoGAPS)
+export(GWCoGapsFromCheckpoint)
 export(binaryA)
 export(calcZ)
 export(createGWCoGAPSSets)
