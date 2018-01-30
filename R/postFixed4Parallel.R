@@ -19,7 +19,7 @@ postFixed4Parallel <- function(AP.fixed, setPs)
     X <- apply(Pneu,1,range)
     Y <- apply(setPs,1,range)
     colnames(X) <- colnames(Y)
-    if (all.equal(X,Y,tolerance=1e-5) != TRUE)
+    if (all.equal(X,Y,tolerance=0.01) != TRUE)
         warning("Patterns do not match fixed values.")
 
     As4fixPs<-list("A"=Aneu,"Asd"=Asd)

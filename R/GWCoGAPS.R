@@ -24,41 +24,64 @@ GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, ...)
     allDataSets <- preInitialPhase(simulationName, nCores)
     initialResult <- runInitialPhase(simulationName, allDataSets, nFactor, ...)
     matchedPatternSets <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
+    save(matchedPatternSets, file=paste(simulationName, "_matched_ps.RData", sep=""))
     finalResult <- runFinalPhase(simulationName, allDataSets, matchedPatternSets, ...)
     return(postFinalPhase(finalResult, matchedPatternSets))
 }
 
+#' Restart a GWCoGaps Run from Checkpoint
+#'
+#' @export
 GWCoGapsFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, ...)
 {
+    # find data files
     allDataSets <- preInitialPhase(simulationName, nCores)
 
     # figure out phase from file signature
-    initalCpts <- list.files(full.names=TRUE, pattern=paste(simulationName, "_initial_cpt_[0-9]+.out"))
-    finalCpts <- list.files(full.names=TRUE, pattern=paste(simulationName, "_final_cpt_[0-9]+.out"))
-    cptPrefix <- ifelse(length(finalCpts), "_final_cpt_", "_initial_cpt_")
+    initialCpts <- list.files(full.names=TRUE, pattern=paste(simulationName, "_initial_cpt_[0-9]+.out", sep=""))
+    finalCpts <- list.files(full.names=TRUE, pattern=paste(simulationName, "_final_cpt_[0-9]+.out", sep=""))
 
-    # run CoGAPS for each set, starting from appropiate checkpoint file
-    result <- foreach(i=1:nSets) %dopar%
+    if (length(finalCpts))
     {
-        # load data set and shift values so gene minimum is zero
-        load(allDataSets[[i]])
-        sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x) pmin(0,min(x))))
+        finalResult <- foreach(i=1:length(allDataSets)) %dopar%
+        {
+            # load data set and shift values so gene minimum is zero
+            load(allDataSets[[i]])
+            sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x) pmin(0,min(x))))
+    
+            # run CoGAPS with fixed patterns
+            cptFileName <- paste(simulationName, "_final_cpt_", i, ".out", sep="")
+            CoGapsFromCheckpoint(sampleD, sampleS, cptFileName)
+        }
+        load(paste(simulationName, "_matched_ps.RData", sep=""))
+    }
+    else if (file_test("-f", paste(simulationName, "_matched_ps.RData", sep="")))
+    {
+        load(paste(simulationName, "_matched_ps.RData", sep=""))
+        finalResult <- runFinalPhase(simulationName, allDataSets, matchedPatternSets, ...)
+    }
+    else if (length(initialCpts))
+    {
+        # initial phase - always needs to be run to get matchedPatternSets
+        initialResult <- foreach(i=1:length(allDataSets)) %dopar%
+        {
+            # load data set and shift values so gene minimum is zero
+            load(allDataSets[[i]])
+            sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x) pmin(0,min(x))))
 
-        # run CoGAPS from checkpoint
-        cptName <- paste(simulationName, cptPrefix, i, ".out", sep="")
-        CoGapsFromCheckpoint(cptName)
+            # run CoGAPS from checkpoint
+            cptFileName <- paste(simulationName, "_initial_cpt_", i, ".out", sep="")
+            CoGapsFromCheckpoint(sampleD, sampleS, cptFileName)
+        }
+        matchedPatternSets <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
+        save(matchedPatternSets, file=paste(simulationName, "_matched_ps.RData", sep=""))
+        finalResult <- runFinalPhase(simulationName, allDataSets, matchedPatternSets, ...)
     }
-
-    if (length(finalsCpts))
+    else
     {
-        return(postFinalPhase(allDataSets, result))
+        stop("no checkpoint files found")
     }
-    else 
-    {
-        matchedPatternSets <- postInitialPhase(result, length(allDataSets), cut, minNS)
-        finalResult <- runFinalPhase(allDataSets, matchedPatternSets, ...)
-        return(postFinalPhase(allDataSets, matchedPatternSets))
-    }
+    return(postFinalPhase(finalResult, matchedPatternSets))
 }
 
 preInitialPhase <- function(simulationName, nCores)

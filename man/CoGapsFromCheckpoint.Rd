@@ -4,7 +4,7 @@
 \alias{CoGapsFromCheckpoint}
 \title{Restart CoGAPS from Checkpoint File}
 \usage{
-CoGapsFromCheckpoint(D, S, path, checkpointFile = "gaps_checkpoint.out")
+CoGapsFromCheckpoint(D, S, path, checkpointFile = NA)
 }
 \arguments{
 \item{D}{data matrix}
