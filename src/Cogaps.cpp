@@ -191,7 +191,9 @@ static Rcpp::List runCogaps(GapsInternalState &state)
         Rcpp::Named("chiSqValues") = chi2Vec.rVec(),
         Rcpp::Named("randSeed") = state.seed,
         Rcpp::Named("numUpdates") = state.nUpdatesA + state.nUpdatesP,
-        Rcpp::Named("meanChi2") = meanChiSq
+        Rcpp::Named("meanChi2") = meanChiSq,
+        Rcpp::Named("PumpStats") = PumpStats,
+        Rcpp::Named("meanPatternAssignment") = meanPattern
     );
 }
 
