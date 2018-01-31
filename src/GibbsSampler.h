@@ -23,6 +23,8 @@ public:
     ColMatrix mAMeanMatrix, mAStdMatrix;
     RowMatrix mPMeanMatrix, mPStdMatrix;
 
+    ColMatrix mPumpMatrix;
+
     unsigned mStatUpdates;
 
     float mMaxGibbsMassA;
