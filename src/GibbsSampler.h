@@ -24,6 +24,7 @@ public:
     RowMatrix mPMeanMatrix, mPStdMatrix;
 
     ColMatrix mPumpMatrix;
+    Vector mLP;
 
     unsigned mStatUpdates;
 

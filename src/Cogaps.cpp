@@ -137,6 +137,7 @@ static void runSampPhase(GapsInternalState &state)
         state.sampler.updateStatistics();
         takeSnapshots(state);
         displayStatus(state, "Samp: ", state.nSample);
+        state.sampler.updatePumpStatistics();
         storeSamplerInfo(state, state.nAtomsASample, state.nAtomsPSample,
             state.chi2VecSample);
     }
@@ -192,8 +193,8 @@ static Rcpp::List runCogaps(GapsInternalState &state)
         Rcpp::Named("randSeed") = state.seed,
         Rcpp::Named("numUpdates") = state.nUpdatesA + state.nUpdatesP,
         Rcpp::Named("meanChi2") = meanChiSq,
-        Rcpp::Named("PumpStats") = PumpStats,
-        Rcpp::Named("meanPatternAssignment") = meanPattern
+        Rcpp::Named("PumpStats") = state.sampler.getPumpMatrix(),
+        Rcpp::Named("meanPatternAssignment") = state.sampler.getMeanPattern()
     );
 }
 
