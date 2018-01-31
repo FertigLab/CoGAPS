@@ -14,9 +14,6 @@
 patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS, 
 cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
 {
-    #### read in CoGAPS results
-    cdir <- getwd()
-    #if(!is.null(path)){setwd(path)}
     if (!is.null(minNS))
         minNS=nSets/2
 
