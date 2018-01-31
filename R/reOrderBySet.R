@@ -17,7 +17,7 @@ reOrderBySet<-function(AP, #output of gapsRun in parallel
 	nSets, #number of sets for parallelization
 	match="P"
 ){
-	if(match="P"){
+	if(match=="P"){
 		P<-do.call(rbind,lapply(AP, function(x) x$Pmean))
 		rownames(P)<-paste(rep(1:nSets,each=nFactor),rep(1:nFactor,nSets),sep=".")
 		A<-lapply(AP, function(x) x$Amean)
@@ -25,7 +25,7 @@ reOrderBySet<-function(AP, #output of gapsRun in parallel
 		names(A)=names(Asd)<-paste(rep("Set",nSets),rep(1:nSets),sep="")
 		return(list("A"=A,"Asd"=Asd,"P"=P))
 	}
-	if(match="A"){
+	if(match=="A"){
 		A<-do.call(cbind,lapply(AP, function(x) x$Pmean))
 		colames(A)<-paste(rep(1:nSets,each=nFactor),rep(1:nFactor,nSets),sep=".")
 		P<-lapply(AP, function(x) x$Pmean)
