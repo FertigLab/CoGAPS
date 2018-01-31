@@ -79,6 +79,7 @@ public:
     float meanChiSq() const;
 
     void updateStatistics();
+    void updatePumpStatistics();
 
     Rcpp::NumericMatrix getNormedMatrix(char mat);
 

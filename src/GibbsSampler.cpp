@@ -444,6 +444,87 @@ void GibbsSampler::updateStatistics()
     }
 }
 
+void GibbsSampler::updatePumpStatistics()
+{
+    // calculate normalization vector
+    Vector normVec(mPMatrix.nRow());
+    for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
+    {
+        normVec[r] = gaps::algo::sum(mPMatrix.getRow(r));
+        normVec[r] = (normVec[r] == 0) ? 1.f : normVec[r];
+    }
+
+    // get normed matrices
+    ColMatrix normedA(mAMatrix);    
+    RowMatrix normedP(mPMatrix);
+    for (unsigned c = 0; c < normedA.nCol(); ++c)
+    {
+        normedA.getCol(c) += gaps::algo::scalarMultiple(normedA.getCol(c), normVec[c]);
+    }
+    for (unsigned r = 0; r < normedP.nRow(); ++r)
+    {
+        normedP.getRow(r) += gaps::algo::scalarDivision(normedP.getRow(r), normVec[r]);
+    }
+
+    // get scaling factors for A matrix
+    Vector pScales(normedP.nRow());
+    for (unsigned i = 0; i < pScales.size(); ++i)
+    {
+        pScales[i] = gaps::algo::max(normedP.getRow(i));
+    }
+
+    // scale A matrix, assuming P matrix is not scaled
+    for (unsigned j = 0; j < normedA.nCol(); ++j)
+    {
+        normedA.getCol(j) = gaps::algo::scalarMultiple(normedA.getCol(j), pScales[j]);
+    }
+    
+    // get scaled A matrix
+    RowMatrix diff(normedA.nRow(), normedA.nCol());
+    for (unsigned i = 0; i < normedA.nRow(); ++i)
+    {
+        float rowMax = 0.f;
+        for (unsigned j = 0; j < normedA.nCol(); ++j)
+        {
+            rowMax = std::max(normedA(i,j), rowMax);
+        }
+        
+        if (rowMax > 0.f)
+        {
+            for (unsigned j = 0; j < normedA.nCol(); ++j)
+            {
+                diff(i,j) = normedA(i,j) / rowMax - mLP[j];
+            }
+        }
+        else
+        {
+            diff.getRow(i) = gaps::algo::scalarMultiple(mLP, -1.f);
+        }
+    }
+
+    // compute sstat
+    RowMatrix sStat(normedA.nRow(), normedA.nCol());
+    for (unsigned i = 0; i < sStat.nRow(); ++i)
+    {
+        sStat.getRow(i) = std::sqrt(gaps::algo::dotProduct(diff.getRow(i), diff.getRow(i)));
+    }
+
+    for (unsigned i = 0; i < scoreMat.nRow(); ++i) // unique threshold
+    {
+        unsigned whichMin = 0;
+        float minVal = sStat(i,0);
+        for (unsigned j = 0; j < scoreMat.nCol(); ++j)
+        {
+            if (sStat(i,j) < minVal)
+            {
+                minVal = sStat(i,j);
+                whichMin = j;
+            }
+        }
+        mPumpMatrix(i,whichMin)++;
+    }
+}
+
 Archive& operator<<(Archive &ar, GibbsSampler &sampler)
 {
     ar << sampler.mAMatrix << sampler.mPMatrix << sampler.mADomain
