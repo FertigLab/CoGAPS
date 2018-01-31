@@ -26,7 +26,7 @@ reOrderBySet<-function(AP, #output of gapsRun in parallel
 		return(list("A"=A,"Asd"=Asd,"P"=P))
 	}
 	if(match=="A"){
-		A<-do.call(cbind,lapply(AP, function(x) x$Pmean))
+		A<-do.call(cbind,lapply(AP, function(x) x$Amean))
 		colnames(A)<-paste(rep(1:nSets,each=nFactor),rep(1:nFactor,nSets),sep=".")
 		P<-lapply(AP, function(x) x$Pmean)
 		Asd<-lapply(AP, function(x) x$Asd)
