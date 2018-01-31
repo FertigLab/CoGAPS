@@ -120,7 +120,7 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
     {
         # return by set and final
         PBySet<-PByCDS
-        return(list("consenusPatterns"=PByCDSWavgScaled,"PBySet"=PBySet))
+        return(list("consenusPatterns"=PByCDSWavgScaled,"PBySet"=PBySet,"RtoMPDS"=RtoMPDS))
     }
     else
     {
