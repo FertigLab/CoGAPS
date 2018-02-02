@@ -223,3 +223,7 @@ Rcpp::NumericVector GibbsSamplerTransformation::getProw() {
     std::vector<double> row_val = _PMatrix.get_Row(row);
     return Rcpp::wrap(row_val);
 }
+
+Rcpp::NumericVector GibbsSamplerTransformation::currentTheta() {
+    return _growth.theta();
+}

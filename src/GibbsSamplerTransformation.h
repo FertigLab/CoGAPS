@@ -74,6 +74,9 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
     // get relevant column and rows
     Rcpp::NumericVector getAcol();
     Rcpp::NumericVector getProw();
+
+    // current theta
+    Rcpp::NumericVector currentTheta();
 };
 
 #endif

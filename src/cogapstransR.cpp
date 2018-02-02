@@ -324,6 +324,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         // check A column before update
         Rcpp::Rcout << "A col before update\n";
         Rf_PrintValue(GibbsSampTrans.getAcol());
+        Rcpp::Rcout << "Theta before update\n";
+        Rf_PrintValue(GibbsSampTrans.currentTheta());
 
         // update pattern
         GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
@@ -331,6 +333,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         // check A column after update
         Rcpp::Rcout << "A col after update\n";
         Rf_PrintValue(GibbsSampTrans.getAcol());
+        Rcpp::Rcout << "Theta after update\n";
+        Rf_PrintValue(GibbsSampTrans.currentTheta());
 
         GibbsSampTrans.check_atomic_matrix_consistency('A');
         GibbsSampTrans.check_atomic_matrix_consistency('P');
