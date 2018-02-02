@@ -70,6 +70,10 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
 
     // track acceptance and total proposals
     unsigned int accepted, proposed;
+
+    // get relevant column and rows
+    Rcpp::NumericVector getAcol();
+    Rcpp::NumericVector getProw();
 };
 
 #endif

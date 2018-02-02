@@ -321,8 +321,16 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
 
         GibbsSampTrans.check_atomic_matrix_consistency('P');
 
+        // check A column before update
+        Rcpp::Rcout << "A col before update\n";
+        Rf_PrintValue(GibbsSampTrans.getAcol());
+
         // update pattern
         GibbsSampTrans.abc_mcmc(ext_iter, 0, thin);
+
+        // check A column after update
+        Rcpp::Rcout << "A col after update\n";
+        Rf_PrintValue(GibbsSampTrans.getAcol());
 
         GibbsSampTrans.check_atomic_matrix_consistency('A');
         GibbsSampTrans.check_atomic_matrix_consistency('P');

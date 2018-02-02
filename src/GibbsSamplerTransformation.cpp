@@ -210,3 +210,16 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
     proposed++;
 
 }
+
+// get relevant column and rows
+Rcpp::NumericVector GibbsSamplerTransformation::getAcol() {
+    unsigned int col = _AMatrix.get_nCol() - 1;
+    std::vector<double> col_val = _AMatrix.get_Col(col);
+    return Rcpp::wrap(col_val);
+}
+
+Rcpp::NumericVector GibbsSamplerTransformation::getProw() {
+    unsigned int row = _PMatrix.get_nRow() - 1;
+    std::vector<double> row_val = _PMatrix.get_Row(row);
+    return Rcpp::wrap(row_val);
+}
