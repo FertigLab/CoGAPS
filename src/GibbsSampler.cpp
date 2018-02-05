@@ -444,39 +444,38 @@ void GibbsSampler::updateStatistics()
     }
 }
 
-void GibbsSampler::updatePumpStatistics()
+ColMatrix normedAMatrix()
 {
-    // calculate normalization vector
-    Vector normVec(mPMatrix.nRow());
-    for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
+    ColMatrix normedA(mAMatrix);
+    for (unsigned j = 0; j < normedA.nCol(); ++j)
     {
-        normVec[r] = gaps::algo::sum(mPMatrix.getRow(r));
-        normVec[r] = (normVec[r] == 0) ? 1.f : normVec[r];
+        float factor = gaps::algo::sum(mPMatrix.getRow(j));
+        normedA.getCol(j) += gaps::algo::scalarMultiple(normedA.getCol(j), factor);
     }
+    return normedA;
+}
 
-    // get normed matrices
-    ColMatrix normedA(mAMatrix);    
+RowMatrix normedPMatrix()
+{
     RowMatrix normedP(mPMatrix);
-    for (unsigned c = 0; c < normedA.nCol(); ++c)
+    for (unsigned i = 0; i < normedP.nRow(); ++i)
     {
-        normedA.getCol(c) += gaps::algo::scalarMultiple(normedA.getCol(c), normVec[c]);
+        float factor = gaps::algo::sum(mPMatrix.getRow(i));
+        normedP.getRow(i) += gaps::algo::scalarMultiple(normedP.getRow(i), factor);
     }
-    for (unsigned r = 0; r < normedP.nRow(); ++r)
-    {
-        normedP.getRow(r) += gaps::algo::scalarDivision(normedP.getRow(r), normVec[r]);
-    }
+    return normedP;
+}
 
-    // get scaling factors for A matrix
-    Vector pScales(normedP.nRow());
-    for (unsigned i = 0; i < pScales.size(); ++i)
-    {
-        pScales[i] = gaps::algo::max(normedP.getRow(i));
-    }
+void GibbsSampler::updatePumpStatistics(bool uniqueThreshold)
+{
+    ColMatrix normedA(normedAMatrix());
+    RowMatrix normedP(normedPMatrix());
 
     // scale A matrix, assuming P matrix is not scaled
     for (unsigned j = 0; j < normedA.nCol(); ++j)
     {
-        normedA.getCol(j) = gaps::algo::scalarMultiple(normedA.getCol(j), pScales[j]);
+        float scale = gaps::algo::max(normedP.getRow(j));
+        normedA.getCol(j) = gaps::algo::scalarMultiple(normedA.getCol(j), scale);
     }
     
     // get scaled A matrix
@@ -509,19 +508,68 @@ void GibbsSampler::updatePumpStatistics()
         sStat.getRow(i) = std::sqrt(gaps::algo::dotProduct(diff.getRow(i), diff.getRow(i)));
     }
 
-    for (unsigned i = 0; i < scoreMat.nRow(); ++i) // unique threshold
+    if (uniqueThreshold)
     {
-        unsigned whichMin = 0;
-        float minVal = sStat(i,0);
-        for (unsigned j = 0; j < scoreMat.nCol(); ++j)
+        for (unsigned i = 0; i < mPumpMatrix.nRow(); ++i)
         {
-            if (sStat(i,j) < minVal)
+            unsigned whichMin = 0;
+            float minVal = sStat(i,0);
+            for (unsigned j = 0; j < mPumpMatrix.nCol(); ++j)
             {
-                minVal = sStat(i,j);
-                whichMin = j;
+                if (sStat(i,j) < minVal)
+                {
+                    minVal = sStat(i,j);
+                    whichMin = j;
+                }
+            }
+            mPumpMatrix(i,whichMin)++;
+        }
+    }
+    else
+    {
+        ColMatrix rankMatrix(sStat.nRow(), sStat.nCol());
+        for (unsigned j = 0; j < sStat.nCol(); ++j)
+        {
+            rankMatrix.getCol(j) = gaps::algo::rank(sStat.getCol(j))
+        }
+
+        Vector geneThreshold(rankMatrix.nCol());
+        for (unsigned j = 0; j < rankMatrix.nCol(); ++j)
+        {
+            unsigned maxRank = 0;
+            Vector rankNdx = gaps::algo::order(rankMatrix.getCol(j));
+            for (unsigned i = 0; i < rankNdx; ++i)
+            {
+                unsigned rank = rankMatrix(i,j);
+
+
+
+
+
+
+
+
+        ColMatrix sortedRanks(rankMatrix.nRow(), rankMatrix.nCol());
+        for (unsigned j = 0; j < mPumpMatrix.nCol(); ++j)
+        {
+            unsigned rank = rankMatrix
+            for (unsigned i = 0; i < mPumpMatrix.nRow(); ++i)
+            {
+
             }
         }
-        mPumpMatrix(i,whichMin)++;
+
+        for (unsigned j = 0; j < mPumpMatrix.nCol(); ++j)
+        {
+            float threshold = geneThreshold(rankMatrix, j);
+            for (unsigned i = 0; i < mPumpMatrix.nRow(); ++i)
+            {
+                if (rankMatrix(i,j) < threshold)
+                {
+                    mPumpMatrix(i,j)++;
+                }
+            }
+        }
     }
 }
 
