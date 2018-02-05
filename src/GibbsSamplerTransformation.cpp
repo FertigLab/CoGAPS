@@ -184,7 +184,13 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
         // propose theta
         _growth.propose(A_curr, P_curr);
 
+        // check whether growth was accepted
+        if (_growth.accepted) {
+            Rcpp::Rcout << "Accepted growth proposal\n";
+        }
+
         // update the A matrix
+        Rcpp::Rcout << "weight: " << calcWeight() << "\n";
         weightAAtomicColumn(calcWeight());
         weightAColumn(calcWeight());
 

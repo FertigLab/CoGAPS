@@ -371,6 +371,8 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
         // --------------------------------------------
     }  // end of for-block for equilibration
 
+    Rcpp::Rcout << "Number of acceptances " << GibbsSampTrans.accepted << "\n";
+
 // ===========================================================================
     // Part 2.5) Equilibration Settling:
     // Allow the Equilibration to settle for 10% of the set Equilibrations
