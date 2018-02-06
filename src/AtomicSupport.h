@@ -85,10 +85,6 @@ public:
     void removeAtom(uint64_t pos); // O(logN)
     AtomNeighbors getNeighbors(uint64_t pos) const; // O(logN)
 
-    // convert atomic position to row/col of the matrix
-    uint64_t getRow(uint64_t pos) const;
-    uint64_t getCol(uint64_t pos) const;
-
     // get atomic positions at random
     uint64_t randomFreePosition() const;
     uint64_t randomAtomPosition() const;
@@ -114,6 +110,10 @@ public:
 
     // convert an AtomicProposal to an ElementChange
     MatrixChange getMatrixChange(const AtomicProposal &prop) const;
+
+    // convert atomic position to row/col of the matrix
+    uint64_t getRow(uint64_t pos) const;
+    uint64_t getCol(uint64_t pos) const;
 
     // getters
     float alpha() const {return mAlpha;}

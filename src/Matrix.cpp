@@ -50,6 +50,87 @@ void Vector::operator+=(const Vector &vec)
     }
 }
 
+void Vector::operator=(const Vector &vec)
+{
+    mValues = vec.mValues;
+}
+
+Vector Vector::operator+(Vector vec) const
+{
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        vec[i] += mValues[i];
+    }
+    return vec;
+}
+
+Vector Vector::operator-(Vector vec) const
+{
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        vec[i] -= mValues[i];
+    }
+    return vec;
+}
+
+Vector Vector::operator*(Vector vec) const
+{
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        vec[i] *= mValues[i];
+    }
+    return vec;
+}
+
+Vector Vector::operator/(Vector vec) const
+{
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        vec[i] /= mValues[i];
+    }
+    return vec;
+}
+
+Vector Vector::operator+(float val) const
+{
+    Vector vec(*this);
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        vec[i] += val;
+    }
+    return vec;
+}
+
+Vector Vector::operator-(float val) const
+{
+    Vector vec(*this);
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        vec[i] -= val;
+    }
+    return vec;
+}
+
+Vector Vector::operator*(float val) const
+{
+    Vector vec(*this);
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        vec[i] *= val;
+    }
+    return vec;
+}
+
+Vector Vector::operator/(float val) const
+{
+    Vector vec(*this);
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        vec[i] /= val;
+    }
+    return vec;
+}
+
 Archive& operator<<(Archive &ar, Vector &vec)
 {
     for (unsigned i = 0; i < vec.size(); ++i)
@@ -101,6 +182,19 @@ RowMatrix::RowMatrix(const RowMatrix &mat)
     }
 }
 
+RowMatrix::RowMatrix(const ColMatrix &mat)
+: mNumRows(mat.nRow()), mNumCols(mat.nCol())
+{
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        mRows.push_back(Vector(mNumCols));
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            this->operator()(i,j) = mat(i,j);
+        }
+    }
+}
+
 void RowMatrix::update(const MatrixChange &change)
 {
     updateHelper<RowMatrix>(*this, change);
@@ -109,6 +203,16 @@ void RowMatrix::update(const MatrixChange &change)
 Rcpp::NumericMatrix RowMatrix::rMatrix() const
 {
     return convertToRMatrix<RowMatrix>(*this);
+}
+
+RowMatrix RowMatrix::operator/(float val) const
+{
+    RowMatrix mat(mNumRows, mNumCols);
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        mat.getRow(i) = mRows[i] / val;
+    }
+    return mat;
 }
 
 Archive& operator<<(Archive &ar, RowMatrix &mat)
@@ -165,6 +269,16 @@ ColMatrix::ColMatrix(const ColMatrix &mat)
 void ColMatrix::update(const MatrixChange &change)
 {
     updateHelper<ColMatrix>(*this, change);
+}
+
+ColMatrix ColMatrix::operator/(float val) const
+{
+    ColMatrix mat(mNumRows, mNumCols);
+    for (unsigned j = 0; j < mNumCols; ++j)
+    {
+        mat.getCol(j) = mCols[j] / val;
+    }
+    return mat;
 }
 
 Rcpp::NumericMatrix ColMatrix::rMatrix() const

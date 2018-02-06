@@ -34,8 +34,8 @@
 CoGAPS <- function(D, S, nFactor=7, nEquil=1000, nSample=1000, nOutputs=1000,
 nSnapshots=0, alphaA=0.01, alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100,
 seed=-1, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed='N',
-fixedPatterns=matrix(0), checkpointInterval=0, checkpointFile="gaps_checkpoint.out",
-...)
+fixedPatterns=matrix(0), checkpointInterval=0, 
+checkpointFile="gaps_checkpoint.out", pumpThreshold="unique", ...)
 {
     # get v2 arguments
     oldArgs <- list(...)
@@ -69,12 +69,13 @@ fixedPatterns=matrix(0), checkpointInterval=0, checkpointFile="gaps_checkpoint.o
         stop('invalid number of rows for fixedPatterns')
     if (whichMatrixFixed == 'P' & ncol(fixedPatterns) != ncol(D))
         stop('invalid number of columns for fixedPatterns')
+    thresholdEnum <- c("unique", "cut")
 
     # run algorithm with call to C++ code
     result <- cogaps_cpp(D, S, nFactor, nEquil, nEquil/10, nSample, nOutputs,
         nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
         singleCellRNASeq, whichMatrixFixed, fixedPatterns, checkpointInterval,
-        checkpointFile)
+        checkpointFile, which(thresholdEnum==pumpThreshold))
     
     # label matrices and return list
     patternNames <- paste('Patt', 1:nFactor, sep='')

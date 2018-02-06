@@ -26,7 +26,7 @@ TEST_CASE("Test GibbsSampler.h")
     SECTION("Create GibbsSampler")
     {
         GibbsSampler sampler(rD, rS, 5, 0.01f, 0.01f, 1.f, 1.f, false,
-            'N', Rcpp::NumericMatrix());
+            'N', Rcpp::NumericMatrix(), PUMP_UNIQUE);
 
         REQUIRE(sampler.totalNumAtoms('A') == 0);
         REQUIRE(sampler.totalNumAtoms('P') == 0);
@@ -43,7 +43,7 @@ TEST_CASE("Test GibbsSampler.h")
     SECTION("Update GibbsSampler")
     {
         GibbsSampler sampler(rD, rS, 5, 0.01f, 0.01f, 1.f, 1.f, false,
-            'N', Rcpp::NumericMatrix());
+            'N', Rcpp::NumericMatrix(), PUMP_UNIQUE);
 
         for (unsigned i = 0; i < 1000; ++i)
         {
@@ -57,7 +57,7 @@ TEST_CASE("Test GibbsSampler.h")
     SECTION("GibbsSampler Statistics")
     {
         GibbsSampler sampler(rD, rS, 5, 0.01f, 0.01f, 1.f, 1.f, false,
-            'N', Rcpp::NumericMatrix());
+            'N', Rcpp::NumericMatrix(), PUMP_UNIQUE);
 
         for (unsigned i = 0; i < 1000; ++i)
         {

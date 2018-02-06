@@ -27,11 +27,13 @@ namespace gaps
 namespace algo
 {
     // vector algorithms    
+    unsigned whichMin(const Vector &vec);
     float sum(const Vector &vec);
-    Vector scalarMultiple(const Vector &vec, float n);
-    Vector squaredScalarMultiple(const Vector &vec, float n);
-    Vector scalarDivision(const Vector &vec, float n);
-    Vector squaredScalarDivision(const Vector &vec, float n);
+    float min(const Vector &vec);
+    float max(const Vector &vec);
+    float dot(const Vector &A, const Vector &B);
+    Vector rank(Vector vec);
+    Vector elementSq(Vector vec);
     
     // generic matrix algorithms
     template<class GenericMatrix>
@@ -44,9 +46,6 @@ namespace algo
     float nonZeroMean(const GenericMatrix &mat);
 
     template<class GenericMatrix>
-    GenericMatrix scalarDivision(const GenericMatrix &mat, float n);
-
-    template<class GenericMatrix>
     GenericMatrix computeStdDev(const GenericMatrix &stdMat,
         const GenericMatrix &meanMat, unsigned nUpdates);
 
@@ -56,7 +55,7 @@ namespace algo
     void matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
         const RowMatrix &B);
 
-    // chi2
+    // chiSq / 2
     float loglikelihood(const TwoWayMatrix &D, const TwoWayMatrix &S,
         const TwoWayMatrix &AP);
 
@@ -112,25 +111,11 @@ float gaps::algo::nonZeroMean(const GenericMatrix &mat)
 }
 
 template<class GenericMatrix>
-GenericMatrix gaps::algo::scalarDivision(const GenericMatrix &mat, float n)
-{
-    GenericMatrix retMat(mat.nRow(), mat.nCol());
-    for (unsigned r = 0; r < retMat.nRow(); ++r)
-    {
-        for (unsigned c = 0; c < retMat.nCol(); ++c)
-        {
-            retMat(r,c) = mat(r,c) / n;
-        }
-    }
-    return retMat;
-}
-
-template<class GenericMatrix>
 GenericMatrix gaps::algo::computeStdDev(const GenericMatrix &stdMat,
 const GenericMatrix &meanMat, unsigned nUpdates)
 {
     GenericMatrix retMat(stdMat.nRow(), stdMat.nCol());
-    float meanTerm = 0.0;
+    float meanTerm = 0.f;
     for (unsigned r = 0; r < retMat.nRow(); ++r)
     {
         for (unsigned c = 0; c < retMat.nCol(); ++c)

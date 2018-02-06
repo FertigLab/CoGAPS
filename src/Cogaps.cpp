@@ -100,8 +100,8 @@ static void takeSnapshots(GapsInternalState &state)
 {
     if (state.nSnapshots && !((state.iter+1)%(state.nSample/state.nSnapshots)))
     {
-        state.snapshotsA.push_back(state.sampler.getNormedMatrix('A'));
-        state.snapshotsP.push_back(state.sampler.getNormedMatrix('P'));
+        state.snapshotsA.push_back(state.sampler.normedAMatrix().rMatrix());
+        state.snapshotsP.push_back(state.sampler.normedPMatrix().rMatrix());
     }    
 }
 
@@ -135,9 +135,9 @@ static void runSampPhase(GapsInternalState &state)
         makeCheckpointIfNeeded(state);
         updateSampler(state);
         state.sampler.updateStatistics();
+        state.sampler.updatePumpStatistics();
         takeSnapshots(state);
         displayStatus(state, "Samp: ", state.nSample);
-        state.sampler.updatePumpStatistics();
         storeSamplerInfo(state, state.nAtomsASample, state.nAtomsPSample,
             state.chi2VecSample);
     }
@@ -193,8 +193,8 @@ static Rcpp::List runCogaps(GapsInternalState &state)
         Rcpp::Named("randSeed") = state.seed,
         Rcpp::Named("numUpdates") = state.nUpdatesA + state.nUpdatesP,
         Rcpp::Named("meanChi2") = meanChiSq,
-        Rcpp::Named("PumpStats") = state.sampler.getPumpMatrix(),
-        Rcpp::Named("meanPatternAssignment") = state.sampler.getMeanPattern()
+        Rcpp::Named("pumpStats") = state.sampler.pumpMatrix(),
+        Rcpp::Named("meanPatternAssignment") = state.sampler.meanPattern()
     );
 }
 
@@ -205,7 +205,7 @@ unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots,
 float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP, int seed,
 bool messages, bool singleCellRNASeq, char whichMatrixFixed,
 const Rcpp::NumericMatrix &FP, unsigned checkpointInterval,
-const std::string &cptFile)
+const std::string &cptFile, unsigned pumpThreshold)
 {
     // set seed
     uint32_t seedUsed = static_cast<uint32_t>(seed);
@@ -220,7 +220,8 @@ const std::string &cptFile)
     // create internal state from parameters and run from there
     GapsInternalState state(D, S, nFactor, nEquil, nEquilCool, nSample,
         nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
-        messages, singleCellRNASeq, whichMatrixFixed, FP, checkpointInterval);
+        messages, singleCellRNASeq, whichMatrixFixed, FP, checkpointInterval,
+        static_cast<PumpThreshold>(pumpThreshold));
     checkpointFile = cptFile;
     return runCogaps(state);
 }

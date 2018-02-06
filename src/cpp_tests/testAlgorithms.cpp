@@ -46,20 +46,6 @@ TEST_CASE("Test Algorithms.h")
         REQUIRE(gaps::algo::nonZeroMean(D) == Dsum / (nrow * ncol - 1));
     }
 
-    SECTION("scalar multiplication/division")
-    {
-        float vsqSum = 24.f * 25.f * (2.f * 24.f + 1.f) / 6.f;
-
-        REQUIRE(gaps::algo::sum(gaps::algo::scalarMultiple(v, 3.5f))
-            == 3.5f * 300.f);
-        REQUIRE(gaps::algo::sum(gaps::algo::squaredScalarMultiple(v, 4.f))
-            == 16.f * vsqSum);
-        REQUIRE(gaps::algo::sum(gaps::algo::scalarDivision(v, 1.3f))
-            == 300.f / 1.3f);
-        REQUIRE(gaps::algo::sum(gaps::algo::squaredScalarDivision(v, 1.3f))
-            == Approx(vsqSum / (1.3f * 1.3f)).epsilon(0.01));
-    }
-
     SECTION("is row/col zero")
     {
         REQUIRE(gaps::algo::isRowZero(P, 0));
