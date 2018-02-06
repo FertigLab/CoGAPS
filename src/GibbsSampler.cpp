@@ -351,7 +351,8 @@ Rcpp::NumericMatrix GibbsSampler::PStdRMatrix() const
 
 Rcpp::NumericMatrix GibbsSampler::pumpMatrix() const
 {
-    return (mPumpMatrix / mPumpStatUpdates).rMatrix();
+    unsigned denom = mPumpStatUpdates ? mPumpStatUpdates : 1.f;
+    return (mPumpMatrix / denom).rMatrix();
 }
 
 Rcpp::NumericMatrix GibbsSampler::meanPattern()

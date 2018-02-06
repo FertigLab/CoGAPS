@@ -135,8 +135,10 @@ static void runSampPhase(GapsInternalState &state)
         makeCheckpointIfNeeded(state);
         updateSampler(state);
         state.sampler.updateStatistics();
-        // use state.nPumpSamples
-        state.sampler.updatePumpStatistics();
+        if (state.nPumpSamples && !((state.iter + 1) % (state.nSample / state.nPumpSamples)))
+        {
+            state.sampler.updatePumpStatistics();
+        }
         takeSnapshots(state);
         displayStatus(state, "Samp: ", state.nSample);
         storeSamplerInfo(state, state.nAtomsASample, state.nAtomsPSample,
