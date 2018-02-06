@@ -135,6 +135,7 @@ static void runSampPhase(GapsInternalState &state)
         makeCheckpointIfNeeded(state);
         updateSampler(state);
         state.sampler.updateStatistics();
+        // use state.nPumpSamples
         state.sampler.updatePumpStatistics();
         takeSnapshots(state);
         displayStatus(state, "Samp: ", state.nSample);
@@ -205,7 +206,7 @@ unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots,
 float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP, int seed,
 bool messages, bool singleCellRNASeq, char whichMatrixFixed,
 const Rcpp::NumericMatrix &FP, unsigned checkpointInterval,
-const std::string &cptFile, unsigned pumpThreshold)
+const std::string &cptFile, unsigned pumpThreshold, unsigned nPumpSamples)
 {
     // set seed
     uint32_t seedUsed = static_cast<uint32_t>(seed);
@@ -221,7 +222,7 @@ const std::string &cptFile, unsigned pumpThreshold)
     GapsInternalState state(D, S, nFactor, nEquil, nEquilCool, nSample,
         nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
         messages, singleCellRNASeq, whichMatrixFixed, FP, checkpointInterval,
-        static_cast<PumpThreshold>(pumpThreshold));
+        static_cast<PumpThreshold>(pumpThreshold), nPumpSamples);
     checkpointFile = cptFile;
     return runCogaps(state);
 }

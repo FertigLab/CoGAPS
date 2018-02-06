@@ -45,6 +45,8 @@ struct GapsInternalState
 
     unsigned nUpdatesA;
     unsigned nUpdatesP;
+    
+    unsigned nPumpSamples;
 
     GibbsSampler sampler;
     
@@ -57,14 +59,14 @@ struct GapsInternalState
         float maxGibbmassA, float maxGibbmassP, int sd, bool msgs,
         bool singleCellRNASeq, char whichMatrixFixed,
         const Rcpp::NumericMatrix &FP, unsigned cptInterval,
-        PumpThreshold pumpThreshold)
+        PumpThreshold pumpThreshold, unsigned numPumpSamples)
             :
         chi2VecEquil(nE), nAtomsAEquil(nE), nAtomsPEquil(nE),
         chi2VecSample(nS), nAtomsASample(nS), nAtomsPSample(nS),
         nIterA(10), nIterP(10), nEquil(nE), nEquilCool(nEC), nSample(nS),
         nSnapshots(nSnap), nOutputs(nOut), messages(msgs), iter(0),
         phase(GAPS_BURN), seed(sd), checkpointInterval(cptInterval),
-        nUpdatesA(0), nUpdatesP(0),
+        nUpdatesA(0), nUpdatesP(0), nPumpSamples(numPumpSamples),
         sampler(D, S, nF, alphaA, alphaP, maxGibbmassA, maxGibbmassP,
             singleCellRNASeq, whichMatrixFixed, FP, pumpThreshold)
     {}
@@ -85,7 +87,8 @@ inline Archive& operator<<(Archive &ar, GapsInternalState &state)
         << state.nIterA << state.nIterP << state.nEquil << state.nEquilCool
         << state.nSample << state.nSnapshots << state.nOutputs << state.messages
         << state.iter << state.phase << state.seed << state.checkpointInterval
-        << state.nUpdatesA << state.nUpdatesP << state.sampler;
+        << state.nUpdatesA << state.nUpdatesP << state.nPumpSamples
+        << state.sampler;
     return ar;
 }
 
@@ -96,7 +99,8 @@ inline Archive& operator>>(Archive &ar, GapsInternalState &state)
         >> state.nIterA >> state.nIterP >> state.nEquil >> state.nEquilCool
         >> state.nSample >> state.nSnapshots >> state.nOutputs >> state.messages
         >> state.iter >> state.phase >> state.seed >> state.checkpointInterval
-        >> state.nUpdatesA >> state.nUpdatesP >> state.sampler;
+        >> state.nUpdatesA >> state.nUpdatesP >> state.nPumpSamples
+        >> state.sampler;
     return ar;
 }
 
