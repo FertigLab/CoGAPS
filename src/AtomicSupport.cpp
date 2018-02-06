@@ -129,13 +129,25 @@ AtomicProposal AtomicSupport::proposeExchange() const
     float mass2 = at(pos2);
 
     // calculate new mass
-    float pupper = gaps::random::p_gamma(mass1 + mass2, 2.0, 1.0 / mLambda);
-    float newMass = gaps::random::q_gamma(gaps::random::uniform(0.0, pupper),
-        2.0, 1.0 / mLambda);
+    float pupper = gaps::random::p_gamma(mass1 + mass2, 2.f, 1.f / mLambda);
+    float newMass = gaps::random::q_gamma(gaps::random::uniform(0.f, pupper),
+        2.f, 1.f / mLambda);
 
     // calculate mass changes
     float delta1 = mass1 > mass2 ? newMass - mass1 : mass2 - newMass;
     float delta2 = mass2 > mass1 ? newMass - mass2 : mass1 - newMass;
+
+    // set first position to be postive change
+    float delta1_cached = delta1;
+    uint64_t pos1_cached = pos1;
+    pos1 = delta1_cached > 0 ? pos1 : pos2;
+    pos2 = delta1_cached > 0 ? pos2 : pos1_cached;
+    delta1 = delta1_cached > 0 ? delta1 : delta2;
+    delta2 = delta1_cached > 0 ? delta2 : delta1_cached;
+    //delta1 = at(pos1) + (delta1 > 0) ? delta1 : delta2;
+    //delta2 = at(pos2) + (delta1 > 0) ? delta2 : delta1_temp;
+    //delta1 -= at(pos1);
+    //delta2 -= at(pos2);
 
     // preserve total mass
     return AtomicProposal(mLabel, 'E', pos1, delta1, pos2, delta2);

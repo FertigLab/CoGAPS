@@ -3,6 +3,7 @@
 
 #include "Archive.h"
 #include "Matrix.h"
+#include "GibbsSampler.h"
 
 #include <Rcpp.h>
 
@@ -46,7 +47,7 @@ struct GapsInternalState
     unsigned nUpdatesP;
 
     GibbsSampler sampler;
-
+    
     SnapshotList snapshotsA;
     SnapshotList snapshotsP;
 
@@ -55,7 +56,8 @@ struct GapsInternalState
         unsigned nS, unsigned nOut, unsigned nSnap, float alphaA, float alphaP,
         float maxGibbmassA, float maxGibbmassP, int sd, bool msgs,
         bool singleCellRNASeq, char whichMatrixFixed,
-        const Rcpp::NumericMatrix &FP, unsigned cptInterval)
+        const Rcpp::NumericMatrix &FP, unsigned cptInterval,
+        PumpThreshold pumpThreshold)
             :
         chi2VecEquil(nE), nAtomsAEquil(nE), nAtomsPEquil(nE),
         chi2VecSample(nS), nAtomsASample(nS), nAtomsPSample(nS),
@@ -64,7 +66,7 @@ struct GapsInternalState
         phase(GAPS_BURN), seed(sd), checkpointInterval(cptInterval),
         nUpdatesA(0), nUpdatesP(0),
         sampler(D, S, nF, alphaA, alphaP, maxGibbmassA, maxGibbmassP,
-            singleCellRNASeq, whichMatrixFixed, FP)
+            singleCellRNASeq, whichMatrixFixed, FP, pumpThreshold)
     {}
 
     GapsInternalState(const Rcpp::NumericMatrix &D,

@@ -6,6 +6,12 @@
 
 #include <vector>
 
+enum PumpThreshold
+{
+    PUMP_UNIQUE=1,
+    PUMP_CUT=2
+};
+
 class GibbsSampler
 {
 private:
@@ -22,11 +28,11 @@ public:
 
     ColMatrix mAMeanMatrix, mAStdMatrix;
     RowMatrix mPMeanMatrix, mPStdMatrix;
+    unsigned mStatUpdates;
 
     ColMatrix mPumpMatrix;
-    Vector mLP;
-
-    unsigned mStatUpdates;
+    PumpThreshold mPumpThreshold;
+    unsigned mPumpStatUpdates;
 
     float mMaxGibbsMassA;
     float mMaxGibbsMassP;
@@ -60,11 +66,10 @@ public:
 
     GibbsSampler(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
         unsigned nFactor);
-    GibbsSampler(const Rcpp::NumericMatrix &D,
-        const Rcpp::NumericMatrix &S, unsigned nFactor, float alphaA,
-        float alphaP, float maxGibbmassA, float maxGibbmassP,
-        bool singleCellRNASeq, char whichMatrixFixed,
-        const Rcpp::NumericMatrix &FP);
+    GibbsSampler(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
+        unsigned nFactor, float alphaA, float alphaP, float maxGibbmassA,
+        float maxGibbmassP, bool singleCellRNASeq, char whichMatrixFixed,
+        const Rcpp::NumericMatrix &FP, PumpThreshold pumpThreshold);
 
     void update(char matrixLabel);
 
@@ -72,21 +77,26 @@ public:
     void setAnnealingTemp(float temp);
     float chi2() const;
 
-    Rcpp::NumericMatrix AMeanRMatrix() const;
-    Rcpp::NumericMatrix AStdRMatrix() const;
-    Rcpp::NumericMatrix PMeanRMatrix() const;
-    Rcpp::NumericMatrix PStdRMatrix() const;
-    float meanChiSq() const;
-
-    void updateStatistics();
-    void updatePumpStatistics();
-
-    Rcpp::NumericMatrix getNormedMatrix(char mat);
+    ColMatrix normedAMatrix() const;
+    RowMatrix normedPMatrix() const;
 
     unsigned nRow() const {return mDMatrix.nRow();}
     unsigned nCol() const {return mDMatrix.nCol();}
     unsigned nFactor() const {return mAMatrix.nCol();}
 
+    // statistics
+    void updateStatistics();
+    void updatePumpStatistics();
+    Rcpp::NumericMatrix AMeanRMatrix() const;
+    Rcpp::NumericMatrix AStdRMatrix() const;
+    Rcpp::NumericMatrix PMeanRMatrix() const;
+    Rcpp::NumericMatrix PStdRMatrix() const;
+    Rcpp::NumericMatrix pumpMatrix() const;
+    Rcpp::NumericMatrix meanPattern();
+    void patternMarkers(RowMatrix normedA, RowMatrix normedP, ColMatrix &statMatrix);
+    float meanChiSq() const;
+
+    // serialization
     friend Archive& operator<<(Archive &ar, GibbsSampler &sampler);
     friend Archive& operator>>(Archive &ar, GibbsSampler &sampler);
 };

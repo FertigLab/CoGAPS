@@ -44,8 +44,11 @@ private:
 public:
 
     Vector(unsigned size) : mValues(aligned_vector(size, 0.f)) {}
+    Vector(unsigned size, float val) : mValues(aligned_vector(size, val)) {}
     Vector(const aligned_vector &v) : mValues(v) {}
     Vector(const Vector &vec) : mValues(vec.mValues) {}
+
+    const float* ptr() const {return &mValues[0];}
 
     float& operator[](unsigned i) {return mValues[i];}
     float operator[](unsigned i) const {return mValues[i];}
@@ -54,12 +57,22 @@ public:
     Rcpp::NumericVector rVec() const {return Rcpp::wrap(mValues);}
     void concat(const Vector& vec);
     void operator+=(const Vector &vec);
+    void operator=(const Vector &vec);
 
-    const float* ptr() const {return &mValues[0];}
+    Vector operator+(Vector vec) const;
+    Vector operator-(Vector vec) const;
+    Vector operator*(Vector vec) const;
+    Vector operator/(Vector vec) const;
+    Vector operator+(float val) const;
+    Vector operator-(float val) const;
+    Vector operator*(float val) const;
+    Vector operator/(float val) const;
 
     friend Archive& operator<<(Archive &ar, Vector &vec);
     friend Archive& operator>>(Archive &ar, Vector &vec);
 };
+
+class ColMatrix;
 
 class RowMatrix
 {
@@ -73,6 +86,7 @@ public:
     RowMatrix(unsigned nrow, unsigned ncol);
     RowMatrix(const Rcpp::NumericMatrix &rmat);
     RowMatrix(const RowMatrix &mat);
+    RowMatrix(const ColMatrix &mat);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -84,6 +98,8 @@ public:
     const Vector& getRow(unsigned row) const {return mRows[row];}
 
     const float* rowPtr(unsigned row) const {return mRows[row].ptr();}
+
+    RowMatrix operator/(float val) const;
 
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
@@ -104,6 +120,7 @@ public:
     ColMatrix(unsigned nrow, unsigned ncol);
     ColMatrix(const Rcpp::NumericMatrix &rmat);
     ColMatrix(const ColMatrix &mat);
+    ColMatrix(const RowMatrix &mat);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -115,6 +132,8 @@ public:
     const Vector& getCol(unsigned col) const {return mCols[col];}
 
     const float* colPtr(unsigned col) const {return mCols[col].ptr();}
+
+    ColMatrix operator/(float val) const;
 
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;

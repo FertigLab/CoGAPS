@@ -14,44 +14,75 @@ float gaps::algo::sum(const Vector &vec)
     return sum;
 }
 
-Vector gaps::algo::scalarMultiple(const Vector &vec, float n)
+float gaps::algo::min(const Vector &vec)
 {
-    Vector retVec(vec.size());
+    float min = vec[0];
     for (unsigned i = 0; i < vec.size(); ++i)
     {
-        retVec[i] = vec[i] * n;
+        min = std::min(min, vec[i]);
     }
-    return retVec;
+    return min;
 }
 
-Vector gaps::algo::squaredScalarMultiple(const Vector &vec, float n)
+float gaps::algo::max(const Vector &vec)
 {
-    Vector retVec(vec.size());
+    float max = vec[0];
     for (unsigned i = 0; i < vec.size(); ++i)
     {
-        retVec[i] = GAPS_SQ(vec[i] * n);
+        max = std::max(max, vec[i]);
     }
-    return retVec;
+    return max;
 }
 
-Vector gaps::algo::scalarDivision(const Vector &vec, float n)
+float gaps::algo::dot(const Vector &A, const Vector &B)
 {
-    Vector temp(vec.size());
-    for (unsigned i = 0; i < vec.size(); ++i)
+    float dotProd = 0.f;
+    for (unsigned i = 0; i < A.size(); ++i)
     {
-        temp[i] = vec[i] / n;
+        dotProd += A[i] * B[i];
     }
-    return temp;
+    return dotProd;
 }
 
-Vector gaps::algo::squaredScalarDivision(const Vector &vec, float n)
+unsigned gaps::algo::whichMin(const Vector &vec)
 {
-    Vector retVec(vec.size());
+    float min = vec[0];
+    unsigned minNdx = 0;
     for (unsigned i = 0; i < vec.size(); ++i)
     {
-        retVec[i] = GAPS_SQ(vec[i] / n);
+        if (vec[i] < min)
+        {
+            min = vec[i];
+            minNdx = i;
+        }
     }
-    return retVec;
+    return minNdx;
+}
+
+Vector gaps::algo::rank(Vector vec)
+{
+    std::vector< std::pair<float, float> > sortVec(vec.size());
+    for (unsigned i = 0; i < vec.size(); ++i)
+    {
+        sortVec[i] = std::pair<float, float>(vec[i], i);
+    }
+    
+    std::sort(sortVec.begin(), sortVec.end());
+    Vector ranks(vec.size());
+    for (unsigned i = 0; i < vec.size(); ++i)
+    {
+        ranks[i] = sortVec[i].second;
+    }
+    return ranks;
+}
+
+Vector gaps::algo::elementSq(Vector vec)
+{
+    for (unsigned i = 0; i < vec.size(); ++i)
+    {
+        vec[i] *= vec[i];
+    }
+    return vec;
 }
 
 bool gaps::algo::isRowZero(const RowMatrix &mat, unsigned row)

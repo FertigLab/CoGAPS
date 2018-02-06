@@ -12,23 +12,24 @@ mDMatrix(D), mSMatrix(S), mAPMatrix(D.nrow(), D.ncol()),
 mAMatrix(D.nrow(), nFactor), mPMatrix(nFactor, D.ncol()),
 mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
 mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
-mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol())
+mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
+mPumpMatrix(D.nrow(), nFactor)
 {}
 
 GibbsSampler::GibbsSampler(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nFactor, float alphaA, float alphaP,
 float maxGibbmassA, float maxGibbmassP, bool singleCellRNASeq,
-char whichMatrixFixed, const Rcpp::NumericMatrix &FP)
+char whichMatrixFixed, const Rcpp::NumericMatrix &FP, PumpThreshold pumpThreshold)
     :
 mDMatrix(D), mSMatrix(S), mAPMatrix(D.nrow(), D.ncol()),
 mAMatrix(D.nrow(), nFactor), mPMatrix(nFactor, D.ncol()),
 mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
 mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
 mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
-mPumpMatrix(D.nrow(), nFactor),
-mStatUpdates(0), mMaxGibbsMassA(maxGibbmassA), mMaxGibbsMassP(maxGibbmassP),
-mAnnealingTemp(1.0), mSingleCellRNASeq(singleCellRNASeq),
-mNumFixedPatterns(0), mFixedMat(whichMatrixFixed)
+mPumpMatrix(D.nrow(), nFactor), mPumpThreshold(pumpThreshold), mStatUpdates(0),
+mPumpStatUpdates(0), mMaxGibbsMassA(maxGibbmassA), mMaxGibbsMassP(maxGibbmassP),
+mAnnealingTemp(1.0), mSingleCellRNASeq(singleCellRNASeq), mNumFixedPatterns(0),
+mFixedMat(whichMatrixFixed)
 {
     float meanD = mSingleCellRNASeq ? gaps::algo::nonZeroMean(mDMatrix)
         : gaps::algo::mean(mDMatrix);
@@ -47,8 +48,7 @@ mNumFixedPatterns(0), mFixedMat(whichMatrixFixed)
         ColMatrix temp(FP);
         for (unsigned j = 0; j < mNumFixedPatterns; ++j)
         {
-            mAMatrix.getCol(j) = gaps::algo::scalarDivision(temp.getCol(j),
-                gaps::algo::sum(temp.getCol(j)));
+            mAMatrix.getCol(j) = temp.getCol(j) / gaps::algo::sum(temp.getCol(j));
         }
     }
     else if (mFixedMat == 'P')
@@ -57,42 +57,10 @@ mNumFixedPatterns(0), mFixedMat(whichMatrixFixed)
         RowMatrix temp(FP);
         for (unsigned i = 0; i < mNumFixedPatterns; ++i)
         {
-            mPMatrix.getRow(i) = gaps::algo::scalarDivision(temp.getRow(i),
-                gaps::algo::sum(temp.getRow(i)));
+            mPMatrix.getRow(i) = temp.getRow(i) / gaps::algo::sum(temp.getRow(i));
         }
     }
     gaps::algo::matrixMultiplication(mAPMatrix, mAMatrix, mPMatrix);
-}
-
-Rcpp::NumericMatrix GibbsSampler::getNormedMatrix(char mat)
-{
-    Vector normVec(mPMatrix.nRow());
-    for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
-    {
-        normVec[r] = gaps::algo::sum(mPMatrix.getRow(r));
-        normVec[r] = (normVec[r] == 0) ? 1.f : normVec[r];
-    }
-
-    if (mat == 'A')
-    {
-        ColMatrix normedA(mAMatrix);    
-        for (unsigned c = 0; c < normedA.nCol(); ++c)
-        {
-            normedA.getCol(c) += gaps::algo::scalarMultiple(normedA.getCol(c),
-                normVec[c]);
-        }
-        return normedA.rMatrix();
-    }
-    else
-    {
-        RowMatrix normedP(mPMatrix);
-        for (unsigned r = 0; r < normedP.nRow(); ++r)
-        {
-            normedP.getRow(r) += gaps::algo::scalarDivision(normedP.getRow(r),
-                normVec[r]);
-        }
-        return normedP.rMatrix();
-    }
 }
 
 float GibbsSampler::getGibbsMass(const MatrixChange &change)
@@ -309,27 +277,10 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
         return false;
     }
 
-    uint64_t pos1 = proposal.delta1 > 0 ? proposal.pos1 : proposal.pos2;
-    uint64_t pos2 = proposal.delta1 > 0 ? proposal.pos2 : proposal.pos1;
-
-    float mass1 = domain.at(pos1);
-    float mass2 = domain.at(pos2);
-
-    float newMass1 = mass1 + std::max(proposal.delta1, proposal.delta2);
-    float newMass2 = mass2 + std::min(proposal.delta1, proposal.delta2);
-
-    unsigned row1 = change.delta1 > 0 ? change.row1 : change.row2;
-    unsigned row2 = change.delta1 > 0 ? change.row2 : change.row1;
-
-    unsigned col1 = change.delta1 > 0 ? change.col1 : change.col2;
-    unsigned col2 = change.delta1 > 0 ? change.col2 : change.col1;
-
-    change.row1 = row1;
-    change.col1 = col1;
-    change.row2 = row2;
-    change.col2 = col2;
-    change.delta1 = newMass1 - mass1;
-    change.delta2 = newMass2 - mass2;
+    float mass1 = domain.at(proposal.pos1);
+    float mass2 = domain.at(proposal.pos2);
+    float newMass1 = mass1 + proposal.delta1;
+    float newMass2 = mass2 + proposal.delta2;
 
     if (canUseGibbs(change))
     {
@@ -352,10 +303,7 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
                 proposal.delta1 = gaps::random::q_norm(u, mean, sd);
                 proposal.delta1 = std::max(proposal.delta1, -mass1);
                 proposal.delta1 = std::min(proposal.delta1, mass2);
-                proposal.pos1 = pos1;
-                proposal.pos2 = pos2;
                 proposal.delta2 = -proposal.delta1;
-
                 return evaluateChange(domain, proposal, 0.0, true);
             }
         }
@@ -367,26 +315,21 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
     float pnew = gaps::random::d_gamma(pnewMass, 2.0, 1.f / domain.lambda());
     float pold = gaps::random::d_gamma(poldMass, 2.0, 1.f / domain.lambda());
 
-    proposal.pos1 = pos1;
-    proposal.delta1 = newMass1 - mass1;
-    proposal.pos2 = pos2;
-    proposal.delta2 = newMass2 - mass2;
-
-    if (pold == 0.0 && pnew != 0.0)
+    if (pold == 0.f && pnew != 0.f)
     {
-        return evaluateChange(domain, proposal, 0.0, true);
+        return evaluateChange(domain, proposal, 0.f, true);
     }
     else
     {
-        float priorLL = pold == 0.0 ? 0.0 : log(pnew / pold);
-        return evaluateChange(domain, proposal, std::log(gaps::random::uniform())
-            - priorLL);
+        float priorLL = (pold == 0.f) ? 0.f : log(pnew / pold);
+        float rejectProb = std::log(gaps::random::uniform()) - priorLL;
+        return evaluateChange(domain, proposal, rejectProb);
     }
 }
 
 Rcpp::NumericMatrix GibbsSampler::AMeanRMatrix() const
 {
-    return gaps::algo::scalarDivision(mAMeanMatrix, mStatUpdates).rMatrix();
+    return (mAMeanMatrix / mStatUpdates).rMatrix();
 }
 
 Rcpp::NumericMatrix GibbsSampler::AStdRMatrix() const
@@ -397,7 +340,7 @@ Rcpp::NumericMatrix GibbsSampler::AStdRMatrix() const
 
 Rcpp::NumericMatrix GibbsSampler::PMeanRMatrix() const
 {
-    return gaps::algo::scalarDivision(mPMeanMatrix, mStatUpdates).rMatrix();
+    return (mPMeanMatrix / mStatUpdates).rMatrix();
 }
 
 Rcpp::NumericMatrix GibbsSampler::PStdRMatrix() const
@@ -406,10 +349,24 @@ Rcpp::NumericMatrix GibbsSampler::PStdRMatrix() const
         mStatUpdates).rMatrix();
 }
 
+Rcpp::NumericMatrix GibbsSampler::pumpMatrix() const
+{
+    return (mPumpMatrix / mPumpStatUpdates).rMatrix();
+}
+
+Rcpp::NumericMatrix GibbsSampler::meanPattern()
+{
+    ColMatrix Amean(mAMeanMatrix / (float)mStatUpdates);
+    RowMatrix Pmean(mPMeanMatrix / (float)mStatUpdates);
+    ColMatrix mat(mAMatrix.nRow(), mAMatrix.nCol());
+    patternMarkers(Amean, Pmean, mat);
+    return mat.rMatrix();
+}
+
 float GibbsSampler::meanChiSq() const
 {
-    ColMatrix Amean = gaps::algo::scalarDivision(mAMeanMatrix, mStatUpdates);
-    RowMatrix Pmean = gaps::algo::scalarDivision(mPMeanMatrix, mStatUpdates);
+    ColMatrix Amean = mAMeanMatrix / (float)mStatUpdates;
+    RowMatrix Pmean = mPMeanMatrix / (float)mStatUpdates;
     TwoWayMatrix Mmean(Amean.nRow(), Pmean.nCol());
     gaps::algo::matrixMultiplication(Mmean, Amean, Pmean);
     return 2.f * gaps::algo::loglikelihood(mDMatrix, mSMatrix, Mmean);
@@ -418,155 +375,127 @@ float GibbsSampler::meanChiSq() const
 void GibbsSampler::updateStatistics()
 {
     mStatUpdates++;
+    unsigned nPatterns = mAMatrix.nCol();
 
-    Vector normVec(mPMatrix.nRow());
-        
-    for (unsigned r = 0; r < mPMatrix.nRow(); ++r)
+    Vector normVec(nPatterns);
+    for (unsigned j = 0; j < nPatterns; ++j)
     {
-        normVec[r] = gaps::algo::sum(mPMatrix.getRow(r));
-        normVec[r] = normVec[r] == 0 ? 1.f : normVec[r];
-    }
+        normVec[j] = gaps::algo::sum(mPMatrix.getRow(j));
+        normVec[j] = normVec[j] == 0 ? 1.f : normVec[j];
 
-    for (unsigned c = 0; c < mAMeanMatrix.nCol(); ++c)
-    {
-        mAMeanMatrix.getCol(c) += gaps::algo::scalarMultiple(mAMatrix.getCol(c),
-            normVec[c]);
-        mAStdMatrix.getCol(c) += gaps::algo::squaredScalarMultiple(mAMatrix.getCol(c),
-            normVec[c]);
-    }
+        Vector quot(mPMatrix.getRow(j) / normVec[j]);
+        mPMeanMatrix.getRow(j) += quot;
+        mPStdMatrix.getRow(j) += gaps::algo::elementSq(quot);
 
-    for (unsigned r = 0; r < mPMeanMatrix.nRow(); ++r)
-    {
-        mPMeanMatrix.getRow(r) += gaps::algo::scalarDivision(mPMatrix.getRow(r),
-            normVec[r]);
-        mPStdMatrix.getRow(r) += gaps::algo::squaredScalarDivision(mPMatrix.getRow(r),
-            normVec[r]);
+        Vector prod(mAMatrix.getCol(j) * normVec[j]);
+        mAMeanMatrix.getCol(j) += prod;
+        mAStdMatrix.getCol(j) += gaps::algo::elementSq(prod); 
     }
 }
 
-ColMatrix normedAMatrix()
+void GibbsSampler::updatePumpStatistics()
+{
+    mPumpStatUpdates++;
+    patternMarkers(normedAMatrix(), normedPMatrix(), mPumpMatrix);
+}
+
+ColMatrix GibbsSampler::normedAMatrix() const
 {
     ColMatrix normedA(mAMatrix);
     for (unsigned j = 0; j < normedA.nCol(); ++j)
     {
         float factor = gaps::algo::sum(mPMatrix.getRow(j));
-        normedA.getCol(j) += gaps::algo::scalarMultiple(normedA.getCol(j), factor);
+        factor = (factor == 0) ? 1.f : factor;
+        normedA.getCol(j) = normedA.getCol(j) * factor;
     }
     return normedA;
 }
 
-RowMatrix normedPMatrix()
+RowMatrix GibbsSampler::normedPMatrix() const
 {
     RowMatrix normedP(mPMatrix);
     for (unsigned i = 0; i < normedP.nRow(); ++i)
     {
         float factor = gaps::algo::sum(mPMatrix.getRow(i));
-        normedP.getRow(i) += gaps::algo::scalarMultiple(normedP.getRow(i), factor);
+        factor = (factor == 0) ? 1.f : factor;
+        normedP.getRow(i) = normedP.getRow(i) / factor;
     }
     return normedP;
 }
 
-void GibbsSampler::updatePumpStatistics(bool uniqueThreshold)
+static unsigned geneThreshold(const ColMatrix &rankMatrix, unsigned pat)
 {
-    ColMatrix normedA(normedAMatrix());
-    RowMatrix normedP(normedPMatrix());
-
-    // scale A matrix, assuming P matrix is not scaled
-    for (unsigned j = 0; j < normedA.nCol(); ++j)
+    float cutRank = rankMatrix.nRow();
+    for (unsigned i = 0; i < rankMatrix.nRow(); ++i)
     {
-        float scale = gaps::algo::max(normedP.getRow(j));
-        normedA.getCol(j) = gaps::algo::scalarMultiple(normedA.getCol(j), scale);
-    }
-    
-    // get scaled A matrix
-    RowMatrix diff(normedA.nRow(), normedA.nCol());
-    for (unsigned i = 0; i < normedA.nRow(); ++i)
-    {
-        float rowMax = 0.f;
-        for (unsigned j = 0; j < normedA.nCol(); ++j)
-        {
-            rowMax = std::max(normedA(i,j), rowMax);
-        }
-        
-        if (rowMax > 0.f)
-        {
-            for (unsigned j = 0; j < normedA.nCol(); ++j)
-            {
-                diff(i,j) = normedA(i,j) / rowMax - mLP[j];
-            }
-        }
-        else
-        {
-            diff.getRow(i) = gaps::algo::scalarMultiple(mLP, -1.f);
-        }
-    }
-
-    // compute sstat
-    RowMatrix sStat(normedA.nRow(), normedA.nCol());
-    for (unsigned i = 0; i < sStat.nRow(); ++i)
-    {
-        sStat.getRow(i) = std::sqrt(gaps::algo::dotProduct(diff.getRow(i), diff.getRow(i)));
-    }
-
-    if (uniqueThreshold)
-    {
-        for (unsigned i = 0; i < mPumpMatrix.nRow(); ++i)
-        {
-            unsigned whichMin = 0;
-            float minVal = sStat(i,0);
-            for (unsigned j = 0; j < mPumpMatrix.nCol(); ++j)
-            {
-                if (sStat(i,j) < minVal)
-                {
-                    minVal = sStat(i,j);
-                    whichMin = j;
-                }
-            }
-            mPumpMatrix(i,whichMin)++;
-        }
-    }
-    else
-    {
-        ColMatrix rankMatrix(sStat.nRow(), sStat.nCol());
-        for (unsigned j = 0; j < sStat.nCol(); ++j)
-        {
-            rankMatrix.getCol(j) = gaps::algo::rank(sStat.getCol(j))
-        }
-
-        Vector geneThreshold(rankMatrix.nCol());
         for (unsigned j = 0; j < rankMatrix.nCol(); ++j)
         {
-            unsigned maxRank = 0;
-            Vector rankNdx = gaps::algo::order(rankMatrix.getCol(j));
-            for (unsigned i = 0; i < rankNdx; ++i)
+            if (j != pat && rankMatrix(i,j) <= rankMatrix(i,pat))
             {
-                unsigned rank = rankMatrix(i,j);
-
-
-
-
-
-
-
-
-        ColMatrix sortedRanks(rankMatrix.nRow(), rankMatrix.nCol());
-        for (unsigned j = 0; j < mPumpMatrix.nCol(); ++j)
-        {
-            unsigned rank = rankMatrix
-            for (unsigned i = 0; i < mPumpMatrix.nRow(); ++i)
-            {
-
+                cutRank = std::min(cutRank, std::max(0.f, rankMatrix(i,pat)-1));
             }
         }
+    }
+    return static_cast<unsigned>(cutRank);
+}
 
-        for (unsigned j = 0; j < mPumpMatrix.nCol(); ++j)
+void GibbsSampler::patternMarkers(RowMatrix normedA, RowMatrix normedP,
+ColMatrix &statMatrix)
+{
+    // helpful notation
+    unsigned nGenes = normedA.nRow();
+    unsigned nPatterns = normedA.nCol();
+
+    // scale A matrix
+    for (unsigned j = 0; j < nPatterns; ++j)
+    {
+        float scale = gaps::algo::max(normedP.getRow(j));
+        for (unsigned i = 0; i < nGenes; ++i)
         {
-            float threshold = geneThreshold(rankMatrix, j);
-            for (unsigned i = 0; i < mPumpMatrix.nRow(); ++i)
+            normedA(i,j) *= scale;
+        }
+    }
+    
+    // compute sstat
+    TwoWayMatrix sStat(nGenes, nPatterns);
+    Vector lp(nPatterns), diff(nPatterns);
+    for (unsigned j = 0; j < nPatterns; ++j)
+    {
+        lp[j] = 1.f;
+        for (unsigned i = 0; i < nGenes; ++i)
+        {
+            float geneMax = gaps::algo::max(normedA.getRow(i));
+            diff = geneMax > 0.f ? normedA.getRow(i) / geneMax - lp : lp * -1.f;
+            sStat.set(i, j, std::sqrt(gaps::algo::dot(diff, diff)));
+        }
+        lp[j] = 0.f;
+    }
+
+    // update PUMP matrix
+    if (mPumpThreshold == PUMP_UNIQUE)
+    {
+        for (unsigned i = 0; i < nGenes; ++i)
+        {
+            unsigned minNdx = gaps::algo::whichMin(sStat.getRow(i));
+            statMatrix(i,minNdx)++;
+        }
+    }
+    else if (mPumpThreshold == PUMP_CUT)
+    {
+        ColMatrix rankMatrix(nGenes, nPatterns);
+        for (unsigned j = 0; j < nPatterns; ++j)
+        {
+            rankMatrix.getCol(j) = gaps::algo::rank(sStat.getCol(j));
+        }
+        
+        for (unsigned j = 0; j < nPatterns; ++j)
+        {
+            unsigned cutRank = geneThreshold(rankMatrix, j);
+            for (unsigned i = 0; i < nGenes; ++i)
             {
-                if (rankMatrix(i,j) < threshold)
+                if (rankMatrix(i,j) <= cutRank)
                 {
-                    mPumpMatrix(i,j)++;
+                    statMatrix(i,j)++;
                 }
             }
         }
@@ -578,6 +507,7 @@ Archive& operator<<(Archive &ar, GibbsSampler &sampler)
     ar << sampler.mAMatrix << sampler.mPMatrix << sampler.mADomain
         << sampler.mPDomain << sampler.mAMeanMatrix << sampler.mAStdMatrix
         << sampler.mPMeanMatrix << sampler.mPStdMatrix << sampler.mStatUpdates
+        << sampler.mPumpMatrix << sampler.mPumpThreshold << sampler.mPumpStatUpdates
         << sampler.mMaxGibbsMassA << sampler.mMaxGibbsMassP
         << sampler.mAnnealingTemp << sampler.mSingleCellRNASeq
         << sampler.mNumFixedPatterns << sampler.mFixedMat;
@@ -590,6 +520,7 @@ Archive& operator>>(Archive &ar, GibbsSampler &sampler)
     ar >> sampler.mAMatrix >> sampler.mPMatrix >> sampler.mADomain
         >> sampler.mPDomain >> sampler.mAMeanMatrix >> sampler.mAStdMatrix
         >> sampler.mPMeanMatrix >> sampler.mPStdMatrix >> sampler.mStatUpdates
+        >> sampler.mPumpMatrix >> sampler.mPumpThreshold >> sampler.mPumpStatUpdates
         >> sampler.mMaxGibbsMassA >> sampler.mMaxGibbsMassP
         >> sampler.mAnnealingTemp >> sampler.mSingleCellRNASeq
         >> sampler.mNumFixedPatterns >> sampler.mFixedMat;
