@@ -262,7 +262,7 @@ Rcpp::NumericVector Abc::curve(Rcpp::NumericVector theta_star) {
 
     for (int i = 0; i < conds; ++i) {
         for (int j = 0; j < recs; ++j) {
-            double tmp = 1.0 / (1.0 + std::exp(-theta_star[i] * _T[j]));
+            double tmp = 1.0 / (1.0 + std::exp(-theta_star[i] * (_T[j] - 0.5)));
             int ind = i * recs + j;
             curve_star[ind] = tmp;
         }
