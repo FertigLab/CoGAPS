@@ -396,8 +396,11 @@ void GibbsSampler::updateStatistics()
 
 void GibbsSampler::updatePumpStatistics()
 {
-    mPumpStatUpdates++;
-    patternMarkers(normedAMatrix(), normedPMatrix(), mPumpMatrix);
+    if (mFixedMat != 'A')
+    {
+        mPumpStatUpdates++;
+        patternMarkers(normedAMatrix(), normedPMatrix(), mPumpMatrix);
+    }
 }
 
 ColMatrix GibbsSampler::normedAMatrix() const
