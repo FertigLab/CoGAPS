@@ -7,7 +7,7 @@ float alpha, float lambda)
     :
 mLabel(label), mNumAtoms(0),
 mMaxNumAtoms(std::numeric_limits<uint64_t>::max()),
-mTotalMass(0.0), mNumRows(nrow), mNumCols(ncol), mNumBins(nrow * ncol),
+mNumRows(nrow), mNumCols(ncol), mNumBins(nrow * ncol),
 mBinSize(std::numeric_limits<uint64_t>::max() / (nrow * ncol)),
 mAlpha(alpha), mLambda(lambda)
 {}
@@ -144,10 +144,6 @@ AtomicProposal AtomicSupport::proposeExchange() const
     pos2 = delta1_cached > 0 ? pos2 : pos1_cached;
     delta1 = delta1_cached > 0 ? delta1 : delta2;
     delta2 = delta1_cached > 0 ? delta2 : delta1_cached;
-    //delta1 = at(pos1) + (delta1 > 0) ? delta1 : delta2;
-    //delta2 = at(pos2) + (delta1 > 0) ? delta2 : delta1_temp;
-    //delta1 -= at(pos1);
-    //delta2 -= at(pos2);
 
     // preserve total mass
     return AtomicProposal(mLabel, 'E', pos1, delta1, pos2, delta2);
@@ -164,12 +160,11 @@ float AtomicSupport::updateAtomMass(uint64_t pos, float delta)
         addAtom(Atom(pos, delta));
     }
 
-    if (mAtoms[mAtomPositions.at(pos)].mass < EPSILON) // check if atom is too small
+    if (mAtoms[mAtomPositions.at(pos)].mass < EPSILON)
     {
         delta -= at(pos);
         removeAtom(pos);
     }
-    mTotalMass += delta;
     return delta;
 }
 
@@ -211,10 +206,8 @@ MatrixChange AtomicSupport::acceptProposal(const AtomicProposal &prop)
 {
     MatrixChange change = getMatrixChange(prop);
     change.delta1 = updateAtomMass(prop.pos1, prop.delta1);
-    if (prop.nChanges > 1)
-    {
-        change.delta2 = updateAtomMass(prop.pos2, prop.delta2);
-    }
+    change.delta2 = (prop.nChanges > 1) ? updateAtomMass(prop.pos2, prop.delta2)
+        : change.delta2;
     return change;
 }
 
@@ -222,19 +215,20 @@ MatrixChange AtomicSupport::getMatrixChange(const AtomicProposal &prop) const
 {
     if (prop.nChanges > 1)
     {
-        return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1), prop.delta1,
-            getRow(prop.pos2), getCol(prop.pos2), prop.delta2);
+        return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1),
+            prop.delta1, getRow(prop.pos2), getCol(prop.pos2), prop.delta2);
     }
     else
     {   
-        return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1), prop.delta1);
+        return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1),
+            prop.delta1);
     }
 }
 
 Archive& operator<<(Archive &ar, AtomicSupport &domain)
 {
     ar << domain.mLabel << domain.mNumAtoms << domain.mMaxNumAtoms
-        << domain.mTotalMass << domain.mNumRows << domain.mNumCols
+        << domain.mNumRows << domain.mNumCols
         << domain.mNumBins << domain.mBinSize << domain.mAlpha
         << domain.mLambda;
 
@@ -248,7 +242,7 @@ Archive& operator<<(Archive &ar, AtomicSupport &domain)
 Archive& operator>>(Archive &ar, AtomicSupport &domain)
 {
     uint64_t nAtoms = 0;
-    ar >> domain.mLabel >> nAtoms >> domain.mMaxNumAtoms >> domain.mTotalMass
+    ar >> domain.mLabel >> nAtoms >> domain.mMaxNumAtoms
         >> domain.mNumRows >> domain.mNumCols >> domain.mNumBins
         >> domain.mBinSize >> domain.mAlpha >> domain.mLambda;
 

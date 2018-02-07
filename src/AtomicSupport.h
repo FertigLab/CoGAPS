@@ -65,9 +65,6 @@ public:
     uint64_t mNumAtoms;
     uint64_t mMaxNumAtoms;
 
-    // total mass of all atoms
-    float mTotalMass;
-
     // matrix information
     uint64_t mNumRows;
     uint64_t mNumCols;
@@ -118,7 +115,6 @@ public:
     // getters
     float alpha() const {return mAlpha;}
     float lambda() const {return mLambda;}
-    float totalMass() const {return mTotalMass;}
     uint64_t numAtoms() const {return mNumAtoms;}
     float at(uint64_t pos) const {return mAtoms[mAtomPositions.at(pos)].mass;}
 

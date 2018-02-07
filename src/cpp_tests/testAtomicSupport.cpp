@@ -25,7 +25,6 @@ TEST_CASE("Test AtomicSupport.h")
         domain.acceptProposal(prop);
 
         REQUIRE(domain.numAtoms() == 1);
-        REQUIRE(domain.totalMass() == prop.delta1);
 
         for (unsigned i = 0; i < 10000; ++i)
         {
@@ -49,8 +48,6 @@ TEST_CASE("Test AtomicSupport.h")
             REQUIRE(change.delta1 == prop.delta1);
             REQUIRE(change.delta2 == prop.delta2);
 
-            float oldMass = domain.totalMass();
-
             uint64_t nOld = domain.numAtoms();
 
             domain.acceptProposal(prop);
@@ -67,8 +64,6 @@ TEST_CASE("Test AtomicSupport.h")
             {
                 REQUIRE(domain.numAtoms() == nOld);
             }
-        
-            REQUIRE(domain.totalMass() == oldMass + prop.delta1 + prop.delta2);
         }
     }
 

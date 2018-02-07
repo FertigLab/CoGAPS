@@ -44,12 +44,12 @@ public:
     unsigned mNumFixedPatterns;
     char mFixedMat;
 
-    bool death(AtomicSupport &domain, AtomicProposal &proposal);
-    bool birth(AtomicSupport &domain, AtomicProposal &proposal);
-    bool move(AtomicSupport &domain, AtomicProposal &proposal);
-    bool exchange(AtomicSupport &domain, AtomicProposal &proposal);
+    void death(AtomicSupport &domain, AtomicProposal &proposal);
+    void birth(AtomicSupport &domain, AtomicProposal &proposal);
+    void move(AtomicSupport &domain, AtomicProposal &prop);
+    void exchange(AtomicSupport &domain, AtomicProposal &proposal);
 
-    bool evaluateChange(AtomicSupport &domain, const AtomicProposal &proposal,
+    void evaluateChange(AtomicSupport &domain, const AtomicProposal &proposal,
         float threshold, bool accept=false);
 
     float computeDeltaLL(const MatrixChange &change);

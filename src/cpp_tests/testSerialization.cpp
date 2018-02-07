@@ -145,7 +145,6 @@ TEST_CASE("Test Archive.h")
 
         REQUIRE(domain_read.alpha() == domain_write.alpha());
         REQUIRE(domain_read.lambda() == domain_write.lambda());
-        REQUIRE(domain_read.totalMass() == domain_write.totalMass());
         REQUIRE(domain_read.numAtoms() == domain_write.numAtoms());
     }
 

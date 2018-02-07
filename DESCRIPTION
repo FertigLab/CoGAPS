@@ -31,7 +31,8 @@ Imports:
 Suggests:
     testthat,
     lintr,
-    knitr
+    knitr,
+    rmarkdown
 LinkingTo: Rcpp, BH
 VignetteBuilder: knitr
 License: GPL (==2)

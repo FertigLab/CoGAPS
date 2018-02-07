@@ -219,6 +219,7 @@ const TwoWayMatrix &AP)
     }
 }
 
+// single change
 static AlphaParameters alphaParameters_comp(unsigned size, const float *D,
 const float *S, const float *AP, const float *other)
 {
@@ -245,6 +246,7 @@ const float *S, const float *AP, const float *other)
     return AlphaParameters(s,su);
 }
 
+// two dependent changes
 static AlphaParameters alphaParameters_comp(unsigned size, const float *D,
 const float *S, const float *AP, const float *other1, const float *other2)
 {
