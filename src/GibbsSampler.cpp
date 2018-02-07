@@ -120,17 +120,14 @@ float GibbsSampler::computeDeltaLL(const MatrixChange &change)
 void GibbsSampler::update(char matrixLabel)
 {
     AtomicSupport &domain(matrixLabel == 'A' ? mADomain : mPDomain);
-
-    // get proposal and convert to a matrix update
     AtomicProposal proposal = domain.makeProposal();
 
-    // check if proposal is in fixed region
     if (mFixedMat == 'A' || mFixedMat == 'P')
     {
         MatrixChange change = domain.getMatrixChange(proposal);
         unsigned index1 = mFixedMat == 'A' ? change.col1 : change.row1;
         unsigned index2 = mFixedMat == 'A' ? change.col2 : change.row2;
-        index2 = change.nChanges == 1 ? mNumFixedPatterns : index2;
+        index2 = (change.nChanges == 1) ? mNumFixedPatterns : index2;
 
         if (index1 < mNumFixedPatterns || index2 < mNumFixedPatterns)
         {
@@ -138,8 +135,7 @@ void GibbsSampler::update(char matrixLabel)
         }
     }
 
-    // Update based on the proposal type
-    switch (proposal.type)
+    switch (proposal.type) // Update based on the proposal type
     {
         case 'D': death(domain, proposal);    break;
         case 'B': birth(domain, proposal);    break;
@@ -163,7 +159,7 @@ void GibbsSampler::setAnnealingTemp(float temp)
     mAnnealingTemp = temp;
 }
 
-bool GibbsSampler::evaluateChange(AtomicSupport &domain,
+void GibbsSampler::evaluateChange(AtomicSupport &domain,
 const AtomicProposal &proposal, float threshold, bool accept)
 {
     MatrixChange change = domain.getMatrixChange(proposal);
@@ -173,9 +169,7 @@ const AtomicProposal &proposal, float threshold, bool accept)
         change = domain.acceptProposal(proposal);
         change.label == 'A' ? mAMatrix.update(change) : mPMatrix.update(change);
         updateAPMatrix(change);
-        return true;
     }
-    return false;
 }
 
 // simd?
@@ -235,52 +229,61 @@ bool GibbsSampler::canUseGibbs(const MatrixChange &ch)
 }
 
 // accept automatically, try to rebirth
-bool GibbsSampler::death(AtomicSupport &domain, AtomicProposal &proposal)
+void GibbsSampler::death(AtomicSupport &domain, AtomicProposal &prop)
 {
     // automaticallly accept death
-    evaluateChange(domain, proposal, 0.0, true);
+    evaluateChange(domain, prop, 0.f, true);
 
     // rebirth
-    MatrixChange ch = domain.getMatrixChange(proposal);
-    float newMass = canUseGibbs(ch) ? getGibbsMass(ch) : 0.0;
-    proposal.delta1 = newMass < EPSILON ? -proposal.delta1 : newMass;    
+    //MatrixChange change = domain.getMatrixChange(prop);
+    MatrixChange change(prop.label, domain.getRow(prop.pos1),
+        domain.getCol(prop.pos1), prop.delta1);
+    float newMass = canUseGibbs(change) ? getGibbsMass(change) : 0.f;
+    prop.delta1 = newMass < EPSILON ? -prop.delta1 : newMass;    
 
     // attempt to accept rebirth
-    return evaluateChange(domain, proposal, std::log(gaps::random::uniform()));
+    evaluateChange(domain, prop, std::log(gaps::random::uniform()));
 }
 
-bool GibbsSampler::birth(AtomicSupport &domain, AtomicProposal &proposal)
+void GibbsSampler::birth(AtomicSupport &domain, AtomicProposal &prop)
 {
     // attempt gibbs
-    MatrixChange ch = domain.getMatrixChange(proposal);
-    proposal.delta1 = canUseGibbs(ch) ? getGibbsMass(ch) : proposal.delta1;
+    //MatrixChange change = domain.getMatrixChange(prop);
+    MatrixChange change(prop.label, domain.getRow(prop.pos1),
+        domain.getCol(prop.pos1), prop.delta1);
+    prop.delta1 = canUseGibbs(change) ? getGibbsMass(change) : prop.delta1;
 
     // accept birth
-    return evaluateChange(domain, proposal, 0.0, true);
+    evaluateChange(domain, prop, 0.f, true);
 }
 
-bool GibbsSampler::move(AtomicSupport &domain, AtomicProposal &proposal)
+void GibbsSampler::move(AtomicSupport &domain, AtomicProposal &prop)
 {
-    MatrixChange change = domain.getMatrixChange(proposal);
-    if (change.row1 == change.row2 && change.col1 == change.col2)
+    //MatrixChange change = domain.getMatrixChange(proposal);
+    MatrixChange change(prop.label, domain.getRow(prop.pos1),
+        domain.getCol(prop.pos1), prop.delta1, domain.getRow(prop.pos2),
+        domain.getCol(prop.pos2), prop.delta2);
+    if (change.row1 != change.row2 || change.col1 != change.col2)
     {
-        return false;
+        evaluateChange(domain, prop, std::log(gaps::random::uniform()));
     }
-    return evaluateChange(domain, proposal, std::log(gaps::random::uniform()));
 }
 
-bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
+void GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &prop)
 {
-    MatrixChange change = domain.getMatrixChange(proposal);
+    //MatrixChange change = domain.getMatrixChange(proposal);
+    MatrixChange change(prop.label, domain.getRow(prop.pos1),
+        domain.getCol(prop.pos1), prop.delta1, domain.getRow(prop.pos2),
+        domain.getCol(prop.pos2), prop.delta2);
     if (change.row1 == change.row2 && change.col1 == change.col2)
     {
-        return false;
+        return;
     }
 
-    float mass1 = domain.at(proposal.pos1);
-    float mass2 = domain.at(proposal.pos2);
-    float newMass1 = mass1 + proposal.delta1;
-    float newMass2 = mass2 + proposal.delta2;
+    float mass1 = domain.at(prop.pos1);
+    float mass2 = domain.at(prop.pos2);
+    float newMass1 = mass1 + prop.delta1;
+    float newMass2 = mass2 + prop.delta2;
 
     if (canUseGibbs(change))
     {
@@ -300,11 +303,12 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
 
             if (!(plower >  0.95f || pupper < 0.05f))
             {
-                proposal.delta1 = gaps::random::q_norm(u, mean, sd);
-                proposal.delta1 = std::max(proposal.delta1, -mass1);
-                proposal.delta1 = std::min(proposal.delta1, mass2);
-                proposal.delta2 = -proposal.delta1;
-                return evaluateChange(domain, proposal, 0.0, true);
+                prop.delta1 = gaps::random::q_norm(u, mean, sd);
+                prop.delta1 = std::max(prop.delta1, -mass1);
+                prop.delta1 = std::min(prop.delta1, mass2);
+                prop.delta2 = -prop.delta1;
+                evaluateChange(domain, prop, 0.0, true);
+                return;
             }
         }
     }
@@ -317,13 +321,13 @@ bool GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &proposal)
 
     if (pold == 0.f && pnew != 0.f)
     {
-        return evaluateChange(domain, proposal, 0.f, true);
+        evaluateChange(domain, prop, 0.f, true);
     }
     else
     {
         float priorLL = (pold == 0.f) ? 0.f : log(pnew / pold);
         float rejectProb = std::log(gaps::random::uniform()) - priorLL;
-        return evaluateChange(domain, proposal, rejectProb);
+        evaluateChange(domain, prop, rejectProb);
     }
 }
 
