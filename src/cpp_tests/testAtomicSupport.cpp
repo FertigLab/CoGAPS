@@ -6,6 +6,7 @@
 TEST_CASE("Test AtomicSupport.h")
 {
     unsigned nrow = 100, ncol = 500;
+    MatrixChange dummy('A', 0, 0, 0.f);
 
     SECTION("Make and Convert proposals")
     {
@@ -22,7 +23,7 @@ TEST_CASE("Test AtomicSupport.h")
         REQUIRE(prop.pos2 == 0);
         REQUIRE(prop.delta2 == 0.0);
         
-        domain.acceptProposal(prop);
+        domain.acceptProposal(prop, dummy);
 
         REQUIRE(domain.numAtoms() == 1);
 
@@ -39,18 +40,9 @@ TEST_CASE("Test AtomicSupport.h")
 
             REQUIRE(cond);
             
-            MatrixChange change = domain.getMatrixChange(prop);
-            
-            REQUIRE(change.label == 'A');
-            REQUIRE(change.nChanges == prop.nChanges);
-            REQUIRE(change.row2 < nrow);
-            REQUIRE(change.col2 < ncol);
-            REQUIRE(change.delta1 == prop.delta1);
-            REQUIRE(change.delta2 == prop.delta2);
-
             uint64_t nOld = domain.numAtoms();
 
-            domain.acceptProposal(prop);
+            domain.acceptProposal(prop, dummy);
 
             if (prop.type == 'B')
             {
@@ -64,6 +56,7 @@ TEST_CASE("Test AtomicSupport.h")
             {
                 REQUIRE(domain.numAtoms() == nOld);
             }
+
         }
     }
 
@@ -77,7 +70,7 @@ TEST_CASE("Test AtomicSupport.h")
         for (unsigned i = 0; i < 5000; ++i)
         {
             AtomicProposal prop = domain.makeProposal();
-            domain.acceptProposal(prop);
+            domain.acceptProposal(prop, dummy);
 
             switch(prop.type)
             {
@@ -109,8 +102,8 @@ TEST_CASE("Internal AtomicSupport Tests")
     {
         AtomicProposal propA = Adomain.proposeBirth();
         AtomicProposal propP = Pdomain.proposeBirth();
-        Adomain.acceptProposal(propA);
-        Pdomain.acceptProposal(propP);
+        Adomain.acceptProposal(propA, dummy);
+        Pdomain.acceptProposal(propP, dummy);
         aAtomPos.push_back(propA.pos1);
         pAtomPos.push_back(propP.pos1);
     }
