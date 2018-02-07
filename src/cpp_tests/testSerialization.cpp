@@ -151,12 +151,12 @@ TEST_CASE("Test Archive.h")
 
     SECTION("GibbsSampler Serialization")
     {
-
+        //TODO
     }
 
     SECTION("GapsInternalState Serialization")
     {
-
+        //TODO
     }
 
     SECTION("Random Generator Serialization")

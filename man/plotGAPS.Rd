@@ -25,9 +25,7 @@ plots the output A and P matrices as a
 heatmap and line plot respectively
 }
 \examples{
-# Load the sample data from CoGAPS
 data(SimpSim)
-# Run plotGAPS with arguments from CoGAPS results list
 plotGAPS(SimpSim.result$Amean, SimpSim.result$Pmean)
 }
 

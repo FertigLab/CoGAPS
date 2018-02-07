@@ -22,9 +22,7 @@ calculates the Z-score for each element based on input mean
 and standard deviation matrices
 }
 \examples{
-# Load the sample data from CoGAPS
 data(SimpSim)
-# Run calcZ
 calcZ(SimpSim.result$Amean, SimpSim.result$Asd)
 }
 

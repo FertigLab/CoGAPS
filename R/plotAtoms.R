@@ -8,9 +8,7 @@
 #' atom numbers
 #' @return plot
 #' @examples
-#' # Load the sample data from CoGAPS
 #' data(SimpSim)
-#' # Run plotAtoms
 #' plotAtoms(SimpSim.result, type="sampA")
 #' @export
 plotAtoms<-function(gapsRes, type='sampA')

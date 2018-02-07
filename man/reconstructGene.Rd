@@ -20,9 +20,7 @@ the D' estimate of a gene or set of genes
 Reconstruct Gene
 }
 \examples{
-# Load the sample data from CoGAPS
 data(SimpSim)
-# Run reconstructGene
 reconstructGene(SimpSim.result$Amean, SimpSim.result$Pmean)
 }
 

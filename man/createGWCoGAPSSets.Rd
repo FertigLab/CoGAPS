@@ -13,7 +13,7 @@ createGWCoGAPSSets(D, S, nSets, simulationName)
 
 \item{nSets}{number of sets to partition the data into}
 
-\item{simulatioName}{name used to identify files created by this simulation}
+\item{simulationName}{name used to identify files created by this simulation}
 }
 \value{
 simulationName used to identify saved files
@@ -25,7 +25,7 @@ Create Gene Sets for GWCoGAPS
 factors whole genome data into randomly generated sets for indexing
 }
 \examples{
-data(SimpSim) # Load the sample data from CoGAPS
+data(SimpSim)
 createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
 }
 

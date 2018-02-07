@@ -7,6 +7,20 @@
 GWCoGapsFromCheckpoint(simulationName, nCores = NA, cut = NA, minNS = NA,
   ...)
 }
+\arguments{
+\item{simulationName}{name of this simulation}
+
+\item{nCores}{number of cores for parallelization. If left to the default NA, nCores = nSets.}
+
+\item{cut}{number of branches at which to cut dendrogram used in patternMatch4Parallel}
+
+\item{minNS}{minimum of individual set contributions a cluster must contain}
+
+\item{...}{additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}}
+}
+\value{
+list of A and P estimates
+}
 \description{
 Restart a GWCoGaps Run from Checkpoint
 }

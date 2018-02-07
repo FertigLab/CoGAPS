@@ -24,6 +24,8 @@
 #' @param fixedPatterns matrix of fixed values in either A or P matrix
 #' @param checkpointInterval time (in seconds) between creating a checkpoint
 #' @param checkpointFile name of the checkpoint file
+#' @param pumpThreshold type of threshold for pump statistic
+#' @param nPumpSamples number of samples used in pump statistic
 #' @param ... keeps backwards compatibility with arguments from older versions
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
@@ -36,7 +38,7 @@ nSnapshots=0, alphaA=0.01, alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100,
 seed=-1, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed='N',
 fixedPatterns=matrix(0), checkpointInterval=0, 
 checkpointFile="gaps_checkpoint.out", pumpThreshold="unique",
-nPumpSamples=100, ...)
+nPumpSamples=0, ...)
 {
     # get v2 arguments
     oldArgs <- list(...)
@@ -94,6 +96,7 @@ nPumpSamples=100, ...)
 #' @param D data matrix
 #' @param S uncertainty matrix
 #' @param path path to checkpoint file
+#' @param checkpointFile name for future checkpooints made
 #' @return list with A and P matrix estimates
 #' @export
 CoGapsFromCheckpoint <- function(D, S, path, checkpointFile=NA)
@@ -166,7 +169,7 @@ alphaP=0.01, nMaxP=100000, max_gibbmass_paraP=100.0, seed=-1, messages=TRUE)
 #' @examples
 #' data(SimpSim)
 #' nC <- ncol(SimpSim.D)
-#' patterns <- matrix(runif(nC, 0, 1), nrow=1, ncol=nC)
+#' patterns <- matrix(1:nC/nC, nrow=1, ncol=nC)
 #' result <- gapsMapRun(SimpSim.D, SimpSim.S, FP=patterns, nFactor=3)
 #' @export
 gapsMapRun <- function(D, S, FP, ABins=data.frame(), PBins=data.frame(),

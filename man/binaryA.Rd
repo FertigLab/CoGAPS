@@ -26,9 +26,7 @@ in which the value is 1 if the value in Amean is greater than
 threshold * Asd and 0 otherwise
 }
 \examples{
-# Load the sample data from CoGAPS
 data(SimpSim)
-# Run binaryA with the correct arguments from 'results'
 binaryA(SimpSim.result$Amean, SimpSim.result$Asd, threshold=3)
 }
 

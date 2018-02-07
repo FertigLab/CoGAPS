@@ -6,9 +6,7 @@
 #' @param sdMat matrix of standard deviation values
 #' @return matrix of z-scores
 #' @examples
-#' # Load the sample data from CoGAPS
 #' data(SimpSim)
-#' # Run calcZ
 #' calcZ(SimpSim.result$Amean, SimpSim.result$Asd)
 #' @export
 calcZ <- function(meanMat, sdMat)

@@ -74,7 +74,7 @@ Backwards Compatibility with v2
 \examples{
 data(SimpSim)
 nC <- ncol(SimpSim.D)
-patterns <- matrix(runif(nC, 0, 1), nrow=1, ncol=nC)
+patterns <- matrix(1:nC/nC, nrow=1, ncol=nC)
 result <- gapsMapRun(SimpSim.D, SimpSim.S, FP=patterns, nFactor=3)
 }
 

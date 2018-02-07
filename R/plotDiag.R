@@ -4,9 +4,7 @@
 #' @param gapsRes list returned by CoGAPS
 #' @return plot
 #' @examples
-#' # Load the sample data from CoGAPS
 #' data(SimpSim)
-#' # Run plotDiag
 #' plotDiag(SimpSim.result)
 #' @export
 plotDiag <-function(gapsRes)

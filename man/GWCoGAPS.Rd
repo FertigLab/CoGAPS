@@ -7,6 +7,8 @@
 GWCoGAPS(simulationName, nFactor, nCores = NA, cut = NA, minNS = NA, ...)
 }
 \arguments{
+\item{simulationName}{name of this simulation}
+
 \item{nFactor}{number of patterns (basis vectors, metagenes), which must be
 greater than or equal to the number of rows of FP}
 
@@ -30,10 +32,10 @@ matrix factorization returning the two matrices that reconstruct
 the data matrix for whole genome data;
 }
 \examples{
-# Load the sample data from CoGAPS
 data(SimpSim)
-# Run GWCoGAPS
-GWCoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nSets=2)
+sim_name <- "example"
+createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
+result <- GWCoGAPS(sim_name, nFactor=3, nEquil=1000, nSample=1000)
 }
 \seealso{
 \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
