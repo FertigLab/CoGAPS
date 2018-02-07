@@ -125,6 +125,7 @@ TEST_CASE("Test Archive.h")
     
     SECTION("Atomic Serialization")
     {
+        MatrixChange dummy('A', 0, 0, 0.f);
         AtomicSupport domain_read('A',100,100), domain_write('A',100,100);
         std::vector<uint64_t> locations;
         for (unsigned i = 0; i < 100; ++i)
@@ -132,7 +133,7 @@ TEST_CASE("Test Archive.h")
             AtomicProposal prop = domain_write.makeProposal();
             locations.push_back(prop.pos1);
             locations.push_back(prop.pos2);
-            domain_write.acceptProposal(prop);
+            domain_write.acceptProposal(prop, dummy);
         }
 
         Archive arWrite("test_ar.temp", ARCHIVE_WRITE);

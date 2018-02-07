@@ -202,27 +202,13 @@ AtomicProposal AtomicSupport::makeProposal() const
     return (mNumAtoms < 2 || unif < 0.75) ? proposeMove() : proposeExchange();
 }
 
-MatrixChange AtomicSupport::acceptProposal(const AtomicProposal &prop)
+MatrixChange AtomicSupport::acceptProposal(const AtomicProposal &prop,
+MatrixChange &ch)
 {
-    MatrixChange change = getMatrixChange(prop);
-    change.delta1 = updateAtomMass(prop.pos1, prop.delta1);
-    change.delta2 = (prop.nChanges > 1) ? updateAtomMass(prop.pos2, prop.delta2)
-        : change.delta2;
-    return change;
-}
-
-MatrixChange AtomicSupport::getMatrixChange(const AtomicProposal &prop) const
-{
-    if (prop.nChanges > 1)
-    {
-        return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1),
-            prop.delta1, getRow(prop.pos2), getCol(prop.pos2), prop.delta2);
-    }
-    else
-    {   
-        return MatrixChange(prop.label, getRow(prop.pos1), getCol(prop.pos1),
-            prop.delta1);
-    }
+    ch.delta1 = updateAtomMass(prop.pos1, prop.delta1);
+    ch.delta2 = (prop.nChanges > 1) ? updateAtomMass(prop.pos2, prop.delta2)
+        : ch.delta2;
+    return ch;
 }
 
 Archive& operator<<(Archive &ar, AtomicSupport &domain)

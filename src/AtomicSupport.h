@@ -103,10 +103,7 @@ public:
 
     // create and accept a proposal
     AtomicProposal makeProposal() const;
-    MatrixChange acceptProposal(const AtomicProposal &prop);
-
-    // convert an AtomicProposal to an ElementChange
-    MatrixChange getMatrixChange(const AtomicProposal &prop) const;
+    MatrixChange acceptProposal(const AtomicProposal &prop, MatrixChange &ch);
 
     // convert atomic position to row/col of the matrix
     uint64_t getRow(uint64_t pos) const;

@@ -32,7 +32,8 @@ Suggests:
     testthat,
     lintr,
     knitr,
-    rmarkdown
+    rmarkdown,
+    BiocStyle
 LinkingTo: Rcpp, BH
 VignetteBuilder: knitr
 License: GPL (==2)

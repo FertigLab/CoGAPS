@@ -50,7 +50,7 @@ public:
     void exchange(AtomicSupport &domain, AtomicProposal &proposal);
 
     void evaluateChange(AtomicSupport &domain, const AtomicProposal &proposal,
-        float threshold, bool accept=false);
+        MatrixChange &change, float threshold, bool accept=false);
 
     float computeDeltaLL(const MatrixChange &change);
 
