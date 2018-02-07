@@ -21,9 +21,7 @@ Plot the P Matrix
 plots the P matrix in a line plot with error bars
 }
 \examples{
-# Load the sample data from CoGAPS
 data(SimpSim)
-# Run plotP with arguments from CoGAPS results list
 plotP(SimpSim.result$Pmean, SimpSim.result$Psd)
 }
 

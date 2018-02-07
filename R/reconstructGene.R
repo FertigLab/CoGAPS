@@ -5,9 +5,7 @@
 #' @param genes an index of the gene or genes of interest
 #' @return the D' estimate of a gene or set of genes
 #' @examples
-#' # Load the sample data from CoGAPS
 #' data(SimpSim)
-#' # Run reconstructGene
 #' reconstructGene(SimpSim.result$Amean, SimpSim.result$Pmean)
 #' @export
 reconstructGene<-function(A, P, genes=NA)

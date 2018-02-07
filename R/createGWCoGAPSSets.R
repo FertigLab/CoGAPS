@@ -5,10 +5,10 @@
 #' @param D data matrix
 #' @param S uncertainty matrix
 #' @param nSets number of sets to partition the data into
-#' @param simulatioName name used to identify files created by this simulation
+#' @param simulationName name used to identify files created by this simulation
 #' @return simulationName used to identify saved files
 #' @examples
-#' data(SimpSim) # Load the sample data from CoGAPS
+#' data(SimpSim)
 #' createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
 #' @export
 createGWCoGAPSSets <- function(D, S, nSets, simulationName)

@@ -9,9 +9,7 @@
 #' that an element of Amean must be to get a value of 1
 #' @return plots a heatmap of the A Matrix
 #' @examples
-#' # Load the sample data from CoGAPS
 #' data(SimpSim)
-#' # Run binaryA with the correct arguments from 'results'
 #' binaryA(SimpSim.result$Amean, SimpSim.result$Asd, threshold=3)
 #' @export
 binaryA <-function(Amean, Asd, threshold=3)

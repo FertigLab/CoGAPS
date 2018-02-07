@@ -12,6 +12,8 @@ CoGapsFromCheckpoint(D, S, path, checkpointFile = NA)
 \item{S}{uncertainty matrix}
 
 \item{path}{path to checkpoint file}
+
+\item{checkpointFile}{name for future checkpooints made}
 }
 \value{
 list with A and P matrix estimates

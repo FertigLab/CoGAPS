@@ -5,9 +5,7 @@
 #' @param Psd matrix of standard deviation values of P
 #' @return plot
 #' @examples
-#' # Load the sample data from CoGAPS
 #' data(SimpSim)
-#' # Run plotP with arguments from CoGAPS results list
 #' plotP(SimpSim.result$Pmean, SimpSim.result$Psd)
 #' @export
 plotP <- function(Pmean, Psd)

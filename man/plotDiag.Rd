@@ -19,9 +19,7 @@ Diagnostic Plots
 plots a series of diagnostic plots
 }
 \examples{
-# Load the sample data from CoGAPS
 data(SimpSim)
-# Run plotDiag
 plotDiag(SimpSim.result)
 }
 

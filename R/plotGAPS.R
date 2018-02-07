@@ -8,9 +8,7 @@
 #' not specified, output goes to screen
 #' @return plot
 #' @examples
-#' # Load the sample data from CoGAPS
 #' data(SimpSim)
-#' # Run plotGAPS with arguments from CoGAPS results list
 #' plotGAPS(SimpSim.result$Amean, SimpSim.result$Pmean)
 #' @export
 plotGAPS <- function(A, P, outputPDF="")

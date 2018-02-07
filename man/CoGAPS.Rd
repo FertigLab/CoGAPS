@@ -10,7 +10,7 @@ CoGAPS(D, S, nFactor = 7, nEquil = 1000, nSample = 1000,
   singleCellRNASeq = FALSE, whichMatrixFixed = "N",
   fixedPatterns = matrix(0), checkpointInterval = 0,
   checkpointFile = "gaps_checkpoint.out", pumpThreshold = "unique",
-  nPumpSamples = 100, ...)
+  nPumpSamples = 0, ...)
 }
 \arguments{
 \item{D}{data matrix}
@@ -51,6 +51,10 @@ the fixed patterns}
 \item{checkpointInterval}{time (in seconds) between creating a checkpoint}
 
 \item{checkpointFile}{name of the checkpoint file}
+
+\item{pumpThreshold}{type of threshold for pump statistic}
+
+\item{nPumpSamples}{number of samples used in pump statistic}
 
 \item{...}{keeps backwards compatibility with arguments from older versions}
 }

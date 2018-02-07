@@ -25,9 +25,7 @@ Plot of Residuals
 calculate residuals and produce heatmap
 }
 \examples{
-# Load the sample data from CoGAPS
 data(SimpSim)
-# Run residuals with the correct arguments
 residuals(SimpSim.result$Amean, SimpSim.result$Pmean, SimpSim.D, SimpSim.S)
 }
 

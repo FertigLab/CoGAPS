@@ -7,9 +7,7 @@
 #' @param S original standard deviation matrix run through GAPS
 #' @return creates a residual plot
 #' @examples
-#' # Load the sample data from CoGAPS
 #' data(SimpSim)
-#' # Run residuals with the correct arguments
 #' residuals(SimpSim.result$Amean, SimpSim.result$Pmean, SimpSim.D, SimpSim.S)
 #' @export
 residuals <- function(AMean_Mat, PMean_Mat, D, S)
