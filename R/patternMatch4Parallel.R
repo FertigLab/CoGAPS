@@ -14,9 +14,6 @@
 patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS, 
 cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
 {
-    #### read in CoGAPS results
-    cdir <- getwd()
-    #if(!is.null(path)){setwd(path)}
     if (!is.null(minNS))
         minNS=nSets/2
 
@@ -123,7 +120,7 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
     {
         # return by set and final
         PBySet<-PByCDS
-        return(list("consenusPatterns"=PByCDSWavgScaled,"PBySet"=PBySet))
+        return(list("consenusPatterns"=PByCDSWavgScaled,"PBySet"=PBySet,"RtoMPDS"=RtoMPDS))
     }
     else
     {
