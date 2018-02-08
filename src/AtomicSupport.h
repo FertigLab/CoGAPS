@@ -65,6 +65,9 @@ public:
     uint64_t mNumAtoms;
     uint64_t mMaxNumAtoms;
 
+    // proposal queue
+    std::vector<AtomicProposal> mProposalQueue;
+
     // matrix information
     uint64_t mNumRows;
     uint64_t mNumCols;
@@ -95,19 +98,22 @@ public:
     // update the mass of an atom, return the total amount changed
     float updateAtomMass(uint64_t pos, float delta);
 
+    AtomicProposal makeProposal() const;
+
 public:
 
     // constructor
-    AtomicSupport(char label, uint64_t nrow, uint64_t ncol, float alpha=1.0,
-        float lambda=1.0);
+    AtomicSupport(char label, uint64_t nrow, uint64_t ncol);
 
-    // create and accept a proposal
-    AtomicProposal makeProposal() const;
+    // proposals
+    void populateQueue();
+    bool isQueueEmpty() const;
+    AtomicProposal popQueue();
     MatrixChange acceptProposal(const AtomicProposal &prop, MatrixChange &ch);
 
-    // convert atomic position to row/col of the matrix
-    uint64_t getRow(uint64_t pos) const;
-    uint64_t getCol(uint64_t pos) const;
+    // setters
+    void setAlpha(float alpha) {mAlpha = alpha;}
+    void setLambda(float lambda) {mLambda = lambda;}
 
     // getters
     float alpha() const {return mAlpha;}
@@ -115,10 +121,11 @@ public:
     uint64_t numAtoms() const {return mNumAtoms;}
     float at(uint64_t pos) const {return mAtoms[mAtomPositions.at(pos)].mass;}
 
-    // setters
-    void setAlpha(float alpha) {mAlpha = alpha;}
-    void setLambda(float lambda) {mLambda = lambda;}
+    // convert atomic position to row/col of the matrix
+    uint64_t getRow(uint64_t pos) const;
+    uint64_t getCol(uint64_t pos) const;
 
+    // serialization
     friend Archive& operator<<(Archive &ar, AtomicSupport &sampler);
     friend Archive& operator>>(Archive &ar, AtomicSupport &sampler);
 };
