@@ -59,12 +59,14 @@ AtomNeighbors AtomicSupport::getNeighbors(uint64_t pos) const
         right->first, mAtoms[right->second].mass);
 }
 
+// O(1)
 uint64_t AtomicSupport::getRow(uint64_t pos) const
 {
     uint64_t binNum = std::min(pos / mBinSize, mNumBins - 1);
     return mLabel == 'A' ? binNum / mNumCols : binNum % mNumRows;
 }
 
+// O(1)
 uint64_t AtomicSupport::getCol(uint64_t pos) const
 {
     uint64_t binNum = std::min(pos / mBinSize, mNumBins - 1);
@@ -89,6 +91,7 @@ uint64_t AtomicSupport::randomAtomPosition() const
     return mAtoms[num].pos;
 }
 
+// O(logN)
 AtomicProposal AtomicSupport::proposeDeath() const
 {
     uint64_t location = randomAtomPosition();
@@ -96,6 +99,7 @@ AtomicProposal AtomicSupport::proposeDeath() const
     return AtomicProposal(mLabel, 'D', location, -mass);
 }
 
+// O(logN)
 AtomicProposal AtomicSupport::proposeBirth() const
 {
     uint64_t location = randomFreePosition();
@@ -104,6 +108,7 @@ AtomicProposal AtomicSupport::proposeBirth() const
 }
 
 // move atom between adjacent atoms
+// O(logN)
 AtomicProposal AtomicSupport::proposeMove() const
 {
     uint64_t pos = randomAtomPosition();
@@ -118,6 +123,7 @@ AtomicProposal AtomicSupport::proposeMove() const
 }
 
 // exchange with adjacent atom to the right
+// O(logN)
 AtomicProposal AtomicSupport::proposeExchange() const
 {
     uint64_t pos1 = randomAtomPosition();
@@ -149,6 +155,7 @@ AtomicProposal AtomicSupport::proposeExchange() const
     return AtomicProposal(mLabel, 'E', pos1, delta1, pos2, delta2);
 }
 
+// O(logN)
 float AtomicSupport::updateAtomMass(uint64_t pos, float delta)
 {
     if (mAtomPositions.count(pos)) // update atom if it exists
@@ -168,40 +175,6 @@ float AtomicSupport::updateAtomMass(uint64_t pos, float delta)
     return delta;
 }
 
-AtomicProposal AtomicSupport::makeProposal() const
-{
-    if (mNumAtoms == 0)
-    {
-        return proposeBirth();
-    }
-
-    float unif = gaps::random::uniform();
-    if ((mNumAtoms < 2 && unif <= 0.6667f) || unif <= 0.5f) // birth/death
-    {
-        if (mNumAtoms >= mMaxNumAtoms)
-        {
-            return proposeDeath();
-        }
-
-        float pDelete = 0.5; // default uniform prior for mAlpha == 0
-        if (mAlpha > 0) // poisson prior
-        {
-            float dMax = (float)mMaxNumAtoms;
-            float dNum = (float)mNumAtoms;
-            float maxTerm = (dMax - dNum) / dMax;
-
-            pDelete = dNum / (dNum + mAlpha * (float)mNumBins * maxTerm);
-        }
-        else if (mAlpha < 0) // geometric prior
-        {
-            float c = -mAlpha * mNumBins / (-mAlpha * mNumBins + 1.0);
-            pDelete = (float)mNumAtoms / ((mNumAtoms + 1) * c + (float)mNumAtoms);
-        }
-        return gaps::random::uniform() < pDelete ? proposeDeath() : proposeBirth();
-    }
-    return (mNumAtoms < 2 || unif < 0.75) ? proposeMove() : proposeExchange();
-}
-
 MatrixChange AtomicSupport::acceptProposal(const AtomicProposal &prop,
 MatrixChange &ch)
 {
@@ -209,6 +182,89 @@ MatrixChange &ch)
     ch.delta2 = (prop.nChanges > 1) ? updateAtomMass(prop.pos2, prop.delta2)
         : ch.delta2;
     return ch;
+}
+
+float AtomicSupport::deleteProb(unsigned nAtoms) const
+{
+    float pDelete = 0.5; // default uniform prior for mAlpha == 0
+    float fnAtoms = (float)nAtoms;
+    if (mAlpha > 0) // poisson prior
+    {
+        float maxTerm = ((float)mMaxNumAtoms - fnAtoms) / (float)mMaxNumAtoms;
+        return fnAtoms / (fnAtoms + mAlpha * (float)mNumBins * maxTerm);
+    }
+    else if (mAlpha < 0) // geometric prior
+    {
+        float c = -mAlpha * mNumBins / (-mAlpha * mNumBins + 1.0);
+        return fnAtoms / ((fnAtoms + 1.f) * c + fnAtoms);
+    }    
+}
+
+bool AtomicSupport::addProposal(unsigned &minAtoms, unsigned &maxAtoms) const
+{
+    if (minAtoms == 0 && maxAtoms > 0 || minAtoms < 2 && maxAtoms >= 2)
+    {
+        return false;
+    }
+
+    if (maxAtoms == 0)
+    {
+        mProposalQueue.push_back(proposeBirth());
+        minAtoms++;
+        maxAtoms++;
+        return true;
+    }
+
+    float bdProb = maxAtoms < 2 ? 0.6667f : 0.5f;
+    float u1 = gaps::random::uniform();
+    float u2 = gaps::random::uniform();   
+    float lowerBound = deleteProb(minAtoms);
+    float upperBound = deleteProb(maxAtoms);
+    if (u1 < bdProb && u2 > upperBound)
+    {
+        mProposalQueue.push_back(proposeBirth());
+        minAtoms++;
+        maxAtoms++;
+    }
+    else if (u1 < bdProb && u2 < lowerBound)
+    {
+        mProposalQueue.push_back(proposeDeath());
+        minAtoms--;
+    }
+    else if (u1 >= bdProb && (maxAtoms < 2 || u1 < 0.75f))
+    {
+        mProposalQueue.push_back(proposeMove());
+    }
+    else if (u1 >= bdProb)
+    {
+        mProposalQueue.push_back(proposeExchange());
+        minAtoms--;
+    }
+    else
+    {
+        return false;
+    }
+    return true;
+}
+
+void AtomicSupport::populateQueue(unsigned limit)
+{
+    unsigned minAtoms = mNumAtoms;
+    unsigned maxAtoms = mNumAtoms;
+    unsigned nIter = 0;
+
+    while (nIter++ < limit && addProposal(minAtoms, maxAtoms));
+}
+
+bool AtomicSupport::isQueueEmpty() const
+{
+    return mProposalQueue.empty();
+}
+
+AtomicProposal AtomicSupport::popQueue()
+{
+    AtomicProposal prop = mProposalQueue.back();
+    mProposalQueue.pop_back();
 }
 
 Archive& operator<<(Archive &ar, AtomicSupport &domain)
