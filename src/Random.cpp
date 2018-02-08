@@ -52,7 +52,7 @@ int gaps::random::poisson(float lambda)
 
 float gaps::random::exponential(float lambda)
 {
-    boost::random::exponential_distribution<> dist(lambda);
+    boost::random::exponential_distribution<float> dist(lambda);
     return dist(rng);
 }
 
@@ -71,9 +71,9 @@ float gaps::random::uniform(float a, float b)
     }
     else
     {
-        boost::random::uniform_real_distribution<> dist(a,b);
+        boost::random::uniform_real_distribution<float> dist(a,b);
         float result = dist(rng);
-        while (result == b)
+        while (result == a || result == b)
         {
             result = dist(rng);
         }
@@ -103,13 +103,13 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
 
 float gaps::random::d_gamma(float d, float shape, float scale)
 {
-    boost::math::gamma_distribution<> gam(shape, scale);
+    boost::math::gamma_distribution<float> gam(shape, scale);
     return pdf(gam, d);
 }
 
 float gaps::random::p_gamma(float p, float shape, float scale)
 {
-    boost::math::gamma_distribution<> gam(shape, scale);
+    boost::math::gamma_distribution<float> gam(shape, scale);
     return cdf(gam, p);
 }
 
@@ -121,25 +121,25 @@ float gaps::random::q_gamma(float q, float shape, float scale)
     }
     else
     {
-        boost::math::gamma_distribution<> gam(shape, scale);
+        boost::math::gamma_distribution<float> gam(shape, scale);
         return quantile(gam, q);
     }
 }
 
 float gaps::random::d_norm(float d, float mean, float sd)
 {
-    boost::math::normal_distribution<> norm(mean, sd);
+    boost::math::normal_distribution<float> norm(mean, sd);
     return pdf(norm, d);
 }
 
 float gaps::random::q_norm(float q, float mean, float sd)
 {
-    boost::math::normal_distribution<> norm(mean, sd);
+    boost::math::normal_distribution<float> norm(mean, sd);
     return quantile(norm, q);
 }
 
 float gaps::random::p_norm(float p, float mean, float sd)
 {
-    boost::math::normal_distribution<> norm(mean, sd);
+    boost::math::normal_distribution<float> norm(mean, sd);
     return cdf(norm, p);
 }
