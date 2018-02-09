@@ -60,17 +60,25 @@ float gaps::random::exponential(float lambda)
 // open interval
 float gaps::random::uniform()
 {
-    float u = 0.f;
-    while (u == 0.f || u == 1.f)
-    {
-        u = u01_dist();
-    }
-    return u;
+    return u01_dist();
 }
 
 float gaps::random::uniform(float a, float b)
 {
-    return uniform() * (b - a) + a;
+    if (a == b)
+    {
+        return a;
+    }
+    else
+    {
+        boost::random::uniform_real_distribution<> dist(a,b);
+        float result = dist(rng);
+        while (result == 0.f || result == 1.f) // causes errors with quantile
+        {
+            result = dist(rng);
+        }
+        return result;
+    }
 }
 
 uint64_t gaps::random::uniform64()
