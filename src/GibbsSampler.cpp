@@ -82,7 +82,6 @@ float GibbsSampler::getGibbsMass(const MatrixChange &change)
     // note: is bounded below by zero so have to use inverse sampling!
     // based upon algorithm in DistScalarRmath.cc (scalarRandomSample)
     float plower = gaps::random::p_norm(0.f, mean, sd);
-    float u = gaps::random::uniform(plower, 1.f);
 
     // if the likelihood is flat and nonzero, sample strictly from the prior
     float newMass = 0.f;
@@ -90,7 +89,7 @@ float GibbsSampler::getGibbsMass(const MatrixChange &change)
     {
         newMass = death ? std::abs(change.delta1) : 0.f;
     }
-    else if (plower >= 0.99f)
+    else if (plower >= 0.99f) // what's the point of this?
     {
         float tmp1 = gaps::random::d_norm(0.f, mean, sd);
         float tmp2 = gaps::random::d_norm(10.f * lambda, mean, sd);
@@ -102,7 +101,7 @@ float GibbsSampler::getGibbsMass(const MatrixChange &change)
     }
     else
     {
-        newMass = gaps::random::q_norm(u, mean, sd);
+        newMass = gaps::random::inverseNormSample(plower, 1.f, mean, sd);
     }
 
     newMass = (change.label == 'A' ? std::min(newMass, mMaxGibbsMassA)
@@ -294,14 +293,12 @@ void GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &prop)
         {
             float mean = alphaParam.su / alphaParam.s;
             float sd = 1.f / std::sqrt(alphaParam.s);
-
             float plower = gaps::random::p_norm(-mass1, mean, sd);
             float pupper = gaps::random::p_norm(mass2, mean, sd);
-            float u = gaps::random::uniform(plower, pupper);
 
             if (!(plower >  0.95f || pupper < 0.05f))
             {
-                prop.delta1 = gaps::random::q_norm(u, mean, sd);
+                prop.delta1 = gaps::random::inverseNormSample(plower, pupper, mean, sd);
                 prop.delta1 = std::max(prop.delta1, -mass1);
                 prop.delta1 = std::min(prop.delta1, mass2);
                 prop.delta2 = -prop.delta1;

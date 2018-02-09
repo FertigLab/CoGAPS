@@ -72,12 +72,7 @@ float gaps::random::uniform(float a, float b)
     else
     {
         boost::random::uniform_real_distribution<> dist(a,b);
-        float result = dist(rng);
-        while (result == 0.f || result == 1.f) // causes errors with quantile
-        {
-            result = dist(rng);
-        }
-        return result;
+        return dist(rng);
     }
 }
 
@@ -142,4 +137,24 @@ float gaps::random::p_norm(float p, float mean, float sd)
 {
     boost::math::normal_distribution<> norm(mean, sd);
     return cdf(norm, p);
+}
+
+float gaps::random::inverseNormSample(float a, float b, float mean, float sd)
+{
+    float u = gaps::random::uniform(a, b);
+    while (u == 0.f || u == 1.f)
+    {
+        u = gaps::random::uniform(a, b);
+    }
+    return gaps::random::q_norm(u, mean, sd);
+}
+
+float gaps::random::inverseGammaSample(float a, float b, float mean, float sd)
+{
+    float u = gaps::random::uniform(a, b);
+    while (u == 0.f || u == 1.f)
+    {
+        u = gaps::random::uniform(a, b);
+    }
+    return gaps::random::q_gamma(u, mean, sd);
 }
