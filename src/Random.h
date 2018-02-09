@@ -30,6 +30,9 @@ namespace random
     float q_norm(float q, float mean, float sd);
     float p_norm(float p, float mean, float sd);
 
+    float inverseNormSample(float a, float b, float mean, float sd);
+    float inverseGammaSample(float a, float b, float mean, float sd);
+
     void save(Archive &ar);
     void load(Archive &ar);
 }
