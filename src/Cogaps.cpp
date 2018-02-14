@@ -52,16 +52,8 @@ static void createCheckpoint(GapsInternalState &state)
 static void updateSampler(GapsInternalState &state)
 {
     state.nUpdatesA += state.nIterA;
-    for (unsigned j = 0; j < state.nIterA; ++j)
-    {
-        state.sampler.update('A');
-    }
-
     state.nUpdatesP += state.nIterP;
-    for (unsigned j = 0; j < state.nIterP; ++j)
-    {
-        state.sampler.update('P');
-    }
+    state.runner.update(state.nIterA, state.nIterP);
 }
 
 static void makeCheckpointIfNeeded(GapsInternalState &state)

@@ -274,6 +274,7 @@ const float *S, const float *AP, const float *other1, const float *other2)
     return AlphaParameters(s,su);
 }
 
+// should these always be positive? could explain ordering of atoms in exchange
 AlphaParameters gaps::algo::alphaParameters(const MatrixChange &ch,
 const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
 const RowMatrix &P, const TwoWayMatrix &AP)

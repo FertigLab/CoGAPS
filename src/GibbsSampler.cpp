@@ -82,7 +82,6 @@ float GibbsSampler::getGibbsMass(const MatrixChange &change)
     // note: is bounded below by zero so have to use inverse sampling!
     // based upon algorithm in DistScalarRmath.cc (scalarRandomSample)
     float plower = gaps::random::p_norm(0.f, mean, sd);
-    float u = gaps::random::uniform(plower, 1.f);
 
     // if the likelihood is flat and nonzero, sample strictly from the prior
     float newMass = 0.f;
@@ -90,11 +89,10 @@ float GibbsSampler::getGibbsMass(const MatrixChange &change)
     {
         newMass = death ? std::abs(change.delta1) : 0.f;
     }
-    else if (plower >= 0.99f)
+    else if (plower >= 0.99f) // what is this?
     {
         float tmp1 = gaps::random::d_norm(0.f, mean, sd);
         float tmp2 = gaps::random::d_norm(10.f * lambda, mean, sd);
-
         if (tmp1 > EPSILON && std::abs(tmp1 - tmp2) < EPSILON)
         {
             return death ? 0.0 : change.delta1;
@@ -102,7 +100,7 @@ float GibbsSampler::getGibbsMass(const MatrixChange &change)
     }
     else
     {
-        newMass = gaps::random::q_norm(u, mean, sd);
+        newMass = gaps::random::inverseNormSample(plower, 1.f, mean, sd);
     }
 
     newMass = (change.label == 'A' ? std::min(newMass, mMaxGibbsMassA)
@@ -117,30 +115,21 @@ float GibbsSampler::computeDeltaLL(const MatrixChange &change)
         mPMatrix, mAPMatrix);
 }
 
-void GibbsSampler::update(char matrixLabel)
+void GibbsSampler::update(char matrixLabel, unsigned nUpdates)
 {
     AtomicSupport &domain(matrixLabel == 'A' ? mADomain : mPDomain);
-    AtomicProposal proposal = domain.makeProposal();
-
-    if (mFixedMat == 'A' || mFixedMat == 'P')
+    for (unsigned i = 0; i < nUpdates; ++i)
     {
-        //MatrixChange change = domain.getMatrixChange(proposal);
-        unsigned index1 = mFixedMat == 'A' ? domain.getCol(proposal.pos1) : domain.getRow(proposal.pos1);
-        unsigned index2 = mFixedMat == 'A' ? domain.getCol(proposal.pos2) : domain.getRow(proposal.pos2);
-        index2 = (proposal.nChanges == 1) ? mNumFixedPatterns : index2;
-
-        if (index1 < mNumFixedPatterns || index2 < mNumFixedPatterns)
+        assert(nUpdates - i - domain.size() >= 0);
+        domain.populateQueue(nUpdates - i - domain.size());
+        AtomicProposal proposal = domain.popQueue();
+        switch (proposal.type)
         {
-            return;
+            case 'D': death(domain, proposal);    break;
+            case 'B': birth(domain, proposal);    break;
+            case 'M': move(domain, proposal);     break;
+            case 'E': exchange(domain, proposal); break;
         }
-    }
-
-    switch (proposal.type) // Update based on the proposal type
-    {
-        case 'D': death(domain, proposal);    break;
-        case 'B': birth(domain, proposal);    break;
-        case 'M': move(domain, proposal);     break;
-        case 'E': exchange(domain, proposal); break;
     }
 }
 
@@ -229,6 +218,7 @@ bool GibbsSampler::canUseGibbs(const MatrixChange &ch)
 }
 
 // accept automatically, try to rebirth
+// TODO consolidate to single proposal
 void GibbsSampler::death(AtomicSupport &domain, AtomicProposal &prop)
 {
     // automaticallly accept death
@@ -236,7 +226,7 @@ void GibbsSampler::death(AtomicSupport &domain, AtomicProposal &prop)
         domain.getCol(prop.pos1), prop.delta1);
     evaluateChange(domain, prop, change, 0.f, true);
 
-    // rebirth
+    // rebirth, label as birth
     float newMass = canUseGibbs(change) ? getGibbsMass(change) : 0.f;
     prop.delta1 = newMass < EPSILON ? -prop.delta1 : newMass;
     change.delta1 = prop.delta1;
@@ -294,13 +284,12 @@ void GibbsSampler::exchange(AtomicSupport &domain, AtomicProposal &prop)
         {
             float mean = alphaParam.su / alphaParam.s;
             float sd = 1.f / std::sqrt(alphaParam.s);
-
             float plower = gaps::random::p_norm(-mass1, mean, sd);
             float pupper = gaps::random::p_norm(mass2, mean, sd);
-            float u = gaps::random::uniform(plower, pupper);
 
             if (!(plower >  0.95f || pupper < 0.05f))
             {
+                float u = gaps::random::uniform(plower, pupper);
                 prop.delta1 = gaps::random::q_norm(u, mean, sd);
                 prop.delta1 = std::max(prop.delta1, -mass1);
                 prop.delta1 = std::min(prop.delta1, mass2);
