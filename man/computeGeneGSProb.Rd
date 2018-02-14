@@ -34,4 +34,9 @@ membership for each candidate gene in a set specified in \code{GSGenes} by
 comparing the inferred activity of that gene to the average activity of the
 set.
 }
+\examples{
+data('SimpSim')
+computeGeneGSProb(SimpSim.result$Amean, SimpSim.result$Asd, GSGenes=GSets[[1]],
+numPerm=500)
+}
 
