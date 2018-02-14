@@ -10,6 +10,7 @@
 namespace gaps
 {
 
+// rename to math for dist functions
 namespace random
 {
     void setSeed(uint32_t seed);

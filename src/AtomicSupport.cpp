@@ -200,65 +200,99 @@ float AtomicSupport::deleteProb(unsigned nAtoms) const
     }    
 }
 
-bool AtomicSupport::addProposal(unsigned &minAtoms, unsigned &maxAtoms) const
+static isInVector(std::vector<unsigned> &vec, unsigned n)
+{
+    return std::find(vec.begin(), vec.end(), n) != vec.end();
+}
+
+bool AtomicSupport::addProposal(unsigned &minAtoms, unsigned &maxAtoms,
+std::vector<unsigned> &usedRows, std::vector<unsigned> &usedCols) const
 {
     if (minAtoms == 0 && maxAtoms > 0 || minAtoms < 2 && maxAtoms >= 2)
     {
         return false;
     }
 
+    AtomicProposal proposal;
     if (maxAtoms == 0)
     {
-        mProposalQueue.push_back(proposeBirth());
+        proposal = proposeBirth();
         minAtoms++;
         maxAtoms++;
-        return true;
-    }
-
-    float bdProb = maxAtoms < 2 ? 0.6667f : 0.5f;
-    float u1 = gaps::random::uniform();
-    float u2 = gaps::random::uniform();   
-    float lowerBound = deleteProb(minAtoms);
-    float upperBound = deleteProb(maxAtoms);
-    if (u1 < bdProb && u2 > upperBound)
-    {
-        mProposalQueue.push_back(proposeBirth());
-        minAtoms++;
-        maxAtoms++;
-    }
-    else if (u1 < bdProb && u2 < lowerBound)
-    {
-        mProposalQueue.push_back(proposeDeath());
-        minAtoms--;
-    }
-    else if (u1 >= bdProb && (maxAtoms < 2 || u1 < 0.75f))
-    {
-        mProposalQueue.push_back(proposeMove());
-    }
-    else if (u1 >= bdProb)
-    {
-        mProposalQueue.push_back(proposeExchange());
-        minAtoms--;
     }
     else
     {
+        float bdProb = maxAtoms < 2 ? 0.6667f : 0.5f;
+        float u1 = gaps::random::uniform();
+        float u2 = gaps::random::uniform();   
+        float lowerBound = deleteProb(minAtoms);
+        float upperBound = deleteProb(maxAtoms);
+        if (u1 < bdProb && u2 > upperBound)
+        {
+            proposal = proposeBirth();
+            minAtoms++;
+            maxAtoms++;
+        }
+        else if (u1 < bdProb && u2 < lowerBound)
+        {
+            proposal = proposeDeath();
+            minAtoms--;
+        }
+        else if (u1 >= bdProb && (maxAtoms < 2 || u1 < 0.75f))
+        {
+            proposal = proposeMove();
+        }
+        else if (u1 >= bdProb)
+        {
+            proposal = proposeExchange();
+            minAtoms--;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    // used rows should be an hash table so that find is O(1)
+    // can allocate is one chunk of memory since nRows/nCols is known
+    if (isInVector(usedRows, getRow(proposal.pos1)))
+    {
         return false;
     }
+    if (proposal.nChanges > 1)
+    {
+        if (isInVector(usedRows, getRow(proposal.pos2)))
+        {
+            return false;
+        }
+        usedRows.push_back(getRow(proposal.pos2));
+    }
+    usedRows.push_back(getRow(proposal.pos1));
     return true;
 }
 
+// need to track min/max number of atoms
+// birth is already known to be accepted
+// when death/exchange remove an atom decrement maxAtoms
+// if death/exchange do not remove an atom increment minAtoms
 void AtomicSupport::populateQueue(unsigned limit)
 {
     unsigned minAtoms = mNumAtoms;
     unsigned maxAtoms = mNumAtoms;
+    std::vector<unsigned> usedRows;
     unsigned nIter = 0;
 
-    while (nIter++ < limit && addProposal(minAtoms, maxAtoms));
+    while (nIter++ < limit && addProposal(minAtoms, maxAtoms, usedRows));
 }
 
 bool AtomicSupport::isQueueEmpty() const
 {
     return mProposalQueue.empty();
+}
+
+unsigned AtomicSupport::queueSize() const
+{
+    return mProposalQueue.size();
 }
 
 AtomicProposal AtomicSupport::popQueue()

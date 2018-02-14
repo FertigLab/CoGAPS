@@ -1,3 +1,13 @@
+# regenerate `SimpSim.result` with correct row/col names
+# need to pass whole GSets list
+# not one element
+# smooth patterns nbd
+# bluered not quotes - it's a function
+# make sure import heatmap.2 from gplots
+# make sure GWCoGAPS vignette is included
+# look into conference poster/abstract submission
+# write first draft of abstract
+
 #' CoGAPS Matrix Factorization Algorithm
 #' 
 #' @details calls the C++ MCMC code and performs Bayesian
