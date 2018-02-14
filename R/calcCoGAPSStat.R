@@ -8,6 +8,11 @@
 #' @param GStoGenes data.frame or list with gene sets
 #' @param numPerm number of permutations for null
 #' @return gene set statistics for each column of A
+#' @examples
+#' data('SimpSim')
+#' calcCoGAPSStat(SimpSim.result$Amean, SimpSim.result$Asd, GStoGenes=GSets,
+#' numPerm=500)
+#' @export
 calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500)
 {
     # test for std dev of zero, possible mostly in simple simulations

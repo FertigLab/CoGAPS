@@ -6,7 +6,7 @@
 \usage{
 plotPatternMarkers(data = NA, patternMarkers = NA, patternPalette = NA,
   sampleNames = NA, samplePalette = NULL, colDenogram = TRUE,
-  heatmapCol = "bluered", scale = "row", ...)
+  heatmapCol = bluered, scale = "row", ...)
 }
 \arguments{
 \item{data}{the dataset from which the patterns where generated}
