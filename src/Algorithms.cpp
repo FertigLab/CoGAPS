@@ -94,7 +94,7 @@ bool gaps::algo::isColZero(const ColMatrix &mat, unsigned col)
 {
     return gaps::algo::sum(mat.getCol(col)) == 0;
 }
-
+/*
 // horribly slow, don't call often
 void gaps::algo::matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
 const RowMatrix &B)
@@ -314,3 +314,4 @@ const RowMatrix &P, const TwoWayMatrix &AP)
         return a1 + a2;
     }
 }
+*/

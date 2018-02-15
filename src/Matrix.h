@@ -101,6 +101,8 @@ public:
 
     RowMatrix operator/(float val) const;
 
+    void operator=(const ColMatrix &mat);
+
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
 
@@ -135,53 +137,13 @@ public:
 
     ColMatrix operator/(float val) const;
 
+    void operator=(const RowMatrix &mat);
+
     void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
 
     friend Archive& operator<<(Archive &ar, ColMatrix &mat);
     friend Archive& operator>>(Archive &ar, ColMatrix &mat);
-};
-
-// gain performance at the expense of memory
-class TwoWayMatrix
-{
-private:
-
-    RowMatrix mRowMatrix;
-    ColMatrix mColMatrix;
-
-public:
-
-    TwoWayMatrix(unsigned nrow, unsigned ncol)
-        : mRowMatrix(nrow, ncol), mColMatrix(nrow, ncol)
-    {}
-
-    TwoWayMatrix(const Rcpp::NumericMatrix& rmat)
-        : mRowMatrix(rmat), mColMatrix(rmat)
-    {}
-
-    unsigned nRow() const {return mRowMatrix.nRow();}
-    unsigned nCol() const {return mRowMatrix.nCol();}
-    
-    const Vector& getRow(unsigned row) const {return mRowMatrix.getRow(row);}
-    const Vector& getCol(unsigned col) const {return mColMatrix.getCol(col);}
-
-    const float* rowPtr(unsigned row) const {return mRowMatrix.rowPtr(row);}
-    const float* colPtr(unsigned col) const {return mColMatrix.colPtr(col);}
-
-    // not optimal to call this when operating on a column
-    float operator()(unsigned r, unsigned c) const {return mRowMatrix(r,c);}
-
-    void set(unsigned row, unsigned col, float value)
-    {
-        mRowMatrix(row,col) = value;
-        mColMatrix(row,col) = value;
-    }
-    
-    Rcpp::NumericMatrix rMatrix() const
-    {
-        return mRowMatrix.rMatrix();
-    }
 };
 
 #endif

@@ -37,7 +37,7 @@ static void createCheckpoint(GapsInternalState &state)
     std::string fname(checkpointFile);
     Archive ar(fname, ARCHIVE_WRITE);
     gaps::random::save(ar);
-    ar << state.sampler.nFactor() << state.nEquil << state.nSample << state;
+    ar << state.nFactor << state.nEquil << state.nSample << state;
     ar.close();
 
     // display time it took to create checkpoint
@@ -52,8 +52,12 @@ static void createCheckpoint(GapsInternalState &state)
 static void updateSampler(GapsInternalState &state)
 {
     state.nUpdatesA += state.nIterA;
+    state.ASampler.update(state.nIterA);
+    state.PSampler.syncAP(state.ASampler.APMatrix());
+
     state.nUpdatesP += state.nIterP;
-    state.runner.update(state.nIterA, state.nIterP);
+    state.PSampler.update(state.nIterP);
+    state.ASampler.syncAP(state.PSampler.APMatrix());
 }
 
 static void makeCheckpointIfNeeded(GapsInternalState &state)
@@ -70,9 +74,9 @@ static void makeCheckpointIfNeeded(GapsInternalState &state)
 static void storeSamplerInfo(GapsInternalState &state, Vector &atomsA,
 Vector &atomsP, Vector &chi2)
 {
-    chi2[state.iter] = state.sampler.chi2();
-    atomsA[state.iter] = state.sampler.totalNumAtoms('A');
-    atomsP[state.iter] = state.sampler.totalNumAtoms('P');
+    chi2[state.iter] = state.ASampler.chi2();
+    atomsA[state.iter] = state.ASampler.nAtoms();
+    atomsP[state.iter] = state.PSampler.nAtoms();
     state.nIterA = gaps::random::poisson(std::max(atomsA[state.iter], 10.f));
     state.nIterP = gaps::random::poisson(std::max(atomsP[state.iter], 10.f));
 }
@@ -83,18 +87,18 @@ unsigned nIterTotal)
     if ((state.iter + 1) % state.nOutputs == 0 && state.messages)
     {
         Rprintf("%s %d of %d, Atoms:%d(%d) Chi2 = %.2f\n", type.c_str(),
-            state.iter + 1, nIterTotal, state.sampler.totalNumAtoms('A'),
-            state.sampler.totalNumAtoms('P'), state.sampler.chi2());
+            state.iter + 1, nIterTotal, state.ASampler.nAtoms(),
+            state.PSampler.nAtoms(), state.ASampler.chi2());
     }
 }
 
 static void takeSnapshots(GapsInternalState &state)
 {
-    if (state.nSnapshots && !((state.iter+1)%(state.nSample/state.nSnapshots)))
+    /*if (state.nSnapshots && !((state.iter+1)%(state.nSample/state.nSnapshots)))
     {
         state.snapshotsA.push_back(state.sampler.normedAMatrix().rMatrix());
         state.snapshotsP.push_back(state.sampler.normedPMatrix().rMatrix());
-    }    
+    }*/   
 }
 
 static void runBurnPhase(GapsInternalState &state)
@@ -103,7 +107,8 @@ static void runBurnPhase(GapsInternalState &state)
     {
         makeCheckpointIfNeeded(state);
         float temp = ((float)state.iter + 2.f) / ((float)state.nEquil / 2.f);
-        state.sampler.setAnnealingTemp(std::min(1.f,temp));
+        state.ASampler.setAnnealingTemp(std::min(1.f,temp));
+        state.PSampler.setAnnealingTemp(std::min(1.f,temp));
         updateSampler(state);
         displayStatus(state, "Equil: ", state.nEquil);
         storeSamplerInfo(state, state.nAtomsAEquil, state.nAtomsPEquil,
@@ -126,11 +131,11 @@ static void runSampPhase(GapsInternalState &state)
     {
         makeCheckpointIfNeeded(state);
         updateSampler(state);
-        state.sampler.updateStatistics();
-        if (state.nPumpSamples && !((state.iter + 1) % (state.nSample / state.nPumpSamples)))
-        {
-            state.sampler.updatePumpStatistics();
-        }
+        //state.sampler.updateStatistics();
+        //if (state.nPumpSamples && !((state.iter + 1) % (state.nSample / state.nPumpSamples)))
+        //{
+        //    state.sampler.updatePumpStatistics();
+       // }
         takeSnapshots(state);
         displayStatus(state, "Samp: ", state.nSample);
         storeSamplerInfo(state, state.nAtomsASample, state.nAtomsPSample,
@@ -167,17 +172,17 @@ static Rcpp::List runCogaps(GapsInternalState &state)
     chi2Vec.concat(state.chi2VecSample);
 
     // print final chi-sq value
-    float meanChiSq = state.sampler.meanChiSq();
+    /*float meanChiSq = state.sampler.meanChiSq();
     if (state.messages)
     {
         Rprintf("Chi-Squared of Mean: %.2f\n", meanChiSq);
-    }
+    }*/
 
     return Rcpp::List::create(
-        Rcpp::Named("Amean") = state.sampler.AMeanRMatrix(),
-        Rcpp::Named("Asd") = state.sampler.AStdRMatrix(),
-        Rcpp::Named("Pmean") = state.sampler.PMeanRMatrix(),
-        Rcpp::Named("Psd") = state.sampler.PStdRMatrix(),
+        //Rcpp::Named("Amean") = state.sampler.AMeanRMatrix(),
+        //Rcpp::Named("Asd") = state.sampler.AStdRMatrix(),
+        //Rcpp::Named("Pmean") = state.sampler.PMeanRMatrix(),
+        //Rcpp::Named("Psd") = state.sampler.PStdRMatrix(),
         Rcpp::Named("ASnapshots") = Rcpp::wrap(state.snapshotsA),
         Rcpp::Named("PSnapshots") = Rcpp::wrap(state.snapshotsP),
         Rcpp::Named("atomsAEquil") = state.nAtomsAEquil.rVec(),
@@ -186,10 +191,10 @@ static Rcpp::List runCogaps(GapsInternalState &state)
         Rcpp::Named("atomsPSamp") = state.nAtomsPSample.rVec(),
         Rcpp::Named("chiSqValues") = chi2Vec.rVec(),
         Rcpp::Named("randSeed") = state.seed,
-        Rcpp::Named("numUpdates") = state.nUpdatesA + state.nUpdatesP,
-        Rcpp::Named("meanChi2") = meanChiSq,
-        Rcpp::Named("pumpStats") = state.sampler.pumpMatrix(),
-        Rcpp::Named("meanPatternAssignment") = state.sampler.meanPattern()
+        Rcpp::Named("numUpdates") = state.nUpdatesA + state.nUpdatesP
+        //Rcpp::Named("meanChi2") = meanChiSq,
+        //Rcpp::Named("pumpStats") = state.sampler.pumpMatrix(),
+        //Rcpp::Named("meanPatternAssignment") = state.sampler.meanPattern()
     );
 }
 
@@ -215,8 +220,8 @@ const std::string &cptFile, unsigned pumpThreshold, unsigned nPumpSamples)
     // create internal state from parameters and run from there
     GapsInternalState state(D, S, nFactor, nEquil, nEquilCool, nSample,
         nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
-        messages, singleCellRNASeq, whichMatrixFixed, FP, checkpointInterval,
-        static_cast<PumpThreshold>(pumpThreshold), nPumpSamples);
+        messages, singleCellRNASeq, whichMatrixFixed, FP, checkpointInterval);
+        //static_cast<PumpThreshold>(pumpThreshold), nPumpSamples);
     checkpointFile = cptFile;
     return runCogaps(state);
 }
