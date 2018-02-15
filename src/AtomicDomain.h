@@ -1,24 +1,12 @@
 #ifndef __GAPS_ATOMIC_DOMAIN_H__
 #define __GAPS_ATOMIC_DOMAIN_H__
 
-// data structure that holds atoms
-class AtomicDomain
-{
-private:
+#include "Archive.h"
 
-public:
-
-    AtomicDomain();
-    
-    uint64_t randomAtomPosition();
-    uint64_t randomFreePosition();
-
-    float updateMass(uint64_t pos, float delta);
-
-};
-
-#endif
-
+#include <stdint.h>
+#include <cstddef>
+#include <vector>
+#include <map>
 
 struct Atom
 {
@@ -29,32 +17,38 @@ struct Atom
     Atom* right;
     
     Atom(uint64_t p, float m)
-        : pos(p), mass(m), left(nullptr), right(nullptr)
+        : pos(p), mass(m), left(NULL), right(NULL)
     {}
+
+    bool operator==(const Atom &other) const
+    {
+        return pos == other.pos;
+    }
 };
 
-void insertAtom(uint64_t p, float m)
+// data structure that holds atoms
+class AtomicDomain
 {
-    std::map<uint64_t, Atom>::const_iterator it, left, right;
-    it = mAtoms.insert(std::pair<uint64_t, Atom>(p, Atom(p,m))).first;
-    
-    std::map<uint64_t, Atom>::const_iterator left(it), right(it);
-    if (it != mAtoms.begin())
-    {
-        --left;
-    }
-    if (++it != mAtoms.end())
-    {
-        ++right;
-    }
-    it->left = &left;
-    it->right = &right;
-}
+private:
 
+    // domain storage
+    std::vector<Atom> mAtoms;
+    std::map<uint64_t, uint64_t> mAtomPositions;
 
+public:
 
-void removeAtom(const Atom &atom)
-{
-    atom.left.right = atom.right;
-    atom.right.left = atom.left;
-}
+    Atom front() const;
+    Atom randomAtom() const;
+    uint64_t randomFreePosition() const;
+
+    // modify domain
+    void insert(uint64_t pos, float mass);
+    void erase(uint64_t pos);
+    void updateMass(uint64_t pos, float newMass);
+
+    // serialization
+    friend Archive& operator<<(Archive &ar, AtomicDomain &domain);
+    friend Archive& operator>>(Archive &ar, AtomicDomain &domain);
+};
+
+#endif

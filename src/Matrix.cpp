@@ -215,6 +215,17 @@ RowMatrix RowMatrix::operator/(float val) const
     return mat;
 }
 
+void RowMatrix::operator=(const ColMatrix &mat)
+{
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            this->operator()(i,j) = mat(i,j);
+        }
+    }
+}
+
 Archive& operator<<(Archive &ar, RowMatrix &mat)
 {
     for (unsigned i = 0; i < mat.nRow(); ++i)
@@ -279,6 +290,17 @@ ColMatrix ColMatrix::operator/(float val) const
         mat.getCol(j) = mCols[j] / val;
     }
     return mat;
+}
+
+void ColMatrix::operator=(const RowMatrix &mat)
+{
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            this->operator()(i,j) = mat(i,j);
+        }
+    }
 }
 
 Rcpp::NumericMatrix ColMatrix::rMatrix() const

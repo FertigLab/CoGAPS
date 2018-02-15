@@ -1,15 +1,11 @@
 PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -DSIMD -msse4.1
 OBJECTS =   Algorithms.o \
-            AtomicSupport.o \
+            AtomicDomain.o \
             Cogaps.o \
             GibbsSampler.o \
             Matrix.o \
+            ProposalQueue.o \
             Random.o \
             RcppExports.o \
             test-runner.o \
-            cpp_tests/testAlgorithms.o \
-            cpp_tests/testAtomicSupport.o \
-            cpp_tests/testGibbsSampler.o \
-            cpp_tests/testMatrix.o \
-            cpp_tests/testRandom.o \
-            cpp_tests/testSerialization.o
+            cpp_tests/testRandom.o

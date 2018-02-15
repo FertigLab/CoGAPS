@@ -52,7 +52,7 @@ namespace algo
     // specific matrix algorithms
     bool isRowZero(const RowMatrix &mat, unsigned row);
     bool isColZero(const ColMatrix &mat, unsigned col);
-    void matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
+    /*void matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
         const RowMatrix &B);
 
     // chiSq / 2
@@ -67,7 +67,7 @@ namespace algo
     // alpha parameters used in exchange and gibbsMass calculation
     AlphaParameters alphaParameters(const MatrixChange &ch,
         const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
-        const RowMatrix &P, const TwoWayMatrix &AP);
+        const RowMatrix &P, const TwoWayMatrix &AP);*/
 } // namespace algo
 } // namespace gaps
 
