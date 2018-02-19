@@ -1256,6 +1256,7 @@ void GibbsSampler::check_atomic_matrix_consistency(char the_matrix_label) {
     double diff_total_mass = fabs(total_atom_mass - total_matrix_mass);
 
     if (diff_total_mass > 1.e-5) {
+        Rcpp::Rcout << the_matrix_label << " has an error with discrepancy of " << diff_total_mass << "\n";
         throw logic_error("Mass inconsistency between atomic domain and matrix!");
     }
 }

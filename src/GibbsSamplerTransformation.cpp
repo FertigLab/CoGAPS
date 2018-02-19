@@ -71,7 +71,7 @@ double GibbsSamplerTransformation::calcWeight() {
 void GibbsSamplerTransformation::weightAColumn(double weight) {
     if (_growth.accepted == true) {
         unsigned int col = _AMatrix.get_nCol() - 1;
-        unsigned int row = _AMatrix.get_nCol();
+        unsigned int row = _AMatrix.get_nRow();
         std::vector<double> col_val = _AMatrix.get_Col(col);
 
         for (unsigned int i = 0; i < row; ++i) {

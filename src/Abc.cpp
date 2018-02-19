@@ -38,23 +38,6 @@ Abc::Abc(std::vector<std::vector<double> >& data,
 
     // initialize accepted to false
     accepted = false;
-
-    Rf_PrintValue(curve(Rcpp::NumericVector::create(1.0)));
-    Rf_PrintValue(curve(Rcpp::NumericVector::create(2.0)));
-    Rf_PrintValue(curve(Rcpp::NumericVector::create(3.0)));
-    Rf_PrintValue(curve(Rcpp::NumericVector::create(4.0)));
-    Rf_PrintValue(curve(Rcpp::NumericVector::create(5.0)));
-
-    Rcpp::Rcout << 
-    "sum curve 1.0 " << Rcpp::sum(curve(Rcpp::NumericVector::create(1.0))) << 
-    "\nsum curve 1.5 " << Rcpp::sum(curve(Rcpp::NumericVector::create(1.5))) << 
-    "\nsum curve 2.0 " << Rcpp::sum(curve(Rcpp::NumericVector::create(2.0))) << 
-    "\nsum curve 2.5 " << Rcpp::sum(curve(Rcpp::NumericVector::create(2.5))) << 
-    "\nsum curve 3.0 " << Rcpp::sum(curve(Rcpp::NumericVector::create(3.0))) << 
-    "\nsum curve 3.5 " << Rcpp::sum(curve(Rcpp::NumericVector::create(3.5))) << 
-    "\nsum curve 3.7 " << Rcpp::sum(curve(Rcpp::NumericVector::create(3.7))) << 
-    "\nsum curve 4.0 " << Rcpp::sum(curve(Rcpp::NumericVector::create(4.0))) << 
-    "\nsum curve 5.0 " << Rcpp::sum(curve(Rcpp::NumericVector::create(50.0))) << "\n";
 }
 
 Rcpp::NumericVector Abc::_prior(Rcpp::NumericVector param) {
