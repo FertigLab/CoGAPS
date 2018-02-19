@@ -101,6 +101,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// FixedMatrix
+Rcpp::NumericMatrix FixedMatrix(Rcpp::NumericMatrix D, Rcpp::NumericMatrix A, Rcpp::NumericMatrix P, Rcpp::NumericVector T, int nSample, double delta, double epsilon, double prior_mean, double prior_sd, bool fixedproposal);
+RcppExport SEXP _CoGAPS_FixedMatrix(SEXP DSEXP, SEXP ASEXP, SEXP PSEXP, SEXP TSEXP, SEXP nSampleSEXP, SEXP deltaSEXP, SEXP epsilonSEXP, SEXP prior_meanSEXP, SEXP prior_sdSEXP, SEXP fixedproposalSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type D(DSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type A(ASEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type P(PSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type T(TSEXP);
+    Rcpp::traits::input_parameter< int >::type nSample(nSampleSEXP);
+    Rcpp::traits::input_parameter< double >::type delta(deltaSEXP);
+    Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
+    Rcpp::traits::input_parameter< double >::type prior_mean(prior_meanSEXP);
+    Rcpp::traits::input_parameter< double >::type prior_sd(prior_sdSEXP);
+    Rcpp::traits::input_parameter< bool >::type fixedproposal(fixedproposalSEXP);
+    rcpp_result_gen = Rcpp::wrap(FixedMatrix(D, A, P, T, nSample, delta, epsilon, prior_mean, prior_sd, fixedproposal));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_CoGAPS_cogapsMap", (DL_FUNC) &_CoGAPS_cogapsMap, 7},
@@ -108,6 +128,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_CoGAPS_cogaps", (DL_FUNC) &_CoGAPS_cogaps, 6},
     {"_CoGAPS_cogapsTest", (DL_FUNC) &_CoGAPS_cogapsTest, 6},
     {"_CoGAPS_cogapsTrans", (DL_FUNC) &_CoGAPS_cogapsTrans, 19},
+    {"_CoGAPS_FixedMatrix", (DL_FUNC) &_CoGAPS_FixedMatrix, 10},
     {NULL, NULL, 0}
 };
 

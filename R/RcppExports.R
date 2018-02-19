@@ -21,3 +21,7 @@ cogapsTrans <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Confi
     .Call('_CoGAPS_cogapsTrans', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, theta, thin, prior, proposal, epsilon_mcmc, delta, epsilon, epsilon_prior, prior_mean, prior_sd)
 }
 
+FixedMatrix <- function(D, A, P, T, nSample, delta, epsilon, prior_mean, prior_sd, fixedproposal) {
+    .Call('_CoGAPS_FixedMatrix', PACKAGE = 'CoGAPS', D, A, P, T, nSample, delta, epsilon, prior_mean, prior_sd, fixedproposal)
+}
+
