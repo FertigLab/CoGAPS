@@ -182,7 +182,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     // should be calculating eps_prime as some function of
     // current l2norm (i.e. norm(_D - A * P, 2))
     arma::mat orig = Rcpp::as<arma::mat>(_D) - D_orig; 
-    rho_thresh = norm(orig, 2);// + eps_prime;
+    rho_thresh = norm(orig, 2) + eps_prime;
 
     //Rcpp::Rcout << "D_diff " << D_diff << " rho " << rho << " rho_thresh " << rho_thresh << "\n";
 
@@ -213,20 +213,20 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
             accepted = true;
             _theta = theta_prime;
 
-            Rcpp::Rcout << "old " << old_weight <<
-                           " new " << new_weight <<
-                           " theta' " << theta_prime <<
-                           " Pnorm " << Pnorm <<
-                           " sum " << Rcpp::sum(curve(theta_prime)) << "\n";
+            //Rcpp::Rcout << "old " << old_weight <<
+                           //" new " << new_weight <<
+                           //" theta' " << theta_prime <<
+                           //" Pnorm " << Pnorm <<
+                           //" sum " << Rcpp::sum(curve(theta_prime)) << "\n";
 
             old_weight = new_weight;
             new_weight = Pnorm;
 
-            Rcpp::Rcout << "old " << old_weight <<
-                           " new " << new_weight <<
-                           " theta' " << theta_prime <<
-                           " Pnorm " << Pnorm <<
-                           " sum " << Rcpp::sum(curve(theta_prime)) << "\n";
+            //Rcpp::Rcout << "old " << old_weight <<
+                           //" new " << new_weight <<
+                           //" theta' " << theta_prime <<
+                           //" Pnorm " << Pnorm <<
+                           //" sum " << Rcpp::sum(curve(theta_prime)) << "\n";
         } else {
             // c. otherwise
             _theta = _theta;
