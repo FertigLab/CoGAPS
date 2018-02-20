@@ -51,17 +51,31 @@ T <- patts$T
 set.seed(20)
 iters <- 5000
 
-delta <- 2
+delta <- 1
 prior.mean <- 4
 prior.sd <- 2
 epsilon <- 0.01
 
 devtools::load_all()
+
+# test with fixed proposal
 results <- FixedMatrix(D, A, P, T,
                        iters, delta, epsilon,
                        prior.mean, prior.sd,
-                       FALSE)
+                       TRUE)
 
-mean(results[1, ])
-sd(results[1, ])
+head(results)
 quantile(results[1, ], c(0.025, 0.5, 0.975))
+accepted <- results[, 3] < results[, 4]
+mean(accepted)
+
+# test with MH proposal
+results <- FixedMatrix(D, A, P, T,
+                       iters, delta, epsilon,
+                       prior.mean, prior.sd,
+                       TRUE)
+
+head(results)
+quantile(results[1, ], c(0.025, 0.5, 0.975))
+accepted <- results[, 3] < results[, 4]
+mean(accepted)

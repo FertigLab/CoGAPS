@@ -51,6 +51,8 @@ class Abc {
         Rcpp::NumericVector _epsilon_propose(double param1,  // density of epsilon
                                              double param2);
 
+        bool _fixed_proposal;
+
     public:
         // constructor
         Abc(std::vector<std::vector<double> >& data, 
@@ -63,10 +65,14 @@ class Abc {
             double epsilon=100.0,
             double epsilon_rate=3.0,
             double prior_mean=0.0,
-            double prior_sd=10.0);
+            double prior_sd=10.0,
+            bool fixed_proposal=false);
 
         // propose new theta
         void propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P);
+
+        // track proposed value
+        Rcpp::NumericVector theta_prime; 
 
         // calculate logistic growth curve
         Rcpp::NumericVector curve(Rcpp::NumericVector theta_star);

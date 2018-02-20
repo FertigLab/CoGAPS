@@ -9,9 +9,11 @@ Abc::Abc(std::vector<std::vector<double> >& data,
          double epsilon,
          double epsilon_rate,
          double prior_mean,
-         double prior_sd) :
+         double prior_sd,
+         bool fixed_proposal) :
     _theta(theta_init),
     _theta_truth(theta_init),
+    theta_prime(theta_init),
     _D(data.size(), timeRecorded.size() * theta_init.size()) {
     // convert data to Rcpp::NumericMatrix form
     for (unsigned int i = 0; i < data.size(); ++i) {
@@ -31,10 +33,15 @@ Abc::Abc(std::vector<std::vector<double> >& data,
     _epsilon_rate=epsilon_rate;
     _prior_mean=prior_mean;
     _prior_sd=prior_sd;
+    _fixed_proposal = fixed_proposal;
 
     // initialize weights to reflect initial thetas
     old_weight = Rcpp::sum(curve(theta_init));
     new_weight = Rcpp::sum(curve(theta_init));
+
+    _theta_truth = clone(theta_init);
+    _theta = clone(theta_init);
+    theta_prime = clone(theta_init);
 
     // initialize accepted to false
     accepted = false;
@@ -143,10 +150,12 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     accepted = false;
 
     // simulate theta' ~ K(theta|theta^{(t-1)})
-    Rcpp::NumericVector theta_prime(_theta_truth.length()); 
-    
     for (int i = 0; i < _theta_truth.length(); ++i) {
-        theta_prime[i] = Rcpp::rnorm(1, _theta_truth[i], _delta)[0];
+        if (_fixed_proposal) {
+            theta_prime[i] = Rcpp::rnorm(1, _theta_truth[i], _delta)[0];
+        } else {
+            theta_prime[i] = Rcpp::rnorm(1, _theta[i], _delta)[0];
+        }
         //theta_prime[i] = 2.91;
     }
 
