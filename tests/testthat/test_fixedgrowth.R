@@ -39,7 +39,7 @@ logistic.pattern <- function(rate.treat=2, time.half=2) {
     return(out)
 }
 
-patts <- logistic.pattern(4)
+patts <- logistic.pattern(4, 5)
 D <- patts$D
 S <- patts$S
 P <- patts$P
@@ -52,19 +52,16 @@ set.seed(20)
 iters <- 5000
 
 delta <- 2
-prior.mean <- 2
+prior.mean <- 4
 prior.sd <- 2
+epsilon <- 0.01
 
 devtools::load_all()
-FixedMatric(D, A, P,
-            iters, delta,
-            prior.mean, prior.sd,
-            FALSE)
-            Rcpp::NumericMatrix D,
-                                Rcpp::NumericMatrix A,
-                                Rcpp::NumericMatrix P,
-                                int nSample,
-                                double delta,
-                                double prior_mean,
-                                double prior_sd,
-                                bool fixedproposal)
+results <- FixedMatrix(D, A, P, T,
+                       iters, delta, epsilon,
+                       prior.mean, prior.sd,
+                       FALSE)
+
+mean(results[1, ])
+sd(results[1, ])
+quantile(results[1, ], c(0.025, 0.5, 0.975))
