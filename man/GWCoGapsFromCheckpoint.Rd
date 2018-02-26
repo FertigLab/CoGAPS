@@ -24,4 +24,3 @@ list of A and P estimates
 \description{
 Restart a GWCoGaps Run from Checkpoint
 }
-

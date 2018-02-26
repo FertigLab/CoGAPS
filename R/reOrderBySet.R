@@ -6,6 +6,7 @@
 #' @param nSets number of sets
 #' @param match which matrix to use for downstream matching. default is P
 #' @return a list containing the \code{nSets} sets solution for Amean under "A", Pmean under "P", and Asd under "Asd"
+#' @export
 reOrderBySet<-function(AP, nFactor, nSets, match="P")
 {
 	if(match=="P")

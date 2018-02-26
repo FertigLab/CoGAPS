@@ -68,4 +68,3 @@ Backwards Compatibility with v2
 data(SimpSim)
 result <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3)
 }
-

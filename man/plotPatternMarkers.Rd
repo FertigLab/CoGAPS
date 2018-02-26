@@ -37,4 +37,3 @@ plotPatternMarkers
 \seealso{
 \code{\link{heatmap.2}}
 }
-

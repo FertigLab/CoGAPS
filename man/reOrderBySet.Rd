@@ -21,4 +21,3 @@ a list containing the \code{nSets} sets solution for Amean under "A", Pmean unde
 \description{
 <restructures output of gapsRun into a list containing each sets solution for Amean, Pmean, and Asd>
 }
-
