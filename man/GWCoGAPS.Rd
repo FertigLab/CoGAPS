@@ -5,7 +5,7 @@
 \title{GWCoGAPS}
 \usage{
 GWCoGAPS(simulationName, nFactor, nCores = NA, cut = NA, minNS = NA,
-  manualMatch = FALSE, consensusPatterns = NULL, ...)
+  manualMatch = FALSE, consensusPatterns = NA, ...)
 }
 \arguments{
 \item{simulationName}{name of this simulation}
