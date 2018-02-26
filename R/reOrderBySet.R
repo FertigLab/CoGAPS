@@ -9,7 +9,7 @@
 #' @export
 reOrderBySet<-function(AP, nFactor, nSets, match="P")
 {
-	if(match=="P")
+	if(match="P")
 	{
 		P<-do.call(rbind,lapply(AP, function(x) x$Pmean))
 		rownames(P)<-paste(rep(1:nSets,each=nFactor),rep(1:nFactor,nSets),sep=".")
@@ -19,7 +19,7 @@ reOrderBySet<-function(AP, nFactor, nSets, match="P")
 		return(list("A"=A,"Asd"=Asd,"P"=P))
 	}
 
-	if(match=="A")
+	if(match="A")
 	{
 		A<-do.call(cbind,lapply(AP, function(x) x$Amean))
 		colnames(A)<-paste(rep(1:nSets,each=nFactor),rep(1:nFactor,nSets),sep=".")

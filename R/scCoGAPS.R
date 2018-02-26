@@ -7,18 +7,18 @@
 #' @param nFactor number of patterns (basis vectors, metagenes), which must be
 #' greater than or equal to the number of rows of FP
 #' @param nCores number of cores for parallelization. If left to the default NA, nCores = nSets.
-#' @param cut number of branches at which to cut dendrogram used in patternMatch4Parallel
+#' @param cut number of branches at which to cut dendrogram used in patternMatch4singleCell
 #' @param minNS minimum of individual set contributions a cluster must contain
 #' @param manualMatch logical indicating whether or not to stop after initial phase for manual pattern matching
 #' @param consensusAs fixed pattern matrix to be used to ensure reciprocity of A weights accross sets 
 #' @param ... additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}
 #' @return list of A and P estimates
-#' @seealso \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
+#' @seealso \code{\link{gapsRun}}, \code{\link{patternMatch4singleCell}}, and \code{\link{gapsMapRun}}
 #' @examples
 #' data(SimpSim)
 #' sim_name <- "example"
 #' createscCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
-#' result <- GWCoGAPS(sim_name, nFactor=3, nEquil=1000, nSample=1000)
+#' result <- scCoGAPS(sim_name, nFactor=3, nEquil=1000, nSample=1000)
 #' @export
 scCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manualMatch=FALSE, consensusAs=NULL, ...)
 {
@@ -135,12 +135,12 @@ runInitialPhase <- function(simulationName, allDataSets, nFactor, ...)
 postInitialPhase <- function(initialResult, nSets, cut, minNS)
 {
     nFactor <- ncol(initialResult[[1]]$Amean)
-    BySet <- reOrderBySet(AP=initialResult, nFactor=nFactor, nSets=nSets)
+    BySet <- reOrderBySet(AP=initialResult, nFactor=nFactor, nSets=nSets,match="A")
 
     #run postpattern match function
     if (is.na(cut))
         cut <- nFactor
-    return(patternMatch4Parallel(Ptot=t(BySet$A), nP=nFactor, nSets=nSets, cnt=cut,
+    return(patternMatch4singleCell(Ptot=BySet$A, nP=nFactor, nSets=nSets, cnt=cut,
         minNS=minNS, bySet=TRUE))
 }
 
