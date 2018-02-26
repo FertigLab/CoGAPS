@@ -31,9 +31,9 @@ scCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manua
             saveRDS(initialResult,file=paste(simulationName,"_initial.rds", sep=""))
             stop("Please provide concensus gene weights upon restarting.")
         }
-        matchedPatternSets <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
-        save(matchedPatternSets, file=paste(simulationName, "_matched_As.RData", sep=""))
-        consensusAs<-matchedPatternSets[[1]]
+        matchedAmplitudes <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
+        #save(matchedAmplitudes, file=paste(simulationName, "_matched_As.RData", sep=""))
+        consensusAs<-t(matchedAmplitudes[[1]])
     } 
     finalResult <- runFinalPhase(simulationName, allDataSets, consensusAs, nCores, ...)
     return(postFinalPhase(finalResult, consensusAs))
@@ -71,12 +71,12 @@ GWCoGapsFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, 
     else if (file_test("-f", paste(simulationName, "_matched_ps.RData", sep="")))
     {
         load(paste(simulationName, "_matched_ps.RData", sep=""))
-        consensusAs<-matchedPatternSets[[1]]
+        consensusAs<-matchedAmplitudes[[1]]
         finalResult <- runFinalPhase(simulationName, allDataSets, consensusAs, ...)
     }
     else if (length(initialCpts))
     {
-        # initial phase - always needs to be run to get matchedPatternSets
+        # initial phase - always needs to be run to get matchedAmplitudes
         initialResult <- foreach(i=1:length(allDataSets)) %dopar%
         {
             # load data set and shift values so gene minimum is zero
@@ -87,16 +87,16 @@ GWCoGapsFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, 
             cptFileName <- paste(simulationName, "_initial_cpt_", i, ".out", sep="")
             CoGapsFromCheckpoint(sampleD, sampleS, cptFileName)
         }
-        matchedPatternSets <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
-        saveRDS(matchedPatternSets, file=paste(simulationName, "_matched_As.rds", sep=""))
-        consensusAs<-matchedPatternSets[[1]]
+        matchedAmplitudes <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
+        save(matchedAmplitudes, file=paste(simulationName, "_matched_ps.RData", sep=""))
+        consensusAs<-matchedAmplitudes[[1]]
         finalResult <- runFinalPhase(simulationName, allDataSets, consensusAs, ...)
     }
     else
     {
         stop("no checkpoint files found")
     }
-    return(postFinalPhase(finalResult, matchedPatternSets))
+    return(postFinalPhase(finalResult, matchedAmplitudes))
 }
 
 preInitialPhase <- function(simulationName, nCores)
@@ -140,7 +140,7 @@ postInitialPhase <- function(initialResult, nSets, cut, minNS)
     #run postpattern match function
     if (is.na(cut))
         cut <- nFactor
-    return(patternMatch4Parallel(Ptot=BySet$A, nP=nFactor, nSets=nSets, cnt=cut,
+    return(patternMatch4Parallel(Ptot=t(BySet$A), nP=nFactor, nSets=nSets, cnt=cut,
         minNS=minNS, bySet=TRUE))
 }
 
