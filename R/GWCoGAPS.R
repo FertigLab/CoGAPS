@@ -29,7 +29,7 @@ GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manua
         initialResult <- runInitialPhase(simulationName, allDataSets, nFactor, ...)
         if(manualMatch){
             saveRDS(initialResult,file=paste(simulationName,"_initial.rds", sep=""))
-            stop("Please provide concensus patterns upon restarting.")
+            stop("Please provide consensus patterns upon restarting.")
         }
         matchedPatternSets <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
         save(matchedPatternSets, file=paste(simulationName, "_matched_ps.RData", sep=""))
