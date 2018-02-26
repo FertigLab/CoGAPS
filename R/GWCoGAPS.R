@@ -35,7 +35,7 @@ GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manua
         save(matchedPatternSets, file=paste(simulationName, "_matched_ps.RData", sep=""))
         consensusPatterns<-matchedPatternSets[[1]]
     }
-    finalResult <- runFinalPhase(simulationName, allDataSets, consensusPatterns, ...)
+    finalResult <- runFinalPhase(simulationName, allDataSets, consensusPatterns, nCores, ...)
     return(postFinalPhase(finalResult, consensusPatterns))
 }
 
@@ -144,14 +144,20 @@ postInitialPhase <- function(initialResult, nSets, cut, minNS)
         minNS=minNS, bySet=TRUE))
 }
 
-runFinalPhase <- function(simulationName, allDataSets, consensusPatterns, ...)
+runFinalPhase <- function(simulationName, allDataSets, consensusPatterns, nCores, ...)
 {
     if (!is.null(consensusPatterns)){
+        if(length(dim(consenusPatterns))!=2){stop("consenusPatterns must be a matrix")}
+
     # find data files if providing consensus patterns
         fileSig <- paste(simulationName, "_partition_[0-9]+.RData", sep="")
         allDataSets <- list.files(full.names=TRUE, pattern=fileSig)
+
+        if (is.na(nCores))
+        nCores <- length(allDataSets)
+        registerDoParallel(cores=nCores)
     }
-    
+
     # generate seeds for parallelization
     nut <- generateSeeds(chains=length(allDataSets), seed=-1)
 
