@@ -11,6 +11,7 @@
 #' @return a matrix of concensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
 #' concensus pattern is also returned.
 #' @seealso \code{\link{agnes}}
+#' @export
 patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS, 
 cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
 {

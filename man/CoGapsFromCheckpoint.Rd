@@ -25,4 +25,3 @@ Restart CoGAPS from Checkpoint File
 loads the state of a previous CoGAPS run from a file and
  continues the run from that point
 }
-

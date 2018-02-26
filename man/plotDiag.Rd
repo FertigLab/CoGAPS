@@ -22,4 +22,3 @@ plots a series of diagnostic plots
 data(SimpSim)
 plotDiag(SimpSim.result)
 }
-

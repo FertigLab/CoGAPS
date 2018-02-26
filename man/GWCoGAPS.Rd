@@ -4,7 +4,8 @@
 \alias{GWCoGAPS}
 \title{GWCoGAPS}
 \usage{
-GWCoGAPS(simulationName, nFactor, nCores = NA, cut = NA, minNS = NA, ...)
+GWCoGAPS(simulationName, nFactor, nCores = NA, cut = NA, minNS = NA,
+  manualMatch = FALSE, consensusPatterns = NULL, ...)
 }
 \arguments{
 \item{simulationName}{name of this simulation}
@@ -17,6 +18,10 @@ greater than or equal to the number of rows of FP}
 \item{cut}{number of branches at which to cut dendrogram used in patternMatch4Parallel}
 
 \item{minNS}{minimum of individual set contributions a cluster must contain}
+
+\item{manualMatch}{logical indicating whether or not to stop after initial phase for manual pattern matching}
+
+\item{consensusPatterns}{fixed pattern matrix to be used to ensure reciprocity of A weights accross sets}
 
 \item{...}{additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}}
 }
@@ -40,4 +45,3 @@ result <- GWCoGAPS(sim_name, nFactor=3, nEquil=1000, nSample=1000)
 \seealso{
 \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
 }
-

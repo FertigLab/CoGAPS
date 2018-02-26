@@ -9,7 +9,7 @@
 #' @param nCores number of cores for parallelization. If left to the default NA, nCores = nSets.
 #' @param cut number of branches at which to cut dendrogram used in patternMatch4Parallel
 #' @param minNS minimum of individual set contributions a cluster must contain
-#' @param break logical indicating whether or not to stop after initial phase for manual pattern matching
+#' @param manualMatch logical indicating whether or not to stop after initial phase for manual pattern matching
 #' @param consensusPatterns fixed pattern matrix to be used to ensure reciprocity of A weights accross sets 
 #' @param ... additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}
 #' @return list of A and P estimates
@@ -20,14 +20,14 @@
 #' createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
 #' result <- GWCoGAPS(sim_name, nFactor=3, nEquil=1000, nSample=1000)
 #' @export
-GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, break=FALSE, consensusPatterns=NULL, ...)
+GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manualMatch=FALSE, consensusPatterns=NULL, ...)
 {
     if (!is.null(list(...)$checkpointFile))
         stop("checkpoint file name automatically set in GWCoGAPS - don't pass this parameter")
-    if (!is.null(consensusPatterns)){
+    if (is.null(consensusPatterns)){
         allDataSets <- preInitialPhase(simulationName, nCores)
         initialResult <- runInitialPhase(simulationName, allDataSets, nFactor, ...)
-        if(break){
+        if(manualMatch){
             saveRDS(initialResult,file=paste(simulationName,"_initial.rds", sep=""))
             stop("Please provide concensus patterns upon restarting.")
         }
@@ -146,6 +146,12 @@ postInitialPhase <- function(initialResult, nSets, cut, minNS)
 
 runFinalPhase <- function(simulationName, allDataSets, consensusPatterns, ...)
 {
+    if (!is.null(consensusPatterns)){
+    # find data files if providing consensus patterns
+        fileSig <- paste(simulationName, "_partition_[0-9]+.RData", sep="")
+        allDataSets <- list.files(full.names=TRUE, pattern=fileSig)
+    }
+    
     # generate seeds for parallelization
     nut <- generateSeeds(chains=length(allDataSets), seed=-1)
 

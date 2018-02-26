@@ -77,4 +77,3 @@ nC <- ncol(SimpSim.D)
 patterns <- matrix(1:nC/nC, nrow=1, ncol=nC)
 result <- gapsMapRun(SimpSim.D, SimpSim.S, FP=patterns, nFactor=3)
 }
-
