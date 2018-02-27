@@ -8,6 +8,7 @@
 #' @param full logical indicating whether to return the ranks of each gene for each pattern
 #' @return By default a non-overlapping list of genes associated with each \code{lp}. If \code{full=TRUE} a data.frame of
 #' genes rankings with a column for each \code{lp} will also be returned.
+#' @export
 patternMarkers <- function(Amatrix=NA, scaledPmatrix=FALSE, Pmatrix=NA,
 threshold="all", lp=NA, full=FALSE)
 {
