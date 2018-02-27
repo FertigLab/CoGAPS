@@ -38,7 +38,7 @@ threshold="all", lp=NA, full=FALSE)
         {
             sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
             ssranks[order(sstat),i] <- 1:length(sstat)
-            ssgenes[,i]<-names(sort(sstat,decreasing=FALSE))
+            ssgenes[,i]<-names(sort(sstat,decreasing=FALSE,na.last=TRUE))
         }
     }
     else
@@ -49,7 +49,8 @@ threshold="all", lp=NA, full=FALSE)
             lp[i] <- 1
             sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
             ssranks[order(sstat),i] <- 1:length(sstat)
-            ssgenes[,i]<-names(sort(sstat,decreasing=FALSE))
+            print(dim(ssgenes)) ; print(length(names(sort(sstat))))
+            ssgenes[,i]<-names(sort(sstat,decreasing=FALSE,na.last=TRUE))
         }
     }
 
