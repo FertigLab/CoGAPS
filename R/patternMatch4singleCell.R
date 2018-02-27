@@ -1,4 +1,4 @@
-#' patternMatch4Parallel
+#' patternMatch4singleCell
 #'
 #' @param Ptot a matrix containing the total by set estimates of Pmean output from \code{reOrderBySet}
 #' @param nSets number of parallel sets used to generate \code{Ptot}
@@ -12,7 +12,10 @@
 #' concensus pattern is also returned.
 #' @seealso \code{\link{agnes}}
 #' @export
-patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS, 
+#' 
+#' 
+
+patternMatch4singleCell <- function(Ptot, nSets, cnt, minNS, 
 cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
 {
     if (!is.null(minNS))
@@ -24,7 +27,7 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
         Ptot <- Ptot[complete.cases(Ptot),]
 
     # corr dist
-    corr.dist=cor(t(Ptot))
+    corr.dist=cor(Ptot)
     corr.dist=1-corr.dist
     # cluster
     #library(cluster)
