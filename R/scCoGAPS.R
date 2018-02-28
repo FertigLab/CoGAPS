@@ -66,11 +66,11 @@ GWCoGapsFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, 
             cptFileName <- paste(simulationName, "_final_cpt_", i, ".out", sep="")
             CoGapsFromCheckpoint(sampleD, sampleS, cptFileName)
         }
-        load(paste(simulationName, "_matched_ps.RData", sep=""))
+        load(paste(simulationName, "_matched_As.RData", sep=""))
     }
-    else if (file_test("-f", paste(simulationName, "_matched_ps.RData", sep="")))
+    else if (file_test("-f", paste(simulationName, "_matched_As.RData", sep="")))
     {
-        load(paste(simulationName, "_matched_ps.RData", sep=""))
+        load(paste(simulationName, "_matched_As.RData", sep=""))
         consensusAs<-matchedAmplitudes[[1]]
         finalResult <- runFinalPhase(simulationName, allDataSets, consensusAs, ...)
     }
@@ -88,7 +88,7 @@ GWCoGapsFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, 
             CoGapsFromCheckpoint(sampleD, sampleS, cptFileName)
         }
         matchedAmplitudes <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
-        save(matchedAmplitudes, file=paste(simulationName, "_matched_ps.RData", sep=""))
+        save(matchedAmplitudes, file=paste(simulationName, "_matched_As.RData", sep=""))
         consensusAs<-matchedAmplitudes[[1]]
         finalResult <- runFinalPhase(simulationName, allDataSets, consensusAs, ...)
     }
@@ -182,7 +182,7 @@ runFinalPhase <- function(simulationName, allDataSets, consensusAs, nCores, ...)
 postFinalPhase <- function(finalResult, consensusAs)
 {
     Aresult <- postFixed4Parallel(finalResult, consensusAs)
-    finalResult <- list("Amean"=Aresult$A, "Asd"=Aresult$Asd,"Pmean"=consensusAs)
+    finalResult <- list("Pmean"=Aresult$P, "Psd"=Aresult$Psd,"Amean"=consensusAs)
     class(finalResult) <- append(class(finalResult), "CoGAPS")
     return(finalResult)
 }

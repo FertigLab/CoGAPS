@@ -13,22 +13,29 @@
 #'}
 #'
 
-createGWCoGAPSSets<-function(data=D, #data matrix with unique rownames
-	nSets=nSets, #number of sets for parallelization
-	outRDA="GenesInCoGAPSSets.Rda", #name of output file
-	keep=TRUE #logical indicating whether or not to save gene set list. Default is TRUE.
-	){
-genes=rownames(data)
-setSize=floor(length(genes)/nSets)
-genesInSets <- list()
-for (set in 1:nSets) {
-  if(set!=nSets){genesInSets[[set]] <- sample(genes,setSize)}
-  if(set==nSets){genesInSets[[set]] <- genes}
-  genes=genes[!genes%in%genesInSets[[set]]]
-}
-if(!identical(sort(unlist(genesInSets)),sort(rownames(data)))){print("Gene identifiers not unique!")}
-if(keep==TRUE){save(list=c('genesInSets'),file=outRDA)}
-return(genesInSets)
-}
+createGWCoGAPSSets <- function(D, S, nSets, simulationName)
+{
+    # check gene names
+    if (length(unique(colnames(D))) != length(colnames(D)))
+    {
+        warning("Cell identifiers not unique!")
+    }
 
-
+    # partition data by sampling random sets of cells
+    genes <- 1:nrow(D)
+    setSize <- floor(length(genes) / nSets)
+    for (set in 1:nSets)
+    {
+        
+        # sample genes
+            sampleSize <- ifelse(set == nSets, length(genes), setSize)
+            geneset <- sample(genes, sampleSize, replace=FALSE)
+            genes <- genes[!(genes %in% geneset)]
+        # partition data
+        sampleD <- D[geneset,]
+        sampleS <- S[geneset,]
+        save(sampleD, sampleS, file=paste(simulationName, "_partition_", set,
+            ".RData", sep=""));
+    }
+    return(simulationName)
+}

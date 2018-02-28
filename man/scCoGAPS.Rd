@@ -15,7 +15,7 @@ greater than or equal to the number of rows of FP}
 
 \item{nCores}{number of cores for parallelization. If left to the default NA, nCores = nSets.}
 
-\item{cut}{number of branches at which to cut dendrogram used in patternMatch4Parallel}
+\item{cut}{number of branches at which to cut dendrogram used in patternMatch4singleCell}
 
 \item{minNS}{minimum of individual set contributions a cluster must contain}
 
@@ -40,8 +40,8 @@ the data matrix for whole genome data;
 data(SimpSim)
 sim_name <- "example"
 createscCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
-result <- GWCoGAPS(sim_name, nFactor=3, nEquil=1000, nSample=1000)
+result <- scCoGAPS(sim_name, nFactor=3, nEquil=1000, nSample=1000)
 }
 \seealso{
-\code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
+\code{\link{gapsRun}}, \code{\link{patternMatch4singleCell}}, and \code{\link{gapsMapRun}}
 }

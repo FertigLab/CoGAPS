@@ -1,12 +1,12 @@
 #' patternMatch4singleCell
 #'
-#' @param Ptot a matrix containing the total by set estimates of Pmean output from \code{reOrderBySet}
-#' @param nSets number of parallel sets used to generate \code{Ptot}
+#' @param Atot a matrix containing the total by set estimates of Amean output from \code{reOrderBySet}
+#' @param nSets number of parallel sets used to generate \code{Atot}
 #' @param cnt  number of branches at which to cut dendrogram
 #' @param minNS minimum of individual set contributions a cluster must contain
 #' @param cluster.method the agglomeration method to be used for clustering
 #' @param ignore.NA logical indicating whether or not to ignore NAs from potential over dimensionalization. Default is FALSE.
-#' @param bySet logical indicating whether to return list of matched set solutions from \code{Ptot}
+#' @param bySet logical indicating whether to return list of matched set solutions from \code{Atot}
 #' @param ... additional parameters for \code{agnes}
 #' @return a matrix of concensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
 #' concensus pattern is also returned.
@@ -15,19 +15,19 @@
 #' 
 #' 
 
-patternMatch4singleCell <- function(Ptot, nSets, cnt, minNS, 
+patternMatch4singleCell <- function(Atot, nSets, cnt, minNS, 
 cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
 {
     if (!is.null(minNS))
         minNS=nSets/2
 
-    if (ignore.NA==FALSE & anyNA(Ptot))
+    if (ignore.NA==FALSE & anyNA(Atot))
         warning('Non-sparse matrixes produced. Reducing the number of patterns asked for and rerun.')
     if (ignore.NA==TRUE)
-        Ptot <- Ptot[complete.cases(Ptot),]
+        Atot <- Atot[complete.cases(Atot),]
 
     # corr dist
-    corr.dist=cor(Ptot)
+    corr.dist=cor(Atot)
     corr.dist=1-corr.dist
     # cluster
     #library(cluster)
@@ -37,26 +37,26 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
 
     #drop n<4 and get weighted Avg
     cls=sort(unique(cut))
-    cMNs=matrix(nrow=cnt,ncol=dim(Ptot)[2])
+    cMNs=matrix(nrow=cnt,ncol=dim(Atot)[2])
     rownames(cMNs)=cls
-    colnames(cMNs)=colnames(Ptot)
+    colnames(cMNs)=colnames(Atot)
 
     RtoMeanPattern <- list()
     PByClust <- list()
     for(i in cls)
     {
-        if (is.null(dim(Ptot[cut == i, ]))==TRUE)
+        if (is.null(dim(Atot[cut == i, ]))==TRUE)
         {
-            cMNs[i,] <- Ptot[cut == i, ]
-            RtoMeanPattern[[i]] <- rep(1,length(Ptot[cut == i, ]))
-            PByClust[[i]] <- t(as.matrix(Ptot[cut == i, ]))
+            cMNs[i,] <- Atot[cut == i, ]
+            RtoMeanPattern[[i]] <- rep(1,length(Atot[cut == i, ]))
+            PByClust[[i]] <- t(as.matrix(Atot[cut == i, ]))
         }
         else
         {
-            cMNs[i,]=colMeans(Ptot[cut==i,])
-            PByClust[[i]] <- Ptot[cut==i,]
+            cMNs[i,]=colMeans(Atot[cut==i,])
+            PByClust[[i]] <- Atot[cut==i,]
             nIN=sum(cut==i)
-            RtoMeanPattern[[i]] <- sapply(1:nIN,function(j) {round(cor(x=Ptot[cut==i,][j,],y=cMNs[i,]),3)})
+            RtoMeanPattern[[i]] <- sapply(1:nIN,function(j) {round(cor(x=Atot[cut==i,][j,],y=cMNs[i,]),3)})
         }
     }
 
@@ -124,7 +124,7 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
     {
         # return by set and final
         PBySet<-PByCDS
-        return(list("consenusPatterns"=PByCDSWavgScaled,"PBySet"=PBySet,"RtoMPDS"=RtoMPDS))
+        return(list("consenusAs"=PByCDSWavgScaled,"ABySet"=PBySet,"RtoMPDS"=RtoMPDS))
     }
     else
     {

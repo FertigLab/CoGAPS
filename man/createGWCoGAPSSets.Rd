@@ -2,29 +2,29 @@
 % Please edit documentation in R/createGWCoGAPSSets.R
 \name{createGWCoGAPSSets}
 \alias{createGWCoGAPSSets}
-\title{Create Gene Sets for GWCoGAPS}
+\title{createGWCoGAPSSets}
 \usage{
-createGWCoGAPSSets(D, S, nSets, simulationName)
+createGWCoGAPSSets(data = D, nSets = nSets,
+  outRDA = "GenesInCoGAPSSets.Rda", keep = TRUE)
 }
 \arguments{
-\item{D}{data matrix}
+\item{data}{data matrix with unique rownames}
 
-\item{S}{uncertainty matrix}
+\item{nSets}{number of sets for parallelization}
 
-\item{nSets}{number of sets to partition the data into}
+\item{outRDA}{name of output file}
 
-\item{simulationName}{name used to identify files created by this simulation}
+\item{keep}{logical indicating whether or not to save gene set list. Default is TRUE.}
 }
 \value{
-simulationName used to identify saved files
+list with randomly generated sets of genes from whole genome data
 }
 \description{
-Create Gene Sets for GWCoGAPS
-}
-\details{
-factors whole genome data into randomly generated sets for indexing
+\code{createGWCoGAPSSets} factors whole genome data into randomly generated sets for indexing;
 }
 \examples{
-data(SimpSim)
-createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
+\dontrun{
+createGWCoGAPSSet(D,nSets=nSets)
+}
+
 }
