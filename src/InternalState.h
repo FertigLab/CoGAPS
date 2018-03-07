@@ -16,6 +16,7 @@ enum GapsPhase
     GAPS_SAMP
 };
 
+// maybe cleaner if this was a class with member functions? GapsRunner
 struct GapsInternalState
 {
     Vector chi2VecEquil;
@@ -58,7 +59,7 @@ struct GapsInternalState
     GapsInternalState(const Rcpp::NumericMatrix &D,
         const Rcpp::NumericMatrix &S, unsigned nF, unsigned nE, unsigned nEC,
         unsigned nS, unsigned nOut, unsigned nSnap, float alphaA, float alphaP,
-        float maxGibbmassA, float maxGibbmassP, int sd, bool msgs,
+        float maxGibbsMassA, float maxGibbsMassP, int sd, bool msgs,
         bool singleCellRNASeq, char whichMatrixFixed,
         const Rcpp::NumericMatrix &FP, unsigned cptInterval)
         //PumpThreshold pumpThreshold, unsigned numPumpSamples)
@@ -69,8 +70,8 @@ struct GapsInternalState
         nSnapshots(nSnap), nOutputs(nOut), messages(msgs), iter(0),
         phase(GAPS_BURN), seed(sd), checkpointInterval(cptInterval),
         nUpdatesA(0), nUpdatesP(0), //nPumpSamples(numPumpSamples),
-        ASampler(D, S, nF, alphaA, maxGibbmassA),
-        PSampler(D, S, nF, alphaP, maxGibbmassP)
+        ASampler(D, S, nF, alphaA, maxGibbsMassA),
+        PSampler(D, S, nF, alphaP, maxGibbsMassP)
     {}
 
     GapsInternalState(const Rcpp::NumericMatrix &D,
@@ -84,6 +85,7 @@ struct GapsInternalState
 
 inline Archive& operator<<(Archive &ar, GapsInternalState &state)
 {
+/*
     ar << state.chi2VecEquil << state.nAtomsAEquil << state.nAtomsPEquil
         << state.chi2VecSample << state.nAtomsASample << state.nAtomsPSample
         << state.nIterA << state.nIterP << state.nEquil << state.nEquilCool
@@ -91,11 +93,13 @@ inline Archive& operator<<(Archive &ar, GapsInternalState &state)
         << state.iter << state.phase << state.seed << state.checkpointInterval
         << state.nUpdatesA << state.nUpdatesP << state.nPumpSamples;
         //<< state.sampler;
+*/
     return ar;
 }
 
 inline Archive& operator>>(Archive &ar, GapsInternalState &state)
 {
+/*  
     ar >> state.chi2VecEquil >> state.nAtomsAEquil >> state.nAtomsPEquil
         >> state.chi2VecSample >> state.nAtomsASample >> state.nAtomsPSample
         >> state.nIterA >> state.nIterP >> state.nEquil >> state.nEquilCool
@@ -103,6 +107,7 @@ inline Archive& operator>>(Archive &ar, GapsInternalState &state)
         >> state.iter >> state.phase >> state.seed >> state.checkpointInterval
         >> state.nUpdatesA >> state.nUpdatesP >> state.nPumpSamples;
         //>> state.sampler;
+*/
     return ar;
 }
 

@@ -3,6 +3,7 @@
 
 #include "Archive.h"
 
+#include <boost/unordered_set.hpp>
 #include <stdint.h>
 #include <cstddef>
 #include <vector>
@@ -35,11 +36,16 @@ private:
     std::vector<Atom> mAtoms;
     std::map<uint64_t, uint64_t> mAtomPositions;
 
+    // TODO google_dense_set - first profile and benchmark
+    boost::unordered_set<uint64_t> mUsedPositions;
+
 public:
 
+    // access atoms
     Atom front() const;
     Atom randomAtom() const;
     uint64_t randomFreePosition() const;
+    unsigned size() const;
 
     // modify domain
     void insert(uint64_t pos, float mass);
