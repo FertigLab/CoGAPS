@@ -52,22 +52,23 @@ namespace algo
     // specific matrix algorithms
     bool isRowZero(const RowMatrix &mat, unsigned row);
     bool isColZero(const ColMatrix &mat, unsigned col);
-    /*void matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
-        const RowMatrix &B);
+    //void matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
+    //    const RowMatrix &B);
 
     // chiSq / 2
-    float loglikelihood(const TwoWayMatrix &D, const TwoWayMatrix &S,
-        const TwoWayMatrix &AP);
+    template <class Matrix>
+    float loglikelihood(const Matrix &D, const Matrix &S,
+        const Matrix &AP);
 
     // change in likelihood
-    float deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
-        const TwoWayMatrix &S, const ColMatrix &A,
-        const RowMatrix &P, const TwoWayMatrix &AP);
+    //float deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
+    //    const TwoWayMatrix &S, const ColMatrix &A,
+    //    const RowMatrix &P, const TwoWayMatrix &AP);
 
     // alpha parameters used in exchange and gibbsMass calculation
-    AlphaParameters alphaParameters(const MatrixChange &ch,
-        const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
-        const RowMatrix &P, const TwoWayMatrix &AP);*/
+    //AlphaParameters alphaParameters(const MatrixChange &ch,
+    //    const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
+    //    const RowMatrix &P, const TwoWayMatrix &AP);*/
 } // namespace algo
 } // namespace gaps
 
@@ -125,6 +126,21 @@ const GenericMatrix &meanMat, unsigned nUpdates)
         }
     }
     return retMat;
+}
+
+template <class Matrix>
+float gaps::algo::loglikelihood(const Matrix &D, const Matrix &S,
+const Matrix &AP)
+{
+    float chi2 = 0.f;
+    for (unsigned i = 0; i < D.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < D.nCol(); ++j)
+        {
+            chi2 += GAPS_SQ(D(i,j) - AP(i,j)) / GAPS_SQ(S(i,j));
+        }
+    }
+    return chi2 / 2.f;
 }
 
 #endif

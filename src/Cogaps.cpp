@@ -1,3 +1,4 @@
+#include "GapsAssert.h"
 #include "GibbsSampler.h"
 #include "Matrix.h"
 #include "Archive.h"
@@ -52,12 +53,12 @@ static void createCheckpoint(GapsInternalState &state)
 static void updateSampler(GapsInternalState &state)
 {
     state.nUpdatesA += state.nIterA;
-    state.ASampler.update(state.nIterA);
-    state.PSampler.syncAP(state.ASampler.APMatrix());
+    update(state.ASampler, state.nIterA);
+    state.PSampler.sync(state.ASampler);
 
     state.nUpdatesP += state.nIterP;
-    state.PSampler.update(state.nIterP);
-    state.ASampler.syncAP(state.PSampler.APMatrix());
+    update(state.PSampler, state.nIterP);
+    state.ASampler.sync(state.PSampler);
 }
 
 static void makeCheckpointIfNeeded(GapsInternalState &state)
@@ -183,6 +184,10 @@ static Rcpp::List runCogaps(GapsInternalState &state)
         //Rcpp::Named("Asd") = state.sampler.AStdRMatrix(),
         //Rcpp::Named("Pmean") = state.sampler.PMeanRMatrix(),
         //Rcpp::Named("Psd") = state.sampler.PStdRMatrix(),
+        Rcpp::Named("Amean") = Rcpp::NumericMatrix(193,9),
+        Rcpp::Named("Asd") = Rcpp::NumericMatrix(193,9),
+        Rcpp::Named("Pmean") = Rcpp::NumericMatrix(9,193),
+        Rcpp::Named("Psd") = Rcpp::NumericMatrix(9,193),
         Rcpp::Named("ASnapshots") = Rcpp::wrap(state.snapshotsA),
         Rcpp::Named("PSnapshots") = Rcpp::wrap(state.snapshotsP),
         Rcpp::Named("atomsAEquil") = state.nAtomsAEquil.rVec(),

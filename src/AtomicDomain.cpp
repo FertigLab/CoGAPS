@@ -1,8 +1,14 @@
+#include "GapsAssert.h"
 #include "AtomicDomain.h"
 #include "Random.h"
 
 #include <stdint.h>
 #include <utility>
+
+unsigned AtomicDomain::size() const
+{
+    return mAtoms.size();
+}
 
 // O(1)
 Atom AtomicDomain::front() const
@@ -13,18 +19,19 @@ Atom AtomicDomain::front() const
 // O(1)
 Atom AtomicDomain::randomAtom() const
 {
+    GAPS_ASSERT(!mAtoms.empty());
     uint64_t num = gaps::random::uniform64(0, mAtoms.size() - 1);
     return mAtoms[num];
 }
 
-// O(logN) - keep hash of positions to fix, need this O(1)
+// Average Case O(1)
 uint64_t AtomicDomain::randomFreePosition() const
 {
     uint64_t pos = 0;
     do
     {
         pos = gaps::random::uniform64();
-    } while (mAtomPositions.count(pos) > 0); // count is O(logN)
+    } while (mUsedPositions.count(pos) > 0); // hash map => count is O(l)
     return pos;
 }
 
@@ -44,7 +51,7 @@ void AtomicDomain::insert(uint64_t pos, float mass)
         --iterLeft;
         atom.left = &(mAtoms[iterLeft->second]);
     }
-    if (iter != mAtomPositions.end())
+    if (++iter != mAtomPositions.end())
     {
         ++iterRight;
         atom.right = &(mAtoms[iterRight->second]);
@@ -52,6 +59,7 @@ void AtomicDomain::insert(uint64_t pos, float mass)
 
     // add atom to vector
     mAtoms.push_back(atom);
+    mUsedPositions.insert(pos);
 }
 
 // O(logN)
@@ -82,6 +90,7 @@ void AtomicDomain::erase(uint64_t pos)
     // delete atom from vector in O(1)
     mAtoms[index] = mAtoms.back();
     mAtoms.pop_back();
+    mUsedPositions.erase(pos);
 }
 
 // O(logN)

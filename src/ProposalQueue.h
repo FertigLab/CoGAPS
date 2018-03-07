@@ -31,13 +31,14 @@ private:
     std::vector<AtomicProposal> mQueue; // not really a queue for now
 
     std::vector<unsigned> mUsedIndices; // used rows/cols for A/P matrix
-    std::vector<unsigned> mUsedPositions; // used positions is atomic domain
+    std::vector<unsigned> mUsedPositions; // used positions in atomic domain
 
     uint64_t mMinAtoms;
     uint64_t mMaxAtoms;
 
     uint64_t mNumBins;
-    uint64_t mNumIndices;
+    uint64_t mDimensionSize; // rows of A, cols of P
+    uint64_t mDomainSize;
 
     float mAlpha;
 
@@ -50,14 +51,21 @@ private:
 
 public:
 
-    // constructor
-    ProposalQueue(float alpha, uint64_t nIndices, uint64_t nBins);
+    ProposalQueue(unsigned nBins, float alpha)
+        : mMinAtoms(0), mMaxAtoms(0), mNumBins(nBins), mAlpha(alpha)
+    {}
+
+    // set variables
+    void setNumBins(unsigned nBins);
+    void setDimensionSize(unsigned nIndices);
+    void setDomainSize(uint64_t size);
+    void setAlpha(float alpha);
 
     // modify/access queue
     void populate(const AtomicDomain &domain, unsigned limit);
     void clear();
     unsigned size() const;
-    const AtomicProposal& operator[](unsigned n) const;
+    const AtomicProposal& operator[](int n) const;
 
     // update min/max atoms
     void acceptDeath();

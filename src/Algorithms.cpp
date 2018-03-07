@@ -48,7 +48,7 @@ unsigned gaps::algo::whichMin(const Vector &vec)
 {
     float min = vec[0];
     unsigned minNdx = 0;
-    for (unsigned i = 0; i < vec.size(); ++i)
+    for (unsigned i = 1; i < vec.size(); ++i)
     {
         if (vec[i] < min)
         {
@@ -94,6 +94,7 @@ bool gaps::algo::isColZero(const ColMatrix &mat, unsigned col)
 {
     return gaps::algo::sum(mat.getCol(col)) == 0;
 }
+
 /*
 // horribly slow, don't call often
 void gaps::algo::matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
@@ -111,20 +112,6 @@ const RowMatrix &B)
             C.set(i, j, sum);
         }
     }
-}
-
-float gaps::algo::loglikelihood(const TwoWayMatrix &D,
-const TwoWayMatrix &S, const TwoWayMatrix &AP)
-{
-    float chi2 = 0.f;
-    for (unsigned i = 0; i < D.nRow(); ++i)
-    {
-        for (unsigned j = 0; j < D.nCol(); ++j)
-        {
-            chi2 += GAPS_SQ(D(i,j) - AP(i,j)) / GAPS_SQ(S(i,j));
-        }
-    }
-    return chi2 / 2.f;
 }
 
 static float deltaLL_comp(unsigned size, const float *D, const float *S,
