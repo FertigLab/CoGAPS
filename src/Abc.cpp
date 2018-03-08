@@ -172,7 +172,12 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     P_prime(row_num - 1, Rcpp::_) = curve(theta_prime);
 
     double Pnorm = Rcpp::sum(curve(theta_prime));
-    double Pnorm_old = Rcpp::sum(curve(_theta_truth)); // TODO FIX THIS 
+    double Pnorm_old;
+    if (_fixed_proposal) {
+        Pnorm_old = Rcpp::sum(curve(_theta_truth));
+    } else {
+        Pnorm_old = Rcpp::sum(curve(_theta));
+    }
 
     P_prime(row_num - 1, Rcpp::_) = P_prime(row_num - 1, Rcpp::_) / Pnorm;
     A_prime(Rcpp::_, row_num - 1) = A_prime(Rcpp::_, row_num - 1) * Pnorm / Pnorm_old;
