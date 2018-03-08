@@ -49,7 +49,7 @@ gapsTransRun <- function(D, S, nFactor, theta,
                          time.of.sample=1:ncol(D), # default
                          condition=rep(0, ncol(D)),  # treated/untreated (or treat1 treat2, etc, untreated)
                          thin=1, delta=0.01, prior.mean=0.0,
-                         prior.sd=10.0, epsilon=1.0, fixedproposal=FALSE) {
+                         prior.sd=10.0, epsilon=1.0, fixedproposal=FALSE, weightA=TRUE) {
     #Begin data type error checking code
     charDataErrors = c(!is.character(simulation_id), !is.character(fixedDomain), !is.character(fixedMatrix))
     charCheck = c("simulation_id", "fixedDomain", "fixedMatrix")
@@ -193,7 +193,8 @@ gapsTransRun <- function(D, S, nFactor, theta,
     cogapResult = cogapsTrans(D, S, FP, ABins, PBins, Config, 
                               ConfigNums, time.of.sample, condition, theta,
                               thin=thin, delta=delta, prior_mean=prior.mean,
-                              prior_sd=prior.sd, epsilon=epsilon, fixedproposal=fixedproposal)
+                              prior_sd=prior.sd, epsilon=epsilon, 
+                              fixedproposal=fixedproposal, weightA=weightA)
 
     # convert returned files to matrices to simplify visualization and processing
     cogapResult$Amean = as.matrix(cogapResult$Amean);

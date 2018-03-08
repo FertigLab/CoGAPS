@@ -48,7 +48,7 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
                                std::string prior="normal", std::string proposal="normal",
                                bool epsilon_mcmc=false, double delta=10.0, double epsilon=100.0,
                                double epsilon_prior=3.0, double prior_mean=0.0, double prior_sd=10.0,
-                               bool fixedproposal=false);
+                               bool fixedproposal=false, bool weightA=true);
     ~GibbsSamplerTransformation() {};
 
     Rcpp::NumericMatrix theta();
@@ -71,6 +71,9 @@ class GibbsSamplerTransformation : public GibbsSamplerMap {
 
     // track acceptance and total proposals
     unsigned int accepted, proposed;
+
+    // whether or not to weight A
+    bool weightA;
 
     // get relevant column and rows
     Rcpp::NumericVector getAcol();

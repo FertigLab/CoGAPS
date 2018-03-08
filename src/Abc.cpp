@@ -180,7 +180,9 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     }
 
     P_prime(row_num - 1, Rcpp::_) = P_prime(row_num - 1, Rcpp::_) / Pnorm;
-    A_prime(Rcpp::_, row_num - 1) = A_prime(Rcpp::_, row_num - 1) * Pnorm / Pnorm_old;
+    if (weightA) {
+        A_prime(Rcpp::_, row_num - 1) = A_prime(Rcpp::_, row_num - 1) * Pnorm / Pnorm_old;
+    }
 
     //Rcpp::Rcout << "Current: " << _theta_truth << " Proposed " << theta_prime << " Pnorm " << Pnorm << " Pnorm_old " << Pnorm_old << "\n";
 

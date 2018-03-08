@@ -16,7 +16,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                                                        bool epsilon_mcmc, double delta, 
                                                        double epsilon, double epsilon_prior, 
                                                        double prior_mean, double prior_sd,
-                                                       bool fixedproposal):
+                                                       bool fixedproposal, weightA):
     GibbsSamplerMap(nEquil, nSample, nFactor, alphaA, alphaP, nMaxA, nMaxP, nIterA, nIterP,
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
@@ -39,6 +39,8 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
 
     accepted = 0;
     proposed = 0;
+
+    weightA = weightA;
 }
 
 Rcpp::NumericMatrix GibbsSamplerTransformation::theta() {
@@ -190,10 +192,12 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
             Rcpp::Rcout << "Accepted growth proposal\n";
         }
 
-        // update the A matrix
-        Rcpp::Rcout << "weight: " << calcWeight() << "\n";
-        weightAAtomicColumn(calcWeight());
-        weightAColumn(calcWeight());
+        // update the A matrix if `weightA`
+        if (weightA) {
+            Rcpp::Rcout << "weight: " << calcWeight() << "\n";
+            weightAAtomicColumn(calcWeight());
+            weightAColumn(calcWeight());
+        }
 
         // update the P matrix
         updatePRow();
