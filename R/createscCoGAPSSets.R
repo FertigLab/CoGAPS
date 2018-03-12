@@ -8,12 +8,13 @@
 #' @param simulationName name used to identify files created by this simulation
 #' @param samplingRatio vector of relative quantities to use for sampling celltypes
 #' @param annotionObj vector of same length as number of columns of D 
+#' @param path character string indicating were to save resulting data objects. default is current working dir
 #' @return simulationName used to identify saved files
 #' @examples
 #' data(SimpSim)
 #' createscCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
 #' @export
-createscCoGAPSSets <- function(D, S, nSets, simulationName,samplingRatio=NULL)
+createscCoGAPSSets <- function(D, S, nSets, simulationName,samplingRatio=NULL,path="")
 {
     # check gene names
     if (length(unique(colnames(D))) != length(colnames(D)))
@@ -41,8 +42,7 @@ createscCoGAPSSets <- function(D, S, nSets, simulationName,samplingRatio=NULL)
         # partition data
         sampleD <- D[,cellset]
         sampleS <- S[,cellset]
-        save(sampleD, sampleS, file=paste(simulationName, "_partition_", set,
-            ".RData", sep=""));
+        save(sampleD, sampleS, file=paste0(path,simulationName, "_partition_", set,".RData"));
     }
     return(simulationName)
 }

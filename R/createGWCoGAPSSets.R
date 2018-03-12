@@ -6,6 +6,7 @@
 #'@param nSets number of sets for parallelization
 #'@param outRDA name of output file
 #'@param keep logical indicating whether or not to save gene set list. Default is TRUE.
+#'@param path character string indicating were to save resulting data objects
 #'@export
 #'@return list with randomly generated sets of genes from whole genome data
 #'@examples \dontrun{
@@ -13,7 +14,7 @@
 #'}
 #'
 
-createGWCoGAPSSets <- function(D, S, nSets, simulationName)
+createGWCoGAPSSets <- function(D, S, nSets, simulationName, path="")
 {
     # check gene names
     if (length(unique(colnames(D))) != length(colnames(D)))
@@ -34,7 +35,7 @@ createGWCoGAPSSets <- function(D, S, nSets, simulationName)
         # partition data
         sampleD <- D[geneset,]
         sampleS <- S[geneset,]
-        save(sampleD, sampleS, file=paste(simulationName, "_partition_", set,
+        save(sampleD, sampleS, file=paste(path, simulationName, "_partition_", set,
             ".RData", sep=""));
     }
     return(simulationName)
