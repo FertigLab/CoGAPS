@@ -8,7 +8,7 @@
 #' @param full logical indicating whether to return the ranks of each gene for each pattern
 #' @return By default a non-overlapping list of genes associated with each \code{lp}. If \code{full=TRUE} a data.frame of
 #' genes rankings with a column for each \code{lp} will also be returned.
-#' @export
+#' @export
 patternMarkers <- function(Amatrix=NA, scaledPmatrix=FALSE, Pmatrix=NA,
 threshold="all", lp=NA, full=FALSE)
 {
@@ -23,6 +23,11 @@ threshold="all", lp=NA, full=FALSE)
 
     # find the A with the highest magnitude
     Arowmax <- t(apply(Amatrix, 1, function(x) x/max(x)))
+    #Arowmax <- t(apply(Amatrix, 1, function(x){ 
+    #    if (mean(x) == 0){ return(rep(0, times=length(x))) }
+    #    else { return(x/max(x)) }
+    #})) ## this prevents NA values from creeping due to rows with zero means
+
     pmax<-apply(Amatrix, 1, max)
     # determine which genes are most associated with each pattern
     ssranks<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))#list()
@@ -63,8 +68,13 @@ threshold="all", lp=NA, full=FALSE)
     else if (threshold=="all")
     {
         pIndx<-apply(ssranks,1,which.min)
-        gBYp <- lapply(sort(unique(pIndx)),function(x) names(pIndx[pIndx==x]))
-        ssgenes.th <- lapply(1:nP, function(x) ssgenes[which(ssgenes[,x] %in% gBYp[[x]]),x])
+        gBYp <- list()
+        for(i in sort(unique(pIndx))){
+            gBYp[[i]]<-names(pIndx[pIndx==i])
+        }
+        ssgenes.th <- lapply(1:max(sort(unique(pIndx))), function(x) {
+            ssgenes[which(ssgenes[,x] %in% gBYp[[x]]),x]
+        })
     }
     else
     {

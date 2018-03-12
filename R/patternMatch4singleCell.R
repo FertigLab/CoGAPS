@@ -37,7 +37,7 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
 
     #drop n<4 and get weighted Avg
     cls=sort(unique(cut))
-    cMNs=matrix(nrow=cnt,ncol=dim(Atot)[2])
+    cMNs=matrix(nrow=cnt,ncol=dim(Atot)[1])
     rownames(cMNs)=cls
     colnames(cMNs)=colnames(Atot)
 
@@ -45,18 +45,18 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
     PByClust <- list()
     for(i in cls)
     {
-        if (is.null(dim(Atot[cut == i, ]))==TRUE)
+        if (is.null(dim(Atot[,cut == i ]))==TRUE)
         {
-            cMNs[i,] <- Atot[cut == i, ]
-            RtoMeanPattern[[i]] <- rep(1,length(Atot[cut == i, ]))
-            PByClust[[i]] <- t(as.matrix(Atot[cut == i, ]))
+            cMNs[i,] <- Atot[,cut == i ]
+            RtoMeanPattern[[i]] <- rep(1,length(Atot[,cut == i ]))
+            PByClust[[i]] <- t(as.matrix(Atot[,cut == i ]))
         }
         else
         {
-            cMNs[i,]=colMeans(Atot[cut==i,])
-            PByClust[[i]] <- Atot[cut==i,]
+            cMNs[i,]=colMeans(Atot[,cut==i])
+            PByClust[[i]] <- Atot[,cut==i]
             nIN=sum(cut==i)
-            RtoMeanPattern[[i]] <- sapply(1:nIN,function(j) {round(cor(x=Atot[cut==i,][j,],y=cMNs[i,]),3)})
+            RtoMeanPattern[[i]] <- sapply(1:nIN,function(j) {round(cor(x=Atot[,cut==i][j,],y=cMNs[i,]),3)})
         }
     }
 
