@@ -66,7 +66,8 @@ class Abc {
             double epsilon_rate=3.0,
             double prior_mean=0.0,
             double prior_sd=10.0,
-            bool fixed_proposal=false);
+            bool fixed_proposal=false,
+            bool weightA=true);
 
         // propose new theta
         void propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P);
@@ -90,6 +91,9 @@ class Abc {
         // track thresholds
         double rho;
         double rho_thresh;
+
+        // determine whether to reweight
+        bool weightA;
 };
 
 #endif

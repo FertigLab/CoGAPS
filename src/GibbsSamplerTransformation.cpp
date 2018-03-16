@@ -16,7 +16,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
                                                        bool epsilon_mcmc, double delta, 
                                                        double epsilon, double epsilon_prior, 
                                                        double prior_mean, double prior_sd,
-                                                       bool fixedproposal, weightA):
+                                                       bool fixedproposal, bool weightA):
     GibbsSamplerMap(nEquil, nSample, nFactor, alphaA, alphaP, nMaxA, nMaxP, nIterA, nIterP,
                     max_gibbsmass_paraA, max_gibbsmass_paraP, atomicSize, label_A, label_P, label_D, label_S,
                     DVector, SVector, simulation_id, parameters, the_fixed_matrix),
@@ -24,7 +24,7 @@ GibbsSamplerTransformation::GibbsSamplerTransformation(unsigned long nEquil, uns
     _thresh(nSample + _nEquil, 2),
     _epsilon(nSample + _nEquil),
     _growth(DVector, timeRecorded, theta_init, prior, proposal, epsilon_mcmc, delta,
-            epsilon, epsilon_prior, prior_mean, prior_sd, fixedproposal) {
+            epsilon, epsilon_prior, prior_mean, prior_sd, fixedproposal, weightA) {
 
     // assignments for growth data
     _whichPattern = whichPattern;

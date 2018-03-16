@@ -10,7 +10,8 @@ Abc::Abc(std::vector<std::vector<double> >& data,
          double epsilon_rate,
          double prior_mean,
          double prior_sd,
-         bool fixed_proposal) :
+         bool fixed_proposal,
+         bool weightA) :
     _theta(theta_init),
     _theta_truth(theta_init),
     theta_prime(theta_init),
@@ -45,6 +46,9 @@ Abc::Abc(std::vector<std::vector<double> >& data,
 
     // initialize accepted to false
     accepted = false;
+
+    // whether or not to weight A matrix
+    weightA = weightA;
 }
 
 Rcpp::NumericVector Abc::_prior(Rcpp::NumericVector param) {

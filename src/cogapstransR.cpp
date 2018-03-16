@@ -48,7 +48,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                        std::string prior="normal", std::string proposal="normal",
                        bool epsilon_mcmc=false, double delta=10.0, double epsilon=1.0,
                        double epsilon_prior=3.0, double prior_mean=0.0, double prior_sd=10.0,
-                       bool fixedproposal=false) {
+                       bool fixedproposal=false, bool weightA=true) {
     // ===========================================================================
     // Initialization of the random number generator.
     // Different seeding methods:
@@ -214,7 +214,7 @@ Rcpp::List cogapsTrans(Rcpp::DataFrame DFrame,
                                               epsilon_mcmc, delta, 
                                               epsilon, epsilon_prior, 
                                               prior_mean, prior_sd,
-                                              fixedproposal);
+                                              fixedproposal, weightA);
     // ---------------------------------------------------------------------------
     // Based on the information of D, construct and initialize for A and P both
     // the matrices and atomic spaces.
