@@ -10,7 +10,6 @@
 namespace gaps
 {
 
-// rename to math for dist functions
 namespace random
 {
     void setSeed(uint32_t seed);
@@ -30,6 +29,9 @@ namespace random
     float d_norm(float d, float mean, float sd);
     float q_norm(float q, float mean, float sd);
     float p_norm(float p, float mean, float sd);
+
+    float inverseNormSample(float a, float b, float mean, float sd);
+    float inverseGammaSample(float a, float b, float mean, float sd);
 
     void save(Archive &ar);
     void load(Archive &ar);

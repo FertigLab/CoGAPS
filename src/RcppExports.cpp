@@ -37,16 +37,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // cogapsFromCheckpoint_cpp
-Rcpp::List cogapsFromCheckpoint_cpp(const Rcpp::NumericMatrix& D, const Rcpp::NumericMatrix& S, const std::string& fileName, const std::string& cptFile);
-RcppExport SEXP _CoGAPS_cogapsFromCheckpoint_cpp(SEXP DSEXP, SEXP SSEXP, SEXP fileNameSEXP, SEXP cptFileSEXP) {
+Rcpp::List cogapsFromCheckpoint_cpp(const Rcpp::NumericMatrix& D, const Rcpp::NumericMatrix& S, unsigned nFactor, unsigned nEquil, unsigned nSample, const std::string& fileName, const std::string& cptFile);
+RcppExport SEXP _CoGAPS_cogapsFromCheckpoint_cpp(SEXP DSEXP, SEXP SSEXP, SEXP nFactorSEXP, SEXP nEquilSEXP, SEXP nSampleSEXP, SEXP fileNameSEXP, SEXP cptFileSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type D(DSEXP);
     Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type S(SSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type nFactor(nFactorSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type nEquil(nEquilSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type nSample(nSampleSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type fileName(fileNameSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type cptFile(cptFileSEXP);
-    rcpp_result_gen = Rcpp::wrap(cogapsFromCheckpoint_cpp(D, S, fileName, cptFile));
+    rcpp_result_gen = Rcpp::wrap(cogapsFromCheckpoint_cpp(D, S, nFactor, nEquil, nSample, fileName, cptFile));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -72,7 +75,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_CoGAPS_cogaps_cpp", (DL_FUNC) &_CoGAPS_cogaps_cpp, 21},
-    {"_CoGAPS_cogapsFromCheckpoint_cpp", (DL_FUNC) &_CoGAPS_cogapsFromCheckpoint_cpp, 4},
+    {"_CoGAPS_cogapsFromCheckpoint_cpp", (DL_FUNC) &_CoGAPS_cogapsFromCheckpoint_cpp, 7},
     {"_CoGAPS_displayBuildReport_cpp", (DL_FUNC) &_CoGAPS_displayBuildReport_cpp, 0},
     {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 0},
     {NULL, NULL, 0}

@@ -63,7 +63,7 @@ public:
 
     // modify/access queue
     void populate(const AtomicDomain &domain, unsigned limit);
-    void clear();
+    void clear(unsigned n);
     unsigned size() const;
     const AtomicProposal& operator[](int n) const;
 

@@ -22,6 +22,7 @@ typedef boost::random::mt19937 RNGType;
 //typedef boost::random::mt11213b RNGType; // should be faster
 
 static RNGType rng;
+static boost::random::uniform_01<RNGType&> u01_dist(rng);
 
 void gaps::random::save(Archive &ar)
 {
@@ -56,13 +57,12 @@ float gaps::random::exponential(float lambda)
     return dist(rng);
 }
 
+// open interval
 float gaps::random::uniform()
 {
-    boost::random::uniform_01<RNGType&> dist(rng); // could be moved out
-    return dist();
+    return u01_dist();
 }
 
-// open interval
 float gaps::random::uniform(float a, float b)
 {
     if (a == b)
@@ -72,12 +72,7 @@ float gaps::random::uniform(float a, float b)
     else
     {
         boost::random::uniform_real_distribution<> dist(a,b);
-        float result = dist(rng);
-        while (result == b)
-        {
-            result = dist(rng);
-        }
-        return result;
+        return dist(rng);
     }
 }
 
@@ -142,4 +137,24 @@ float gaps::random::p_norm(float p, float mean, float sd)
 {
     boost::math::normal_distribution<> norm(mean, sd);
     return cdf(norm, p);
+}
+
+float gaps::random::inverseNormSample(float a, float b, float mean, float sd)
+{
+    float u = gaps::random::uniform(a, b);
+    while (u == 0.f || u == 1.f)
+    {
+        u = gaps::random::uniform(a, b);
+    }
+    return gaps::random::q_norm(u, mean, sd);
+}
+
+float gaps::random::inverseGammaSample(float a, float b, float mean, float sd)
+{
+    float u = gaps::random::uniform(a, b);
+    while (u == 0.f || u == 1.f)
+    {
+        u = gaps::random::uniform(a, b);
+    }
+    return gaps::random::q_gamma(u, mean, sd);
 }

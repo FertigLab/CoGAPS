@@ -81,6 +81,8 @@ private:
     std::vector<Vector> mRows;
     unsigned mNumRows, mNumCols;
 
+    RowMatrix() {}
+
 public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
@@ -116,6 +118,8 @@ private:
 
     std::vector<Vector> mCols;
     unsigned mNumRows, mNumCols;
+
+    ColMatrix() {}
 
 public:
 

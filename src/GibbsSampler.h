@@ -1,8 +1,7 @@
-#ifndef __GAPS_GIBBS_SAMPLER_H__
-#define __GAPS_GIBBS_SAMPLER_H__
+#ifndef __COGAPS_GIBBS_SAMPLER_H__
+#define __COGAPS_GIBBS_SAMPLER_H__
 
 #include "GapsAssert.h"
-#include "GapsStatistics.h"
 #include "Archive.h"
 #include "Matrix.h"
 #include "Random.h"
@@ -12,28 +11,30 @@
 
 #include <Rcpp.h>
 
-// stats should be friend class
-// CRTP not really needed here, free friend functions are clear enough,
-// it would reduce some repeated code - but only a few lines and probably
-// not worth the headache
-// maybe convert to CRTP once everything is working cleanly
-
+// forward declarations needed for friend classes
 class AmplitudeGibbsSampler;
 class PatternGibbsSampler;
 class GapsStatistics;
 
-class AmplitudeGibbsSampler
+/************************** GIBBS SAMPLER INTERFACE **************************/
+
+template <class T, class MatA, class MatB>
+class GibbsSampler
 {
 private:
 
-    friend PatternGibbsSampler;
-    friend GapsStatistics;
+    friend T; // prevent incorrect inheritance - only T can construct
 
-    ColMatrix mAMatrix;
-    RowMatrix *mPMatrix;
-    RowMatrix mDMatrix;
-    RowMatrix mSMatrix;
-    RowMatrix mAPMatrix;
+    GibbsSampler(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
+        unsigned nrow, unsigned ncol, float alpha);
+
+protected:
+
+    MatA mMatrix;
+    MatB* mOtherMatrix;
+    MatB mDMatrix;
+    MatB mSMatrix;
+    MatB mAPMatrix;
 
     ProposalQueue mQueue;
     AtomicDomain mDomain;
@@ -44,7 +45,36 @@ private:
     
     unsigned mNumRows;
     unsigned mNumCols;
-    unsigned mBinSize;
+    uint64_t mBinSize;
+
+    T* impl();
+
+    void processProposal(const AtomicProposal &prop);
+    void birth(uint64_t pos);
+    void death(uint64_t pos, float mass);
+    void move(uint64_t src, float mass, uint64_t dest);
+    void exchange(uint64_t p1, float mass1, uint64_t p2, float mass2);
+    float gibbsMass(unsigned row, unsigned col);
+
+public:
+
+    void update(unsigned nSteps);
+    void setAnnealingTemp(float temp);
+    
+    float chi2() const;
+    float nAtoms() const;
+
+    // serialization
+    //friend Archive& operator<<(Archive &ar, GibbsSampler &sampler);
+    //friend Archive& operator>>(Archive &ar, GibbsSampler &sampler);
+};
+
+class AmplitudeGibbsSampler : public GibbsSampler<AmplitudeGibbsSampler, ColMatrix, RowMatrix>
+{
+private:
+
+    friend GibbsSampler;
+    friend PatternGibbsSampler;
 
     unsigned getRow(uint64_t pos) const;
     unsigned getCol(uint64_t pos) const;
@@ -59,49 +89,14 @@ public:
         float maxGibbsMass=0.f);
 
     void sync(PatternGibbsSampler &sampler);
-    float nAtoms() const;
-    void setAnnealingTemp(float temp);
-    float chi2() const;
-
-    template <class Sampler>
-    friend void update(Sampler&, unsigned);
-
-    template <class Sampler>
-    friend void processProposal(Sampler &sampler, const AtomicProposal &prop);
-
-    template <class Sampler>
-    friend void birth(Sampler &sampler, uint64_t pos);
-
-    template <class Sampler>
-    friend void death(Sampler &sampler, uint64_t pos, float mass);
-
-    template <class Sampler>
-    friend void exchange(Sampler &sampler, uint64_t p1, float mass1, uint64_t p2, float mass2);
 };
 
-class PatternGibbsSampler
+class PatternGibbsSampler : public GibbsSampler<PatternGibbsSampler, RowMatrix, ColMatrix>
 {
 private:
 
+    friend GibbsSampler;
     friend AmplitudeGibbsSampler;
-    friend GapsStatistics;
-
-    RowMatrix mPMatrix;
-    ColMatrix *mAMatrix;
-    ColMatrix mDMatrix;
-    ColMatrix mSMatrix;
-    ColMatrix mAPMatrix;
-
-    ProposalQueue mQueue;
-    AtomicDomain mDomain;
-
-    float mLambda;
-    float mMaxGibbsMass;
-    float mAnnealingTemp;
-    
-    unsigned mNumRows;
-    unsigned mNumCols;
-    unsigned mBinSize;
 
     unsigned getRow(uint64_t pos) const;
     unsigned getCol(uint64_t pos) const;
@@ -116,128 +111,196 @@ public:
         float maxGibbsMass=0.f);
 
     void sync(AmplitudeGibbsSampler &sampler);
-    float nAtoms() const;
-    void setAnnealingTemp(float temp);
-    float chi2() const;
-
-    template <class Sampler>
-    friend void update(Sampler&, unsigned);
-
-    template <class Sampler>
-    friend void processProposal(Sampler &sampler, const AtomicProposal &prop);
-
-    template <class Sampler>
-    friend void birth(Sampler &sampler, uint64_t pos);
-
-    template <class Sampler>
-    friend void death(Sampler &sampler, uint64_t pos, float mass);
-
-    template <class Sampler>
-    friend void exchange(Sampler &sampler, uint64_t p1, float mass1, uint64_t p2, float mass2);
 };
 
-template <class Sampler>
-void update(Sampler &sampler, unsigned nSteps)
+/******************* IMPLEMENTATION OF TEMPLATED FUNCTIONS *******************/
+
+template <class T, class MatA, class MatB>
+GibbsSampler<T, MatA, MatB>::GibbsSampler(const Rcpp::NumericMatrix &D,
+const Rcpp::NumericMatrix &S, unsigned nrow, unsigned ncol, float alpha)
+    :
+mMatrix(nrow, ncol), mOtherMatrix(NULL), mDMatrix(D), mSMatrix(S),
+mAPMatrix(D.nrow(), D.ncol()), mQueue(nrow * ncol, alpha),
+mAnnealingTemp(0.f), mNumRows(nrow), mNumCols(ncol)
+{
+    mBinSize = std::numeric_limits<uint64_t>::max() / static_cast<uint64_t>(mNumRows * mNumCols);
+    uint64_t remain = std::numeric_limits<uint64_t>::max() % (mNumRows * mNumCols);
+    mQueue.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
+}
+
+template <class T, class MatA, class MatB>
+T* GibbsSampler<T, MatA, MatB>::impl()
+{
+    return static_cast<T*>(this);
+}
+
+template <class T, class MatA, class MatB>
+void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps)
 {
     unsigned n = 0;
     while (n < nSteps)
     {
         /*
-        assert(nSteps - (queue.size() + n) >= 0);
+        GAPS_ASSERT(nSteps - (queue.size() + n) >= 0);
         mQueue.populate(mDomain, nSteps - (mQueue.size() + n))
 
         // would making this a mulitple of nCores be better?
         unsigned nJobs = mQueue.size();
         for (unsigned i = 0; i < nJobs; ++i) // can be run in parallel
         {
-            processProposal(mDomain, mQueue[i]);
+            processProposal(mQueue[i]);
         }
         mQueue.clear();
         n += nJobs;
-        assert(n <= nSteps);
+        GAPS_ASSERT(n <= nSteps);
         */
-        sampler.mQueue.populate(sampler.mDomain, 1);
-        GAPS_ASSERT(sampler.mQueue.size() == 1);
-        processProposal(sampler, sampler.mQueue[0]);
-        sampler.mQueue.clear();
+        mQueue.populate(mDomain, 1);
+        GAPS_ASSERT(mQueue.size() == 1);
+        processProposal(mQueue[0]);
+        mQueue.clear(1);
+        GAPS_ASSERT(mQueue.size() == 0);
         n++;
     }
 }
 
-template <class Sampler>
-void processProposal(Sampler &sampler, const AtomicProposal &prop)
+template <class T, class MatA, class MatB>
+void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
 {
     GAPS_ASSERT(prop.type == 'B' || prop.type == 'D' || prop.type == 'M' || prop.type == 'E');
     switch (prop.type)
     {
-        case 'B': birth(sampler, prop.pos1); break;
-        case 'D': death(sampler, prop.pos1, prop.mass1); break;
-        //case 'M': move(prop.pos1, prop.mass1, prop.pos2); break;
-        case 'E': exchange(sampler, prop.pos1, prop.mass1, prop.pos2, prop.mass2); break;
+        case 'B': birth(prop.pos1); break;
+        case 'D': death(prop.pos1, prop.mass1); break;
+        case 'M': move(prop.pos1, prop.mass1, prop.pos2); break;
+        case 'E': exchange(prop.pos1, prop.mass1, prop.pos2, prop.mass2); break;
     }
 }
 
-template <class Sampler>
-void birth(Sampler &sampler, uint64_t pos)
+template <class T, class MatA, class MatB>
+void GibbsSampler<T, MatA, MatB>::birth(uint64_t pos)
 {
-    unsigned row = sampler.getRow(pos);
-    unsigned col = sampler.getCol(pos);
-    float mass = gaps::random::exponential(sampler.mLambda);
-    sampler.mDomain.insert(pos, mass);
+    unsigned row = impl()->getRow(pos);
+    unsigned col = impl()->getCol(pos);
+    float mass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col)
+        : gaps::random::exponential(mLambda);
+
+    mDomain.insert(pos, mass);
+    mMatrix(row, col) += mass;
+    //impl()->updateAPMatrix(row, col, mass);
 }
 
-template <class Sampler>
-void death(Sampler &sampler, uint64_t pos, float mass)
+template <class T, class MatA, class MatB>
+void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass)
 {
-    sampler.mQueue.rejectDeath();
+    mQueue.rejectDeath();
 }
 
-template <class Sampler>
-void exchange(Sampler &sampler, uint64_t p1, float mass1, uint64_t p2, float mass2)
+template <class T, class MatA, class MatB>
+void GibbsSampler<T, MatA, MatB>::move(uint64_t src, float mass, uint64_t dest)
 {
-    sampler.mQueue.rejectDeath();
+    unsigned r1 = impl()->getRow(src);
+    unsigned c1 = impl()->getCol(src);
+    unsigned r2 = impl()->getRow(dest);
+    unsigned c2 = impl()->getCol(dest);
+    if (r1 == r2 && c1 == c2)
+    {
+        mDomain.erase(src);
+        mDomain.insert(dest, mass);
+    }
+    else
+    {
+/*
+        if (deltaLL * mAnnealingTemp >= std::log(gaps::random::uniform()))
+        {
+            mDomain.deleteAtom(p1);
+            mDomain.addAtom(p2, mass);
+            mMatrix(r1, c1) += -mass;
+            mMatrix(r2, c2) += mass;
+            impl()->updateAPMatrix(r1, c1, -mass);
+            impl()->updateAPMatrix(r2, c2, mass);
+        }
+*/
+    }
 }
 
-//  template <class T, class MatA, class MatB>
-//  void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
-//  {
-//      GAPS_ASSERT(prop.type == 'B' || prop.type == 'D' || prop.type == 'M' || prop.type == 'E');
-//      switch (prop.type)
-//      {
-//          case 'B': birth(prop.pos1); break;
-//          //case 'D': death(prop.pos1, prop.mass1); break;
-//          //case 'M': move(prop.pos1, prop.mass1, prop.pos2); break;
-//          //case 'E': exchange(prop.pos1, prop.mass1, prop.pos2, prop.mass2); break;
-//      }
-//  }
-//  
-//  template <class T, class MatA, class MatB>
-//  void GibbsSampler<T, MatA, MatB>::birth(uint64_t pos)
-//  {
-//      //GAPS_ASSERT(impl());
-//      //unsigned row = impl()->getRow(pos);
-//      //unsigned col = impl()->getCol(pos);
-//      //float mass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col)
-//      //    : gaps::random::exponential(mLambda);
-//      /*float mass = gaps::random::exponential(mLambda);
-//  
-//      mDomain.insert(pos, mass);
-//      mMatrix(row, col) += mass;
-//      impl()->updateAPMatrix(row, col, mass);*/
-//  }
-//  
-//  template <class T, class MatA, class MatB>
-//  void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass)
-//  {
-//      /*unsigned row = impl()->getRow(pos);
-//      unsigned col = impl()->getCol(pos);
-//      mMatrix(row, col) += -mass;
-//      impl()->updateAPMatrix(row, col, -mass);
-//      mDomain.erase(pos);
-//      mQueue.acceptDeath();
-//  
-//      float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col)
-//      : mass;
+template <class T, class MatA, class MatB>
+void GibbsSampler<T, MatA, MatB>::exchange(uint64_t p1, float mass1, uint64_t p2, float mass2)
+{
+    mQueue.rejectDeath();
+}
+
+template <class T, class MatA, class MatB>
+float GibbsSampler<T, MatA, MatB>::gibbsMass(unsigned row, unsigned col)
+{        
+    //AlphaParameters alpha = impl()->alphaParameters(row, col);
+    AlphaParameters alpha(10.f, 10.f);
+    alpha.s *= mAnnealingTemp / 2.f;
+    alpha.su *= mAnnealingTemp / 2.f;
+    float mean  = (2.f * alpha.su - mLambda) / (2.f * alpha.s);
+    float sd = 1.f / std::sqrt(2.f * alpha.s);
+
+    float plower = gaps::random::p_norm(0.f, mean, sd);
+
+    //float newMass = death ? mass : 0.f;
+    float newMass = 0.f;
+    if (plower < 1.f && alpha.s > 0.00001f)
+    {
+        newMass = gaps::random::inverseNormSample(plower, 1.f, mean, sd);
+    }
+    return std::max(0.f, std::min(newMass, mMaxGibbsMass));
+}
+
+template <class T, class MatA, class MatB>
+void GibbsSampler<T, MatA, MatB>::setAnnealingTemp(float temp)
+{
+    mAnnealingTemp = temp;
+}
+  
+template <class T, class MatA, class MatB>
+float GibbsSampler<T, MatA, MatB>::chi2() const
+{   
+    return 2.f * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);
+}
+  
+template <class T, class MatA, class MatB>
+float GibbsSampler<T, MatA, MatB>::nAtoms() const
+{   
+    return mDomain.size();
+}
+
+
+//
+
+//
+
+//
+////  template <class T, class MatA, class MatB>
+////  void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
+////  {
+////      GAPS_ASSERT(prop.type == 'B' || prop.type == 'D' || prop.type == 'M' || prop.type == 'E');
+////      switch (prop.type)
+////      {
+////          case 'B': birth(prop.pos1); break;
+////          //case 'D': death(prop.pos1, prop.mass1); break;
+////          //case 'M': move(prop.pos1, prop.mass1, prop.pos2); break;
+////          //case 'E': exchange(prop.pos1, prop.mass1, prop.pos2, prop.mass2); break;
+////      }
+////  }
+////  
+//
+////  
+////  template <class T, class MatA, class MatB>
+////  void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass)
+////  {
+////      /*unsigned row = impl()->getRow(pos);
+////      unsigned col = impl()->getCol(pos);
+////      mMatrix(row, col) += -mass;
+////      impl()->updateAPMatrix(row, col, -mass);
+////      mDomain.erase(pos);
+////      mQueue.acceptDeath();
+////  
+////      float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col)
+////      : mass;
 //      float deltaLL = impl()->computeDeltaLL(row, col, newMass);
 //  
 //      if (deltaLL * mAnnealingTemp >= std::log(gaps::random::uniform()))
@@ -326,38 +389,6 @@ void exchange(Sampler &sampler, uint64_t p1, float mass1, uint64_t p2, float mas
 //      }
 //      return std::max(0.f, std::min(newMax, mMaxGibbsMass));
 //  */
-//  }
-//  
-//  template <class T, class MatA, class MatB>
-//  void GibbsSampler<T, MatA, MatB>::syncAP(const MatA &otherAP)
-//  {   
-//      mAPMatrix = otherAP;
-//  }
-//  
-//  template <class T, class MatA, class MatB>
-//  const MatB& GibbsSampler<T, MatA, MatB>::APMatrix() const
-//  {   
-//      return mAPMatrix;
-//  }
-//  
-//  template <class T, class MatA, class MatB>
-//  void GibbsSampler<T, MatA, MatB>::setAnnealingTemp(float temp)
-//  {
-//      mAnnealingTemp = temp;
-//  }
-//  
-//  template <class Sampler>
-//  float chi2(const Sampler &sampler)
-//  {   
-//      //return 2.f * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);
-//      return 0.f;
-//  }
-//  
-//  template <class T, class MatA, class MatB>
-//  float GibbsSampler<T, MatA, MatB>::nAtoms() const
-//  {   
-//      //return 2.f * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);
-//      return 0.f;
 //  }
 
 #endif
