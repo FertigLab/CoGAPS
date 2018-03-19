@@ -2,15 +2,8 @@
 
 AmplitudeGibbsSampler::AmplitudeGibbsSampler(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
-    :
-mAMatrix(D.nrow(), nFactor), mDMatrix(D), mSMatrix(S),
-mAPMatrix(D.nrow(), D.ncol()), mQueue(D.nrow() * nFactor, alpha),
-mAnnealingTemp(0.f), mNumRows(D.nrow()), mNumCols(nFactor)
+    : GibbsSampler(D, S, D.nrow(), nFactor, alpha)
 {
-    mBinSize = std::numeric_limits<uint64_t>::max() / (mNumRows * mNumCols);
-    uint64_t remain = std::numeric_limits<uint64_t>::max() % (mNumRows * mNumCols);
-    mQueue.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
-
     float meanD = gaps::algo::mean(mDMatrix);
     mLambda = alpha * std::sqrt(nFactor / meanD);
     mMaxGibbsMass = maxGibbsMass / mLambda;
@@ -18,65 +11,47 @@ mAnnealingTemp(0.f), mNumRows(D.nrow()), mNumCols(nFactor)
 
 unsigned AmplitudeGibbsSampler::getRow(uint64_t pos) const
 {
-    return pos / (mBinSize * mNumCols);
+    unsigned row = pos / (mBinSize * mNumCols);
+    GAPS_ASSERT(row >= 0 && row < mNumRows);
+    return row;
 }
 
 unsigned AmplitudeGibbsSampler::getCol(uint64_t pos) const
 {
-    return (pos / mBinSize) % mNumCols;
+    unsigned col = (pos / mBinSize) % mNumCols;
+    GAPS_ASSERT(col >= 0 && col < mNumCols);
+    return col;
 }
 
 bool AmplitudeGibbsSampler::canUseGibbs(unsigned row, unsigned col) const
 {
-    return !gaps::algo::isRowZero(*mPMatrix, col);
+    return !gaps::algo::isRowZero(*mOtherMatrix, col);
 }
 
 bool AmplitudeGibbsSampler::canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const
 {
-    return !gaps::algo::isRowZero(*mPMatrix, c1)
-        && !gaps::algo::isRowZero(*mPMatrix, c2);
+    return !gaps::algo::isRowZero(*mOtherMatrix, c1)
+        && !gaps::algo::isRowZero(*mOtherMatrix, c2);
+}
+
+void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
+{
+    mOtherMatrix = &sampler.mMatrix;
+    mAPMatrix = sampler.mAPMatrix;
 }
 
 void AmplitudeGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
 {
     for (unsigned j = 0; j < mAPMatrix.nCol(); ++j)
     {
-        mAPMatrix(row,j) += delta * (*mPMatrix)(j,col);
+        mAPMatrix(row,j) += delta * (*mOtherMatrix)(j,col);
     }
-}
-
-void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
-{
-    mPMatrix = &(sampler.mPMatrix);
-    mAPMatrix = sampler.mAPMatrix;
-}
-
-float AmplitudeGibbsSampler::nAtoms() const
-{
-    return mDomain.size();
-}
-
-void AmplitudeGibbsSampler::setAnnealingTemp(float temp)
-{
-    mAnnealingTemp = temp;
-}
-
-float AmplitudeGibbsSampler::chi2() const
-{
-    return 2.f * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);   
 }
 
 PatternGibbsSampler::PatternGibbsSampler(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
-    :
-mPMatrix(nFactor, D.ncol()), mDMatrix(D), mSMatrix(S),
-mAPMatrix(D.nrow(), D.ncol()), mQueue(nFactor * D.ncol(), alpha),
-mAnnealingTemp(0.f), mNumRows(nFactor), mNumCols(D.nrow())
+    : GibbsSampler(D, S, nFactor, D.ncol(), alpha)
 {
-    mBinSize = std::numeric_limits<uint64_t>::max() / (mNumRows * mNumCols);
-    uint64_t remain = std::numeric_limits<uint64_t>::max() % (mNumRows * mNumCols);
-    mQueue.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
-
     float meanD = gaps::algo::mean(mDMatrix);
     mLambda = alpha * std::sqrt(nFactor / meanD);
     mMaxGibbsMass = maxGibbsMass / mLambda;
@@ -84,50 +59,39 @@ mAnnealingTemp(0.f), mNumRows(nFactor), mNumCols(D.nrow())
 
 unsigned PatternGibbsSampler::getRow(uint64_t pos) const
 {
-    return (pos / mBinSize) % mNumRows;
+    unsigned row = (pos / mBinSize) % mNumRows;
+    GAPS_ASSERT(row >= 0 && row < mNumRows);
+    return row;
 }
 
 unsigned PatternGibbsSampler::getCol(uint64_t pos) const
 {
-    return pos / (mBinSize * mNumRows);
+    unsigned col = pos / (mBinSize * mNumRows);
+    GAPS_ASSERT(col >= 0 && col < mNumCols);
+    return col;
 }
 
 bool PatternGibbsSampler::canUseGibbs(unsigned row, unsigned col) const
 {
-    return !gaps::algo::isColZero(*mAMatrix, row);
+    return !gaps::algo::isColZero(*mOtherMatrix, row);
 }
 
 bool PatternGibbsSampler::canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const
 {
-    return !gaps::algo::isColZero(*mAMatrix, r1)
-        && !gaps::algo::isColZero(*mAMatrix, r2);
+    return !gaps::algo::isColZero(*mOtherMatrix, r1)
+        && !gaps::algo::isColZero(*mOtherMatrix, r2);
+}
+
+void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)
+{
+    mOtherMatrix = &sampler.mMatrix;
+    mAPMatrix = sampler.mAPMatrix;
 }
 
 void PatternGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
 {
     for (unsigned i = 0; i < mAPMatrix.nRow(); ++i)
     {
-        mAPMatrix(i,col) += delta * (*mAMatrix)(i,row);
+        mAPMatrix(i,col) += delta * (*mOtherMatrix)(i,row);
     }
-}
-
-void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)
-{
-    mAMatrix = &(sampler.mAMatrix);
-    mAPMatrix = sampler.mAPMatrix;
-}
-
-float PatternGibbsSampler::nAtoms() const
-{
-    return mDomain.size();
-}
-
-void PatternGibbsSampler::setAnnealingTemp(float temp)
-{
-    mAnnealingTemp = temp;
-}
-
-float PatternGibbsSampler::chi2() const
-{
-    return 2.f * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);   
 }

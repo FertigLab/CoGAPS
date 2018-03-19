@@ -13,16 +13,19 @@ private:
     RowMatrix mPMeanMatrix;
     RowMatrix mPStdMatrix;
     
-    unsigned mStatUpdates;    
+    unsigned mStatUpdates;
+    unsigned mNumPatterns;
 
 public:
 
     GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor);
 
-    Rcpp::NumericMatrix AMean();
-    Rcpp::NumericMatrix AStd();
-    Rcpp::NumericMatrix PMean();
-    Rcpp::NumericMatrix PStd();
+    Rcpp::NumericMatrix AMean() const;
+    Rcpp::NumericMatrix AStd() const;
+    Rcpp::NumericMatrix PMean() const;
+    Rcpp::NumericMatrix PStd() const;
+
+    float meanChiSq() const;
 
     void update(const AmplitudeGibbsSampler &ASampler,
         const PatternGibbsSampler &PSampler);

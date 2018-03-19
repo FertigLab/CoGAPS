@@ -5,8 +5,8 @@ cogaps_cpp <- function(D, S, nFactor, nEquil, nEquilCool, nSample, nOutputs, nSn
     .Call('_CoGAPS_cogaps_cpp', PACKAGE = 'CoGAPS', D, S, nFactor, nEquil, nEquilCool, nSample, nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages, singleCellRNASeq, whichMatrixFixed, FP, checkpointInterval, cptFile, pumpThreshold, nPumpSamples)
 }
 
-cogapsFromCheckpoint_cpp <- function(D, S, fileName, cptFile) {
-    .Call('_CoGAPS_cogapsFromCheckpoint_cpp', PACKAGE = 'CoGAPS', D, S, fileName, cptFile)
+cogapsFromCheckpoint_cpp <- function(D, S, nFactor, nEquil, nSample, fileName, cptFile) {
+    .Call('_CoGAPS_cogapsFromCheckpoint_cpp', PACKAGE = 'CoGAPS', D, S, nFactor, nEquil, nSample, fileName, cptFile)
 }
 
 displayBuildReport_cpp <- function() {

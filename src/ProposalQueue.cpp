@@ -7,10 +7,8 @@ const double atomicSize = static_cast<double>(atomicEnd);
 
 void ProposalQueue::populate(const AtomicDomain &domain, unsigned limit)
 {
-    //unsigned nIter = 0;
-    //while (nIter++ < limit && makeProposal(domain));
-    GAPS_ASSERT(makeProposal(domain));
-    //Rprintf("%c\n", mQueue[0].type);
+    unsigned nIter = 0;
+    while (nIter++ < limit && makeProposal(domain));
 }
 
 void ProposalQueue::setNumBins(unsigned nBins)
@@ -33,14 +31,12 @@ void ProposalQueue::setAlpha(float alpha)
     mAlpha = alpha;
 }
 
-//void ProposalQueue::clear(unsigned n)
-void ProposalQueue::clear()
+void ProposalQueue::clear(unsigned n)
 {
-    //mQueue.erase(mQueue.end() - n, mQueue.end());
-    //assert(mMaxAtoms - mMinAtoms <= mQueue.size());
-    mQueue.clear();
-    mUsedIndices.clear();
-    mUsedPositions.clear();
+    mQueue.erase(mQueue.end() - n, mQueue.end());
+    mUsedIndices.erase(mUsedIndices.end() - n, mUsedIndices.end());
+    mUsedPositions.erase(mUsedPositions.end() - n, mUsedPositions.end());
+    GAPS_ASSERT(mMaxAtoms - mMinAtoms <= mQueue.size());
 }
 
 unsigned ProposalQueue::size() const
