@@ -14,7 +14,7 @@
 #' data(SimpSim)
 #' createscCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
 #' @export
-createscCoGAPSSets <- function(D, S, nSets, simulationName,samplingRatio=NULL,path="")
+createscCoGAPSSets <- function(D, nSets, simulationName,samplingRatio=NULL,path="")
 {
     # check gene names
     if (length(unique(colnames(D))) != length(colnames(D)))
@@ -41,7 +41,10 @@ createscCoGAPSSets <- function(D, S, nSets, simulationName,samplingRatio=NULL,pa
 
         # partition data
         sampleD <- D[,cellset]
-        sampleS <- S[,cellset]
+        #log transform 
+        sampleD <- log2(sampleD+1)
+        # generate S
+        sampleS <- pmax(.1*sampleD, .1)
         save(sampleD, sampleS, file=paste0(path,simulationName, "_partition_", set,".RData"));
     }
     return(simulationName)
