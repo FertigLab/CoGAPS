@@ -4,6 +4,7 @@
 #' @param nSets number of parallel sets used to generate \code{Ptot}
 #' @param cnt  number of branches at which to cut dendrogram
 #' @param minNS minimum of individual set contributions a cluster must contain
+#' @param maxNS max of individual set contributions a cluster must contain. default is nSets+minNS
 #' @param cluster.method the agglomeration method to be used for clustering
 #' @param ignore.NA logical indicating whether or not to ignore NAs from potential over dimensionalization. Default is FALSE.
 #' @param bySet logical indicating whether to return list of matched set solutions from \code{Ptot}
@@ -12,17 +13,18 @@
 #' concensus pattern is also returned.
 #' @seealso \code{\link{agnes}}
 #' @export
-patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS, 
-cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
-{
-    if (!is.null(minNS))
-        minNS=nSets/2
+patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS=NULL, maxNS=NULL, 
+    cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...){
+
+    if (!is.null(minNS)){minNS=nSets/2}
+    if (!is.null(maxNS)){maxNS=nSets+minNS}
 
     if (ignore.NA==FALSE & anyNA(Ptot))
         warning('Non-sparse matrixes produced. Reducing the number of patterns asked for and rerun.')
     if (ignore.NA==TRUE)
         Ptot <- Ptot[complete.cases(Ptot),]
 
+    corcut<-function(Ptot,minNS,cnt,cluster.method){
     # corr dist
     corr.dist=cor(t(Ptot))
     corr.dist=1-corr.dist
@@ -32,7 +34,6 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
     cut=cutree(as.hclust(clust),k=cnt)
     #save.image(file=paste("CoGAPS.",nP,"P.",nS,"Set.CorrClustCut",cnt,".RData"))
 
-    #drop n<4 and get weighted Avg
     cls=sort(unique(cut))
     cMNs=matrix(nrow=cnt,ncol=dim(Ptot)[2])
     rownames(cMNs)=cls
@@ -40,91 +41,52 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
 
     RtoMeanPattern <- list()
     PByClust <- list()
-    for(i in cls)
-    {
-        if (is.null(dim(Ptot[cut == i, ]))==TRUE)
-        {
-            cMNs[i,] <- Ptot[cut == i, ]
-            RtoMeanPattern[[i]] <- rep(1,length(Ptot[cut == i, ]))
-            PByClust[[i]] <- t(as.matrix(Ptot[cut == i, ]))
-        }
-        else
-        {
+    for(i in cls){
+        if (is.null(dim(Ptot[cut == i, ]))==TRUE){
+            next
+        } else if(dim(Ptot[cut == i, ])[1]< minNS){
+            next
+        } else {
             cMNs[i,]=colMeans(Ptot[cut==i,])
             PByClust[[i]] <- Ptot[cut==i,]
             nIN=sum(cut==i)
             RtoMeanPattern[[i]] <- sapply(1:nIN,function(j) {round(cor(x=Ptot[cut==i,][j,],y=cMNs[i,]),3)})
         }
     }
+    return(list("RtoMeanPattern"=RtoMeanPattern,"PByClust"=PByClust))
+    }    
 
-    #drop n<minNS 
-    PByClustDrop <- list()
-    RtoMPDrop <- list()
-    for(i in cls)
-    {
-        if (is.null(dim(PByClust[[i]])) == TRUE)
-            next
-        if (dim(PByClust[[i]])[1] < minNS)
-        {
-            next
-        }
-        else
-        {
-            #indx <- which(RtoMeanPattern[[i]]>.7,arr.ind = TRUE)
-            PByClustDrop <- append(PByClustDrop,list(PByClust[[i]]))
-            RtoMPDrop <- append(RtoMPDrop,list(RtoMeanPattern[[i]]))
-        }
-    }
+    cc<-corcut(Ptot,minNS,cnt,cluster.method)
 
-    ### split by corr  (build in drop if below minNS)
-    PByCDS <- list()
-    RtoMPDS <- list()
-    for (j in 1:length(PByClustDrop))
-    {
-        if (is.null(dim(PByClustDrop[[j]]))==TRUE)
-        {
-            next
-        }
-        if (dim(PByClustDrop[[j]])[1]<minNS+nSets)
-        {
-            PByCDS <- append(PByCDS,PByClustDrop[j])
-            RtoMPDS <- append(RtoMPDS,RtoMPDrop[j])
-        }
-        if (dim(PByClustDrop[[j]])[1]>=minNS+nSets)
-        {
-            corr.distPBCD=cor(t(PByClustDrop[[j]]))
-            corr.distPBCD=1-corr.distPBCD
-            clustPBCD=agnes(x=corr.distPBCD,diss=TRUE,method="complete")
-            cutPBCD=cutree(as.hclust(clustPBCD),k=2)
-            g1 <- PByClustDrop[[j]][cutPBCD==1,]
-            PByCDS <- append(PByCDS,list(g1))
-            RtoMPDS <- append(RtoMPDS,list(sapply(1:dim(g1)[1],function(z) round(cor(x=g1[z,],y=colMeans(PByClustDrop[[j]][cutPBCD==1,])),3))))
-            g2 <- PByClustDrop[[j]][cutPBCD==2,]
-            if (is.null(dim(g2)[1])==FALSE)
-            {
-                PByCDS <- append(PByCDS,list(g2))
-                RtoMPDS <- append(RtoMPDS,list(sapply(1:dim(g2)[1],function(z) round(cor(x=g2[z,],y=colMeans(PByClustDrop[[j]][cutPBCD==2,])),3))))
+    ### split by maxNS
+    indx<-unlist(sapply(cc$PByClust,function(x) which(dim(x)[1]>maxNS)))
+    while(length(indx)>0){
+            icc<-corcut(cc$PByClust[[indx[1]]],minNS,2,cluster.method)
+            cc$PByClust[[indx[1]]]<-icc[[2]][[2]]
+            cc$RtoMeanPattern[[indx[1]]]<-icc[[1]][[2]]
+            if(is.null(icc[[2]][[1]])){ 
+                indx<-unlist(sapply(cc$PByClust,function(x) which(dim(x)[1]>maxNS)))
+                next
+            } else {
+                cc$PByClust<-append(cc$PByClust,icc[[2]][1])
+                cc$RtoMeanPattern<-append(cc$PByClust,icc[[1]][[1]])
+                indx<-unlist(sapply(cc$PByClust,function(x) which(dim(x)[1]>maxNS)))
             }
-        }
     }
 
-    #weighted.mean(PByClustDrop[[1]],RtoMPDrop[[1]])
-    PByCDSWavg<- t(sapply(1:length(PByCDS),function(z) apply(PByCDS[[z]],2,function(x) weighted.mean(x,(RtoMPDS[[z]])^3))))
-    rownames(PByCDSWavg) <- lapply(1:length(PByCDS),function(x) paste("Pattern",x))
+    #weighted.mean
+    PByCDSWavg<- t(sapply(1:length(cc$PByClust),function(z) apply(cc$PByClust[[z]],2,function(x) 
+        weighted.mean(x,(cc$RtoMeanPattern[[z]])^3))))
+    rownames(PByCDSWavg) <- lapply(1:length(cc$PByClust),function(x) paste("Pattern",x))
 
     #scale ps
     Pmax <- apply(PByCDSWavg,1,max)
     PByCDSWavgScaled <- t(sapply(1:dim(PByCDSWavg)[1],function(x) PByCDSWavg[x,]/Pmax[x]))
     rownames(PByCDSWavgScaled) <- rownames(PByCDSWavg)
 
-    if(bySet)
-    {
-        # return by set and final
-        PBySet<-PByCDS
-        return(list("consenusPatterns"=PByCDSWavgScaled,"PBySet"=PBySet,"RtoMPDS"=RtoMPDS))
-    }
-    else
-    {
-        return(PByCDSWavgScaled)
+    if(bySet){
+        return(list("consenusPatterns"=PByCDSWavgScaled,"PBySet"=cc))
+    } else {
+        return("consenusPatterns"=PByCDSWavgScaled)
     }
 }
