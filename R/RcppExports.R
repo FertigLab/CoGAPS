@@ -17,8 +17,8 @@ cogapsTest <- function(DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNum
     .Call('_CoGAPS_cogapsTest', PACKAGE = 'CoGAPS', DFrame, SFrame, ABinsFrame, PBinsFrame, Config, ConfigNums)
 }
 
-cogapsTrans <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, theta, thin = 1L, prior = "normal", proposal = "normal", epsilon_mcmc = FALSE, delta = 10.0, epsilon = 1.0, epsilon_prior = 3.0, prior_mean = 0.0, prior_sd = 10.0, fixedproposal = FALSE) {
-    .Call('_CoGAPS_cogapsTrans', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, theta, thin, prior, proposal, epsilon_mcmc, delta, epsilon, epsilon_prior, prior_mean, prior_sd, fixedproposal)
+cogapsTrans <- function(DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, theta, thin = 1L, prior = "normal", proposal = "normal", epsilon_mcmc = FALSE, delta = 10.0, epsilon = 1.0, epsilon_prior = 3.0, prior_mean = 0.0, prior_sd = 10.0, fixedproposal = FALSE, weightA = TRUE) {
+    .Call('_CoGAPS_cogapsTrans', PACKAGE = 'CoGAPS', DFrame, SFrame, FixedPatt, ABinsFrame, PBinsFrame, Config, ConfigNums, time_of_sample, condition, theta, thin, prior, proposal, epsilon_mcmc, delta, epsilon, epsilon_prior, prior_mean, prior_sd, fixedproposal, weightA)
 }
 
 FixedMatrix <- function(D, A, P, T, nSample, delta, epsilon, prior_mean, prior_sd, fixedproposal) {

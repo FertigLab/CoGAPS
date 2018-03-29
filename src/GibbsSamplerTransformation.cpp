@@ -189,12 +189,12 @@ void GibbsSamplerTransformation::abc_mcmc(int burn, int iter, int thin, double t
 
         // check whether growth was accepted
         if (_growth.accepted) {
-            Rcpp::Rcout << "Accepted growth proposal\n";
+            //Rcpp::Rcout << "Accepted growth proposal\n";
         }
 
         // update the A matrix if `weightA`
         if (weightA) {
-            Rcpp::Rcout << "weight: " << calcWeight() << "\n";
+            //Rcpp::Rcout << "weight: " << calcWeight() << "\n";
             weightAAtomicColumn(calcWeight());
             weightAColumn(calcWeight());
         }
