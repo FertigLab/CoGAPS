@@ -75,20 +75,3 @@ theta <- results$theta
 diffs <- theta[1:(length(theta)-1)] - theta[2:length(theta)]
 print(mean(abs(diffs) >= 1e-16))
 mean(theta[1001:2000])
-
-#head(results)
-#accepted <- results[, 3] < results[, 4]
-#quantile(results[accepted, 1], c(0.025, 0.5, 0.975))
-#mean(accepted)
-
-## test with MH proposal
-#results <- FixedMatrix(D, A, P, T,
-                       #iters, delta, epsilon,
-                       #prior.mean, prior.sd,
-                       #FALSE)
-
-#head(results)
-#accepted <- results[, 3] < results[, 4]
-#quantile(results[accepted, 1], c(0.025, 0.5, 0.975))
-#mean(accepted)
-
