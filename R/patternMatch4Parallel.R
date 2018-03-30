@@ -16,8 +16,8 @@
 patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS=NULL, maxNS=NULL, 
     cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...){
 
-    if (!is.null(minNS)){minNS=nSets/2}
-    if (!is.null(maxNS)){maxNS=nSets+minNS}
+    if (is.null(minNS)){minNS=ceiling(nSets/2)}
+    if (is.null(maxNS)){maxNS=nSets+minNS}
 
     if (ignore.NA==FALSE & anyNA(Ptot))
         warning('Non-sparse matrixes produced. Reducing the number of patterns asked for and rerun.')
@@ -53,6 +53,8 @@ patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS=NULL, maxNS=NULL,
             RtoMeanPattern[[i]] <- sapply(1:nIN,function(j) {round(cor(x=Ptot[cut==i,][j,],y=cMNs[i,]),3)})
         }
     }
+    PByClust[sapply(PByClust,is.null)]<-NULL
+    RtoMeanPattern[sapply(RtoMeanPattern,is.null)]<-NULL
     return(list("RtoMeanPattern"=RtoMeanPattern,"PByClust"=PByClust))
     }    
 
@@ -64,14 +66,11 @@ patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS=NULL, maxNS=NULL,
             icc<-corcut(cc$PByClust[[indx[1]]],minNS,2,cluster.method)
             cc$PByClust[[indx[1]]]<-icc[[2]][[1]]
             cc$RtoMeanPattern[[indx[1]]]<-icc[[1]][[1]]
-            if(is.null(icc[[2]][[2]])){ 
-                indx<-which(unlist(lapply(cc$PByClust,function(x) dim(x)[1]>maxNS)))
-                next
-            } else {
+            if(length(icc[[2]])>1){
                 cc$PByClust<-append(cc$PByClust,icc[[2]][2])
-                cc$RtoMeanPattern<-append(cc$PByClust,icc[[1]][[2]])
-                indx<-which(unlist(lapply(cc$PByClust,function(x) dim(x)[1]>maxNS)))
-            }
+                cc$RtoMeanPattern<-append(cc$RtoMeanPattern,icc[[1]][2])
+            } 
+            indx<-which(unlist(lapply(cc$PByClust,function(x) dim(x)[1]>maxNS)))
     }
 
     #weighted.mean

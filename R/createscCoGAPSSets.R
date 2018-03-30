@@ -14,7 +14,7 @@
 #' data(SimpSim)
 #' createscCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
 #' @export
-createscCoGAPSSets <- function(D, nSets, simulationName,samplingRatio=NULL,path="")
+createscCoGAPSSets <- function(D, nSets, simulationName,samplingRatio=NULL,path="",annotionObj=NULL)
 {
     # check gene names
     if (length(unique(colnames(D))) != length(colnames(D)))

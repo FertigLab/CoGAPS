@@ -4,13 +4,14 @@
 \alias{createGWCoGAPSSets}
 \title{createGWCoGAPSSets}
 \usage{
-createGWCoGAPSSets(data = D, nSets = nSets,
-  outRDA = "GenesInCoGAPSSets.Rda", keep = TRUE)
+createGWCoGAPSSets(D, S, nSets, simulationName, path = "")
 }
 \arguments{
-\item{data}{data matrix with unique rownames}
-
 \item{nSets}{number of sets for parallelization}
+
+\item{path}{character string indicating were to save resulting data objects}
+
+\item{data}{data matrix with unique rownames}
 
 \item{outRDA}{name of output file}
 
