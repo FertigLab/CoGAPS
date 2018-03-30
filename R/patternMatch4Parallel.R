@@ -59,18 +59,18 @@ patternMatch4Parallel <- function(Ptot, nSets, cnt, minNS=NULL, maxNS=NULL,
     cc<-corcut(Ptot,minNS,cnt,cluster.method)
 
     ### split by maxNS
-    indx<-unlist(sapply(cc$PByClust,function(x) which(dim(x)[1]>maxNS)))
+    indx<-which(unlist(lapply(cc$PByClust,function(x) dim(x)[1]>maxNS)))
     while(length(indx)>0){
             icc<-corcut(cc$PByClust[[indx[1]]],minNS,2,cluster.method)
-            cc$PByClust[[indx[1]]]<-icc[[2]][[2]]
-            cc$RtoMeanPattern[[indx[1]]]<-icc[[1]][[2]]
-            if(is.null(icc[[2]][[1]])){ 
-                indx<-unlist(sapply(cc$PByClust,function(x) which(dim(x)[1]>maxNS)))
+            cc$PByClust[[indx[1]]]<-icc[[2]][[1]]
+            cc$RtoMeanPattern[[indx[1]]]<-icc[[1]][[1]]
+            if(is.null(icc[[2]][[2]])){ 
+                indx<-which(unlist(lapply(cc$PByClust,function(x) dim(x)[1]>maxNS)))
                 next
             } else {
-                cc$PByClust<-append(cc$PByClust,icc[[2]][1])
-                cc$RtoMeanPattern<-append(cc$PByClust,icc[[1]][[1]])
-                indx<-unlist(sapply(cc$PByClust,function(x) which(dim(x)[1]>maxNS)))
+                cc$PByClust<-append(cc$PByClust,icc[[2]][2])
+                cc$RtoMeanPattern<-append(cc$PByClust,icc[[1]][[2]])
+                indx<-which(unlist(lapply(cc$PByClust,function(x) dim(x)[1]>maxNS)))
             }
     }
 
