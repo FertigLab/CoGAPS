@@ -4,8 +4,8 @@
 \alias{patternMatch4Parallel}
 \title{patternMatch4Parallel}
 \usage{
-patternMatch4Parallel(Ptot, nSets, cnt, minNS, cluster.method = "complete",
-  ignore.NA = FALSE, bySet = FALSE, ...)
+patternMatch4Parallel(Ptot, nSets, cnt, minNS = NULL, maxNS = NULL,
+  cluster.method = "complete", ignore.NA = FALSE, bySet = FALSE, ...)
 }
 \arguments{
 \item{Ptot}{a matrix containing the total by set estimates of Pmean output from \code{reOrderBySet}}
@@ -15,6 +15,8 @@ patternMatch4Parallel(Ptot, nSets, cnt, minNS, cluster.method = "complete",
 \item{cnt}{number of branches at which to cut dendrogram}
 
 \item{minNS}{minimum of individual set contributions a cluster must contain}
+
+\item{maxNS}{max of individual set contributions a cluster must contain. default is nSets+minNS}
 
 \item{cluster.method}{the agglomeration method to be used for clustering}
 

@@ -4,18 +4,21 @@
 \alias{createscCoGAPSSets}
 \title{Create Gene Sets for scCoGAPS}
 \usage{
-createscCoGAPSSets(D, S, nSets, simulationName, samplingRatio = NULL)
+createscCoGAPSSets(D, nSets, simulationName, samplingRatio = NULL,
+  path = "")
 }
 \arguments{
 \item{D}{data matrix}
-
-\item{S}{uncertainty matrix}
 
 \item{nSets}{number of sets to partition the data into}
 
 \item{simulationName}{name used to identify files created by this simulation}
 
 \item{samplingRatio}{vector of relative quantities to use for sampling celltypes}
+
+\item{path}{character string indicating were to save resulting data objects. default is current working dir}
+
+\item{S}{uncertainty matrix}
 
 \item{annotionObj}{vector of same length as number of columns of D}
 }
