@@ -31,12 +31,12 @@ postFixed4Parallel <- function(AP.fixed, setValues, setMatrix="P")
         #PSummary <- do.call(rbind,lapply(AP.fixed, function(x) x$Pmean))
         ASummary <- AP.fixed[[1]]$Amean
 
-        Amax <- apply(ASummary,1,max)
-        Aneu <- sweep(ASummary,1,Pmax,FUN="/")
-        Pneu <- sweep(PSummary,2,Pmax,FUN="*")
+        Amax <- apply(ASummary,2,max)
+        Aneu <- sweep(ASummary,2,Amax,FUN="/")
+        Pneu <- sweep(PSummary,1,Amax,FUN="*")
 
-        X <- apply(Aneu,1,range)
-        Y <- apply(setAs,1,range)
+        X <- apply(Aneu,2,range)
+        Y <- apply(setAs,2,range)
         colnames(X) <- colnames(Y)
         if (all.equal(X,Y,tolerance=0.01) != TRUE)
             warning("As do not match fixed values.")
