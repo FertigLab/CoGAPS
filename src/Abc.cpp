@@ -163,7 +163,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
         //theta_prime[i] = 2.91;
     }
 
-    Rcpp::Rcout << "theta: " << _theta[0] << " thetaprime " << theta_prime[0] << " ";
+    //Rcpp::Rcout << "theta: " << _theta[0] << " thetaprime " << theta_prime[0] << " ";
 
     // simulate epsilon' ~ K(epsilon|epsilon^{(t-1)})
     double eps_prime = _epsilon_propose();
@@ -207,7 +207,7 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
     rho_thresh = norm(orig, 2) + eps_prime;
 
     //Rcpp::Rcout << "D_diff " << D_diff << " rho " << rho << " rho_thresh " << rho_thresh << "\n";
-    Rcpp::Rcout << "theta: " << _theta[0] << " thetaprime " << theta_prime[0] << "\n";
+    //Rcpp::Rcout << "theta: " << _theta[0] << " thetaprime " << theta_prime[0] << "\n";
 
     // calculate acceptance probability
     //if (rho < eps_prime) {
@@ -230,10 +230,10 @@ void Abc::propose(Rcpp::NumericMatrix A, Rcpp::NumericMatrix P) {
                  _proposal(theta_prime, _theta);
         accept = Rcpp::exp(accept);
 
-        Rcpp::Rcout << "acceptance probability: " << accept << "\n";
+        //Rcpp::Rcout << "acceptance probability: " << accept << "\n";
 
         if (u[0] < accept[0]) {
-            Rcpp::Rcout << "Accepted\n";
+            //Rcpp::Rcout << "Accepted\n";
             accepted = true;
             _theta = Rcpp::clone(theta_prime);
 
