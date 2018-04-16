@@ -7,14 +7,14 @@
 #' @param nSets number of sets to partition the data into
 #' @param simulationName name used to identify files created by this simulation
 #' @param samplingRatio vector of relative quantities to use for sampling celltypes
-#' @param annotionObj vector of same length as number of columns of D 
+#' @param anotionObj vector of same length as number of columns of D 
 #' @param path character string indicating were to save resulting data objects. default is current working dir
 #' @return simulationName used to identify saved files
 #' @examples
 #' data(SimpSim)
 #' createscCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
 #' @export
-createscCoGAPSSets <- function(D, nSets, simulationName,samplingRatio=NULL,path="",annotionObj=NULL)
+createscCoGAPSSets <- function(D, nSets, simulationName,samplingRatio=NULL,path="",anotionObj=NULL)
 {
     # check gene names
     if (length(unique(colnames(D))) != length(colnames(D)))
@@ -34,8 +34,8 @@ createscCoGAPSSets <- function(D, nSets, simulationName,samplingRatio=NULL,path=
             cellset <- sample(cells, sampleSize, replace=FALSE)
             cells <- cells[!(cells %in% cellset)]
         } else {
-        if(length(unique(annotionObj))!=length(samplingRatio)){warning("Not all celltypes will be sampled from.")}
-        ct.indx<-lapply(unique(annotionObj),function(x) which(annotionObj == x))
+        if(length(unique(anotionObj))!=length(samplingRatio)){warning("Not all celltypes will be sampled from.")}
+        ct.indx<-lapply(unique(anotionObj),function(x) which(anotionObj == x))
         cellset<-sample(colnames(D)[ct.indx[[x]]], samplingRatio[x],replace=TRUE)
         }
 
