@@ -27,7 +27,6 @@ cellMatchR <- function(Atot,nSets, cnt, minNS=NULL, maxNS=NULL, ignore.NA=FALSE,
   }}
   if(ignore.NA==TRUE){Atot<-Atot[complete.cases(Atot),]}
 
-
 corcut<-function(Atot,minNS,cnt,cluster.method){
   corr.dist=cor(Atot)
   corr.dist=1-corr.dist
@@ -55,30 +54,35 @@ corcut<-function(Atot,minNS,cnt,cluster.method){
             RtoMeanPattern[[i]] <- sapply(1:nIN,function(j) {round(cor(x=Atot[,cut==i][,j],y=cMNs[,i]),3)})
         }
       }
-    PByClust[sapply(PByClust,is.null)]<-NULL
+    AByClust[sapply(AByClust,is.null)]<-NULL
     RtoMeanPattern[sapply(RtoMeanPattern,is.null)]<-NULL
     return(list("RtoMeanPattern"=RtoMeanPattern,"AByClust"=AByClust))
   }   
-
   cc<-corcut(Atot,minNS,cnt,cluster.method)
 
     ### split by maxNS
-    indx<-which(unlist(lapply(cc$PByClust,function(x) dim(x)[1]>maxNS)))
-    while(length(indx)>0){
-          icc<-corcut(cc$AByClust[[indx[1]]],minNS,2,cluster.method)
-          cc$AByClust[[indx[1]]]<-icc[[2]][[2]]
-          cc$RtoMeanPattern[[indx[1]]]<-icc[[1]][[2]]
-          if(length(icc[[2]])>1){
-                cc$AByClust<-append(cc$AByClust,icc[[2]][1])
-                cc$RtoMeanPattern<-append(cc$RtoMeanPattern,icc[[1]][1])
-          }
-      indx<-which(unlist(lapply(cc$PByClust,function(x) dim(x)[1]>maxNS)))
+    indx<-which(unlist(lapply(cc$AByClust,function(x) dim(x)[1]>maxNS)))
+    i<-1
+    while(length(indx)>0){ 
+            icc<-corcut(cc$AByClust[[indx[1]]],minNS,2,cluster.method)
+            if(length(icc[[2]])==0){
+              indx<-indx[-1]
+              next
+            } else{
+              cc$AByClust[[indx[1]]]<-icc[[2]][[1]]
+              cc$RtoMeanPattern[[indx[1]]]<-icc[[1]][[1]]
+              if(length(icc[[2]])>1){
+                cc$AByClust<-append(cc$AByClust,icc[[2]][2])
+                cc$RtoMeanPattern<-append(cc$RtoMeanPattern,icc[[1]][2])
+              } 
+              indx<-which(unlist(lapply(cc$AByClust,function(x) dim(x)[1]>maxNS)))
+            }
     }
+
 
 #weighted.mean(AByClustDrop[[1]],RtoMPDrop[[1]])
 AByCDSWavg<- t(sapply(1:length(cc$AByClust),function(z) apply(cc$AByClust[[z]],1,function(x) weighted.mean(x,(cc$RtoMeanPattern[[z]])^3))))
 rownames(AByCDSWavg) <- lapply(1:length(cc$AByClust),function(x) paste("Pattern",x))
-
 #scale As
 Amax <- apply(AByCDSWavg,1,max)
 AByCDSWavgScaled <- t(sapply(1:dim(AByCDSWavg)[1],function(x) AByCDSWavg[x,]/Amax[x]))

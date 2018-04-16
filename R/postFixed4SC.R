@@ -8,17 +8,15 @@
 postFixed4SC <- function(AP.fixed, setAs)
 {
     ASummary <- AP.fixed[[1]]$Amean
-
-
     PSummary <- do.call(cbind,lapply(AP.fixed, function(x) x$Pmean))
     Psd <- do.call(cbind,lapply(AP.fixed, function(x) x$Psd))
 
-    Pmax <- apply(PSummary,2,max)
-    Pneu <- sweep(PSummary,2,Pmax,FUN="/")
-    Aneu <- sweep(ASummary,1,Pmax,FUN="*")
+    Amax <- apply(ASummary,2,max)
+    Aneu <- sweep(ASummary,2,Amax,FUN="/")
+    Pneu <- sweep(PSummary,1,Amax,FUN="*")
 
-    X <- apply(Pneu,2,range)
-    Y <- apply(setPs,2,range)
+    X <- apply(Aneu,2,range)
+    Y <- apply(setAs,2,range)
     colnames(X) <- colnames(Y)
     if (all.equal(X,Y,tolerance=0.01) != TRUE)
         warning("Patterns do not match fixed values.")
