@@ -1,5 +1,5 @@
-#ifndef __GAPS_ATOMIC_DOMAIN_H__
-#define __GAPS_ATOMIC_DOMAIN_H__
+#ifndef __COGAPS_ATOMIC_DOMAIN_H__
+#define __COGAPS_ATOMIC_DOMAIN_H__
 
 #include "Archive.h"
 
@@ -9,16 +9,27 @@
 #include <vector>
 #include <map>
 
+class AtomicDomain;
+
+// Want the neighbors to be pointers, but can't use pointers since vector
+// is resized, shifted integers allow for 0 to be "null" and 1 to be the
+// first index. AtomicDomain is responsible for managing this correctly.
 struct Atom
 {
+//private:    
+public:
+
+    friend AtomicDomain;
+    uint64_t leftNdx; // shift these up 1, 0 == no neighbor
+    uint64_t rightNdx;
+
+public:    
+
     uint64_t pos;
     float mass;
 
-    Atom* left;
-    Atom* right;
-    
     Atom(uint64_t p, float m)
-        : pos(p), mass(m), left(NULL), right(NULL)
+        : pos(p), mass(m), leftNdx(0), rightNdx(0)
     {}
 
     bool operator==(const Atom &other) const
@@ -45,12 +56,21 @@ public:
     Atom front() const;
     Atom randomAtom() const;
     uint64_t randomFreePosition() const;
-    unsigned size() const;
+    uint64_t size() const;
+
+    Atom& left(const Atom &atom);
+    Atom& right(const Atom &atom);
+    const Atom& left(const Atom &atom) const;
+    const Atom& right(const Atom &atom) const;
+    bool hasLeft(const Atom &atom) const;
+    bool hasRight(const Atom &atom) const;
 
     // modify domain
     void insert(uint64_t pos, float mass);
-    void erase(uint64_t pos);
+    void swap(uint64_t i1, uint64_t i2);
+    void erase(uint64_t pos, bool display=false);
     void updateMass(uint64_t pos, float newMass);
+    void test(uint64_t pos) const;
 
     // serialization
     friend Archive& operator<<(Archive &ar, AtomicDomain &domain);

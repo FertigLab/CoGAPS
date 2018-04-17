@@ -29,7 +29,7 @@ const std::string &cptFile, unsigned pumpThreshold, unsigned nPumpSamples)
 
     // create internal state from parameters and run from there
     GapsRunner runner(D, S, nFactor, nEquil, nEquilCool, nSample,
-        nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
+        nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seedUsed,
         messages, singleCellRNASeq,  checkpointInterval, cptFile,
         whichMatrixFixed, FP);
     return runner.run();

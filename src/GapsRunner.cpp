@@ -40,6 +40,9 @@ mStatistics(D.nrow(), D.ncol(), nFactor)
    //    >> mPrintMessages >> mCurrentIter >> mPhase >> mSeed
    //    >> mCheckpointInterval >> mCheckpointFile >> mNumUpdatesA
    //    >> mNumUpdatesP >> mASampler >> mPSampler >> mStatistics;
+
+    mASampler.sync(mPSampler);
+    mPSampler.sync(mASampler);
 }
 
 // execute the steps of the algorithm, return list to R
@@ -95,6 +98,7 @@ void GapsRunner::runBurnPhase()
 {
     for (; mCurrentIter < mEquilIter; ++mCurrentIter)
     {
+        Rcpp::checkUserInterrupt();
         makeCheckpointIfNeeded();
         float temp = ((float)mCurrentIter + 2.f) / ((float)mEquilIter / 2.f);
         mASampler.setAnnealingTemp(std::min(1.f,temp));
@@ -109,6 +113,7 @@ void GapsRunner::runCoolPhase()
 {
     for (; mCurrentIter < mCoolIter; ++mCurrentIter)
     {
+        Rcpp::checkUserInterrupt();
         makeCheckpointIfNeeded();
         updateSampler();
     }
@@ -118,6 +123,7 @@ void GapsRunner::runSampPhase()
 {
     for (; mCurrentIter < mSampleIter; ++mCurrentIter)
     {
+        Rcpp::checkUserInterrupt();
         makeCheckpointIfNeeded();
         updateSampler();
         mStatistics.update(mASampler, mPSampler);
@@ -150,7 +156,7 @@ void GapsRunner::displayStatus(const std::string &type, unsigned nIterTotal)
 {
     if ((mCurrentIter + 1) % mNumOutputs == 0 && mPrintMessages)
     {
-        Rprintf("%s %d of %d, Atoms:%d(%d) Chi2 = %.2f\n", type.c_str(),
+        Rprintf("%s %d of %d, Atoms:%lu(%lu) Chi2 = %.2f\n", type.c_str(),
             mCurrentIter + 1, nIterTotal, mASampler.nAtoms(),
             mPSampler.nAtoms(), mASampler.chi2());
     }

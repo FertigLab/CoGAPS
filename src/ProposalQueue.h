@@ -70,6 +70,7 @@ public:
     // update min/max atoms
     void acceptDeath();
     void rejectDeath();
+    void rejectBirth();
 
     // serialization
     friend Archive& operator<<(Archive &ar, ProposalQueue &queue);

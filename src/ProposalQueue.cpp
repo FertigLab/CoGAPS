@@ -2,9 +2,6 @@
 #include "ProposalQueue.h"
 #include "Random.h"
 
-const uint64_t atomicEnd = std::numeric_limits<uint64_t>::max();
-const double atomicSize = static_cast<double>(atomicEnd);
-
 void ProposalQueue::populate(const AtomicDomain &domain, unsigned limit)
 {
     unsigned nIter = 0;
@@ -59,9 +56,16 @@ void ProposalQueue::rejectDeath()
     mMinAtoms++;
 }
 
+void ProposalQueue::rejectBirth()
+{
+    mMinAtoms--;
+    mMaxAtoms--;
+}
+
 float ProposalQueue::deleteProb(unsigned nAtoms) const
 {
-    double term1 = (atomicSize - static_cast<double>(nAtoms)) / atomicSize;
+    double size = static_cast<double>(mDomainSize);
+    double term1 = (size - static_cast<double>(nAtoms)) / size;
     double term2 = mAlpha * static_cast<double>(mNumBins) * term1;
     return static_cast<double>(nAtoms) / (static_cast<double>(nAtoms) + term2);
 }
@@ -138,8 +142,8 @@ bool ProposalQueue::death(const AtomicDomain &domain)
 bool ProposalQueue::move(const AtomicDomain &domain)
 {
     Atom a = domain.randomAtom();
-    uint64_t lbound = a.left ? a.left->pos : 0;
-    uint64_t rbound = a.right ? a.right->pos : atomicEnd - 1;
+    uint64_t lbound = domain.hasLeft(a) ? domain.left(a).pos : 0;
+    uint64_t rbound = domain.hasRight(a) ? domain.right(a).pos : mDomainSize;
 
     //for (unsigned i = 0; i < mUsedPositions.size(); ++i)
     //{
@@ -149,7 +153,7 @@ bool ProposalQueue::move(const AtomicDomain &domain)
     //    }
     //}
 
-    uint64_t newLocation = gaps::random::uniform64(lbound, rbound);
+    uint64_t newLocation = gaps::random::uniform64(lbound + 1, rbound - 1);
     //if (isInVector(mUsedIndices, a.pos / mDimensionSize) || isInVector(mUsedIndices, newLocation / mDimensionSize))
     //{
     //    return false; // matrix conflict - can't compute deltaLL
@@ -166,7 +170,9 @@ bool ProposalQueue::move(const AtomicDomain &domain)
 bool ProposalQueue::exchange(const AtomicDomain &domain)
 {
     Atom a1 = domain.randomAtom();
-
+    domain.test(a1.pos);
+    GAPS_ASSERT(a1.rightNdx <= domain.size());
+    GAPS_ASSERT(a1.leftNdx <= domain.size());
     //if (a1.right) // has neighbor
     //{
     //    for (unsigned i = 0; i < mUsedPositions.size(); ++i)
@@ -188,7 +194,13 @@ bool ProposalQueue::exchange(const AtomicDomain &domain)
     //    }
     //}
 
-    Atom a2 = a1.right ? *a1.right : domain.front();
+    Atom a2 = domain.hasRight(a1) ? domain.right(a1) : domain.front();
+    domain.test(a1.pos);
+    GAPS_ASSERT(a1.rightNdx <= domain.size());
+    GAPS_ASSERT(a1.leftNdx <= domain.size());
+    GAPS_ASSERT(a2.rightNdx <= domain.size());
+    GAPS_ASSERT(a2.leftNdx <= domain.size());
+    domain.test(a2.pos);
     //if (isInVector(mUsedIndices, a1.pos / mDimensionSize) || isInVector(mUsedIndices, a2.pos / mDimensionSize))
     //{
     //    return false; // matrix conflict - can't compute gibbs mass or deltaLL
