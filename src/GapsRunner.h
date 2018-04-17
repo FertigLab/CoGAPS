@@ -1,5 +1,5 @@
-#ifndef __GAPS_GAPS_RUNNER_H__
-#define __GAPS_GAPS_RUNNER_H__
+#ifndef __COGAPS_GAPS_RUNNER_H__
+#define __COGAPS_GAPS_RUNNER_H__
 
 #include "Archive.h"
 #include "Matrix.h"

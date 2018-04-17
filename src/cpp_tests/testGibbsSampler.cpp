@@ -7,6 +7,8 @@
 
 #define TEST_APPROX(x) Approx(x).epsilon(0.001)
 
+#if 0
+
 TEST_CASE("Test GibbsSampler.h")
 {
     gaps::random::setSeed(0);
@@ -159,5 +161,7 @@ TEST_CASE("Internal GibbsSampler Tests")
         }
     }
 }
+
+#endif
 
 #endif

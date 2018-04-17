@@ -20,57 +20,34 @@ struct AtomicProposal
     {}
 };
 
-// generate list of independent proposals
-// does order really matter? i.e. could this be a stack?
-// TODO need to cache failed proposal random numbers
-// TODO use hash tables for atom conflicts
+// generate single atomic proposal for now
 class ProposalQueue
 {
 private:
 
-    std::vector<AtomicProposal> mQueue; // not really a queue for now
-
-    std::vector<unsigned> mUsedIndices; // used rows/cols for A/P matrix
-    std::vector<unsigned> mUsedPositions; // used positions in atomic domain
-
-    uint64_t mMinAtoms;
-    uint64_t mMaxAtoms;
-
     uint64_t mNumBins;
-    uint64_t mDimensionSize; // rows of A, cols of P
     uint64_t mDomainSize;
-
     float mAlpha;
 
-    float deleteProb(unsigned nAtoms) const;
-    bool makeProposal(const AtomicDomain &domain);
-    bool birth(const AtomicDomain &domain);
-    bool death(const AtomicDomain &domain);
-    bool move(const AtomicDomain &domain);
-    bool exchange(const AtomicDomain &domain);
+    float deathProb(unsigned nAtoms) const;
+    AtomicProposal birth(const AtomicDomain &domain);
+    AtomicProposal death(const AtomicDomain &domain);
+    AtomicProposal move(const AtomicDomain &domain);
+    AtomicProposal exchange(const AtomicDomain &domain);
 
 public:
 
     ProposalQueue(unsigned nBins, float alpha)
-        : mMinAtoms(0), mMaxAtoms(0), mNumBins(nBins), mAlpha(alpha)
+        : mNumBins(nBins), mAlpha(alpha)
     {}
 
-    // set variables
+    // set parameters
     void setNumBins(unsigned nBins);
-    void setDimensionSize(unsigned nIndices);
     void setDomainSize(uint64_t size);
     void setAlpha(float alpha);
 
     // modify/access queue
-    void populate(const AtomicDomain &domain, unsigned limit);
-    void clear(unsigned n);
-    unsigned size() const;
-    const AtomicProposal& operator[](int n) const;
-
-    // update min/max atoms
-    void acceptDeath();
-    void rejectDeath();
-    void rejectBirth();
+    AtomicProposal makeProposal(const AtomicDomain &domain);
 
     // serialization
     friend Archive& operator<<(Archive &ar, ProposalQueue &queue);

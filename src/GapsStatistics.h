@@ -1,5 +1,5 @@
-#ifndef __GAPS_GAPS_STATISTICS_H__
-#define __GAPS_GAPS_STATISTICS_H__
+#ifndef __COGAPS_GAPS_STATISTICS_H__
+#define __COGAPS_GAPS_STATISTICS_H__
 
 #include "GibbsSampler.h"
 #include "Matrix.h"

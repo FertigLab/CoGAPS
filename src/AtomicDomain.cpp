@@ -84,7 +84,7 @@ void AtomicDomain::insert(uint64_t pos, float mass)
     // insert position into map
     GAPS_ASSERT(mAtomPositions.find(pos) == mAtomPositions.end());
     std::map<uint64_t, uint64_t>::iterator iter, iterLeft, iterRight;
-    iter = mAtomPositions.insert(std::pair<uint64_t, uint64_t>(pos, mAtoms.size())).first;
+    iter = mAtomPositions.insert(std::pair<uint64_t, uint64_t>(pos, size())).first;
     iterLeft = iter;
     iterRight = iter;
 
@@ -94,11 +94,13 @@ void AtomicDomain::insert(uint64_t pos, float mass)
     {
         --iterLeft;
         atom.leftNdx = iterLeft->second + 1;
+        left(atom).rightNdx = size() + 1;
     }
     if (++iter != mAtomPositions.end())
     {
         ++iterRight;
         atom.rightNdx = iterRight->second + 1;
+        right(atom).leftNdx = size() + 1;
     } 
 
     // add atom to vector
@@ -108,76 +110,56 @@ void AtomicDomain::insert(uint64_t pos, float mass)
     mUsedPositions.insert(pos);
     GAPS_ASSERT(mAtoms.size() == mAtomPositions.size());
     GAPS_ASSERT(mAtoms.size() == mUsedPositions.size());
-}
-
-void AtomicDomain::swap(uint64_t i1, uint64_t i2)
-{
-    if (i1 != i2)
-    {
-        // store the atom in position 1
-        Atom temp1 = mAtoms[i1];
-        Atom temp2 = mAtoms[i2];
-
-        // switch atoms
-        mAtoms[i1] = temp2;
-        mAtoms[i2] = temp1;
-
-        // update neighbors
-        if (hasLeft(temp1))
-        {
-            GAPS_ASSERT(i2 + 1 <= size());
-            left(temp1).rightNdx = i2 + 1;
-        }
-        if (hasRight(temp1))
-        {
-            GAPS_ASSERT(i2 + 1 <= size());
-            right(temp1).leftNdx = i2 + 1;
-        }
-        if (hasLeft(temp2))
-        {
-            GAPS_ASSERT(i1 + 1 <= size());
-            left(temp2).rightNdx = i1 + 1;
-        }
-        if (hasRight(temp2))
-        {
-            GAPS_ASSERT(i1 + 1 <= size());
-            right(temp2).leftNdx = i1 + 1;
-        }
-
-        // update atom positions
-        mAtomPositions.erase(mAtoms[i1].pos);
-        mAtomPositions.erase(mAtoms[i2].pos);
-        mAtomPositions.insert(std::pair<uint64_t, uint64_t>(mAtoms[i1].pos,
-            i1));
-        mAtomPositions.insert(std::pair<uint64_t, uint64_t>(mAtoms[i2].pos,
-            i2));
-    }
+    GAPS_ASSERT(atom.rightNdx != size() + 1);
+    GAPS_ASSERT(atom.leftNdx != size() + 1);
 }
 
 // O(logN)
-// erase directly from position map
+// erase directly from position map and used positions hash set
 // swap with last atom in vector, pop off the back
-void AtomicDomain::erase(uint64_t pos, bool display)
+void AtomicDomain::erase(uint64_t pos)
 {
     // get vector index of this atom and erase it
     GAPS_ASSERT(mAtomPositions.find(pos) != mAtomPositions.end());
     uint64_t index = mAtomPositions.at(pos);
 
-    // move atom to back
-    swap(index, mAtoms.size() - 1);
-
     // connect neighbors of atom to be deleted
-    if (hasLeft(mAtoms.back()))
+    if (hasLeft(mAtoms[index]))
     {
-        left(mAtoms.back()).rightNdx = mAtoms.back().rightNdx;
+        left(mAtoms[index]).rightNdx = mAtoms[index].rightNdx;
     }
-    if (hasRight(mAtoms.back()))
+    if (hasRight(mAtoms[index]))
     {
-        right(mAtoms.back()).leftNdx = mAtoms.back().leftNdx;
+        right(mAtoms[index]).leftNdx = mAtoms[index].leftNdx;
+    }
+
+    // replace with atom from back
+    if (index < size() - 1)
+    {
+        mAtoms[index] = mAtoms.back();
+
+        // update position in map
+        mAtomPositions.erase(mAtoms[index].pos);
+        mAtomPositions.insert(std::pair<uint64_t, uint64_t>(mAtoms[index].pos,
+            index));
+    
+        // update moved atom's neighbors
+        if (hasLeft(mAtoms[index]))
+        {
+            left(mAtoms[index]).rightNdx = index + 1;
+        }
+        if (hasRight(mAtoms[index]))
+        {
+            right(mAtoms[index]).leftNdx = index + 1;
+        }
+
+        GAPS_ASSERT_MSG(mAtoms[index].rightNdx != index + 1,
+            index << " , " << size());
+        GAPS_ASSERT_MSG(mAtoms[index].leftNdx != index + 1,
+            index << " , " << size());
     }
 
     // delete atom from vector in O(1)
-    GAPS_ASSERT(mAtomPositions.at(pos) == mAtoms.size() - 1);
     mAtomPositions.erase(pos);
     mAtoms.pop_back();
     mUsedPositions.erase(pos);
@@ -188,11 +170,12 @@ void AtomicDomain::erase(uint64_t pos, bool display)
 // O(logN)
 void AtomicDomain::updateMass(uint64_t pos, float newMass)
 {
-    GAPS_ASSERT(mAtomPositions.find(pos) != mAtomPositions.end());
+    GAPS_ASSERT_MSG(mAtomPositions.find(pos) != mAtomPositions.end(),
+        pos);
     mAtoms[mAtomPositions.at(pos)].mass = newMass;
 }
 
-void AtomicDomain::test(uint64_t pos) const
+bool AtomicDomain::test(uint64_t pos) const
 {
-    GAPS_ASSERT(mAtomPositions.find(pos) != mAtomPositions.end());
+    return mAtomPositions.find(pos) != mAtomPositions.end();
 }

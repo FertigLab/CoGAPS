@@ -6,6 +6,8 @@
 #include "../InternalState.h"
 #include "../Random.h"
 
+#if 0
+
 TEST_CASE("Test Archive.h")
 {
     SECTION("Reading/Writing to an Archive")
@@ -197,3 +199,5 @@ TEST_CASE("Test Archive.h")
         }
     }
 }
+
+#endif
