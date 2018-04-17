@@ -184,7 +184,7 @@ void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
         case 'B':
             birth(prop.pos1, r1, c1);
             break;
-        case 'D':
+        /*case 'D':
             death(prop.pos1, prop.mass1, r1, c1);
             break;
         case 'M':
@@ -197,6 +197,7 @@ void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
             c2 = impl()->getCol(prop.pos2);
             exchange(prop.pos1, prop.mass1, prop.pos2, prop.mass2, r1, c1, r2, c2);
             break;
+        */
     }
 }
 
@@ -222,8 +223,9 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::birth(uint64_t pos, unsigned row,
 unsigned col)
 {
-    float mass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, mass)
-        : gaps::random::exponential(mLambda);
+    //float mass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, mass)
+        //: gaps::random::exponential(mLambda);
+    float mass = gaps::random::exponential(mLambda);
     addMass(pos, mass, row, col);
 }
 
