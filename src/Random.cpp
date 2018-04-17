@@ -1,6 +1,7 @@
 // [[Rcpp::depends(BH)]]
 
 #include "Random.h"
+#include "GapsAssert.h"
 
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
@@ -22,7 +23,6 @@ typedef boost::random::mt19937 RNGType;
 //typedef boost::random::mt11213b RNGType; // should be faster
 
 static RNGType rng;
-static boost::random::uniform_01<RNGType&> u01_dist(rng);
 
 void gaps::random::save(Archive &ar)
 {
@@ -60,6 +60,7 @@ float gaps::random::exponential(float lambda)
 // open interval
 float gaps::random::uniform()
 {
+    boost::random::uniform_01<RNGType&> u01_dist(rng);
     return u01_dist();
 }
 
@@ -141,6 +142,8 @@ float gaps::random::p_norm(float p, float mean, float sd)
 
 float gaps::random::inverseNormSample(float a, float b, float mean, float sd)
 {
+    //GAPS_ASSERT(a != b);
+    GAPS_ASSERT(!((a == 0.f && b == 0.f) || (a == 1.f) && (b == 1.f)));
     float u = gaps::random::uniform(a, b);
     while (u == 0.f || u == 1.f)
     {
@@ -151,6 +154,7 @@ float gaps::random::inverseNormSample(float a, float b, float mean, float sd)
 
 float gaps::random::inverseGammaSample(float a, float b, float mean, float sd)
 {
+    GAPS_ASSERT(a != b);
     float u = gaps::random::uniform(a, b);
     while (u == 0.f || u == 1.f)
     {

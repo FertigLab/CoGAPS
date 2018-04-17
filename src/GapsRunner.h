@@ -69,13 +69,15 @@ private:
 
 public:
 
+    // construct from parameters
     GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
         unsigned nFactor, unsigned nEquil, unsigned nCool, unsigned nSample,
         unsigned nOutputs, unsigned nSnapshots, float alphaA, float alphaP,
         float maxGibbsMassA, float maxGibbsMassP, uint32_t seed, bool messages,
         bool singleCellRNASeq, unsigned cptInterval, const std::string &cptFile,
         char whichMatrixFixed, const Rcpp::NumericMatrix &FP);
-
+    
+    // construct from checkpoint file
     GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
         unsigned nFactor, unsigned nEquil, unsigned nSample,
         const std::string &cptFile);

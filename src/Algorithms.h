@@ -26,6 +26,8 @@ namespace gaps
 {
 namespace algo
 {
+    const float epsilon = 1.0e-5f;
+
     // vector algorithms    
     unsigned whichMin(const Vector &vec);
     float sum(const Vector &vec);
@@ -50,7 +52,7 @@ namespace algo
         const GenericMatrix &meanMat, unsigned nUpdates);
 
     // specific matrix algorithms
-    bool isRowZero(const RowMatrix &mat, unsigned row);
+    bool isRowZero(const RowMatrix &mat, unsigned row); // TODO take pointer
     bool isColZero(const ColMatrix &mat, unsigned col);
     //void matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
     //    const RowMatrix &B);
@@ -60,15 +62,19 @@ namespace algo
     float loglikelihood(const Matrix &D, const Matrix &S,
         const Matrix &AP);
 
-    // change in likelihood
-    //float deltaLL(const MatrixChange &ch, const TwoWayMatrix &D,
-    //    const TwoWayMatrix &S, const ColMatrix &A,
-    //    const RowMatrix &P, const TwoWayMatrix &AP);
+    AlphaParameters alphaParameters(unsigned size, const float *D,
+        const float *S, const float *AP, const float *mat);
 
-    // alpha parameters used in exchange and gibbsMass calculation
-    //AlphaParameters alphaParameters(const MatrixChange &ch,
-    //    const TwoWayMatrix &D, const TwoWayMatrix &S, const ColMatrix &A,
-    //    const RowMatrix &P, const TwoWayMatrix &AP);*/
+    AlphaParameters alphaParameters(unsigned size, const float *D,
+        const float *S, const float *AP, const float *mat1, const float *mat2);
+
+    float deltaLL(unsigned size, const float *D, const float *S,
+        const float *AP, const float *mat, float delta);
+
+    float deltaLL(unsigned size, const float *D, const float *S,
+        const float *AP, const float *mat1, float delta1, const float *mat2,
+        float delta2);
+
 } // namespace algo
 } // namespace gaps
 
