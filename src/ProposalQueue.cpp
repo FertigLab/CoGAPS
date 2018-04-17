@@ -17,7 +17,7 @@ void ProposalQueue::setAlpha(float alpha)
     mAlpha = alpha;
 }
 
-float ProposalQueue::deathProb(unsigned nAtoms) const
+float ProposalQueue::deathProb(uint64_t nAtoms) const
 {
     //double size = static_cast<double>(mDomainSize);
     //double term1 = (size - static_cast<double>(nAtoms)) / size;

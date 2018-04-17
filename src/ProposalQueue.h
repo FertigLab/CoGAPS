@@ -29,7 +29,7 @@ private:
     uint64_t mDomainSize;
     float mAlpha;
 
-    float deathProb(unsigned nAtoms) const;
+    float deathProb(uint64_t nAtoms) const;
     AtomicProposal birth(const AtomicDomain &domain);
     AtomicProposal death(const AtomicDomain &domain);
     AtomicProposal move(const AtomicDomain &domain);
