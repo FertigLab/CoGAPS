@@ -223,10 +223,12 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::birth(uint64_t pos, unsigned row,
 unsigned col)
 {
-    //float mass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, mass)
-        //: gaps::random::exponential(mLambda);
-    float mass = gaps::random::exponential(mLambda);
-    addMass(pos, mass, row, col);
+    float mass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, mass)
+        : gaps::random::exponential(mLambda);
+    if (mass >= gaps::algo::epsilon)
+    {
+        addMass(pos, mass, row, col);
+    }
 }
 
 // automatically accept death, attempt a rebirth at the same position, using
