@@ -138,7 +138,7 @@ void GapsRunner::updateSampler()
     mASampler.update(mIterA);
     mPSampler.sync(mASampler);
 
-    mNumUpdatesA += mIterP;
+    mNumUpdatesP += mIterP;
     mPSampler.update(mIterP);
     mASampler.sync(mPSampler);
 }
