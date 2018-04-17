@@ -198,22 +198,21 @@ float delta2)
     return delLL;
 }
 
-/*
 // horribly slow, don't call often
-void gaps::algo::matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
-const RowMatrix &B)
+RowMatrix gaps::algo::matrixMultiplication(const ColMatrix &A, const RowMatrix &B)
 {
-    for (unsigned i = 0; i < C.nRow(); ++i)
+    RowMatrix temp(A.nRow(), B.nCol());
+    for (unsigned i = 0; i < A.nRow(); ++i)
     {
-        for (unsigned j = 0; j < C.nCol(); ++j)
+        for (unsigned j = 0; j < B.nCol(); ++j)
         {
             float sum = 0.0;
             for (unsigned k = 0; k < A.nCol(); ++k)
             {
                 sum += A(i,k) * B(k,j);
             }
-            C.set(i, j, sum);
+            temp(i, j) = sum;
         }
     }
+    return temp;
 }
-*/

@@ -50,11 +50,12 @@ Rcpp::NumericMatrix GapsStatistics::PStd() const
         mStatUpdates).rMatrix();
 }
 
-float GapsStatistics::meanChiSq() const
+float GapsStatistics::meanChiSq(const AmplitudeGibbsSampler &ASampler) const
 {
-    //ColMatrix A = mAMeanMatrix / mStatUpdates;
-    //RowMatrix P = mPMeanMatrix / mStatUpdates;
-    //RowMatrix M(A * P);
-    return 0.f;
+    ColMatrix A = mAMeanMatrix / mStatUpdates;
+    RowMatrix P = mPMeanMatrix / mStatUpdates;
+    RowMatrix M(gaps::algo::matrixMultiplication(A, P));
+    return 2.f * gaps::algo::loglikelihood(ASampler.mDMatrix, ASampler.mSMatrix,
+        M);
 }
 

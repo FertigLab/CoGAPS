@@ -16,9 +16,7 @@ struct AlphaParameters
 
     AlphaParameters operator+(const AlphaParameters &other) const
     {
-        float rs = s + other.s;
-        float rsu = su - other.su; // weird
-        return AlphaParameters(rs, rsu);
+        return AlphaParameters(s + other.s, su - other.su);
     }
 };
 
@@ -54,8 +52,7 @@ namespace algo
     // specific matrix algorithms
     bool isRowZero(const RowMatrix &mat, unsigned row); // TODO take pointer
     bool isColZero(const ColMatrix &mat, unsigned col);
-    //void matrixMultiplication(TwoWayMatrix &C, const ColMatrix &A,
-    //    const RowMatrix &B);
+    RowMatrix matrixMultiplication(const ColMatrix &A, const RowMatrix &B);
 
     // chiSq / 2
     template <class Matrix>
