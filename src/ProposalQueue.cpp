@@ -35,7 +35,7 @@ AtomicProposal ProposalQueue::makeProposal(const AtomicDomain &domain)
 
     float bdProb = domain.size() < 2 ? 0.6667f : 0.5f;
     float u = gaps::random::uniform();
-    if (u < bdProb)
+    if (u <= bdProb)
     {
         return gaps::random::uniform() < deathProb(domain.size()) ? 
             death(domain) : birth(domain);
@@ -68,7 +68,7 @@ AtomicProposal ProposalQueue::move(const AtomicDomain &domain)
     Atom a = domain.randomAtom();
     uint64_t lbound = domain.hasLeft(a) ? domain.left(a).pos : 0;
     uint64_t rbound = domain.hasRight(a) ? domain.right(a).pos : mDomainSize;
-    uint64_t newLocation = gaps::random::uniform64(lbound + 1, rbound - 1);
+    uint64_t newLocation = gaps::random::uniform64(lbound, rbound - 1);
     GAPS_ASSERT(domain.test(a.pos));
     return AtomicProposal('M', a.pos, a.mass, newLocation);
 }

@@ -154,7 +154,8 @@ mAnnealingTemp(0.f), mNumRows(nrow), mNumCols(ncol)
         / static_cast<uint64_t>(mNumRows * mNumCols);
     uint64_t remain = std::numeric_limits<uint64_t>::max()
         % static_cast<uint64_t>(mNumRows * mNumCols);
-    mQueue.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
+    //mQueue.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
+    mQueue.setDomainSize(std::numeric_limits<uint64_t>::max());
 }
 
 template <class T, class MatA, class MatB>

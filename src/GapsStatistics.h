@@ -25,7 +25,7 @@ public:
     Rcpp::NumericMatrix PMean() const;
     Rcpp::NumericMatrix PStd() const;
 
-    float meanChiSq() const;
+    float meanChiSq(const AmplitudeGibbsSampler &ASampler) const;
 
     void update(const AmplitudeGibbsSampler &ASampler,
         const PatternGibbsSampler &PSampler);

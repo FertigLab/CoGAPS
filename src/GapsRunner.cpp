@@ -72,7 +72,7 @@ Rcpp::List GapsRunner::run()
     chi2Vec.concat(mChiSqSample);
 
     // print final chi-sq value
-    float meanChiSq = mStatistics.meanChiSq();
+    float meanChiSq = mStatistics.meanChiSq(mASampler);
     if (mPrintMessages)
     {
         Rprintf("Chi-Squared of Mean: %.2f\n", meanChiSq);
