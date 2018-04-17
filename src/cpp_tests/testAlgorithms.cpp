@@ -4,6 +4,8 @@
 
 #define MAT_SUM(nR, nC) ((nR + nC - 2) * nR * nC / 2.f)
 
+#if 0
+
 TEST_CASE("Test Algorithms.h")
 {
     unsigned nrow = 25;
@@ -55,3 +57,5 @@ TEST_CASE("Test Algorithms.h")
         REQUIRE(!gaps::algo::isColZero(A, 1));
     }
 }
+
+#endif

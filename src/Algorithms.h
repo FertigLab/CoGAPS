@@ -26,7 +26,7 @@ namespace gaps
 {
 namespace algo
 {
-    const float epsilon = 1.0e-5f;
+    const float epsilon = 1.0e-10f;
 
     // vector algorithms    
     unsigned whichMin(const Vector &vec);

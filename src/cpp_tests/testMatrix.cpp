@@ -8,15 +8,12 @@ TEST_CASE("Test Matrix.h")
         Vector v(10);
         RowMatrix rm(10, 25);
         ColMatrix cm(10, 25);
-        TwoWayMatrix twm(10, 25);
 
         REQUIRE(v.size() == 10);
         REQUIRE(rm.nRow() == 10);
         REQUIRE(rm.nCol() == 25);
         REQUIRE(cm.nRow() == 10);
         REQUIRE(cm.nCol() == 25);
-        REQUIRE(twm.nRow() == 10);
-        REQUIRE(twm.nCol() == 25);
     }
 
     SECTION("Matrix Initialization from R Matrix")
@@ -39,9 +36,6 @@ TEST_CASE("Test Matrix.h")
         ColMatrix cmD(rD);
         ColMatrix cmS(rS);
 
-        TwoWayMatrix twmD(rD);
-        TwoWayMatrix twmS(rS);
-
         REQUIRE(rmD.nRow() == 1363);
         REQUIRE(rmD.nCol() == 9);
 
@@ -53,12 +47,6 @@ TEST_CASE("Test Matrix.h")
 
         REQUIRE(cmS.nRow() == 1363);
         REQUIRE(cmS.nCol() == 9);
-
-        REQUIRE(twmD.nRow() == 1363);
-        REQUIRE(twmD.nCol() == 9);
-
-        REQUIRE(twmS.nRow() == 1363);
-        REQUIRE(twmS.nCol() == 9);
     }
 
     SECTION("Matrix Update")
@@ -81,15 +69,6 @@ TEST_CASE("Test Matrix.h")
         REQUIRE(cm(1,2) == 18.0);
         REQUIRE(rm.getRow(3)[4] == 6.0);
         REQUIRE(cm.getCol(2)[1] == 18.0);
-    }
-
-    SECTION("TwoWayMatrix set")
-    {
-        TwoWayMatrix mat(100, 300);
-        mat.set(0,299,54.0);
-        
-        REQUIRE(mat.getRow(0)[299] == 54.0);
-        REQUIRE(mat.getCol(299)[0] == 54.0);
     }
 }
 

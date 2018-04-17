@@ -36,6 +36,11 @@ public:
     {
         return pos == other.pos;
     }
+
+    bool operator!=(const Atom &other) const
+    {
+        return !(pos == other.pos);
+    }
 };
 
 // data structure that holds atoms
@@ -67,10 +72,10 @@ public:
 
     // modify domain
     void insert(uint64_t pos, float mass);
-    void swap(uint64_t i1, uint64_t i2);
-    void erase(uint64_t pos, bool display=false);
+    void erase(uint64_t pos);
     void updateMass(uint64_t pos, float newMass);
-    void test(uint64_t pos) const;
+
+    bool test(uint64_t pos) const;
 
     // serialization
     friend Archive& operator<<(Archive &ar, AtomicDomain &domain);
