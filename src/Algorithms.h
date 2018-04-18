@@ -16,7 +16,9 @@ struct AlphaParameters
 
     AlphaParameters operator+(const AlphaParameters &other) const
     {
-        return AlphaParameters(s + other.s, su - other.su);
+        float rs = s + other.s;
+        float rsu = su - other.su; // weird
+        return AlphaParameters(rs, rsu);
     }
 };
 

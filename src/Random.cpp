@@ -23,6 +23,7 @@ typedef boost::random::mt19937 RNGType;
 //typedef boost::random::mt11213b RNGType; // should be faster
 
 static RNGType rng;
+static boost::random::uniform_01<RNGType&> u01_dist(rng);
 
 void gaps::random::save(Archive &ar)
 {
@@ -42,38 +43,53 @@ void gaps::random::setSeed(uint32_t seed)
 float gaps::random::normal(float mean, float var)
 {
     boost::random::normal_distribution<float> dist(mean, var);
-    return dist(rng);
+    float res = dist(rng);
+    Rprintf("N - %d\n", res);
+    return res;
+    //return dist(rng);
 }
 
 int gaps::random::poisson(float lambda)
 {
     boost::random::poisson_distribution<> dist(lambda);
-    return dist(rng);
+    int res = dist(rng);
+    Rprintf("p - %d\n", res);
+    return res;
+    //return dist(rng);
 }
 
 float gaps::random::exponential(float lambda)
 {
     boost::random::exponential_distribution<> dist(lambda);
-    return dist(rng);
+    float res = dist(rng);
+    Rprintf("e - %.3f\n", res);
+    return res;
+    //return dist(rng);
 }
 
 // open interval
 float gaps::random::uniform()
 {
-    boost::random::uniform_01<RNGType&> u01_dist(rng);
-    return u01_dist();
+    float res = u01_dist();
+    Rprintf("u01 - %.3f\n", res);
+    return res;
+    //return u01_dist();
 }
 
 float gaps::random::uniform(float a, float b)
 {
     if (a == b)
     {
+        Rprintf("uab - %.3f\n", a);
         return a;
     }
     else
     {
         boost::random::uniform_real_distribution<> dist(a,b);
-        return dist(rng);
+        float res = dist(rng);
+        Rprintf("uab - %.3f\n", res);
+        return res;
+        //return dist(rng);
     }
 }
 
@@ -81,19 +97,26 @@ uint64_t gaps::random::uniform64()
 {
     boost::random::uniform_int_distribution<uint64_t> dist(0,
         std::numeric_limits<uint64_t>::max());
-    return dist(rng);
+    uint64_t res = dist(rng);
+    Rprintf("u64 - %lu\n", res);
+    return res;
+    //return dist(rng);
 }
 
 uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
 {
     if (a == b)
     {
+        Rprintf("u64_ab - %lu\n", a);
         return a;
     }
     else
     {
         boost::random::uniform_int_distribution<uint64_t> dist(a,b);
-        return dist(rng);
+        uint64_t res = dist(rng);
+        Rprintf("u64_ab - %lu\n", res);
+        return res;
+        //return dist(rng);
     }
 }
 
@@ -148,6 +171,7 @@ float gaps::random::inverseNormSample(float a, float b, float mean, float sd)
     {
         u = gaps::random::uniform(a, b);
     }
+    Rprintf("invN - %.3f\n", u);
     return gaps::random::q_norm(u, mean, sd);
 }
 
@@ -159,5 +183,6 @@ float gaps::random::inverseGammaSample(float a, float b, float mean, float sd)
     {
         u = gaps::random::uniform(a, b);
     }
+    Rprintf("invG - %.3f\n", u);
     return gaps::random::q_gamma(u, mean, sd);
 }

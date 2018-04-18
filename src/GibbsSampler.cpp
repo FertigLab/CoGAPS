@@ -30,8 +30,8 @@ bool AmplitudeGibbsSampler::canUseGibbs(unsigned row, unsigned col) const
 
 bool AmplitudeGibbsSampler::canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const
 {
-    return !gaps::algo::isRowZero(*mOtherMatrix, c1)
-        && !gaps::algo::isRowZero(*mOtherMatrix, c2);
+    return !(gaps::algo::isRowZero(*mOtherMatrix, c1)
+        && gaps::algo::isRowZero(*mOtherMatrix, c2));
 }
 
 void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
@@ -121,8 +121,8 @@ bool PatternGibbsSampler::canUseGibbs(unsigned row, unsigned col) const
 
 bool PatternGibbsSampler::canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const
 {
-    return !gaps::algo::isColZero(*mOtherMatrix, r1)
-        && !gaps::algo::isColZero(*mOtherMatrix, r2);
+    return !(gaps::algo::isColZero(*mOtherMatrix, r1)
+        && gaps::algo::isColZero(*mOtherMatrix, r2));
 }
 
 void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)

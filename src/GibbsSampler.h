@@ -185,9 +185,11 @@ void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
             birth(prop.pos1, r1, c1);
             break;
         case 'D':
+            Rprintf("%c\n", prop.type);
             death(prop.pos1, prop.mass1, r1, c1);
             break;
-        /*case 'M':
+        case 'M':
+            Rprintf("%c\n", prop.type);
             r2 = impl()->getRow(prop.pos2);
             c2 = impl()->getCol(prop.pos2);
             move(prop.pos1, prop.mass1, prop.pos2, r1, c1, r2, c2);
@@ -197,8 +199,8 @@ void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
             c2 = impl()->getCol(prop.pos2);
             exchange(prop.pos1, prop.mass1, prop.pos2, prop.mass2, r1, c1, r2, c2);
             break;
-        */
     }
+    Rprintf("sum - %f\n", gaps::algo::sum(mAPMatrix));
 }
 
 template <class T, class MatA, class MatB>
@@ -224,6 +226,7 @@ void GibbsSampler<T, MatA, MatB>::birth(uint64_t pos, unsigned row,
 unsigned col)
 {
     float temp = gaps::random::exponential(mLambda);
+    Rprintf("B\n");
     float mass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, mass)
         : temp;
     if (mass >= gaps::algo::epsilon)
@@ -239,13 +242,13 @@ void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass, unsigned row,
 unsigned col)
 {
     removeMass(pos, mass, row, col);
-    /*float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, -mass) : 0.f;
+    float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, -mass) : 0.f;
     mass = newMass < gaps::algo::epsilon ? mass : newMass;
     float deltaLL = impl()->computeDeltaLL(row, col, mass);
     if (deltaLL * mAnnealingTemp >= std::log(gaps::random::uniform()))
     {
         addMass(pos, mass, row, col);
-    }*/
+    }
 }
 
 // move mass from src to dest in the atomic domain
@@ -271,51 +274,63 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::exchange(uint64_t p1, float m1, uint64_t p2,
 float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 {
+    float pUpper = gaps::random::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
+    float newMass = gaps::random::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
+    Rprintf("E\n");
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
     {
-        if (m1 < m2) // mass 1 should always be larger
+        if ((m1 > m2 && newMass - m1 < 0) || (m1 < m2 && m2 - newMass < 0))
         {
             std::swap(r1, r2);
             std::swap(c1, c2);
             std::swap(p1, p2);
             std::swap(m1, m2);
         }
-
+    
+        Rprintf("%lu %lu\n", p1, p2);
+    
         if (impl()->canUseGibbs(r1, c1, r2, c2))
         {
+            Rprintf("%.4f %.4f\n", m1, m2);
             float gDelta = gibbsMass(r1, c1, m1, r2, c2, m2);
-            if (gDelta < -m1) // janky, should be pair<bool, float>
+            if (gDelta > -m1 - 0.5f) // janky, should be pair<bool, float>
             {
                 acceptExchange(p1, m1, gDelta, p2, m2, -gDelta, r1, c1, r2, c2);
+                Rprintf("E1\n");
                 return;
             }
         }
 
         // use metropolis hastings otherwise
-        float pUpper = gaps::random::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
-        float newMass = gaps::random::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
         float delta = m1 > m2 ? newMass - m1 : m2 - newMass; // change larger mass
         float pOldMass = m1 + delta > m2 - delta ? m1 : m2;
+        Rprintf("%.4f %.4f\n", newMass, pOldMass);
         float pNew = gaps::random::d_gamma(newMass, 2.f, 1.f / mLambda);
         float pOld = gaps::random::d_gamma(pOldMass, 2.f, 1.f / mLambda);
 
         if (pOld == 0.f && pNew != 0.f) // special case
         {
             acceptExchange(p1, m1, delta, p2, m2, -delta, r1, c1, r2, c2);
+            Rprintf("E2\n");
             return;
         }
         else // normal case
         {
             float deltaLL = impl()->computeDeltaLL(r1, c1, delta, r2, c2, -delta);
-            float priorLL = (pOld == 0.f) ? 1.f : pOld / pNew;
-            float u = std::log(gaps::random::uniform() * priorLL);
-            if (u < deltaLL * mAnnealingTemp)
+            float priorLL = (pOld == 0.f) ? 0.f : log(pNew / pOld);
+            float rejectProb = std::log(gaps::random::uniform()) - priorLL;
+            //float priorLL = (pOld == 0.f) ? 1.f : pOld / pNew;
+            //float u = std::log(gaps::random::uniform() * priorLL);
+            //if (u < deltaLL * mAnnealingTemp)
+            if (rejectProb <= deltaLL * mAnnealingTemp)
             {
                 acceptExchange(p1, m1, delta, p2, m2, -delta, r1, c1, r2, c2);
-                return;
             }
+            Rprintf("E3\n");
+            return;
         }
     }
+    Rprintf("E4\n");
 }
 
 // helper function for acceptExchange, used to conditionally update the mass
@@ -357,10 +372,11 @@ template <class T, class MatA, class MatB>
 float GibbsSampler<T, MatA, MatB>::gibbsMass(unsigned row, unsigned col, float mass)
 {        
     AlphaParameters alpha = impl()->alphaParameters(row, col);
-    alpha.s *= mAnnealingTemp;
-    alpha.su *= mAnnealingTemp;
-    float mean = (alpha.su - mLambda) / alpha.s;
-    float sd = 1.f / std::sqrt(alpha.s);
+    Rprintf("alpha - %.4f %.4f\n", alpha.s, alpha.su);
+    alpha.s *= mAnnealingTemp / 2.0;
+    alpha.su *= mAnnealingTemp / 2.0;
+    float mean = (2.0 * alpha.su - mLambda) / (2.0 * alpha.s);
+    float sd = 1.f / std::sqrt(2.0 * alpha.s);
     float pLower = gaps::random::p_norm(0.f, mean, sd);
 
     float newMass = 0.f;
@@ -390,8 +406,10 @@ float GibbsSampler<T, MatA, MatB>::gibbsMass(unsigned r1, unsigned c1, float m1,
 unsigned r2, unsigned c2, float m2)
 {
     AlphaParameters alpha = impl()->alphaParameters(r1, c1, r2, c2);
+    Rprintf("alpha - %.4f %.4f\n", alpha.s, alpha.su);
     alpha.s *= mAnnealingTemp;
     alpha.su *= mAnnealingTemp;
+
 
     if (alpha.s > gaps::algo::epsilon)
     {
