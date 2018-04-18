@@ -145,6 +145,7 @@ void GapsRunner::updateSampler()
 
 void GapsRunner::storeSamplerInfo(Vector &atomsA, Vector &atomsP, Vector &chi2)
 {
+    GAPS_ASSERT(mASampler.chi2() == mPSampler.chi2());
     chi2[mCurrentIter] = mASampler.chi2();
     atomsA[mCurrentIter] = mASampler.nAtoms();
     atomsP[mCurrentIter] = mPSampler.nAtoms();
