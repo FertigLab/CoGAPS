@@ -36,7 +36,7 @@ threshold="all", lp=NA, full=FALSE)
         }
         for (i in 1:nP){
             sstat[,i] <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
-            ssranks[order(sstat[,i]),i] <- 1:dim(sstat)[1]
+            ssranks[,i]<-rank(sstat[,i])
             ssgenes[,i]<-names(sort(sstat[,i],decreasing=FALSE,na.last=TRUE))
         }
     }
@@ -46,7 +46,8 @@ threshold="all", lp=NA, full=FALSE)
             lp <- rep(0,dim(Amatrix)[2])
             lp[i] <- 1
             sstat[,i] <- unlist(apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp))))
-            ssranks[order(sstat[,i]),i] <- 1:dim(sstat)[1]
+            #ssranks[order(sstat[,i]),i] <- 1:dim(sstat)[1]
+            ssranks[,i]<-rank(sstat[,i])
             ssgenes[,i]<-names(sort(sstat[,i],decreasing=FALSE,na.last=TRUE))
         }
     }
@@ -59,7 +60,6 @@ threshold="all", lp=NA, full=FALSE)
         pIndx<-unlist(apply(sstat,1,which.min))
         gBYp <- list()
         for(i in sort(unique(pIndx))){
-            #gBYp[[i]]<-names(pIndx[pIndx==i])
             gBYp[[i]]<-sapply(strsplit(names(pIndx[pIndx==i]),"[.]"),function(x) x[[1]][1])
 
         }
