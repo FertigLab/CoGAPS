@@ -239,13 +239,13 @@ void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass, unsigned row,
 unsigned col)
 {
     removeMass(pos, mass, row, col);
-    float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, -mass) : 0.f;
+    /*float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, -mass) : 0.f;
     mass = newMass < gaps::algo::epsilon ? mass : newMass;
     float deltaLL = impl()->computeDeltaLL(row, col, mass);
     if (deltaLL * mAnnealingTemp >= std::log(gaps::random::uniform()))
     {
         addMass(pos, mass, row, col);
-    }
+    }*/
 }
 
 // move mass from src to dest in the atomic domain
