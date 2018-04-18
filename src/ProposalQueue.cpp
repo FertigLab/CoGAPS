@@ -38,13 +38,13 @@ AtomicProposal ProposalQueue::makeProposal(const AtomicDomain &domain)
         return birth(domain);
     }
 
-    //float bdProb = domain.size() < 2 ? 0.6667f : 0.5f;
-    //float u = gaps::random::uniform();
-    //if (u <= bdProb)
-    //{
+    float bdProb = domain.size() < 2 ? 0.6667f : 0.5f;
+    float u = gaps::random::uniform();
+    if (u <= bdProb)
+    {
         return gaps::random::uniform() < deathProb(domain.size()) ? 
             death(domain) : birth(domain);
-    /*}
+    }
     else if (u < 0.75f || domain.size() < 2)
     {
         return move(domain);
@@ -52,7 +52,7 @@ AtomicProposal ProposalQueue::makeProposal(const AtomicDomain &domain)
     else
     {
         return exchange(domain);
-    }*/
+    }
 }
 
 AtomicProposal ProposalQueue::birth(const AtomicDomain &domain)

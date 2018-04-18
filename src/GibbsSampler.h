@@ -242,7 +242,7 @@ unsigned col)
     float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, -mass) : 0.f;
     mass = newMass < gaps::algo::epsilon ? mass : newMass;
     float deltaLL = impl()->computeDeltaLL(row, col, mass);
-    if (deltaLL * mAnnealingTemp > std::log(gaps::random::uniform()))
+    if (deltaLL * mAnnealingTemp >= std::log(gaps::random::uniform()))
     {
         addMass(pos, mass, row, col);
     }
