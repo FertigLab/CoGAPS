@@ -132,7 +132,6 @@ const float *S, const float *AP, const float *mat)
 AlphaParameters gaps::algo::alphaParameters(unsigned size, const float *D,
 const float *S, const float *AP, const float *mat1, const float *mat2)
 {
-    Rprintf("alpha2\n");
     gaps::simd::packedFloat ratio, pMat1, pMat2, pD, pAP, pS;
     gaps::simd::packedFloat partialS = 0.f, partialSU = 0.f;
     gaps::simd::Index i = 0;
