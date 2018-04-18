@@ -42,7 +42,7 @@ AtomicProposal ProposalQueue::makeProposal(const AtomicDomain &domain)
     float u = gaps::random::uniform();
     if (u <= bdProb)
     {
-        return gaps::random::uniform() < deathProb(domain.size()) ? 
+        return gaps::random::uniform() < deathProb(domain.size()) ?
             death(domain) : birth(domain);
     }
     else if (u < 0.75f || domain.size() < 2)
