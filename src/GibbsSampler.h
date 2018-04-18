@@ -184,10 +184,10 @@ void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
         case 'B':
             birth(prop.pos1, r1, c1);
             break;
-        /*case 'D':
+        case 'D':
             death(prop.pos1, prop.mass1, r1, c1);
             break;
-        case 'M':
+        /*case 'M':
             r2 = impl()->getRow(prop.pos2);
             c2 = impl()->getCol(prop.pos2);
             move(prop.pos1, prop.mass1, prop.pos2, r1, c1, r2, c2);
@@ -223,8 +223,9 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::birth(uint64_t pos, unsigned row,
 unsigned col)
 {
+    float temp = gaps::random::exponential(mLambda);
     float mass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, mass)
-        : gaps::random::exponential(mLambda);
+        : temp;
     if (mass >= gaps::algo::epsilon)
     {
         addMass(pos, mass, row, col);
@@ -358,7 +359,7 @@ float GibbsSampler<T, MatA, MatB>::gibbsMass(unsigned row, unsigned col, float m
     AlphaParameters alpha = impl()->alphaParameters(row, col);
     alpha.s *= mAnnealingTemp;
     alpha.su *= mAnnealingTemp;
-    float mean  = (alpha.su - mLambda) / alpha.s;
+    float mean = (alpha.su - mLambda) / alpha.s;
     float sd = 1.f / std::sqrt(alpha.s);
     float pLower = gaps::random::p_norm(0.f, mean, sd);
 
@@ -381,7 +382,7 @@ float GibbsSampler<T, MatA, MatB>::gibbsMass(unsigned row, unsigned col, float m
     {
         newMass = gaps::random::inverseNormSample(pLower, 1.f, mean, sd);
     }
-    return std::min(std::max(0.f, newMass), mMaxGibbsMass);
+    return std::max(std::min(newMass, mMaxGibbsMass), 0.f);
 }
 
 template <class T, class MatA, class MatB>
