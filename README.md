@@ -1,5 +1,8 @@
 # CoGAPS
 
+[![Bioc](https://bioconductor.org/images/logo_bioconductor.gif)](https://bioconductor.org/packages/CoGAPS)
+[![downloads](https://bioconductor.org/shields/downloads/CancerInSilico.svg)](https://bioconductor.org/packages/CoGAPS)
+
 [![Travis-CI Build Status](https://travis-ci.org/CoGAPS/CoGAPS.svg?branch=master)](https://travis-ci.org/CoGAPS/CoGAPS)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/CoGAPS/CoGAPS?branch=master&svg=true)](https://ci.appveyor.com/project/CoGAPS/CoGAPS)
 [![Coverage Status](https://img.shields.io/codecov/c/github/CoGAPS/CoGAPS/master.svg)](https://codecov.io/github/CoGAPS/CoGAPS?branch=master)
