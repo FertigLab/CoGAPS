@@ -2,10 +2,10 @@
 % Please edit documentation in R/cellMatchR.R
 \name{cellMatchR}
 \alias{cellMatchR}
-\title{patternMatch4Parallel}
+\title{cellMatchR}
 \usage{
-cellMatchR(Atot, nSets, cnt, minNS = NULL, maxNS = NULL,
-  ignore.NA = FALSE, bySet = FALSE, plotDen = FALSE, ...)
+cellMatchR(Atot, nSets, cnt, minNS = NA, maxNS = NA, ignore.NA = FALSE,
+  bySet = FALSE, plotDen = FALSE, ...)
 }
 \arguments{
 \item{Atot}{a matrix containing the total by set estimates of Pmean output from \code{reOrderBySet}}
@@ -16,21 +16,21 @@ cellMatchR(Atot, nSets, cnt, minNS = NULL, maxNS = NULL,
 
 \item{minNS}{minimum of individual set contributions a cluster must contain}
 
+\item{maxNS}{maximum of individual set contributions a cluster must contain}
+
 \item{ignore.NA}{logical indicating whether or not to ignore NAs from potential over dimensionalization. Default is FALSE.}
 
 \item{bySet}{logical indicating whether to return list of matched set solutions from \code{Atot}}
 
-\item{...}{additional parameters for \code{agnes}}
+\item{plotDen}{plot}
 
-\item{R2mean}{}
+\item{...}{additional parameters for \code{agnes}}
 }
 \value{
 a matrix of concensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
 concensus pattern is also returned.
 }
 \description{
-patternMatch4Parallel
+cellMatchR
 }
-\seealso{
-\code{\link{fastcluster}}
-}
+

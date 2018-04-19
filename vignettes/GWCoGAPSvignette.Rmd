@@ -12,6 +12,10 @@ output:
   BiocStyle::html_document
 ---
 
+```{r include=FALSE, cache=FALSE}
+library(CoGAPS)
+```
+
 # Introduction
 
 NMF algorithms associate gene expression changes with biological processes (e.g., time-course dynamics or disease subtypes). Compared with univariate gene associations, the relative gene weights of NMF solutions do not clearly identify gene biomarkers for these processes. Therefore, we developed a novel PatternMarkers statistic to extract genes uniquely representative of NMF patterns for enhanced visualization and subsequent biological validation. Finding unbiased gene markers with PatternMarkers requires whole-genome data. However, NMF algorithms typically do not converge for the tens of thousands of genes in genome-wide profiling. Therefore, we also developed GWCoGAPS to simultaneously cut runtime and ensure convergence for whole genome NMF with a sparse, MCMC NMF algorithm CoGAPS. The software includes a shiny application PatternMatcher to compare NMF patterns. 
@@ -23,59 +27,44 @@ pipeline for genome wide NMF analysis.
 
 ## GWCoGAPS
 
-### Methods
-The GWCoGAPS algorithm is run by calling the GWCoGAPS function in the CoGAPS
-R package as follows:
+Before calling *GWCoGAPS*, the user must partition the data into random subsets
+of genes. In this example we use the sample data provided in the package.
 
 ```{r}
-library(CoGAPS)
+data(SimpSim)
+simulationName <- "example"
+createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, simulationName)
 ```
-***
-GWCoGAPS(D, S, nFactor, nSets, nCores, saveBySetResults, fname,
-    PatternsMatchFN = patternMatch4Parallel, Cut, minNS, ...)
-***
 
-**Input Arguments**
-The inputs that must be set each time are only the nSets, nFactor, and data and standard deviation matrices, with all other inputs having default values. Additional inputs to the gapsRun function, as outlined previously, can be used to taylor the analysis based on the expected dimensionality of the data. GWCoGAPS specific arguments are as follows:
+This will break up our data into 2 separate *.RData* files which we will pass
+to *GWCoGAPS* by providing the *simulationName* parameter of
+*createGWCoGAPSSets*.
 
-\begin{description}
-\item[D]{data matrix}
-\item[S]{uncertainty matrix (std devs for chi-squared of Log Likelihood)}
-\item[nFactor]{number of patterns (basis vectors, metagenes), which must be
-greater than or equal to the number of rows of FP}
-\item[nSets]{number of sets for parallelization}
-\item[nCores]{number of cores for parallelization. If left to the default NA, nCores = nSets. }
-\item[saveBySetResults]{logical indicating whether to save by intermediary by set results. Default is FALSE.}
-\item[fname]{character string used to label file output. Default is "GWCoGAPS.out"}
-\item[PatternsMatchFN]{function to use for pattern matching across sets. Default is patternMatch4Parallel.}
-\item[Cut]{number of branches at which to cut dendrogram used in patternMatch4Parallel}
-\item[minNS]{minimum of individual set contributions a cluster must contain used in patternMatch4Parallel}
-\end{description}
+```{r}
+#result <- GWCoGAPS(simulationName, nFactor=3, nEquil=500, nSample=500)
+```
 
-\par Once the GWCoGAPS algorithm has been run, the inferred patterns and corresponding amplitudes can processed in the same way as output from gapsRun, gapsMapsRun, or CoGAPS.
+Note that *nFactor* is required by *GWCoGAPS* but *nEquil* and *nSample* are
+optional. Any parameters passed in the ... argument of *GWCoGAPS* will be 
+forwarded to the internal call to *CoGAPS*.
 
-### Example: Simulated data
+There are additional optional parameters that can be passed to *GWCoGAPS*:
 
-\par In this example, we use the same simulated data in SimpSim (SimpSim.D), as previously described, with three known patterns (SimpSim.P) and corresponding amplitude (SimpSim.A) with specified activity in two gene sets (GSets).
+*nCores* - number of cores for parallelization, if not set then nCores = nSets
+*cut* - number of branches at which to cut dendrogram used in 
+    *patternMatch4Parallel*
+*minNS* - minimum of individual set contributions a cluster must contain used
+    in *patternMatch4Parallel*
+*manualMatch* - logical indicating whether or not to stop after initial phase
+    for manual pattern matching
+*consensusPatterns* - fixed pattern matrix to be used to ensure reciprocity of
+    A weights accross sets 
 
-***
-library('CoGAPS')
-data('SimpSim')
-GWCoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nCores=NA, nSets=2,
-            fname="test" ,PatternsMatchFN = postCoGAPSPatternMatch,
-            sampleSnapshots = "TRUE", numSnapshots = 3)
-plotGAPS(AP.Fixed$A, AP.Fixed$P, 'ModSimFigs')
-***
+Once the GWCoGAPS algorithm has been run, the inferred patterns and corresponding amplitudes can processed in the same way as output from CoGAPS.
 
-Figure \ref{fig:ModSim} shows the results from plotting the GWCoGAPS estimates of ${\bf{A}}$ and ${\bf{P}}$ using \texttt{plotGAPS}.  
-\begin{figure}[ht]
-  \begin{center}
-      \includegraphics[width=0.45\linewidth]{ModSimFigs-Amplitude}\includegraphics[width=0.45\linewidth]{ModSimFigs-Patterns}
-  \end{center}
-  \caption{Results from GWCoGAPS on simulated data set with known true patterns.}
-  \label{fig:ModSim}
-\end{figure}
-
+```{r}
+#plotGaps(result$Amean, result$Pmean)
+```
 
 ## PatternMatcher Shiny App
 

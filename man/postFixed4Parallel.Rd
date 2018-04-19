@@ -4,13 +4,15 @@
 \alias{postFixed4Parallel}
 \title{Post Processing of Parallel Output}
 \usage{
-postFixed4Parallel(AP.fixed, setPs)
+postFixed4Parallel(AP.fixed, setValues, setMatrix = "P")
 }
 \arguments{
 \item{AP.fixed}{output of parallel gapsMapRun calls with same FP}
 
-\item{setPs}{data.frame with rows giving fixed patterns for P used as input
+\item{setValues}{data.frame with rows giving fixed patterns for P used as input
 for gapsMapRun}
+
+\item{setMatrix}{which matrix, A or P}
 }
 \value{
 list of two data.frames containing the A matrix estimates or their
@@ -19,3 +21,4 @@ corresponding standard deviations from output of parallel CoGAPS
 \description{
 Post Processing of Parallel Output
 }
+

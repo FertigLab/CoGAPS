@@ -7213,6 +7213,7 @@ namespace Catch {
 #include <set>
 #include <sstream>
 #include <algorithm>
+//#include <R.h>
 
 namespace Catch {
 

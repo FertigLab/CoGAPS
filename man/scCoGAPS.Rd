@@ -39,9 +39,10 @@ the data matrix for whole genome data;
 \examples{
 data(SimpSim)
 sim_name <- "example"
-createscCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
-result <- scCoGAPS(sim_name, nFactor=3, nEquil=1000, nSample=1000)
+createscCoGAPSSets(SimpSim.D, nSets=2, simulationName=sim_name)
+result <- scCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
 }
 \seealso{
 \code{\link{gapsRun}}, \code{\link{patternMatch4singleCell}}, and \code{\link{gapsMapRun}}
 }
+

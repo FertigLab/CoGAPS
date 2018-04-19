@@ -9,8 +9,7 @@ CoGAPS(D, S, nFactor = 7, nEquil = 1000, nSample = 1000,
   maxGibbmassA = 100, maxGibbmassP = 100, seed = -1, messages = TRUE,
   singleCellRNASeq = FALSE, whichMatrixFixed = "N",
   fixedPatterns = matrix(0), checkpointInterval = 0,
-  checkpointFile = "gaps_checkpoint.out", pumpThreshold = "unique",
-  nPumpSamples = 0, ...)
+  checkpointFile = "gaps_checkpoint.out", ...)
 }
 \arguments{
 \item{D}{data matrix}
@@ -52,10 +51,6 @@ the fixed patterns}
 
 \item{checkpointFile}{name of the checkpoint file}
 
-\item{pumpThreshold}{type of threshold for pump statistic}
-
-\item{nPumpSamples}{number of samples used in pump statistic}
-
 \item{...}{keeps backwards compatibility with arguments from older versions}
 }
 \value{
@@ -73,3 +68,4 @@ the data matrix
 data(SimpSim)
 result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 }
+

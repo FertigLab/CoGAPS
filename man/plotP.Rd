@@ -24,3 +24,4 @@ plots the P matrix in a line plot with error bars
 data(SimpSim)
 plotP(SimpSim.result$Pmean, SimpSim.result$Psd)
 }
+

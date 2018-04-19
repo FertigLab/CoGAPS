@@ -28,3 +28,4 @@ heatmap and line plot respectively
 data(SimpSim)
 plotGAPS(SimpSim.result$Amean, SimpSim.result$Pmean)
 }
+

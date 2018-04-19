@@ -27,3 +27,4 @@ from one of the vectors returned with atom numbers
 data(SimpSim)
 plotAtoms(SimpSim.result, type="sampA")
 }
+

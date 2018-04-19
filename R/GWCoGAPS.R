@@ -18,16 +18,21 @@
 #' data(SimpSim)
 #' sim_name <- "example"
 #' createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
-#' result <- GWCoGAPS(sim_name, nFactor=3, nEquil=1000, nSample=1000)
+#' result <- GWCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
 #' @export
 GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manualMatch=FALSE, consensusPatterns=NULL, ...)
 {
     if (!is.null(list(...)$checkpointFile))
+    {
         stop("checkpoint file name automatically set in GWCoGAPS - don't pass this parameter")
-    if (is.null(consensusPatterns)){
+    }
+
+    if (is.null(consensusPatterns))
+    {
         allDataSets <- preInitialPhase(simulationName, nCores)
         initialResult <- runInitialPhase(simulationName, allDataSets, nFactor, ...)
-        if(manualMatch){
+        if (manualMatch)
+        {
             saveRDS(initialResult,file=paste(simulationName,"_initial.rds", sep=""))
             stop("Please provide consensus patterns upon restarting.")
         }
@@ -107,7 +112,9 @@ preInitialPhase <- function(simulationName, nCores)
 
     # establish the number of cores that we are able to use
     if (is.na(nCores))
+    {
         nCores <- length(allDataSets)
+    }
     registerDoParallel(cores=nCores)
     return(allDataSets)
 }
@@ -139,21 +146,29 @@ postInitialPhase <- function(initialResult, nSets, cut, minNS)
 
     #run postpattern match function
     if (is.na(cut))
+    {
         cut <- nFactor
+    }
+
     return(patternMatch4Parallel(Ptot=BySet$P, nP=nFactor, nSets=nSets, cnt=cut,
         minNS=minNS, bySet=TRUE))
 }
 
 runFinalPhase <- function(simulationName, allDataSets, consensusPatterns, nCores, ...)
 {    
-    if(length(dim(consensusPatterns))!=2){stop("consensusPatterns must be a matrix")}
+    if (length(dim(consensusPatterns)) != 2)
+    {
+        stop("consensusPatterns must be a matrix")
+    }
 
     # find data files if providing consensus patterns
     fileSig <- paste(simulationName, "_partition_[0-9]+.RData", sep="")
     allDataSets <- list.files(full.names=TRUE, pattern=fileSig)
 
     if (is.na(nCores))
-    nCores <- length(allDataSets)
+    {
+        nCores <- length(allDataSets)
+    }
     registerDoParallel(cores=nCores)
 
     # generate seeds for parallelization

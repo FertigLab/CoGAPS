@@ -43,3 +43,4 @@ Plot Smooth Patterns
 plots the output A and P matrices as a heatmap and a
 line plot respectively
 }
+

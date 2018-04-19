@@ -27,3 +27,4 @@ genes rankings with a column for each \code{lp} will also be returned.
 \description{
 patternMarkers
 }
+

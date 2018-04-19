@@ -23,3 +23,4 @@ Reconstruct Gene
 data(SimpSim)
 reconstructGene(SimpSim.result$Amean, SimpSim.result$Pmean)
 }
+

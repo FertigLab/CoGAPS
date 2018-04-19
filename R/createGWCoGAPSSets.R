@@ -1,41 +1,38 @@
-#' createGWCoGAPSSets
+#' Create Gene Sets for GWCoGAPS
 #'
-#'\code{createGWCoGAPSSets} factors whole genome data into randomly generated sets for indexing;
+#' @details factors whole genome data into randomly generated sets for indexing
 #'
-#'@param data data matrix with unique rownames
-#'@param nSets number of sets for parallelization
-#'@param outRDA name of output file
-#'@param keep logical indicating whether or not to save gene set list. Default is TRUE.
-#'@param path character string indicating were to save resulting data objects
-#'@export
-#'@return list with randomly generated sets of genes from whole genome data
-#'@examples \dontrun{
-#'createGWCoGAPSSet(D,nSets=nSets)
-#'}
-#'
-
-createGWCoGAPSSets <- function(D, S, nSets, simulationName, path="")
+#' @param D data matrix
+#' @param S uncertainty matrix
+#' @param nSets number of sets to partition the data into
+#' @param simulationName name used to identify files created by this simulation
+#' @return simulationName used to identify saved files
+#' @examples
+#' data(SimpSim)
+#' createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
+#' @export
+createGWCoGAPSSets <- function(D, S, nSets, simulationName)
 {
     # check gene names
-    if (length(unique(colnames(D))) != length(colnames(D)))
+    if (length(unique(rownames(D))) != length(rownames(D)))
     {
-        warning("Cell identifiers not unique!")
+        warning("Gene identifiers not unique!")
     }
 
-    # partition data by sampling random sets of cells
+    # partition data by sampling random sets of genes
     genes <- 1:nrow(D)
     setSize <- floor(length(genes) / nSets)
     for (set in 1:nSets)
     {
-        
-        # sample genes
-            sampleSize <- ifelse(set == nSets, length(genes), setSize)
-            geneset <- sample(genes, sampleSize, replace=FALSE)
-            genes <- genes[!(genes %in% geneset)]
+        # sample gene names
+        sampleSize <- ifelse(set == nSets, length(genes), setSize)
+        geneSet <- sample(genes, sampleSize, replace=FALSE)
+        genes <- genes[!(genes %in% geneSet)]
+
         # partition data
-        sampleD <- D[geneset,]
-        sampleS <- S[geneset,]
-        save(sampleD, sampleS, file=paste(path, simulationName, "_partition_", set,
+        sampleD <- D[geneSet,]
+        sampleS <- S[geneSet,]
+        save(sampleD, sampleS, file=paste(simulationName, "_partition_", set,
             ".RData", sep=""));
     }
     return(simulationName)

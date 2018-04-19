@@ -1,9 +1,8 @@
 #' Create Gene Sets for scCoGAPS
+#' @export
 #'
-#' @details factors whole genome data into randomly generated sets for indexing
-#'
+#' @description factors whole genome data into randomly generated sets for indexing
 #' @param D data matrix
-#' @param S uncertainty matrix
 #' @param nSets number of sets to partition the data into
 #' @param simulationName name used to identify files created by this simulation
 #' @param samplingRatio vector of relative quantities to use for sampling celltypes
@@ -12,9 +11,9 @@
 #' @return simulationName used to identify saved files
 #' @examples
 #' data(SimpSim)
-#' createscCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
-#' @export
-createscCoGAPSSets <- function(D, nSets, simulationName,samplingRatio=NULL,path="",anotionObj=NULL)
+#' createscCoGAPSSets(SimpSim.D, nSets=2, simulationName="example")
+createscCoGAPSSets <- function(D, nSets, simulationName, samplingRatio=NULL,
+path="", anotionObj=NULL)
 {
     # check gene names
     if (length(unique(colnames(D))) != length(colnames(D)))
@@ -27,16 +26,22 @@ createscCoGAPSSets <- function(D, nSets, simulationName,samplingRatio=NULL,path=
     setSize <- floor(length(cells) / nSets)
     for (set in 1:nSets)
     {
-        
-        if(is.null(samplingRatio)){
-        # sample cell names
+        if (is.null(samplingRatio))
+        {
+            # sample cell names
             sampleSize <- ifelse(set == nSets, length(cells), setSize)
             cellset <- sample(cells, sampleSize, replace=FALSE)
             cells <- cells[!(cells %in% cellset)]
-        } else {
-        if(length(unique(anotionObj))!=length(samplingRatio)){warning("Not all celltypes will be sampled from.")}
-        ct.indx<-lapply(unique(anotionObj),function(x) which(anotionObj == x))
-        cellset<-sample(colnames(D)[ct.indx[[x]]], samplingRatio[x],replace=TRUE)
+        }
+        else
+        {
+            if (length(unique(anotionObj)) != length(samplingRatio))
+            {
+                warning("Not all celltypes will be sampled from.")
+            }
+            ct.indx <- lapply(unique(anotionObj), function(x) which(anotionObj == x))
+            cellset <- lapply(unique(anotionObj), function(x)
+                sample(colnames(D)[ct.indx[[x]]], samplingRatio[x],replace=TRUE))
         }
 
         # partition data
@@ -45,7 +50,8 @@ createscCoGAPSSets <- function(D, nSets, simulationName,samplingRatio=NULL,path=
         sampleD <- log2(sampleD+1)
         # generate S
         sampleS <- pmax(.1*sampleD, .1)
-        save(sampleD, sampleS, file=paste0(path,simulationName, "_partition_", set,".RData"));
+        save(sampleD, sampleS, file=paste0(path,simulationName, "_partition_",
+            set,".RData"));
     }
     return(simulationName)
 }

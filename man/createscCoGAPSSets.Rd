@@ -5,7 +5,7 @@
 \title{Create Gene Sets for scCoGAPS}
 \usage{
 createscCoGAPSSets(D, nSets, simulationName, samplingRatio = NULL,
-  path = "")
+  path = "", anotionObj = NULL)
 }
 \arguments{
 \item{D}{data matrix}
@@ -18,20 +18,16 @@ createscCoGAPSSets(D, nSets, simulationName, samplingRatio = NULL,
 
 \item{path}{character string indicating were to save resulting data objects. default is current working dir}
 
-\item{S}{uncertainty matrix}
-
-\item{annotionObj}{vector of same length as number of columns of D}
+\item{anotionObj}{vector of same length as number of columns of D}
 }
 \value{
 simulationName used to identify saved files
 }
 \description{
-Create Gene Sets for scCoGAPS
-}
-\details{
 factors whole genome data into randomly generated sets for indexing
 }
 \examples{
 data(SimpSim)
-createscCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
+createscCoGAPSSets(SimpSim.D, nSets=2, simulationName="example")
 }
+

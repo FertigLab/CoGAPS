@@ -34,3 +34,4 @@ patternMatch4singleCell
 \seealso{
 \code{\link{agnes}}
 }
+

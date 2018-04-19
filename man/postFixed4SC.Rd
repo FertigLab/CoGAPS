@@ -9,7 +9,7 @@ postFixed4SC(AP.fixed, setAs)
 \arguments{
 \item{AP.fixed}{output of parallel gapsMapRun calls with same FP}
 
-\item{setPs}{data.frame with rows giving fixed patterns for P used as input
+\item{setAs}{data.frame with rows giving fixed patterns for A used as input
 for gapsMapRun}
 }
 \value{
@@ -19,3 +19,4 @@ corresponding standard deviations from output of parallel CoGAPS
 \description{
 Post Processing of Parallel Output
 }
+

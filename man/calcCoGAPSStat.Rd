@@ -31,3 +31,4 @@ data('SimpSim')
 calcCoGAPSStat(SimpSim.result$Amean, SimpSim.result$Asd, GStoGenes=GSets,
 numPerm=500)
 }
+
