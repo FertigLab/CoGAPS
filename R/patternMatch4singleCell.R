@@ -12,51 +12,56 @@
 #' concensus pattern is also returned.
 #' @seealso \code{\link{agnes}}
 #' @export
-#' 
-#' 
-
 patternMatch4singleCell <- function(Atot, nSets, cnt, minNS, 
 cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
 {
-    if (!is.null(minNS))
-        minNS=nSets/2
-
-    if (ignore.NA==FALSE & anyNA(Atot))
-        warning('Non-sparse matrixes produced. Reducing the number of patterns asked for and rerun.')
-    if (ignore.NA==TRUE)
+    if (is.na(minNS))
+    {
+        minNS <- nSets/2
+    }
+    if (!ignore.NA & anyNA(Atot))
+    {
+        warning(paste("Non-sparse matrixes produced. Reducing the number of",
+            "patterns asked for and rerun"))
+    }
+    if (ignore.NA)
+    {
         Atot <- Atot[complete.cases(Atot),]
+    }
 
     # corr dist
-    corr.dist=cor(Atot)
-    corr.dist=1-corr.dist
+    corr.dist <- cor(Atot)
+    corr.dist <- 1 - corr.dist
     # cluster
     #library(cluster)
-    clust=agnes(x=corr.dist,diss=TRUE,method=cluster.method)
-    cut=cutree(as.hclust(clust),k=cnt)
+    clust <- agnes(x=corr.dist, diss=TRUE, method=cluster.method)
+    cut <- cutree(as.hclust(clust), k=cnt)
     #save.image(file=paste("CoGAPS.",nP,"P.",nS,"Set.CorrClustCut",cnt,".RData"))
 
     #drop n<4 and get weighted Avg
-    cls=sort(unique(cut))
-    cMNs=matrix(nrow=cnt,ncol=dim(Atot)[1])
-    rownames(cMNs)=cls
-    colnames(cMNs)=colnames(Atot)
+    cls <- sort(unique(cut))
+    cMNs <- matrix(nrow=cnt, ncol=dim(Atot)[1])
+    rownames(cMNs) <- cls
+    colnames(cMNs) <- rownames(Atot)
 
     RtoMeanPattern <- list()
     PByClust <- list()
     for(i in cls)
     {
-        if (is.null(dim(Atot[,cut == i ]))==TRUE)
+        if (is.null(dim(Atot[,cut == i])))
         {
-            cMNs[i,] <- Atot[,cut == i ]
+            cMNs[i,] <- Atot[,cut == i]
             RtoMeanPattern[[i]] <- rep(1,length(Atot[,cut == i ]))
             PByClust[[i]] <- t(as.matrix(Atot[,cut == i ]))
         }
         else
         {
-            cMNs[i,]=colMeans(Atot[,cut==i])
+            cMNs[i,] <- rowMeans(Atot[,cut==i])
             PByClust[[i]] <- Atot[,cut==i]
-            nIN=sum(cut==i)
-            RtoMeanPattern[[i]] <- sapply(1:nIN,function(j) {round(cor(x=Atot[,cut==i][j,],y=cMNs[i,]),3)})
+            nIN <- sum(cut==i)
+            RtoMeanPattern[[i]] <- sapply(1:nIN, function(j)
+                round(cor(x=Atot[,cut==i][,j], y=cMNs[i,]), 3)
+            )
         }
     }
 
@@ -65,17 +70,14 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
     RtoMPDrop <- list()
     for(i in cls)
     {
-        if (is.null(dim(PByClust[[i]])) == TRUE)
-            next
-        if (dim(PByClust[[i]])[1] < minNS)
+        if (!is.null(dim(PByClust[[i]])))
         {
-            next
-        }
-        else
-        {
-            #indx <- which(RtoMeanPattern[[i]]>.7,arr.ind = TRUE)
-            PByClustDrop <- append(PByClustDrop,list(PByClust[[i]]))
-            RtoMPDrop <- append(RtoMPDrop,list(RtoMeanPattern[[i]]))
+            if (dim(PByClust[[i]])[1] >= minNS)
+            {
+                #indx <- which(RtoMeanPattern[[i]]>.7,arr.ind = TRUE)
+                PByClustDrop <- append(PByClustDrop,list(PByClust[[i]]))
+                RtoMPDrop <- append(RtoMPDrop,list(RtoMeanPattern[[i]]))
+            }
         }
     }
 
@@ -84,43 +86,48 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
     RtoMPDS <- list()
     for (j in 1:length(PByClustDrop))
     {
-        if (is.null(dim(PByClustDrop[[j]]))==TRUE)
+        if (is.null(dim(PByClustDrop[[j]])))
         {
             next
         }
-        if (dim(PByClustDrop[[j]])[1]<minNS+nSets)
+        if (dim(PByClustDrop[[j]])[1] < minNS + nSets)
         {
-            PByCDS <- append(PByCDS,PByClustDrop[j])
-            RtoMPDS <- append(RtoMPDS,RtoMPDrop[j])
+            PByCDS <- append(PByCDS, PByClustDrop[j])
+            RtoMPDS <- append(RtoMPDS, RtoMPDrop[j])
         }
-        if (dim(PByClustDrop[[j]])[1]>=minNS+nSets)
+        if (dim(PByClustDrop[[j]])[1] >= minNS + nSets)
         {
-            corr.distPBCD=cor(t(PByClustDrop[[j]]))
-            corr.distPBCD=1-corr.distPBCD
-            clustPBCD=agnes(x=corr.distPBCD,diss=TRUE,method="complete")
-            cutPBCD=cutree(as.hclust(clustPBCD),k=2)
+            corr.distPBCD <- cor(t(PByClustDrop[[j]]))
+            corr.distPBCD <- 1-corr.distPBCD
+            clustPBCD <- agnes(x=corr.distPBCD, diss=TRUE, method="complete")
+            cutPBCD <- cutree(as.hclust(clustPBCD),k=2)
             g1 <- PByClustDrop[[j]][cutPBCD==1,]
             PByCDS <- append(PByCDS,list(g1))
-            RtoMPDS <- append(RtoMPDS,list(sapply(1:dim(g1)[1],function(z) round(cor(x=g1[z,],y=colMeans(PByClustDrop[[j]][cutPBCD==1,])),3))))
+            RtoMPDS <- append(RtoMPDS,list(sapply(1:dim(g1)[1], function(z)
+                round(cor(x=g1[z,], y=colMeans(PByClustDrop[[j]][cutPBCD==1,])),3))))
             g2 <- PByClustDrop[[j]][cutPBCD==2,]
-            if (is.null(dim(g2)[1])==FALSE)
+            if (!is.null(dim(g2)[1]))
             {
                 PByCDS <- append(PByCDS,list(g2))
-                RtoMPDS <- append(RtoMPDS,list(sapply(1:dim(g2)[1],function(z) round(cor(x=g2[z,],y=colMeans(PByClustDrop[[j]][cutPBCD==2,])),3))))
+                RtoMPDS <- append(RtoMPDS,list(sapply(1:dim(g2)[1], function(z)
+                    round(cor(x=g2[z,], y=colMeans(PByClustDrop[[j]][cutPBCD==2,])),3))))
             }
         }
     }
 
     #weighted.mean(PByClustDrop[[1]],RtoMPDrop[[1]])
-    PByCDSWavg<- t(sapply(1:length(PByCDS),function(z) apply(PByCDS[[z]],2,function(x) weighted.mean(x,(RtoMPDS[[z]])^3))))
-    rownames(PByCDSWavg) <- lapply(1:length(PByCDS),function(x) paste("Pattern",x))
+    PByCDSWavg <- t(sapply(1:length(PByCDS),function(z) apply(PByCDS[[z]],2,
+        function(x) weighted.mean(x,(RtoMPDS[[z]])^3))))
+    rownames(PByCDSWavg) <- lapply(1:length(PByCDS),
+        function(x) paste("Pattern",x))
 
     #scale ps
     Pmax <- apply(PByCDSWavg,1,max)
-    PByCDSWavgScaled <- t(sapply(1:dim(PByCDSWavg)[1],function(x) PByCDSWavg[x,]/Pmax[x]))
+    PByCDSWavgScaled <- t(sapply(1:dim(PByCDSWavg)[1],
+        function(x) PByCDSWavg[x,] / Pmax[x]))
     rownames(PByCDSWavgScaled) <- rownames(PByCDSWavg)
 
-    if(bySet)
+    if (bySet)
     {
         # return by set and final
         PBySet<-PByCDS

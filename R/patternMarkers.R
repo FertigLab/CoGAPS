@@ -12,56 +12,75 @@
 patternMarkers <- function(Amatrix=NA, scaledPmatrix=FALSE, Pmatrix=NA,
 threshold="all", lp=NA, full=FALSE)
 {
-    if(scaledPmatrix==FALSE)
+    if (scaledPmatrix==FALSE)
     {
-        if(!is.na(Pmatrix)){
-        pscale <- apply(Pmatrix,1,max)   # rescale p's to have max 1
-        Amatrix <- sweep(Amatrix, 2, pscale, FUN="*")   # rescale A in accordance with p's having max 1
+        if(!is.na(Pmatrix))
+        {
+            pscale <- apply(Pmatrix,1,max)   # rescale p's to have max 1
+            Amatrix <- sweep(Amatrix, 2, pscale, FUN="*")   # rescale A in accordance with p's having max 1
         }
-        else(warning("P values must be provided if not already scaled"))
+        else
+        {
+            warning("P values must be provided if not already scaled")
+        }
     }
 
     # find the A with the highest magnitude
     Arowmax <- t(apply(Amatrix, 1, function(x) x/max(x)))
 
-    if(!is.na(lp))
+    if (!is.na(lp))
     {
-        if(length(lp)!=dim(Amatrix)[2]){
+        if (length(lp) != dim(Amatrix)[2])
+        {
             warning("lp length must equal the number of columns of the Amatrix")
         }
         sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
         ssranks <-rank(sstat)
-        ssgenes.th <-names(sort(sstat,decreasing=FALSE,na.last=TRUE))
-    } else {
+        ssgenes.th <- names(sort(sstat,decreasing=FALSE,na.last=TRUE))
+    }
+    else
+    {
         # determine which genes are most associated with each pattern
 
         sstat<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))
         ssranks<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))#list()
         ssgenes<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=NULL)
-        for(i in 1:nP){
+        for (i in 1:nP)
+        {
             lp <- rep(0,dim(Amatrix)[2])
             lp[i] <- 1
             sstat[,i] <- unlist(apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp))))
             ssranks[,i]<-rank(sstat[,i])
             ssgenes[,i]<-names(sort(sstat[,i],decreasing=FALSE,na.last=TRUE))
         }
-        if(threshold=="cut"){
+        if (threshold=="cut")
+        {
             geneThresh <- sapply(1:nP,function(x) min(which(ssranks[ssgenes[,x],x] > apply(ssranks[ssgenes[,x],],1,min))))
             ssgenes.th <- sapply(1:nP,function(x) ssgenes[1:geneThresh[x],x])
         }
-        else if (threshold=="all"){
+        else if (threshold=="all")
+        {
             pIndx<-unlist(apply(sstat,1,which.min))
             gBYp <- list()
-            for(i in sort(unique(pIndx))){
+            for(i in sort(unique(pIndx)))
+            {
                 gBYp[[i]]<-sapply(strsplit(names(pIndx[pIndx==i]),"[.]"),function(x) x[[1]][1])
             }
-            ssgenes.th <- lapply(1:max(sort(unique(pIndx))), function(x) {
-                ssgenes[which(ssgenes[,x] %in% gBYp[[x]]),x]
-            })
-        } else{stop("Threshold arguement not viable option")}
+            ssgenes.th <- lapply(1:max(sort(unique(pIndx))), function(x)
+                ssgenes[which(ssgenes[,x] %in% gBYp[[x]]),x])
+        }
+        else
+        {
+            stop("Threshold arguement not viable option")
+        }
     }
     if (full)
-        return(list("PatternMarkers"=ssgenes.th,"PatternRanks"=ssranks,"PatternMarkerScores"=sstat))
+    {
+        return(list("PatternMarkers"=ssgenes.th, "PatternRanks"=ssranks,
+            "PatternMarkerScores"=sstat))
+    }
     else
+    {
         return("PatternMarkers"=ssgenes.th)
+    }
 }

@@ -40,8 +40,9 @@ the data matrix for whole genome data;
 data(SimpSim)
 sim_name <- "example"
 createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
-result <- GWCoGAPS(sim_name, nFactor=3, nEquil=1000, nSample=1000)
+result <- GWCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
 }
 \seealso{
 \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
 }
+
