@@ -4,8 +4,7 @@
 \alias{GWCoGapsFromCheckpoint}
 \title{Restart a GWCoGaps Run from Checkpoint}
 \usage{
-GWCoGapsFromCheckpoint(simulationName, nCores = NA, cut = NA, minNS = NA,
-  ...)
+GWCoGapsFromCheckpoint(simulationName, nCores, cut = NA, minNS = NA, ...)
 }
 \arguments{
 \item{simulationName}{name of this simulation}
@@ -23,5 +22,12 @@ list of A and P estimates
 }
 \description{
 Restart a GWCoGaps Run from Checkpoint
+}
+\examples{
+data(SimpSim)
+sim_name <- "example"
+createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
+trash <- GWCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
+result <- GWCoGapsFromCheckpoint(sim_name, 2)
 }
 

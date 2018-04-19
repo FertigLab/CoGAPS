@@ -22,16 +22,18 @@ postFixed4Parallel <- function(AP.fixed, setValues, setMatrix="P")
         X <- apply(Pneu,1,range)
         Y <- apply(setValues,1,range)
         colnames(X) <- colnames(Y)
-        if (all.equal(X,Y,tolerance=0.01) != TRUE)
+        if (!all.equal(X,Y,tolerance=0.01))
+        {
             warning("Patterns do not match fixed values.")
+        }
 
         As4fixPs<-list("A"=Aneu,"Asd"=Asd)
         return(As4fixPs)
     }
     else if (setMatrix=="A")
     {
-        PSummary <- do.call(cbind,lapply(AP.fixed, function(x) x$Pmean))
-        Psd <- do.call(cbind,lapply(AP.fixed, function(x) x$Psd))
+        PSummary <- do.call(cbind, lapply(AP.fixed, function(x) x$Pmean))
+        Psd <- do.call(cbind, lapply(AP.fixed, function(x) x$Psd))
         #PSummary <- do.call(rbind,lapply(AP.fixed, function(x) x$Pmean))
         ASummary <- AP.fixed[[1]]$Amean
 
@@ -39,13 +41,16 @@ postFixed4Parallel <- function(AP.fixed, setValues, setMatrix="P")
         Aneu <- sweep(ASummary,2,Amax,FUN="/")
         Pneu <- sweep(PSummary,1,Amax,FUN="*")
 
-        X <- apply(Aneu,2,range)
-        Y <- apply(setValues,2,range)
+        X <- apply(Aneu, 2, range)
+        Y <- apply(setValues, 2, range)
+        rownames(X) <- rownames(Y)
         colnames(X) <- colnames(Y)
-        if (all.equal(X,Y,tolerance=0.01) != TRUE)
+        if (!all.equal(X, Y, tolerance=0.01))
+        {
             warning("As do not match fixed values.")
+        }
 
-        Ps4fixAs<-list("P"=Pneu,"Psd"=Psd)
+        Ps4fixAs <- list("P"=Pneu,"Psd"=Psd)
         return(Ps4fixAs)
     }
     else
