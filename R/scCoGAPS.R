@@ -1,4 +1,5 @@
 #' scCoGAPS
+#' @export
 #'
 #' @details calls the C++ MCMC code and performs Bayesian
 #' matrix factorization returning the two matrices that reconstruct
@@ -13,13 +14,11 @@
 #' @param consensusAs fixed pattern matrix to be used to ensure reciprocity of A weights accross sets 
 #' @param ... additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}
 #' @return list of A and P estimates
-#' @seealso \code{\link{gapsRun}}, \code{\link{patternMatch4singleCell}}, and \code{\link{gapsMapRun}}
 #' @examples
 #' data(SimpSim)
 #' sim_name <- "example"
 #' createscCoGAPSSets(SimpSim.D, nSets=2, simulationName=sim_name)
 #' result <- scCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
-#' @export
 scCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manualMatch=FALSE, consensusAs=NULL, ...)
 {
     if (!is.null(list(...)$checkpointFile))
@@ -37,27 +36,35 @@ scCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manua
             stop("Please provide concensus gene weights upon restarting.")
         }
         matchedAmplitudes <- sc_postInitialPhase(initialResult, length(allDataSets), cut, minNS)
-        #save(matchedAmplitudes, file=paste(simulationName, "_matched_As.RData", sep=""))
-        consensusAs<-t(matchedAmplitudes[[1]])
+        consensusAs <- matchedAmplitudes[[1]]
+        save(consensusAs, file=paste(simulationName, "_matched_As.RData", sep=""))
     } 
     finalResult <- sc_runFinalPhase(simulationName, allDataSets, consensusAs, nCores, ...)
     return(sc_postFinalPhase(finalResult, consensusAs))
 }
 
 #' Restart a scCoGAPS run from a Checkpoint
+#' @export
 #'
 #' @inheritParams GWCoGAPS
 #' @return list of A and P estimates
 #' @importFrom utils file_test
-#' @export
-scCoGAPSFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, ...)
+#' @examples
+#' data(SimpSim)
+#' sim_name <- "example"
+#' createscCoGAPSSets(SimpSim.D, nSets=2, simulationName=sim_name)
+#' trash <- scCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
+#' scCoGapsFromCheckpoint(sim_name, 2)
+scCoGapsFromCheckpoint <- function(simulationName, nCores, cut=NA, minNS=NA, ...)
 {
     # find data files
     allDataSets <- sc_preInitialPhase(simulationName, nCores)
 
     # figure out phase from file signature
-    initialCpts <- list.files(full.names=TRUE, pattern=paste(simulationName, "_initial_cpt_[0-9]+.out", sep=""))
-    finalCpts <- list.files(full.names=TRUE, pattern=paste(simulationName, "_final_cpt_[0-9]+.out", sep=""))
+    initialCpts <- list.files(full.names=TRUE, pattern=paste(simulationName,
+            "_initial_cpt_[0-9]+.out", sep=""))
+    finalCpts <- list.files(full.names=TRUE, pattern=paste(simulationName,
+            "_final_cpt_[0-9]+.out", sep=""))
 
     if (length(finalCpts))
     {
@@ -65,10 +72,12 @@ scCoGAPSFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, 
         {
             # load data set and shift values so gene minimum is zero
             load(allDataSets[[i]])
-            sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x) pmin(0,min(x))))
+            sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x)
+                pmin(0,min(x))))
     
             # run CoGAPS with fixed patterns
-            cptFileName <- paste(simulationName, "_final_cpt_", i, ".out", sep="")
+            cptFileName <- paste(simulationName, "_final_cpt_", i, ".out",
+                sep="")
             CoGapsFromCheckpoint(sampleD, sampleS, cptFileName)
         }
         load(paste(simulationName, "_matched_As.RData", sep=""))
@@ -76,8 +85,8 @@ scCoGAPSFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, 
     else if (file_test("-f", paste(simulationName, "_matched_As.RData", sep="")))
     {
         load(paste(simulationName, "_matched_As.RData", sep=""))
-        consensusAs<-matchedAmplitudes[[1]]
-        finalResult <- sc_runFinalPhase(simulationName, allDataSets, consensusAs, ...)
+        finalResult <- sc_runFinalPhase(simulationName, allDataSets,
+            consensusAs, nCores, ...)
     }
     else if (length(initialCpts))
     {
@@ -86,22 +95,27 @@ scCoGAPSFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, 
         {
             # load data set and shift values so gene minimum is zero
             load(allDataSets[[i]])
-            sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x) pmin(0,min(x))))
+            sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x)
+                pmin(0,min(x))))
 
             # run CoGAPS from checkpoint
-            cptFileName <- paste(simulationName, "_initial_cpt_", i, ".out", sep="")
+            cptFileName <- paste(simulationName, "_initial_cpt_", i, ".out",
+                sep="")
             CoGapsFromCheckpoint(sampleD, sampleS, cptFileName)
         }
-        matchedAmplitudes <- sc_postInitialPhase(initialResult, length(allDataSets), cut, minNS)
-        save(matchedAmplitudes, file=paste(simulationName, "_matched_As.RData", sep=""))
-        consensusAs<-matchedAmplitudes[[1]]
-        finalResult <- sc_runFinalPhase(simulationName, allDataSets, consensusAs, ...)
+        matchedAmplitudes <- sc_postInitialPhase(initialResult,
+            length(allDataSets), cut, minNS)
+        consensusAs <- matchedAmplitudes[[1]]
+        save(consensusAs, file=paste(simulationName, "_matched_As.RData",
+            sep=""))
+        finalResult <- sc_runFinalPhase(simulationName, allDataSets,
+            consensusAs, nCores, ...)
     }
     else
     {
         stop("no checkpoint files found")
     }
-    return(sc_postFinalPhase(finalResult, matchedAmplitudes))
+    return(sc_postFinalPhase(finalResult, consensusAs))
 }
 
 sc_preInitialPhase <- function(simulationName, nCores)
@@ -150,8 +164,8 @@ sc_postInitialPhase <- function(initialResult, nSets, cut, minNS)
         cut <- nFactor
     }
 
-    return(patternMatch4singleCell(Atot=BySet$A, nP=nFactor, nSets=nSets, cnt=cut,
-        minNS=minNS, bySet=TRUE))
+    return(cellMatchR(Atot=BySet$A, nSets=nSets, cnt=cut, minNS=minNS,
+        bySet=TRUE))
 }
 
 sc_runFinalPhase <- function(simulationName, allDataSets, consensusAs, nCores, ...)
@@ -175,7 +189,7 @@ sc_runFinalPhase <- function(simulationName, allDataSets, consensusAs, nCores, .
     nut <- generateSeeds(chains=length(allDataSets), seed=-1)
 
     # final number of factors
-    nFactorFinal <- nrow(consensusAs)
+    nFactorFinal <- ncol(consensusAs)
 
     # run fixed CoGAPS
     finalResult <- foreach(i=1:length(allDataSets)) %dopar%
@@ -196,7 +210,7 @@ sc_runFinalPhase <- function(simulationName, allDataSets, consensusAs, nCores, .
 
 sc_postFinalPhase <- function(finalResult, consensusAs)
 {
-    Aresult <- postFixed4Parallel(finalResult, consensusAs)
+    Aresult <- postFixed4Parallel(finalResult, consensusAs, setMatrix="A")
     finalResult <- list("Pmean"=Aresult$P, "Psd"=Aresult$Psd,"Amean"=consensusAs)
     class(finalResult) <- append(class(finalResult), "CoGAPS")
     return(finalResult)

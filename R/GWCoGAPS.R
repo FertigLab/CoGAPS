@@ -38,7 +38,7 @@ GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manua
         }
         matchedPatternSets <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
         save(matchedPatternSets, file=paste(simulationName, "_matched_ps.RData", sep=""))
-        consensusPatterns<-matchedPatternSets[[1]]
+        consensusPatterns <- matchedPatternSets[[1]]
     } 
     finalResult <- runFinalPhase(simulationName, allDataSets, consensusPatterns, nCores, ...)
     return(postFinalPhase(finalResult, consensusPatterns))
@@ -49,15 +49,23 @@ GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manua
 #' @inheritParams GWCoGAPS
 #' @return list of A and P estimates
 #' @importFrom utils file_test
+#' @examples
+#' data(SimpSim)
+#' sim_name <- "example"
+#' createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
+#' trash <- GWCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
+#' result <- GWCoGapsFromCheckpoint(sim_name, 2)
 #' @export
-GWCoGapsFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, ...)
+GWCoGapsFromCheckpoint <- function(simulationName, nCores, cut=NA, minNS=NA, ...)
 {
     # find data files
     allDataSets <- preInitialPhase(simulationName, nCores)
 
     # figure out phase from file signature
-    initialCpts <- list.files(full.names=TRUE, pattern=paste(simulationName, "_initial_cpt_[0-9]+.out", sep=""))
-    finalCpts <- list.files(full.names=TRUE, pattern=paste(simulationName, "_final_cpt_[0-9]+.out", sep=""))
+    initialCpts <- list.files(full.names=TRUE, pattern=paste(simulationName,
+        "_initial_cpt_[0-9]+.out", sep=""))
+    finalCpts <- list.files(full.names=TRUE, pattern=paste(simulationName,
+        "_final_cpt_[0-9]+.out", sep=""))
 
     if (length(finalCpts))
     {
@@ -65,10 +73,12 @@ GWCoGapsFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, 
         {
             # load data set and shift values so gene minimum is zero
             load(allDataSets[[i]])
-            sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x) pmin(0,min(x))))
+            sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x)
+                pmin(0,min(x))))
     
             # run CoGAPS with fixed patterns
-            cptFileName <- paste(simulationName, "_final_cpt_", i, ".out", sep="")
+            cptFileName <- paste(simulationName, "_final_cpt_", i, ".out",
+                sep="")
             CoGapsFromCheckpoint(sampleD, sampleS, cptFileName)
         }
         load(paste(simulationName, "_matched_ps.RData", sep=""))
@@ -77,7 +87,8 @@ GWCoGapsFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, 
     {
         load(paste(simulationName, "_matched_ps.RData", sep=""))
         consensusPatterns<-matchedPatternSets[[1]]
-        finalResult <- runFinalPhase(simulationName, allDataSets, consensusPatterns, ...)
+        finalResult <- runFinalPhase(simulationName, allDataSets,
+            consensusPatterns, nCores, ...)
     }
     else if (length(initialCpts))
     {
@@ -86,22 +97,27 @@ GWCoGapsFromCheckpoint <- function(simulationName, nCores=NA, cut=NA, minNS=NA, 
         {
             # load data set and shift values so gene minimum is zero
             load(allDataSets[[i]])
-            sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x) pmin(0,min(x))))
+            sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x)
+                pmin(0,min(x))))
 
             # run CoGAPS from checkpoint
-            cptFileName <- paste(simulationName, "_initial_cpt_", i, ".out", sep="")
+            cptFileName <- paste(simulationName, "_initial_cpt_", i, ".out",
+                sep="")
             CoGapsFromCheckpoint(sampleD, sampleS, cptFileName)
         }
-        matchedPatternSets <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
-        save(matchedPatternSets, file=paste(simulationName, "_matched_ps.RData", sep=""))
+        matchedPatternSets <- postInitialPhase(initialResult,
+            length(allDataSets), cut, minNS)
+        save(matchedPatternSets, file=paste(simulationName, "_matched_ps.RData",
+            sep=""))
         consensusPatterns<-matchedPatternSets[[1]]
-        finalResult <- runFinalPhase(simulationName, allDataSets, consensusPatterns, ...)
+        finalResult <- runFinalPhase(simulationName, allDataSets,
+            consensusPatterns, nCores, ...)
     }
     else
     {
         stop("no checkpoint files found")
     }
-    return(postFinalPhase(finalResult, matchedPatternSets))
+    return(postFinalPhase(finalResult, consensusPatterns))
 }
 
 preInitialPhase <- function(simulationName, nCores)
