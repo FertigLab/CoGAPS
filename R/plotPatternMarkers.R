@@ -13,7 +13,7 @@
 #' @return heatmap of the \code{data} values for the \code{patternMarkers}
 #' @seealso  \code{\link{heatmap.2}}
 plotPatternMarkers <- function(data=NA, patternMarkers=NA, patternPalette=NA,
-sampleNames=NA, samplePalette=NULL, colDenogram=TRUE, heatmapCol=bluered,
+sampleNames=NA, samplePalette=NULL, colDenogram=TRUE, heatmapCol,
 scale='row', ...)
 {
     if (is.null(samplePalette))
