@@ -46,24 +46,25 @@ unsigned nSample, const std::string &fileName, const std::string &cptFile)
 }
 
 // [[Rcpp::export]]
-void displayBuildReport_cpp()
+std::string getBuildReport_cpp()
 {
 #if defined( __clang__ )
-    Rcpp::Rcout << "Compiled with Clang\n";
+    std::string compiler = "Compiled with Clang\n";
 #elif defined( __INTEL_COMPILER )
-    Rcpp::Rcout << "Compiled with Intel ICC/ICPC\n";
+    std::string compiler = "Compiled with Intel ICC/ICPC\n";
 #elif defined( __GNUC__ )
-    Rcpp::Rcout << "Compiled with GCC v" << STR( __GNUC__ ) << "."
-        << STR( __GNUC_MINOR__ ) << '\n';
+    std::string compiler = "Compiled with GCC v" + std::string(STR( __GNUC__ ))
+    + "." + std::string(STR( __GNUC_MINOR__ )) + '\n';
 #elif defined( _MSC_VER )
-    Rcpp::Rcout << "Compiled with Microsoft Visual Studio\n";
+    std::string compiler = "Compiled with Microsoft Visual Studio\n";
 #endif
 
 #if defined( __GAPS_AVX__ )
-    Rcpp::Rcout << "AVX enabled\n";
+    std::string simd = "AVX enabled\n";
 #elif defined( __GAPS_SSE__ )
-    Rcpp::Rcout << "SSE enabled\n";
+    std::string simd = "SSE enabled\n";
 #else
-    Rcpp::Rcout << "SIMD not enabled\n";
+    std::string simd = "SIMD not enabled\n";
 #endif
+    return compiler + simd;
 }

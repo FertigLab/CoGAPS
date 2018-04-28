@@ -53,13 +53,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// displayBuildReport_cpp
-void displayBuildReport_cpp();
-RcppExport SEXP _CoGAPS_displayBuildReport_cpp() {
+// getBuildReport_cpp
+std::string getBuildReport_cpp();
+RcppExport SEXP _CoGAPS_getBuildReport_cpp() {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    displayBuildReport_cpp();
-    return R_NilValue;
+    rcpp_result_gen = Rcpp::wrap(getBuildReport_cpp());
+    return rcpp_result_gen;
 END_RCPP
 }
 // run_catch_unit_tests
@@ -76,7 +77,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_CoGAPS_cogaps_cpp", (DL_FUNC) &_CoGAPS_cogaps_cpp, 21},
     {"_CoGAPS_cogapsFromCheckpoint_cpp", (DL_FUNC) &_CoGAPS_cogapsFromCheckpoint_cpp, 7},
-    {"_CoGAPS_displayBuildReport_cpp", (DL_FUNC) &_CoGAPS_displayBuildReport_cpp, 0},
+    {"_CoGAPS_getBuildReport_cpp", (DL_FUNC) &_CoGAPS_getBuildReport_cpp, 0},
     {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 0},
     {NULL, NULL, 0}
 };

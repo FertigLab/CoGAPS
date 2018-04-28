@@ -9,8 +9,8 @@ cogapsFromCheckpoint_cpp <- function(D, S, nFactor, nEquil, nSample, fileName, c
     .Call('_CoGAPS_cogapsFromCheckpoint_cpp', PACKAGE = 'CoGAPS', D, S, nFactor, nEquil, nSample, fileName, cptFile)
 }
 
-displayBuildReport_cpp <- function() {
-    invisible(.Call('_CoGAPS_displayBuildReport_cpp', PACKAGE = 'CoGAPS'))
+getBuildReport_cpp <- function() {
+    .Call('_CoGAPS_getBuildReport_cpp', PACKAGE = 'CoGAPS')
 }
 
 run_catch_unit_tests <- function() {
