@@ -14,11 +14,6 @@
 #' @param consensusAs fixed pattern matrix to be used to ensure reciprocity of A weights accross sets 
 #' @param ... additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}
 #' @return list of A and P estimates
-#' @examples
-#' data(SimpSim)
-#' sim_name <- "example"
-#' createscCoGAPSSets(SimpSim.D, nSets=2, simulationName=sim_name)
-#' result <- scCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
 scCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manualMatch=FALSE, consensusAs=NULL, ...)
 {
     if (!is.null(list(...)$checkpointFile))

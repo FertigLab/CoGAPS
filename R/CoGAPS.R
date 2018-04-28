@@ -103,7 +103,6 @@ checkpointFile="gaps_checkpoint.out", ...)
 #' @param path path to checkpoint file
 #' @param checkpointFile name for future checkpooints made
 #' @return list with A and P matrix estimates
-#' @export
 CoGapsFromCheckpoint <- function(D, S, path, checkpointFile=NA)
 {
     if (is.na(checkpointFile))

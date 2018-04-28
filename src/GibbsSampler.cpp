@@ -26,7 +26,7 @@ mAMatrix(D.nrow(), nFactor), mPMatrix(nFactor, D.ncol()),
 mADomain('A', D.nrow(), nFactor), mPDomain('P', nFactor, D.ncol()),
 mAMeanMatrix(D.nrow(), nFactor), mAStdMatrix(D.nrow(), nFactor),
 mPMeanMatrix(nFactor, D.ncol()), mPStdMatrix(nFactor, D.ncol()),
-mPumpMatrix(D.nrow(), nFactor), mPumpThreshold(pumpThreshold), mStatUpdates(0),
+mStatUpdates(0), mPumpMatrix(D.nrow(), nFactor), mPumpThreshold(pumpThreshold),
 mPumpStatUpdates(0), mMaxGibbsMassA(maxGibbmassA), mMaxGibbsMassP(maxGibbmassP),
 mAnnealingTemp(1.0), mSingleCellRNASeq(singleCellRNASeq), mNumFixedPatterns(0),
 mFixedMat(whichMatrixFixed)
