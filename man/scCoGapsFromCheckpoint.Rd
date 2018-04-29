@@ -23,11 +23,4 @@ list of A and P estimates
 \description{
 Restart a scCoGAPS run from a Checkpoint
 }
-\examples{
-data(SimpSim)
-sim_name <- "example"
-createscCoGAPSSets(SimpSim.D, nSets=2, simulationName=sim_name)
-trash <- scCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
-scCoGapsFromCheckpoint(sim_name, 2)
-}
 
