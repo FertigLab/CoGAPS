@@ -39,17 +39,10 @@ scCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manua
 }
 
 #' Restart a scCoGAPS run from a Checkpoint
-#' @export
 #'
 #' @inheritParams GWCoGAPS
 #' @return list of A and P estimates
 #' @importFrom utils file_test
-#' @examples
-#' data(SimpSim)
-#' sim_name <- "example"
-#' createscCoGAPSSets(SimpSim.D, nSets=2, simulationName=sim_name)
-#' trash <- scCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
-#' scCoGapsFromCheckpoint(sim_name, 2)
 scCoGapsFromCheckpoint <- function(simulationName, nCores, cut=NA, minNS=NA, ...)
 {
     # find data files
