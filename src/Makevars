@@ -12,6 +12,7 @@ OBJECTS =   Algorithms.o \
             test-runner.o \
             cpp_tests/testAlgorithms.o \
             cpp_tests/testAtomicDomain.o \
+            cpp_tests/testGapsRunner.o \
             cpp_tests/testGibbsSampler.o \
             cpp_tests/testMatrix.o \
             cpp_tests/testProposalQueue.o \

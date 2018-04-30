@@ -20,9 +20,14 @@ enum GapsPhase
     GAPS_SAMP
 };
 
+// Manages all data and parameters for running CoGAPS; contains the high-level
+// algorithm logic
 class GapsRunner
 {
 private:
+#ifdef GAPS_INTERNAL_TESTS
+public:
+#endif
 
     Vector mChiSqEquil;
     Vector mNumAAtomsEquil;
@@ -86,4 +91,4 @@ public:
     Rcpp::List run();
 };
 
-#endif
+#endif // __COGAPS_GAPS_RUNNER_H__
