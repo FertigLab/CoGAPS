@@ -11,8 +11,8 @@
 #' @param nullGenes logical indicating gene adjustment
 #' @return gene similiarity statistic
 #' @examples
-#' data('SimpSim')
-#' calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, GStoGenes=GSets[[1]],
+#' data("SimpSim")
+#' calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, GSGenes=GSets[[1]],
 #' numPerm=500)
 #' @export
 calcGeneGSStat  <- function(Amean, Asd, GSGenes, numPerm, Pw=rep(1,ncol(Amean)),
@@ -67,8 +67,8 @@ nullGenes=FALSE)
 #' @return A vector of length GSGenes containing the p-values of set membership
 #' for each gene containined in the set specified in GSGenes.
 #' @examples
-#' data('SimpSim')
-#' computeGeneGSProb(SimpSim.result$Amean, SimpSim.result$Asd, GStoGenes=GSets[[1]],
+#' data("SimpSim")
+#' computeGeneGSProb(SimpSim.result$Amean, SimpSim.result$Asd, GSGenes=GSets[[1]],
 #' numPerm=500)
 #' @export
 computeGeneGSProb <- function(Amean, Asd, GSGenes, Pw=rep(1,ncol(Amean)),

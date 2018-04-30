@@ -32,8 +32,8 @@ listed in a gene set behaves like other genes in the set within
 the given data set
 }
 \examples{
-data('SimpSim')
-calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, GStoGenes=GSets[[1]],
+data("SimpSim")
+calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, GSGenes=GSets[[1]],
 numPerm=500)
 }
 

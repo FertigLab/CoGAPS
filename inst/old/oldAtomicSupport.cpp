@@ -136,8 +136,7 @@ AtomicProposal AtomicSupport::proposeExchange() const
 
     // calculate new mass
     float pupper = gaps::random::p_gamma(mass1 + mass2, 2.f, 1.f / mLambda);
-    float newMass = gaps::random::q_gamma(gaps::random::uniform(0.f, pupper),
-        2.f, 1.f / mLambda);
+    float newMass = gaps::random::inverseGammaSample(0.f, pupper, 2.f, 1.f / mLambda);
 
     // calculate mass changes
     float delta1 = mass1 > mass2 ? newMass - mass1 : mass2 - newMass;
