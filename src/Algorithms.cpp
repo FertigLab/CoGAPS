@@ -126,7 +126,6 @@ const float *S, const float *AP, const float *mat)
         s += fratio * fratio;
         su += (fratio * (D[i] - AP[i])) / S[i];
     }
-    Rprintf("%.4f %.4f\n", s, su);
     return AlphaParameters(s,su);
 }
 
