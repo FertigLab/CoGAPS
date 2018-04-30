@@ -87,18 +87,18 @@ TEST_CASE("Test GibbsSampler.h")
         REQUIRE(PStd.nrow() == 5);
         REQUIRE(PStd.ncol() == rD.ncol());
 
-        for (unsigned r = 0; r < AMean.nrow(); ++r)
+        for (signed r = 0; r < AMean.nrow(); ++r)
         {
-            for (unsigned c = 0; c < AMean.ncol(); ++c)
+            for (signed c = 0; c < AMean.ncol(); ++c)
             {
                 REQUIRE(AMean(r,c) >= 0.0);
                 REQUIRE(AStd(r,c) >= 0.0);
             }
         }
 
-        for (unsigned r = 0; r < PMean.nrow(); ++r)
+        for (signed r = 0; r < PMean.nrow(); ++r)
         {
-            for (unsigned c = 0; c < PMean.ncol(); ++c)
+            for (signed c = 0; c < PMean.ncol(); ++c)
             {
                 REQUIRE(PMean(r,c) >= 0.0);
                 REQUIRE(PStd(r,c) >= 0.0);

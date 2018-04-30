@@ -34,8 +34,6 @@
 #' @param fixedPatterns matrix of fixed values in either A or P matrix
 #' @param checkpointInterval time (in seconds) between creating a checkpoint
 #' @param checkpointFile name of the checkpoint file
-#' @param pumpThreshold type of threshold for pump statistic
-#' @param nPumpSamples number of samples used in pump statistic
 #' @param ... keeps backwards compatibility with arguments from older versions
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
@@ -47,8 +45,7 @@ CoGAPS <- function(D, S, nFactor=7, nEquil=1000, nSample=1000, nOutputs=1000,
 nSnapshots=0, alphaA=0.01, alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100,
 seed=-1, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed='N',
 fixedPatterns=matrix(0), checkpointInterval=0, 
-checkpointFile="gaps_checkpoint.out", pumpThreshold="unique",
-nPumpSamples=0, ...)
+checkpointFile="gaps_checkpoint.out", ...)
 {
     # get v2 arguments
     oldArgs <- list(...)
@@ -66,6 +63,14 @@ nPumpSamples=0, ...)
         D <- oldArgs$data
     if (missing(S) & !is.null(oldArgs$unc))
         S <- oldArgs$unc
+
+    # get pump arguments - hidden for now from user
+    pumpThreshold <- "unique"
+    nPumpSamples <- 0
+    if (!is.null(list(...)$pumpThreshold))
+        pumpThreshold <- list(...)$pumpThreshold
+    if (!is.null(list(...)$nPumpSamples))
+        pumpThreshold <- list(...)$nPumpSamples
 
     # check arguments
     if (class(D) != "matrix" | class(S) != "matrix")
@@ -115,7 +120,6 @@ nPumpSamples=0, ...)
 #' @param path path to checkpoint file
 #' @param checkpointFile name for future checkpooints made
 #' @return list with A and P matrix estimates
-#' @export
 CoGapsFromCheckpoint <- function(D, S, path, checkpointFile=NA)
 {
     if (is.na(checkpointFile))
@@ -129,7 +133,7 @@ CoGapsFromCheckpoint <- function(D, S, path, checkpointFile=NA)
 #'  compiler/version was used, which compile time options were enabled, etc...
 #' @return display builds information
 #' @examples
-#'  CoGAPS::displayBuildReport()
+#'  CoGAPS::buildReport()
 #' @export
 buildReport <- function()
 {
@@ -166,7 +170,7 @@ output_atomic=FALSE, fixedBinProbs=FALSE, fixedDomain="N", sampleSnapshots=TRUE,
 numSnapshots=100, alphaA=0.01, nMaxA=100000, max_gibbmass_paraA=100.0,
 alphaP=0.01, nMaxP=100000, max_gibbmass_paraP=100.0, seed=-1, messages=TRUE)
 {
-    #warning('gapsRun is deprecated with v3.0, use CoGAPS')
+    warning('gapsRun is deprecated with v3.0, use CoGAPS')
     CoGAPS(D, S, nFactor=nFactor, nEquil=nEquil, nSample=nSample,
         nOutputs=nOutR, nSnapshots=ifelse(sampleSnapshots,numSnapshots,0),
         alphaA=alphaA, alphaP=alphaP, maxGibbmassA=max_gibbmass_paraA,
@@ -196,7 +200,7 @@ sampleSnapshots=TRUE, numSnapshots=100, alphaA=0.01, nMaxA=100000,
 max_gibbmass_paraA=100.0, alphaP=0.01, nMaxP=100000, max_gibbmass_paraP=100.0,
 seed=-1, messages=TRUE)
 {
-    #warning('gapsMapRun is deprecated with v3.0, use CoGaps')
+    warning('gapsMapRun is deprecated with v3.0, use CoGaps')
     CoGAPS(D, S, nFactor=nFactor, nEquil=nEquil, nSample=nSample,
         nOutputs=nOutR, nSnapshots=ifelse(sampleSnapshots,numSnapshots,0),
         alphaA=alphaA, alphaP=alphaP, maxGibbmassA=max_gibbmass_paraA,
@@ -209,7 +213,7 @@ v2CoGAPS <- function(result, ...)
 {
     if (!is.null(list(...)$GStoGenes))
     {
-        #warning('GStoGenes is deprecated with v3.0, see CoGAPS documentation')
+        warning('GStoGenes is deprecated with v3.0, see CoGAPS documentation')
         if (is.null(list(...)$plot) | list(...)$plot)
         {
             plotGAPS(result$Amean, result$Pmean)

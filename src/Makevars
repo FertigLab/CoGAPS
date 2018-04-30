@@ -1,4 +1,5 @@
 PKG_CPPFLAGS = -DGAPS_DEBUG -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0
+PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0
 OBJECTS =   Algorithms.o \
             AtomicDomain.o \
             Cogaps.o \
