@@ -82,6 +82,7 @@ public:
         unsigned nFactor, unsigned nEquil, unsigned nSample,
         const std::string &cptFile);
 
+    // run all phases of algorithm
     Rcpp::List run();
 };
 
