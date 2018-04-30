@@ -13,23 +13,14 @@
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil,
 unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots,
-float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP, int seed,
-bool messages, bool singleCellRNASeq, char whichMatrixFixed,
+float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP,
+unsigned seed, bool messages, bool singleCellRNASeq, char whichMatrixFixed,
 const Rcpp::NumericMatrix &FP, unsigned checkpointInterval,
 const std::string &cptFile, unsigned pumpThreshold, unsigned nPumpSamples)
 {
-    // get seed, TODO do this on R side, multiple benefits (same seed in R, C++)
-    uint32_t seedUsed = static_cast<uint32_t>(seed);
-    if (seed < 0)
-    {
-        bpt::ptime epoch(boost::gregorian::date(1970,1,1));
-        bpt::time_duration diff = bpt_now() - epoch;
-        seedUsed = static_cast<uint32_t>(diff.total_milliseconds() % 1000);
-    }
-
     // create internal state from parameters and run from there
     GapsRunner runner(D, S, nFactor, nEquil, nEquilCool, nSample,
-        nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seedUsed,
+        nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
         messages, singleCellRNASeq, checkpointInterval, cptFile,
         whichMatrixFixed, FP);
     return runner.run();

@@ -83,6 +83,13 @@ nPumpSamples=0, ...)
     if (whichMatrixFixed == 'P' & ncol(fixedPatterns) != ncol(D))
         stop('invalid number of columns for fixedPatterns')
     thresholdEnum <- c("unique", "cut")
+    
+    # get seed
+    if (seed < 0)
+    {
+        # TODO get time in milliseconds
+        seed <- 0
+    }
 
     # run algorithm with call to C++ code
     result <- cogaps_cpp(D, S, nFactor, nEquil, nEquil/10, nSample, nOutputs,
