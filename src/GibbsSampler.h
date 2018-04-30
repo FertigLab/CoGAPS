@@ -359,6 +359,7 @@ template <class T, class MatA, class MatB>
 float GibbsSampler<T, MatA, MatB>::gibbsMass(unsigned row, unsigned col, float mass)
 {        
     AlphaParameters alpha = impl()->alphaParameters(row, col);
+    Rprintf("%.4f %.4f\n", alpha.s, alpha.su);
     alpha.s *= mAnnealingTemp / 2.0;
     alpha.su *= mAnnealingTemp / 2.0;
     float mean = (2.0 * alpha.su - mLambda) / (2.0 * alpha.s);
