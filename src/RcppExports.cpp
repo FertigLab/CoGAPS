@@ -6,7 +6,7 @@
 using namespace Rcpp;
 
 // cogaps_cpp
-Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix& D, const Rcpp::NumericMatrix& S, unsigned nFactor, unsigned nEquil, unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots, float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP, int seed, bool messages, bool singleCellRNASeq, char whichMatrixFixed, const Rcpp::NumericMatrix& FP, unsigned checkpointInterval, const std::string& cptFile, unsigned pumpThreshold, unsigned nPumpSamples);
+Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix& D, const Rcpp::NumericMatrix& S, unsigned nFactor, unsigned nEquil, unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots, float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP, unsigned seed, bool messages, bool singleCellRNASeq, char whichMatrixFixed, const Rcpp::NumericMatrix& FP, unsigned checkpointInterval, const std::string& cptFile, unsigned pumpThreshold, unsigned nPumpSamples);
 RcppExport SEXP _CoGAPS_cogaps_cpp(SEXP DSEXP, SEXP SSEXP, SEXP nFactorSEXP, SEXP nEquilSEXP, SEXP nEquilCoolSEXP, SEXP nSampleSEXP, SEXP nOutputsSEXP, SEXP nSnapshotsSEXP, SEXP alphaASEXP, SEXP alphaPSEXP, SEXP maxGibbmassASEXP, SEXP maxGibbmassPSEXP, SEXP seedSEXP, SEXP messagesSEXP, SEXP singleCellRNASeqSEXP, SEXP whichMatrixFixedSEXP, SEXP FPSEXP, SEXP checkpointIntervalSEXP, SEXP cptFileSEXP, SEXP pumpThresholdSEXP, SEXP nPumpSamplesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -23,7 +23,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< float >::type alphaP(alphaPSEXP);
     Rcpp::traits::input_parameter< float >::type maxGibbmassA(maxGibbmassASEXP);
     Rcpp::traits::input_parameter< float >::type maxGibbmassP(maxGibbmassPSEXP);
-    Rcpp::traits::input_parameter< int >::type seed(seedSEXP);
+    Rcpp::traits::input_parameter< unsigned >::type seed(seedSEXP);
     Rcpp::traits::input_parameter< bool >::type messages(messagesSEXP);
     Rcpp::traits::input_parameter< bool >::type singleCellRNASeq(singleCellRNASeqSEXP);
     Rcpp::traits::input_parameter< char >::type whichMatrixFixed(whichMatrixFixedSEXP);
