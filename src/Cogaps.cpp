@@ -1,13 +1,7 @@
-#include "Archive.h"
-#include "GapsRunner.h"
-#include "Random.h"
 #include "SIMD.h"
+#include "GapsRunner.h"
 
 #include <Rcpp.h>
-
-// used to convert defined macro values into strings
-#define STR_HELPER(x) #x
-#define STR(x) STR_HELPER(x)
 
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D,
@@ -35,6 +29,10 @@ unsigned nSample, const std::string &fileName, const std::string &cptFile)
     GapsRunner runner(D, S, nFactor, nEquil, nSample, cptFile);
     return runner.run();
 }
+
+// used to convert defined macro values into strings
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
 // [[Rcpp::export]]
 std::string getBuildReport_cpp()
