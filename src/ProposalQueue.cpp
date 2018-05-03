@@ -64,7 +64,6 @@ AtomicProposal ProposalQueue::birth(const AtomicDomain &domain)
 AtomicProposal ProposalQueue::death(const AtomicDomain &domain)
 {
     Atom a = domain.randomAtom();
-    GAPS_ASSERT(domain.test(a.pos));
     return AtomicProposal('D', a.pos, a.mass);
 }
 
@@ -74,7 +73,6 @@ AtomicProposal ProposalQueue::move(const AtomicDomain &domain)
     uint64_t lbound = domain.hasLeft(a) ? domain.left(a).pos : 0;
     uint64_t rbound = domain.hasRight(a) ? domain.right(a).pos : mDomainSize;
     uint64_t newLocation = gaps::random::uniform64(lbound, rbound - 1);
-    GAPS_ASSERT(domain.test(a.pos));
     return AtomicProposal('M', a.pos, a.mass, newLocation);
 }
 
@@ -82,8 +80,5 @@ AtomicProposal ProposalQueue::exchange(const AtomicDomain &domain)
 {
     Atom a1 = domain.randomAtom();
     Atom a2 = domain.hasRight(a1) ? domain.right(a1) : domain.front();
-    GAPS_ASSERT(domain.test(a1.pos));
-    GAPS_ASSERT(domain.test(a2.pos));
-    GAPS_ASSERT(a1.pos != a2.pos);
     return AtomicProposal('E', a1.pos, a1.mass, a2.pos, a2.mass);
 }

@@ -75,8 +75,6 @@ public:
     void erase(uint64_t pos);
     void updateMass(uint64_t pos, float newMass);
 
-    bool test(uint64_t pos) const;
-
     // serialization
     friend Archive& operator<<(Archive &ar, AtomicDomain &domain);
     friend Archive& operator>>(Archive &ar, AtomicDomain &domain);
