@@ -155,7 +155,7 @@ void GapsRunner::storeSamplerInfo(Vector &atomsA, Vector &atomsP, Vector &chi2)
 
 void GapsRunner::displayStatus(const std::string &type, unsigned nIterTotal)
 {
-    if ((mCurrentIter + 1) % mNumOutputs == 0 && mPrintMessages)
+    if (mNumOutputs > 0 && (mCurrentIter + 1) % mNumOutputs == 0 && mPrintMessages)
     {
         Rprintf("%s %d of %d, Atoms:%lu(%lu) Chi2 = %.2f\n", type.c_str(),
             mCurrentIter + 1, nIterTotal, mASampler.nAtoms(),
