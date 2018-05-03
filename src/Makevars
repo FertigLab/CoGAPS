@@ -1,16 +1,15 @@
-PKG_CPPFLAGS = -DGAPS_DEBUG -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0
-PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0
-OBJECTS =   Algorithms.o \
-            AtomicDomain.o \
+PKG_CPPFLAGS =  -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0
+OBJECTS =   AtomicDomain.o \
             Cogaps.o \
             GapsRunner.o \
             GapsStatistics.o \
             GibbsSampler.o \
-            Matrix.o \
             ProposalQueue.o \
-            Random.o \
             RcppExports.o \
             test-runner.o \
+            math/Algorithms.o \
+            math/Matrix.o \
+            math/Random.o \
             cpp_tests/testAlgorithms.o \
             cpp_tests/testAtomicDomain.o \
             cpp_tests/testGapsRunner.o \

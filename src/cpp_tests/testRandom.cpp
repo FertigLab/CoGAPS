@@ -1,5 +1,5 @@
 #include "catch.h"
-#include "../Random.h"
+#include "../math/Random.h"
 
 #define TEST_APPROX(x) Approx(x).epsilon(0.001)
 

@@ -1,7 +1,7 @@
 #include "catch.h"
 
 #include "../GibbsSampler.h"
-#include "../Algorithms.h"
+#include "../math/Algorithms.h"
 
 #include <Rcpp.h>
 

@@ -1,7 +1,7 @@
 // [[Rcpp::depends(BH)]]
 
 #include "Random.h"
-#include "GapsAssert.h"
+#include "../GapsAssert.h"
 
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_real_distribution.hpp>

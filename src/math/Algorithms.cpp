@@ -98,7 +98,6 @@ bool gaps::algo::isColZero(const ColMatrix &mat, unsigned col)
 AlphaParameters gaps::algo::alphaParameters(unsigned size, const float *D,
 const float *S, const float *AP, const float *mat)
 {
-/*
     gaps::simd::packedFloat ratio, pMat, pD, pAP, pS;
     gaps::simd::packedFloat partialS = 0.f, partialSU = 0.f;
     gaps::simd::Index i = 0;
@@ -120,25 +119,12 @@ const float *S, const float *AP, const float *mat)
         su += (fratio * (D[j] - AP[j])) / S[j];
     }
     return AlphaParameters(s,su);
-    float fratio, s = partialS.scalar(), su = partialSU.scalar();
-    for (unsigned j = i.value(); j < size; ++j)
-*/
-    float fratio = 0.f, s = 0.f, su = 0.f;
-    for (unsigned j = 0; j < size; ++j)
-    {
-        fratio = mat[j] / S[j];
-        s += fratio * fratio;
-        su += fratio * (D[j] - AP[j]) / S[j];
-        //Rprintf("AP[j] - %x\n", *((uint32_t*)(&AP[j])));
-    }
-    return AlphaParameters(s,su);
 }
 
 //
 AlphaParameters gaps::algo::alphaParameters(unsigned size, const float *D,
 const float *S, const float *AP, const float *mat1, const float *mat2)
 {
-/*
     gaps::simd::packedFloat ratio, pMat1, pMat2, pD, pAP, pS;
     gaps::simd::packedFloat partialS = 0.f, partialSU = 0.f;
     gaps::simd::Index i = 0;
@@ -153,16 +139,13 @@ const float *S, const float *AP, const float *mat1, const float *mat2)
         partialS += ratio * ratio;
         partialSU += ratio * (pD - pAP) / pS;
     }
+
     float fratio, s = partialS.scalar(), su = partialSU.scalar();
     for (unsigned j = i.value(); j < size; ++j)
-*/
-    float fratio = 0.f, s = 0.f, su = 0.f;
-    for (unsigned j = 0; j < size; ++j)
     {
         fratio = (mat1[j] - mat2[j]) / S[j];
         s += fratio * fratio;
         su += fratio * (D[j] - AP[j]) / S[j];
-        //Rprintf("AP[j] - %x\n", *((uint32_t*)(&AP[j])));
     }
     return AlphaParameters(s,su);
 }

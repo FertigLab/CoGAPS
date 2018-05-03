@@ -1,4 +1,4 @@
-#include "SIMD.h"
+#include "math/SIMD.h"
 #include "GapsRunner.h"
 
 #include <Rcpp.h>

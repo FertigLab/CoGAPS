@@ -1,10 +1,10 @@
 #include "catch.h"
 #include "../Archive.h"
-#include "../Matrix.h"
+#include "../math/Matrix.h"
 #include "../AtomicSupport.h"
 #include "../GibbsSampler.h"
 #include "../InternalState.h"
-#include "../Random.h"
+#include "../math/Random.h"
 
 #if 0
 

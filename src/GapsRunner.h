@@ -2,7 +2,7 @@
 #define __COGAPS_GAPS_RUNNER_H__
 
 #include "Archive.h"
-#include "Matrix.h"
+#include "math/Matrix.h"
 #include "GibbsSampler.h"
 #include "GapsStatistics.h"
 

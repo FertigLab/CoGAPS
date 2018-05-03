@@ -1,6 +1,6 @@
 #include "GapsAssert.h"
 #include "AtomicDomain.h"
-#include "Random.h"
+#include "math/Random.h"
 
 #include <stdint.h>
 #include <utility>

@@ -33,7 +33,7 @@ public:
             *this >> magicNum;
             if (magicNum != ARCHIVE_MAGIC_NUM)
             {
-                Rcpp::Rcout << "warning: invalid/old checkpoint file" << std::endl;
+                Rcpp::Rcout << "warning: invalid checkpoint file" << std::endl;
             }
         }*/
     }

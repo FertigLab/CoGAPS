@@ -42,15 +42,9 @@ void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
 
 void AmplitudeGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
 {
-    //Rprintf("ap_update - %d %d %.12f\n", row, col, delta);
-    //Rprintf("ap_update - %d %d %x\n", row, col, *((uint32_t*)(&delta)));
     for (unsigned j = 0; j < mAPMatrix.nCol(); ++j)
     {
-        float temp = (*mOtherMatrix)(col,j);
-        //Rprintf("P[j] - %x\n", *((uint32_t*)(&temp)));
         mAPMatrix(row,j) += delta * (*mOtherMatrix)(col,j);
-        //float temp = mAPMatrix(row,j);
-        //Rprintf("ap_update_fin - %x\n", *((uint32_t*)(&temp)));
     }
 }
 
@@ -141,14 +135,9 @@ void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)
 
 void PatternGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
 {
-    //Rprintf("ap_update - %d %d %x\n", row, col, *((uint32_t*)(&delta)));
     for (unsigned i = 0; i < mAPMatrix.nRow(); ++i)
     {
-        float temp = (*mOtherMatrix)(i,row);
-        //Rprintf("A[i] - %x\n", *((uint32_t*)(&temp)));
         mAPMatrix(i,col) += delta * (*mOtherMatrix)(i,row);
-        //float temp = mAPMatrix(i,col);
-        //Rprintf("ap_update_fin - %x\n", *((uint32_t*)(&temp)));
     }
 }
 

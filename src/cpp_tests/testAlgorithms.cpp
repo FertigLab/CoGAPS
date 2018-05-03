@@ -1,6 +1,6 @@
 #include "catch.h"
-#include "../Matrix.h"
-#include "../Algorithms.h"
+#include "../math/Matrix.h"
+#include "../math/Algorithms.h"
 
 #define MAT_SUM(nR, nC) ((nR + nC - 2) * nR * nC / 2.f)
 

@@ -3,9 +3,9 @@
 
 #include "GapsAssert.h"
 #include "Archive.h"
-#include "Matrix.h"
-#include "Random.h"
-#include "Algorithms.h"
+#include "math/Matrix.h"
+#include "math/Random.h"
+#include "math/Algorithms.h"
 #include "ProposalQueue.h"
 #include "AtomicDomain.h"
 
@@ -230,7 +230,6 @@ unsigned col)
         : temp;
     if (mass >= gaps::algo::epsilon)
     {
-        //Rprintf("B - %x\n", *((uint32_t*)&mass));
         addMass(pos, mass, row, col);
     }
 }
@@ -247,7 +246,6 @@ unsigned col)
     float deltaLL = impl()->computeDeltaLL(row, col, mass);
     if (deltaLL * mAnnealingTemp >= std::log(gaps::random::uniform()))
     {
-        //Rprintf("D - %x\n", *((uint32_t*)&mass));
         addMass(pos, mass, row, col);
     }
 }
@@ -262,8 +260,6 @@ unsigned r1, unsigned c1, unsigned r2, unsigned c2)
         float deltaLL = impl()->computeDeltaLL(r1, c1, -mass, r2, c2, mass);
         if (deltaLL * mAnnealingTemp > std::log(gaps::random::uniform()))
         {
-            float temp = -mass;
-            //Rprintf("%x %x\n", *((uint32_t*)(&temp)), *((uint32_t*)(&mass)));
             removeMass(src, mass, r1, c1);
             addMass(dest, mass, r2, c2);
         }
@@ -368,7 +364,6 @@ template <class T, class MatA, class MatB>
 float GibbsSampler<T, MatA, MatB>::gibbsMass(unsigned row, unsigned col, float mass)
 {        
     AlphaParameters alpha = impl()->alphaParameters(row, col);
-    //Rprintf("alpha param - %f %f\n", alpha.s, alpha.su);
     alpha.s *= mAnnealingTemp / 2.0;
     alpha.su *= mAnnealingTemp / 2.0;
     float mean = (2.0 * alpha.su - mLambda) / (2.0 * alpha.s);
@@ -402,7 +397,6 @@ float GibbsSampler<T, MatA, MatB>::gibbsMass(unsigned r1, unsigned c1, float m1,
 unsigned r2, unsigned c2, float m2)
 {
     AlphaParameters alpha = impl()->alphaParameters(r1, c1, r2, c2);
-    //Rprintf("alpha param - %f %f\n", alpha.s, alpha.su);
     alpha.s *= mAnnealingTemp;
     alpha.su *= mAnnealingTemp;
 
