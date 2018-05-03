@@ -1,7 +1,7 @@
 #ifndef __COGAPS_MATRIX_H__
 #define __COGAPS_MATRIX_H__
 
-#include "Archive.h"
+#include "../Archive.h"
 
 #include <Rcpp.h>
 #include <boost/align/aligned_allocator.hpp>

@@ -1,6 +1,6 @@
 #include "GapsAssert.h"
 #include "ProposalQueue.h"
-#include "Random.h"
+#include "math/Random.h"
 
 void ProposalQueue::setNumBins(unsigned nBins)
 {

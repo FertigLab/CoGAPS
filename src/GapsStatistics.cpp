@@ -1,5 +1,5 @@
 #include "GapsStatistics.h"
-#include "Algorithms.h"
+#include "math/Algorithms.h"
 
 GapsStatistics::GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor)
     : mAMeanMatrix(nRow, nFactor), mAStdMatrix(nRow, nFactor),
