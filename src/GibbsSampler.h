@@ -348,12 +348,8 @@ void GibbsSampler<T, MatA, MatB>::acceptExchange(uint64_t p1, float m1,
 float d1, uint64_t p2, float m2, float d2, unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
-    //Rprintf("%x %x\n", *((uint32_t*)(&d1)), *((uint32_t*)(&d2)));
-
-    GAPS_ASSERT(p1 != p2);
     d1 = updateAtomMass(p1, m1, d1);
     d2 = updateAtomMass(p2, m2, d2);
-
     mMatrix(r1, c1) += d1;
     mMatrix(r2, c2) += d2;
     impl()->updateAPMatrix(r1, c1, d1);

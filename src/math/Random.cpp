@@ -142,7 +142,6 @@ float gaps::random::p_norm(float p, float mean, float sd)
 
 float gaps::random::inverseNormSample(float a, float b, float mean, float sd)
 {
-    GAPS_ASSERT(!((a == 0.f && b == 0.f) || (a == 1.f && b == 1.f)));
     float u = gaps::random::uniform(a, b);
     while (u == 0.f || u == 1.f)
     {
@@ -153,7 +152,6 @@ float gaps::random::inverseNormSample(float a, float b, float mean, float sd)
 
 float gaps::random::inverseGammaSample(float a, float b, float mean, float sd)
 {
-    GAPS_ASSERT(!((a == 0.f && b == 0.f) || (a == 1.f && b == 1.f)));
     float u = gaps::random::uniform(a, b);
     while (u == 0.f || u == 1.f)
     {

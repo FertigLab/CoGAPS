@@ -11,16 +11,12 @@ const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
 
 unsigned AmplitudeGibbsSampler::getRow(uint64_t pos) const
 {
-    unsigned row = pos / (mBinSize * mNumCols);
-    GAPS_ASSERT(row >= 0 && row < mNumRows);
-    return row;
+    return pos / (mBinSize * mNumCols);
 }
 
 unsigned AmplitudeGibbsSampler::getCol(uint64_t pos) const
 {
-    unsigned col = (pos / mBinSize) % mNumCols;
-    GAPS_ASSERT(col >= 0 && col < mNumCols);
-    return col;
+    return (pos / mBinSize) % mNumCols;
 }
 
 bool AmplitudeGibbsSampler::canUseGibbs(unsigned row, unsigned col) const
@@ -104,16 +100,12 @@ const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
 
 unsigned PatternGibbsSampler::getRow(uint64_t pos) const
 {
-    unsigned row = (pos / mBinSize) % mNumRows;
-    GAPS_ASSERT(row >= 0 && row < mNumRows);
-    return row;
+    return (pos / mBinSize) % mNumRows;
 }
 
 unsigned PatternGibbsSampler::getCol(uint64_t pos) const
 {
-    unsigned col = pos / (mBinSize * mNumRows);
-    GAPS_ASSERT(col >= 0 && col < mNumCols);
-    return col;
+    return pos / (mBinSize * mNumRows);
 }
 
 bool PatternGibbsSampler::canUseGibbs(unsigned row, unsigned col) const
