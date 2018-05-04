@@ -48,6 +48,9 @@ class AtomicDomain
 {
 private:
 
+    // size of atomic domain
+    uint64_t mDomainSize;
+
     // domain storage
     std::vector<Atom> mAtoms;
     std::map<uint64_t, uint64_t> mAtomPositions;
@@ -56,6 +59,8 @@ private:
     boost::unordered_set<uint64_t> mUsedPositions;
 
 public:
+
+    void setDomainSize(uint64_t size) { mDomainSize = size; }
 
     // access atoms
     Atom front() const;

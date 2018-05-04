@@ -3,6 +3,8 @@
 #include "Random.h"
 #include "../GapsAssert.h"
 
+// TODO remove boost dependency
+
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -19,8 +21,8 @@
 #define Q_GAMMA_THRESHOLD 0.000001f
 #define Q_GAMMA_MIN_VALUE 0.0
 
-typedef boost::random::mt19937 RNGType;
-//typedef boost::random::mt11213b RNGType; // should be faster
+//typedef boost::random::mt19937 RNGType;
+typedef boost::random::mt11213b RNGType; // should be faster
 
 static RNGType rng;
 static boost::random::uniform_01<RNGType&> u01_dist(rng);
