@@ -28,6 +28,8 @@ namespace algo
 {
     const float epsilon = 1.0e-10f;
 
+    bool isVectorZero(const float *vec, unsigned size);
+
     // vector algorithms    
     unsigned whichMin(const Vector &vec);
     float sum(const Vector &vec);
@@ -52,8 +54,6 @@ namespace algo
         const GenericMatrix &meanMat, unsigned nUpdates);
 
     // specific matrix algorithms
-    bool isRowZero(const RowMatrix &mat, unsigned row); // TODO take pointer
-    bool isColZero(const ColMatrix &mat, unsigned col);
     RowMatrix matrixMultiplication(const ColMatrix &A, const RowMatrix &B);
 
     // chiSq / 2

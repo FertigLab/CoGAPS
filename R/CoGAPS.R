@@ -135,7 +135,7 @@ CoGapsFromCheckpoint <- function(D, S, path, checkpointFile=NA)
 #' @examples
 #'  CoGAPS::buildReport()
 #' @export
-displayBuildReport <- function()
+buildReport <- function()
 {
     getBuildReport_cpp()
 }

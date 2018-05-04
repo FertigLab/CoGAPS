@@ -19,15 +19,10 @@ void ProposalQueue::setAlpha(float alpha)
 
 float ProposalQueue::deathProb(uint64_t nAtoms) const
 {
-    //double size = static_cast<double>(mDomainSize);
-    //double term1 = (size - static_cast<double>(nAtoms)) / size;
-    //double term2 = mAlpha * static_cast<double>(mNumBins) * term1;
-    //return static_cast<double>(nAtoms) / (static_cast<double>(nAtoms) + term2);
-    float dMax = (float)mDomainSize;
-    float dNum = (float)nAtoms;
-    float maxTerm = (dMax - dNum) / dMax;
-
-    return dNum / (dNum + mAlpha * (float)mNumBins * maxTerm);
+    double size = static_cast<double>(mDomainSize);
+    double term1 = (size - static_cast<double>(nAtoms)) / size;
+    double term2 = mAlpha * static_cast<double>(mNumBins) * term1;
+    return static_cast<double>(nAtoms) / (static_cast<double>(nAtoms) + term2);
 }
 
 AtomicProposal ProposalQueue::makeProposal(const AtomicDomain &domain)

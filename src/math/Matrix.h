@@ -49,6 +49,7 @@ public:
     Vector(const Vector &vec) : mValues(vec.mValues) {}
 
     const float* ptr() const {return &mValues[0];}
+    float* ptr() {return &mValues[0];}
 
     float& operator[](unsigned i) {return mValues[i];}
     float operator[](unsigned i) const {return mValues[i];}
@@ -100,6 +101,7 @@ public:
     const Vector& getRow(unsigned row) const {return mRows[row];}
 
     const float* rowPtr(unsigned row) const {return mRows[row].ptr();}
+    float* rowPtr(unsigned row) {return mRows[row].ptr();}
 
     RowMatrix operator/(float val) const;
 
@@ -138,6 +140,7 @@ public:
     const Vector& getCol(unsigned col) const {return mCols[col];}
 
     const float* colPtr(unsigned col) const {return mCols[col].ptr();}
+    float* colPtr(unsigned col) {return mCols[col].ptr();}
 
     ColMatrix operator/(float val) const;
 

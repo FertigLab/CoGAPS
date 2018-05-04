@@ -1,4 +1,5 @@
 #include "GibbsSampler.h"
+#include "math/SIMD.h"
 
 AmplitudeGibbsSampler::AmplitudeGibbsSampler(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
@@ -21,13 +22,13 @@ unsigned AmplitudeGibbsSampler::getCol(uint64_t pos) const
 
 bool AmplitudeGibbsSampler::canUseGibbs(unsigned row, unsigned col) const
 {
-    return !gaps::algo::isRowZero(*mOtherMatrix, col);
+    return !gaps::algo::isVectorZero(mOtherMatrix->rowPtr(col),
+        mOtherMatrix->nCol());
 }
 
 bool AmplitudeGibbsSampler::canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const
 {
-    return !(gaps::algo::isRowZero(*mOtherMatrix, c1)
-        && gaps::algo::isRowZero(*mOtherMatrix, c2));
+    return canUseGibbs(r1, c1) || canUseGibbs(r2, c2);
 }
 
 void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
@@ -38,9 +39,24 @@ void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
 
 void AmplitudeGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
 {
-    for (unsigned j = 0; j < mAPMatrix.nCol(); ++j)
+    const float *other = mOtherMatrix->rowPtr(col);
+    float *ap = mAPMatrix.rowPtr(row);
+    unsigned size = mAPMatrix.nCol();
+
+    gaps::simd::packedFloat pOther, pAP;
+    gaps::simd::Index i = 0;
+    gaps::simd::packedFloat pDelta(delta);
+    for (; i <= size - i.increment(); ++i)
     {
-        mAPMatrix(row,j) += delta * (*mOtherMatrix)(col,j);
+        pOther.load(other + i);
+        pAP.load(ap + i);
+        pAP += pDelta * pOther;
+        pAP.store(ap + i);
+    }
+
+    for (unsigned j = i.value(); j < size; ++j)
+    {
+        ap[j] += delta * other[j];
     }
 }
 
@@ -61,9 +77,7 @@ unsigned r2, unsigned c2)
     }
     else
     {
-        AlphaParameters a1 = alphaParameters(r1, c1);
-        AlphaParameters a2 = alphaParameters(r2, c2);
-        return a1 + a2;
+        return alphaParameters(r1, c1) + alphaParameters(r2, c2);
     }
 }
 
@@ -110,13 +124,13 @@ unsigned PatternGibbsSampler::getCol(uint64_t pos) const
 
 bool PatternGibbsSampler::canUseGibbs(unsigned row, unsigned col) const
 {
-    return !gaps::algo::isColZero(*mOtherMatrix, row);
+    return !gaps::algo::isVectorZero(mOtherMatrix->colPtr(row),
+        mOtherMatrix->nRow());
 }
 
 bool PatternGibbsSampler::canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const
 {
-    return !(gaps::algo::isColZero(*mOtherMatrix, r1)
-        && gaps::algo::isColZero(*mOtherMatrix, r2));
+    return canUseGibbs(r1, c1) || canUseGibbs(r2, c2);
 }
 
 void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)
@@ -127,9 +141,24 @@ void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)
 
 void PatternGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
 {
-    for (unsigned i = 0; i < mAPMatrix.nRow(); ++i)
+    const float *other = mOtherMatrix->colPtr(row);
+    float *ap = mAPMatrix.colPtr(col);
+    unsigned size = mAPMatrix.nRow();
+
+    gaps::simd::packedFloat pOther, pAP;
+    gaps::simd::Index i = 0;
+    gaps::simd::packedFloat pDelta(delta);
+    for (; i <= size - i.increment(); ++i)
     {
-        mAPMatrix(i,col) += delta * (*mOtherMatrix)(i,row);
+        pOther.load(other + i);
+        pAP.load(ap + i);
+        pAP += pDelta * pOther;
+        pAP.store(ap + i);
+    }
+
+    for (unsigned j = i.value(); j < size; ++j)
+    {
+        ap[j] += delta * other[j];
     }
 }
 
@@ -150,9 +179,7 @@ unsigned r2, unsigned c2)
     }
     else
     {
-        AlphaParameters a1 = alphaParameters(r1, c1);
-        AlphaParameters a2 = alphaParameters(r2, c2);
-        return a1 + a2;
+        return alphaParameters(r1, c1) + alphaParameters(r2, c2);
     }
 }
 

@@ -85,16 +85,18 @@ Vector gaps::algo::elementSq(Vector vec)
     return vec;
 }
 
-bool gaps::algo::isRowZero(const RowMatrix &mat, unsigned row)
+bool gaps::algo::isVectorZero(const float *vec, unsigned size)
 {
-    return gaps::algo::sum(mat.getRow(row)) == 0;
+    for (unsigned i = 0; i < size; ++i)
+    {
+        if (vec[i] != 0.f)
+        {
+            return false;
+        }
+    }
+    return true;
 }
     
-bool gaps::algo::isColZero(const ColMatrix &mat, unsigned col)
-{
-    return gaps::algo::sum(mat.getCol(col)) == 0;
-}
-
 AlphaParameters gaps::algo::alphaParameters(unsigned size, const float *D,
 const float *S, const float *AP, const float *mat)
 {

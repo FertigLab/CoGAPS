@@ -1,7 +1,0 @@
-#!/bin/bash
-
-rm -f callgrind.out.*
-rm -f vgcore.*
-R -d "valgrind --tool=callgrind" -f profile_standard.R
-kcachegrind callgrind.out.*
-

@@ -52,6 +52,7 @@ namespace simd
     const unsigned index_increment = 4;
     #define SET_SCALAR(x) _mm_set1_ps(x)
     #define LOAD_PACKED(x) _mm_load_ps(x)
+    #define STORE_PACKED(p,x) _mm_store_ps(p,x)
     #define ADD_PACKED(a,b) _mm_add_ps(a,b)
     #define SUB_PACKED(a,b) _mm_sub_ps(a,b)
     #define MUL_PACKED(a,b) _mm_mul_ps(a,b)
@@ -61,6 +62,7 @@ namespace simd
     const unsigned index_increment = 1;
     #define SET_SCALAR(x) x
     #define LOAD_PACKED(x) *(x)
+    #define STORE_PACKED(p,x) *p = x
     #define ADD_PACKED(a,b) (a+b)
     #define SUB_PACKED(a,b) (a-b)
     #define MUL_PACKED(a,b) (a*b)
@@ -80,9 +82,11 @@ public:
     unsigned value() const { return index; }
     unsigned increment() const { return index_increment; }
     friend const float* operator+(const float *ptr, Index ndx);
+    friend float* operator+(float *ptr, Index ndx);
 };
 
 inline const float* operator+(const float *ptr, Index ndx) { return ptr + ndx.index; }
+inline float* operator+(float *ptr, Index ndx) { return ptr + ndx.index; }
 
 class packedFloat
 {
@@ -105,6 +109,7 @@ public:
 
     void operator+=(packedFloat val) { mData = ADD_PACKED(mData, val.mData); }
     void load(const float *ptr) { mData = LOAD_PACKED(ptr); }
+    void store(float *ptr) { STORE_PACKED(ptr, mData); }
 
 #if defined( __GAPS_AVX__ )
     float scalar()
