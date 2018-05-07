@@ -76,7 +76,7 @@ public:
     bool hasRight(const Atom &atom) const;
 
     // modify domain
-    void insert(uint64_t pos, float mass);
+    Atom insert(uint64_t pos, float mass);
     void erase(uint64_t pos);
     void updateMass(uint64_t pos, float newMass);
 
