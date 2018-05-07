@@ -1,4 +1,4 @@
-PKG_CPPFLAGS =  -DSIMD -msse4.2 -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0
+PKG_CPPFLAGS =  -DSIMD -DGAPS_DEBUG -msse4.2 -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -fopenmp
 OBJECTS =   AtomicDomain.o \
             Cogaps.o \
             GapsRunner.o \

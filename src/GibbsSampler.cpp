@@ -8,6 +8,7 @@ const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
     float meanD = gaps::algo::mean(mDMatrix);
     mLambda = alpha * std::sqrt(nFactor / meanD);
     mMaxGibbsMass = maxGibbsMass / mLambda;
+    mQueue.setDimensionSize(D.nrow());
 }
 
 unsigned AmplitudeGibbsSampler::getRow(uint64_t pos) const
@@ -110,6 +111,7 @@ const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
     float meanD = gaps::algo::mean(mDMatrix);
     mLambda = alpha * std::sqrt(nFactor / meanD);
     mMaxGibbsMass = maxGibbsMass / mLambda;
+    mQueue.setDimensionSize(D.ncol());
 }
 
 unsigned PatternGibbsSampler::getRow(uint64_t pos) const

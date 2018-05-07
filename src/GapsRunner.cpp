@@ -90,7 +90,9 @@ Rcpp::List GapsRunner::run()
         Rcpp::Named("chiSqValues") = chi2Vec.rVec(),
         Rcpp::Named("randSeed") = mSeed,
         Rcpp::Named("numUpdates") = mNumUpdatesA + mNumUpdatesP,
-        Rcpp::Named("meanChi2") = meanChiSq
+        Rcpp::Named("meanChi2") = meanChiSq,
+        Rcpp::Named("AAvgQueue") = mASampler.getAvgQueue(),
+        Rcpp::Named("PAvgQueue") = mPSampler.getAvgQueue()
     );
 }
 

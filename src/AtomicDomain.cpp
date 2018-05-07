@@ -14,7 +14,10 @@ Atom AtomicDomain::front() const
 // O(1)
 Atom AtomicDomain::randomAtom() const
 {
-    return mAtoms[gaps::random::uniform64(0, mAtoms.size() - 1)];
+    uint64_t ndx = gaps::random::uniform64(0, mAtoms.size() - 1);
+    GAPS_ASSERT(mAtoms.size() >= 1);
+    GAPS_ASSERT(ndx < mAtoms.size());
+    return mAtoms[ndx];
 }
 
 // Average Case O(1)
@@ -71,7 +74,7 @@ bool AtomicDomain::hasRight(const Atom &atom) const
 }
 
 // O(logN)
-void AtomicDomain::insert(uint64_t pos, float mass)
+Atom AtomicDomain::insert(uint64_t pos, float mass)
 {
     // insert position into map
     std::map<uint64_t, uint64_t>::iterator iter, iterLeft, iterRight;
@@ -97,6 +100,7 @@ void AtomicDomain::insert(uint64_t pos, float mass)
     // add atom to vector
     mAtoms.push_back(atom);
     mUsedPositions.insert(pos);
+    return atom;
 }
 
 // O(logN)

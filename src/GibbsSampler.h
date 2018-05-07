@@ -11,6 +11,7 @@
 
 #include <Rcpp.h>
 #include <algorithm>
+#include <omp.h>
 
 // forward declarations needed for friend classes
 class AmplitudeGibbsSampler;
@@ -49,6 +50,9 @@ protected:
     unsigned mNumCols;
     uint64_t mBinSize;
 
+    float mAvgQueue;
+    float mNumQueues;
+
     T* impl();
 
     void processProposal(const AtomicProposal &prop);
@@ -75,6 +79,7 @@ public:
 
     void update(unsigned nSteps);
     void setAnnealingTemp(float temp);
+    float getAvgQueue() const { return mAvgQueue; }
     
     float chi2() const;
     uint64_t nAtoms() const;
@@ -148,7 +153,8 @@ const Rcpp::NumericMatrix &S, unsigned nrow, unsigned ncol, float alpha)
     :
 mMatrix(nrow, ncol), mOtherMatrix(NULL), mDMatrix(D), mSMatrix(S),
 mAPMatrix(D.nrow(), D.ncol()), mQueue(nrow * ncol, alpha),
-mAnnealingTemp(0.f), mNumRows(nrow), mNumCols(ncol)
+mAnnealingTemp(0.f), mNumRows(nrow), mNumCols(ncol),
+mAvgQueue(0.f), mNumQueues(0.f)
 {
     mBinSize = std::numeric_limits<uint64_t>::max()
         / static_cast<uint64_t>(mNumRows * mNumCols);
@@ -167,9 +173,23 @@ T* GibbsSampler<T, MatA, MatB>::impl()
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps)
 {
-    for (unsigned n = 0; n < nSteps; ++n)
+    unsigned n = 0;
+    while (n < nSteps)
     {
-        processProposal(mQueue.makeProposal(mDomain));
+        GAPS_ASSERT(nSteps - (mQueue.size() + n) >= 0);
+        mQueue.populate(mDomain, nSteps - (mQueue.size() + n));
+        //mQueue.populate(mDomain, 1);
+        GAPS_ASSERT(mQueue.size() > 0);
+        mNumQueues += 1.f;
+        mAvgQueue = mQueue.size() / mNumQueues + mAvgQueue * (mNumQueues - 1.f) / mNumQueues;
+        n += mQueue.size();
+        //#pragma omp parallel for
+        for (unsigned i = 0; i < mQueue.size(); ++i)
+        {
+            processProposal(mQueue[i]);
+        }
+        mQueue.clear(1);
+        GAPS_ASSERT(n <= nSteps);
     }
 }
 
@@ -226,7 +246,14 @@ unsigned col)
         : gaps::random::exponential(mLambda);
     if (mass >= gaps::algo::epsilon)
     {
-        addMass(pos, mass, row, col);
+        mDomain.updateMass(pos, mass);
+        mMatrix(row, col) += mass;
+        impl()->updateAPMatrix(row, col, mass);
+    }
+    else
+    {
+        mDomain.erase(pos);
+        mQueue.rejectBirth();
     }
 }
 
@@ -243,6 +270,11 @@ unsigned col)
     if (deltaLL * mAnnealingTemp >= std::log(gaps::random::uniform()))
     {
         addMass(pos, mass, row, col);
+        mQueue.rejectDeath();
+    }
+    else
+    {
+        mQueue.acceptDeath();
     }
 }
 
@@ -310,10 +342,11 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
             if (u < deltaLL * mAnnealingTemp)
             {
                 acceptExchange(p1, m1, delta, p2, m2, -delta, r1, c1, r2, c2);
+                return;
             }
-            return;
         }
     }
+    mQueue.rejectDeath();
 }
 
 // helper function for acceptExchange, used to conditionally update the mass
@@ -325,12 +358,13 @@ float delta)
     if (mass + delta < gaps::algo::epsilon)
     {
         mDomain.erase(pos);
-        return -mass;
+        mQueue.acceptDeath();
+        return false;
     }
     else
     {
         mDomain.updateMass(pos, mass + delta);
-        return delta;
+        return true;
     }
 }
 
@@ -341,8 +375,18 @@ void GibbsSampler<T, MatA, MatB>::acceptExchange(uint64_t p1, float m1,
 float d1, uint64_t p2, float m2, float d2, unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
-    d1 = updateAtomMass(p1, m1, d1);
-    d2 = updateAtomMass(p2, m2, d2);
+    bool b1 = updateAtomMass(p1, m1, d1);
+    bool b2 = updateAtomMass(p2, m2, d2);
+    GAPS_ASSERT(b1 || b2);
+    
+    if (!b1) d1 = -m1;
+    if (!b2) d2 = -m2;
+
+    if (b1 && b2)
+    {
+        mQueue.rejectDeath();
+    }
+
     mMatrix(r1, c1) += d1;
     mMatrix(r2, c2) += d2;
     impl()->updateAPMatrix(r1, c1, d1);
