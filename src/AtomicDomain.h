@@ -60,6 +60,8 @@ private:
 
 public:
 
+    AtomicDomain();
+
     void setDomainSize(uint64_t size) { mDomainSize = size; }
 
     // access atoms

@@ -10,13 +10,14 @@ unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots,
 float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP,
 unsigned seed, bool messages, bool singleCellRNASeq, char whichMatrixFixed,
 const Rcpp::NumericMatrix &FP, unsigned checkpointInterval,
-const std::string &cptFile, unsigned pumpThreshold, unsigned nPumpSamples)
+const std::string &cptFile, unsigned pumpThreshold, unsigned nPumpSamples,
+unsigned nCores)
 {
     // create internal state from parameters and run from there
     GapsRunner runner(D, S, nFactor, nEquil, nEquilCool, nSample,
         nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
         messages, singleCellRNASeq, checkpointInterval, cptFile,
-        whichMatrixFixed, FP);
+        whichMatrixFixed, FP, nCores);
     return runner.run();
 }
 

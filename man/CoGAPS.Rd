@@ -9,7 +9,7 @@ CoGAPS(D, S, nFactor = 7, nEquil = 1000, nSample = 1000,
   maxGibbmassA = 100, maxGibbmassP = 100, seed = -1, messages = TRUE,
   singleCellRNASeq = FALSE, whichMatrixFixed = "N",
   fixedPatterns = matrix(0), checkpointInterval = 0,
-  checkpointFile = "gaps_checkpoint.out", ...)
+  checkpointFile = "gaps_checkpoint.out", nCores = 1, ...)
 }
 \arguments{
 \item{D}{data matrix}

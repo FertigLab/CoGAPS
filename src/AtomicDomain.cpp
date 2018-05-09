@@ -2,8 +2,16 @@
 #include "AtomicDomain.h"
 #include "math/Random.h"
 
+#include <omp.h>
 #include <stdint.h>
 #include <utility>
+
+//omp_lock_t lock;
+
+AtomicDomain::AtomicDomain()
+{
+    //omp_init_lock(&lock);
+}
 
 // O(1)
 Atom AtomicDomain::front() const
@@ -76,6 +84,8 @@ bool AtomicDomain::hasRight(const Atom &atom) const
 // O(logN)
 Atom AtomicDomain::insert(uint64_t pos, float mass)
 {
+    //omp_set_lock(&lock);
+
     // insert position into map
     std::map<uint64_t, uint64_t>::iterator iter, iterLeft, iterRight;
     iter = mAtomPositions.insert(std::pair<uint64_t, uint64_t>(pos, size())).first;
@@ -100,6 +110,9 @@ Atom AtomicDomain::insert(uint64_t pos, float mass)
     // add atom to vector
     mAtoms.push_back(atom);
     mUsedPositions.insert(pos);
+
+    //omp_unset_lock(&lock);
+
     return atom;
 }
 
@@ -108,6 +121,8 @@ Atom AtomicDomain::insert(uint64_t pos, float mass)
 // swap with last atom in vector, pop off the back
 void AtomicDomain::erase(uint64_t pos)
 {
+    //omp_set_lock(&lock);
+
     // get vector index of this atom and erase it
     uint64_t index = mAtomPositions.at(pos);
 
@@ -146,10 +161,14 @@ void AtomicDomain::erase(uint64_t pos)
     mAtomPositions.erase(pos);
     mAtoms.pop_back();
     mUsedPositions.erase(pos);
+
+    //omp_unset_lock(&lock);
 }
 
 // O(logN)
 void AtomicDomain::updateMass(uint64_t pos, float newMass)
 {
+    //omp_set_lock(&lock);
     mAtoms[mAtomPositions.at(pos)].mass = newMass;
+    //omp_unset_lock(&lock);
 }
