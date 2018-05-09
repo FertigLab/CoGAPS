@@ -52,17 +52,22 @@ const AtomicProposal& ProposalQueue::operator[](int n) const
 
 void ProposalQueue::acceptDeath()
 {
+    #pragma omp atomic
     mMaxAtoms--;
 }
 
 void ProposalQueue::rejectDeath()
 {
+    #pragma omp atomic
     mMinAtoms++;
 }
 
 void ProposalQueue::rejectBirth()
 {
+    #pragma omp atomic
     mMinAtoms--;
+
+    #pragma omp atomic
     mMaxAtoms--;
 }
 

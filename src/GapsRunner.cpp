@@ -5,7 +5,7 @@ unsigned nFactor, unsigned nEquil, unsigned nCool, unsigned nSample,
 unsigned nOutputs, unsigned nSnapshots, float alphaA, float alphaP,
 float maxGibbsMassA, float maxGibbsMassP, uint32_t seed, bool messages,
 bool singleCellRNASeq, unsigned cptInterval, const std::string &cptFile,
-char whichMatrixFixed, const Rcpp::NumericMatrix &FP)
+char whichMatrixFixed, const Rcpp::NumericMatrix &FP, unsigned nCores)
     :
 mChiSqEquil(nEquil), mNumAAtomsEquil(nEquil), mNumPAtomsEquil(nEquil),
 mChiSqSample(nSample), mNumAAtomsSample(nSample), mNumPAtomsSample(nSample),
@@ -16,7 +16,8 @@ mCheckpointInterval(cptInterval), mCheckpointFile(cptFile),
 mNumUpdatesA(0), mNumUpdatesP(0),
 mASampler(D, S, nFactor, alphaA, maxGibbsMassA),
 mPSampler(D, S, nFactor, alphaP, maxGibbsMassP),
-mStatistics(D.nrow(), D.ncol(), nFactor)
+mStatistics(D.nrow(), D.ncol(), nFactor),
+mNumCores(nCores)
 {
     mASampler.sync(mPSampler);
     mPSampler.sync(mASampler);
@@ -137,11 +138,11 @@ void GapsRunner::runSampPhase()
 void GapsRunner::updateSampler()
 {
     mNumUpdatesA += mIterA;
-    mASampler.update(mIterA);
+    mASampler.update(mIterA, mNumCores);
     mPSampler.sync(mASampler);
 
     mNumUpdatesP += mIterP;
-    mPSampler.update(mIterP);
+    mPSampler.update(mIterP, mNumCores);
     mASampler.sync(mPSampler);
 }
 
