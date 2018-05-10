@@ -46,13 +46,13 @@ uint64_t AtomicDomain::size() const
 }
 
 // O(1)
-Atom& AtomicDomain::left(const Atom &atom)
+Atom& AtomicDomain::_left(const Atom &atom)
 {
     return mAtoms[atom.leftNdx - 1];
 }
 
 // O(1)
-Atom& AtomicDomain::right(const Atom &atom)
+Atom& AtomicDomain::_right(const Atom &atom)
 {
     return mAtoms[atom.rightNdx - 1];
 }
@@ -84,8 +84,6 @@ bool AtomicDomain::hasRight(const Atom &atom) const
 // O(logN)
 Atom AtomicDomain::insert(uint64_t pos, float mass)
 {
-    //omp_set_lock(&lock);
-
     // insert position into map
     std::map<uint64_t, uint64_t>::iterator iter, iterLeft, iterRight;
     iter = mAtomPositions.insert(std::pair<uint64_t, uint64_t>(pos, size())).first;
@@ -98,20 +96,18 @@ Atom AtomicDomain::insert(uint64_t pos, float mass)
     {
         --iterLeft;
         atom.leftNdx = iterLeft->second + 1;
-        left(atom).rightNdx = size() + 1;
+        _left(atom).rightNdx = size() + 1;
     }
     if (++iter != mAtomPositions.end())
     {
         ++iterRight;
         atom.rightNdx = iterRight->second + 1;
-        right(atom).leftNdx = size() + 1;
+        _right(atom).leftNdx = size() + 1;
     } 
 
     // add atom to vector
     mAtoms.push_back(atom);
     mUsedPositions.insert(pos);
-
-    //omp_unset_lock(&lock);
 
     return atom;
 }
@@ -121,19 +117,17 @@ Atom AtomicDomain::insert(uint64_t pos, float mass)
 // swap with last atom in vector, pop off the back
 void AtomicDomain::erase(uint64_t pos)
 {
-    //omp_set_lock(&lock);
-
     // get vector index of this atom and erase it
     uint64_t index = mAtomPositions.at(pos);
 
     // connect neighbors of atom to be deleted
     if (hasLeft(mAtoms[index]))
     {
-        left(mAtoms[index]).rightNdx = mAtoms[index].rightNdx;
+        _left(mAtoms[index]).rightNdx = mAtoms[index].rightNdx;
     }
     if (hasRight(mAtoms[index]))
     {
-        right(mAtoms[index]).leftNdx = mAtoms[index].leftNdx;
+        _right(mAtoms[index]).leftNdx = mAtoms[index].leftNdx;
     }
 
     // replace with atom from back
@@ -149,11 +143,11 @@ void AtomicDomain::erase(uint64_t pos)
         // update moved atom's neighbors
         if (hasLeft(mAtoms[index]))
         {
-            left(mAtoms[index]).rightNdx = index + 1;
+            _left(mAtoms[index]).rightNdx = index + 1;
         }
         if (hasRight(mAtoms[index]))
         {
-            right(mAtoms[index]).leftNdx = index + 1;
+            _right(mAtoms[index]).leftNdx = index + 1;
         }
     }
 
@@ -161,14 +155,58 @@ void AtomicDomain::erase(uint64_t pos)
     mAtomPositions.erase(pos);
     mAtoms.pop_back();
     mUsedPositions.erase(pos);
+}
 
-    //omp_unset_lock(&lock);
+void AtomicDomain::cacheInsert(uint64_t pos, float mass) const
+{
+    unsigned ndx = 0;
+
+    #pragma omp critical(atomicInsert)
+    {
+        ndx = mInsertCacheIndex++;
+    }
+
+    mInsertCache[ndx] = RawAtom(pos, mass);
+}
+
+void AtomicDomain::cacheErase(uint64_t pos) const
+{
+    unsigned ndx = 0;
+
+    #pragma omp critical(atomicErase)
+    {
+        ndx = mEraseCacheIndex++;
+    }
+
+    mEraseCache[ndx] = pos;
+}
+
+void AtomicDomain::resetCache(unsigned n)
+{
+    mInsertCacheIndex = 0;
+    mEraseCacheIndex = 0;
+    mInsertCache.resize(n);
+    mEraseCache.resize(n);
+}
+
+void AtomicDomain::flushCache()
+{
+    for (unsigned i = 0; i < mEraseCacheIndex; ++i)
+    {
+        erase(mEraseCache[i]);
+    }
+
+    for (unsigned i = 0; i < mInsertCacheIndex; ++i)
+    {
+        insert(mInsertCache[i].pos, mInsertCache[i].mass);
+    }
+
+    mInsertCache.clear();
+    mEraseCache.clear();
 }
 
 // O(logN)
 void AtomicDomain::updateMass(uint64_t pos, float newMass)
 {
-    //omp_set_lock(&lock);
     mAtoms[mAtomPositions.at(pos)].mass = newMass;
-    //omp_unset_lock(&lock);
 }

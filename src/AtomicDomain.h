@@ -43,6 +43,15 @@ public:
     }
 };
 
+struct RawAtom
+{
+    uint64_t pos;
+    float mass;
+
+    RawAtom() : pos(0), mass(0.f) {}
+    RawAtom(uint64_t p, float m) : pos(p), mass(m) {}
+};
+
 // data structure that holds atoms
 class AtomicDomain
 {
@@ -58,6 +67,15 @@ private:
     // TODO google_dense_set - first profile and benchmark
     boost::unordered_set<uint64_t> mUsedPositions;
 
+    mutable std::vector<RawAtom> mInsertCache;
+    mutable std::vector<uint64_t> mEraseCache;
+
+    mutable unsigned mInsertCacheIndex;
+    mutable unsigned mEraseCacheIndex;
+
+    Atom& _left(const Atom &atom);
+    Atom& _right(const Atom &atom);
+
 public:
 
     AtomicDomain();
@@ -70,8 +88,6 @@ public:
     uint64_t randomFreePosition() const;
     uint64_t size() const;
 
-    Atom& left(const Atom &atom);
-    Atom& right(const Atom &atom);
     const Atom& left(const Atom &atom) const;
     const Atom& right(const Atom &atom) const;
     bool hasLeft(const Atom &atom) const;
@@ -80,7 +96,11 @@ public:
     // modify domain
     Atom insert(uint64_t pos, float mass);
     void erase(uint64_t pos);
+    void cacheInsert(uint64_t pos, float mass) const;
+    void cacheErase(uint64_t pos) const;
     void updateMass(uint64_t pos, float newMass);
+    void flushCache();
+    void resetCache(unsigned n);
 
     // serialization
     friend Archive& operator<<(Archive &ar, AtomicDomain &domain);

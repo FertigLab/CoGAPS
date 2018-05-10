@@ -185,6 +185,7 @@ void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps, unsigned nCores)
         mNumQueues += 1.f;
         mAvgQueue = mQueue.size() / mNumQueues + mAvgQueue * (mNumQueues - 1.f) / mNumQueues;
         n += mQueue.size();
+        mDomain.resetCache(mQueue.size());
         //Rprintf("round: %d\n", count++);
 
         #pragma omp parallel for num_threads(nCores)
@@ -192,6 +193,7 @@ void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps, unsigned nCores)
         {
             processProposal(mQueue[i]);
         }
+        mDomain.flushCache();
         mQueue.clear(1);
         GAPS_ASSERT(n <= nSteps);
     }
@@ -229,23 +231,17 @@ void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::addMass(uint64_t pos, float mass, unsigned row, unsigned col)
 {
-    #pragma omp critical(gibbs)
-    {
-        mDomain.insert(pos, mass);
-        mMatrix(row, col) += mass;
-        impl()->updateAPMatrix(row, col, mass);
-    }
+    mDomain.cacheInsert(pos, mass);
+    mMatrix(row, col) += mass;
+    impl()->updateAPMatrix(row, col, mass);
 }
 
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::removeMass(uint64_t pos, float mass, unsigned row, unsigned col)
 {
-    #pragma omp critical(gibbs)
-    {
-        mDomain.erase(pos);
-        mMatrix(row, col) += -mass;
-        impl()->updateAPMatrix(row, col, -mass);
-    }
+    mDomain.cacheErase(pos);
+    mMatrix(row, col) += -mass;
+    impl()->updateAPMatrix(row, col, -mass);
 }
 
 // add an atom at pos, calculate mass either with an exponential distribution
@@ -256,19 +252,16 @@ unsigned col)
 {
     float mass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, mass)
         : gaps::random::exponential(mLambda);
-    #pragma omp critical(gibbs)
+    if (mass >= gaps::algo::epsilon)
     {
-        if (mass >= gaps::algo::epsilon)
-        {
-            mDomain.updateMass(pos, mass);
-            mMatrix(row, col) += mass;
-            impl()->updateAPMatrix(row, col, mass);
-        }
-        else
-        {
-            mDomain.erase(pos);
-            mQueue.rejectBirth();
-        }
+        mDomain.updateMass(pos, mass);
+        mMatrix(row, col) += mass;
+        impl()->updateAPMatrix(row, col, mass);
+    }
+    else
+    {
+        mDomain.cacheErase(pos);
+        mQueue.rejectBirth();
     }
 }
 
@@ -279,17 +272,24 @@ void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass, unsigned row,
 unsigned col)
 {
     GAPS_ASSERT(mass > 0.f);
-    removeMass(pos, mass, row, col);
+
+    //removeMass(pos, mass, row, col);
+    mMatrix(row, col) += -mass;
+    impl()->updateAPMatrix(row, col, -mass);
+
     float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, -mass) : 0.f;
     mass = newMass < gaps::algo::epsilon ? mass : newMass;
     float deltaLL = impl()->computeDeltaLL(row, col, mass);
     if (deltaLL * mAnnealingTemp >= std::log(gaps::random::uniform()))
     {
-        addMass(pos, mass, row, col);
+        mDomain.updateMass(pos, mass);
+        mMatrix(row, col) += mass;
+        impl()->updateAPMatrix(row, col, mass);
         mQueue.rejectDeath();
     }
     else
     {
+        mDomain.cacheErase(pos);
         mQueue.acceptDeath();
     }
 }
@@ -374,22 +374,17 @@ template <class T, class MatA, class MatB>
 float GibbsSampler<T, MatA, MatB>::updateAtomMass(uint64_t pos, float mass,
 float delta)
 {
-    bool ret_val = false;
-    #pragma omp critical(gibbs)
+    if (mass + delta < gaps::algo::epsilon)
     {
-        if (mass + delta < gaps::algo::epsilon)
-        {
-            mDomain.erase(pos);
-            mQueue.acceptDeath();
-            ret_val = false;
-        }
-        else
-        {
-            mDomain.updateMass(pos, mass + delta);
-            ret_val = true;
-        }
+        mDomain.cacheErase(pos);
+        mQueue.acceptDeath();
+        return false;
     }
-    return ret_val;
+    else
+    {
+        mDomain.updateMass(pos, mass + delta);
+        return true;
+    }
 }
 
 // helper function for exchange step, updates the atomic domain, matrix, and
@@ -412,13 +407,10 @@ unsigned r2, unsigned c2)
         mQueue.rejectDeath();
     }
 
-    #pragma omp critical(gibbs)
-    {
-        mMatrix(r1, c1) += d1;
-        mMatrix(r2, c2) += d2;
-        impl()->updateAPMatrix(r1, c1, d1);
-        impl()->updateAPMatrix(r2, c2, d2);
-    }
+    mMatrix(r1, c1) += d1;
+    mMatrix(r2, c2) += d2;
+    impl()->updateAPMatrix(r1, c1, d1);
+    impl()->updateAPMatrix(r2, c2, d2);
 }
 
 template <class T, class MatA, class MatB>
