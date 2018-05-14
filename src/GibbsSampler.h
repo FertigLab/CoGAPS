@@ -177,25 +177,30 @@ void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps, unsigned nCores)
     unsigned n = 0;
     while (n < nSteps)
     {
-        GAPS_ASSERT(nSteps - (mQueue.size() + n) >= 0);
-        mQueue.populate(mDomain, nSteps - (mQueue.size() + n));
+        //GAPS_ASSERT(nSteps - (mQueue.size() + n) >= 0);
+        //mQueue.populate(mDomain, nSteps - (mQueue.size() + n));
         
         //mQueue.populate(mDomain, std::min(2u, nSteps - (mQueue.size() + n)));
-        GAPS_ASSERT(mQueue.size() > 0);
-        mNumQueues += 1.f;
-        mAvgQueue = mQueue.size() / mNumQueues + mAvgQueue * (mNumQueues - 1.f) / mNumQueues;
-        n += mQueue.size();
-        mDomain.resetCache(mQueue.size());
+        //GAPS_ASSERT(mQueue.size() > 0);
+        //mNumQueues += 1.f;
+        //mAvgQueue = mQueue.size() / mNumQueues + mAvgQueue * (mNumQueues - 1.f) / mNumQueues;
+        //n += mQueue.size();
+        //mDomain.resetCache(mQueue.size());
         //Rprintf("round: %d\n", count++);
 
-        #pragma omp parallel for num_threads(nCores)
-        for (unsigned i = 0; i < mQueue.size(); ++i)
-        {
-            processProposal(mQueue[i]);
-        }
+        //#pragma omp parallel for num_threads(nCores)
+        //for (unsigned i = 0; i < mQueue.size(); ++i)
+        //{
+        //    processProposal(mQueue[i]);
+        //}
+        //mDomain.flushCache();
+        //mQueue.clear(1);
+        //GAPS_ASSERT(n <= nSteps);
+        mQueue.populate(mDomain, 1);
+        mDomain.resetCache(1);
+        processProposal(mQueue[0]);
         mDomain.flushCache();
         mQueue.clear(1);
-        GAPS_ASSERT(n <= nSteps);
     }
 }
 
@@ -271,7 +276,7 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass, unsigned row,
 unsigned col)
 {
-    GAPS_ASSERT(mass > 0.f);
+    //GAPS_ASSERT(mass > 0.f);
 
     //removeMass(pos, mass, row, col);
     mMatrix(row, col) += -mass;
@@ -299,7 +304,7 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::move(uint64_t src, float mass, uint64_t dest,
 unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 {
-    GAPS_ASSERT(mass > 0.f);
+    //GAPS_ASSERT(mass > 0.f);
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
     {
         float deltaLL = impl()->computeDeltaLL(r1, c1, -mass, r2, c2, mass);
@@ -318,8 +323,8 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::exchange(uint64_t p1, float m1, uint64_t p2,
 float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 {
-    GAPS_ASSERT(m1 > 0.f);
-    GAPS_ASSERT(m2 > 0.f);
+    //GAPS_ASSERT(m1 > 0.f);
+    //GAPS_ASSERT(m2 > 0.f);
     float pUpper = gaps::random::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
     float newMass = gaps::random::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
@@ -397,7 +402,7 @@ unsigned r2, unsigned c2)
     //Rprintf("p1: %lu p2: %lu\n", p1, p2);
     bool b1 = updateAtomMass(p1, m1, d1);
     bool b2 = updateAtomMass(p2, m2, d2);
-    GAPS_ASSERT(b1 || b2);
+    //GAPS_ASSERT(b1 || b2);
     
     if (!b1) d1 = -m1;
     if (!b2) d2 = -m2;
