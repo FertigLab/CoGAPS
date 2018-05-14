@@ -179,6 +179,7 @@ void AtomicDomain::cacheErase(uint64_t pos) const
     mEraseCache[ndx] = pos;
 }
 
+// TODO prevent re-allocations
 void AtomicDomain::resetCache(unsigned n)
 {
     mInsertCacheIndex = 0;
