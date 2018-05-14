@@ -58,7 +58,7 @@ public:
     void setNumBins(unsigned nBins);
     void setDomainSize(uint64_t size);
     void setAlpha(float alpha);
-    void setDimensionSize(unsigned nIndices);
+    void setDimensionSize(uint64_t size);
 
     // modify/access queue
     void populate(AtomicDomain &domain, unsigned limit);

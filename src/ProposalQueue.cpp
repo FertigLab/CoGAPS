@@ -12,7 +12,7 @@ void ProposalQueue::setDomainSize(uint64_t size)
     mDomainSize = size;
 }
 
-void ProposalQueue::setDimensionSize(unsigned size)
+void ProposalQueue::setDimensionSize(uint64_t size)
 {
     mDimensionSize = size;
 }
