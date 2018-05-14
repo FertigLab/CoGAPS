@@ -165,7 +165,6 @@ void AtomicDomain::cacheInsert(uint64_t pos, float mass) const
     {
         ndx = mInsertCacheIndex++;
     }
-
     mInsertCache[ndx] = RawAtom(pos, mass);
 }
 
@@ -177,7 +176,6 @@ void AtomicDomain::cacheErase(uint64_t pos) const
     {
         ndx = mEraseCacheIndex++;
     }
-
     mEraseCache[ndx] = pos;
 }
 
