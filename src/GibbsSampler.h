@@ -178,30 +178,23 @@ void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps, unsigned nCores)
     while (n < nSteps)
     {
         //GAPS_ASSERT(nSteps - (mQueue.size() + n) >= 0);
-        //mQueue.populate(mDomain, nSteps - (mQueue.size() + n));
+        mQueue.populate(mDomain, nSteps - (mQueue.size() + n));
         
-        //mQueue.populate(mDomain, std::min(2u, nSteps - (mQueue.size() + n)));
         //GAPS_ASSERT(mQueue.size() > 0);
-        //mNumQueues += 1.f;
-        //mAvgQueue = mQueue.size() / mNumQueues + mAvgQueue * (mNumQueues - 1.f) / mNumQueues;
-        //n += mQueue.size();
-        //mDomain.resetCache(mQueue.size());
+        mNumQueues += 1.f;
+        mAvgQueue = mQueue.size() / mNumQueues + mAvgQueue * (mNumQueues - 1.f) / mNumQueues;
+        n += mQueue.size();
+        mDomain.resetCache(mQueue.size());
         //Rprintf("round: %d\n", count++);
 
-        //#pragma omp parallel for num_threads(nCores)
-        //for (unsigned i = 0; i < mQueue.size(); ++i)
-        //{
-        //    processProposal(mQueue[i]);
-        //}
-        //mDomain.flushCache();
-        //mQueue.clear(1);
-        //GAPS_ASSERT(n <= nSteps);
-        mQueue.populate(mDomain, 1);
-        mDomain.resetCache(1);
-        processProposal(mQueue[0]);
+        #pragma omp parallel for num_threads(nCores)
+        for (unsigned i = 0; i < mQueue.size(); ++i)
+        {
+            processProposal(mQueue[i]);
+        }
         mDomain.flushCache();
         mQueue.clear(1);
-        ++n;
+        //GAPS_ASSERT(n <= nSteps);
     }
 }
 
