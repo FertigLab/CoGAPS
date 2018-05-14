@@ -201,6 +201,7 @@ void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps, unsigned nCores)
         processProposal(mQueue[0]);
         mDomain.flushCache();
         mQueue.clear(1);
+        ++n;
     }
 }
 
