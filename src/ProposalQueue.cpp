@@ -36,7 +36,7 @@ void ProposalQueue::clear(unsigned n)
     mQueue.clear();
     mUsedPositions.clear();
     mUsedIndices.clear();
-    GAPS_ASSERT(mMaxAtoms - mMinAtoms <= mQueue.size());
+    //GAPS_ASSERT(mMaxAtoms - mMinAtoms <= mQueue.size());
 }
 
 unsigned ProposalQueue::size() const
