@@ -6,13 +6,6 @@
 #include <stdint.h>
 #include <utility>
 
-//omp_lock_t lock;
-
-AtomicDomain::AtomicDomain()
-{
-    //omp_init_lock(&lock);
-}
-
 // O(1)
 Atom AtomicDomain::front() const
 {
@@ -117,7 +110,7 @@ Atom AtomicDomain::insert(uint64_t pos, float mass)
 // swap with last atom in vector, pop off the back
 void AtomicDomain::erase(uint64_t pos)
 {
-    // get vector index of this atom and erase it
+    // get vector index of this atom
     uint64_t index = mAtomPositions.at(pos);
 
     // connect neighbors of atom to be deleted
@@ -151,7 +144,7 @@ void AtomicDomain::erase(uint64_t pos)
         }
     }
 
-    // delete atom from vector in O(1)
+    // delete atom from vector in O(1), map in O(logN)
     mAtomPositions.erase(pos);
     mAtoms.pop_back();
     mUsedPositions.erase(pos);
