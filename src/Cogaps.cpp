@@ -2,6 +2,7 @@
 #include "GapsRunner.h"
 
 #include <Rcpp.h>
+#include <omp.h>
 
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D,
@@ -13,6 +14,9 @@ const Rcpp::NumericMatrix &FP, unsigned checkpointInterval,
 const std::string &cptFile, unsigned pumpThreshold, unsigned nPumpSamples,
 unsigned nCores)
 {
+    unsigned availableCores = omp_get_max_threads();
+    Rprintf("Running on %d out of %d available cores\n", nCores, availableCores);
+
     // create internal state from parameters and run from there
     GapsRunner runner(D, S, nFactor, nEquil, nEquilCool, nSample,
         nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
