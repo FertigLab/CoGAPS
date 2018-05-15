@@ -187,6 +187,7 @@ void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps, unsigned nCores)
         mDomain.resetCache(mQueue.size());
         //Rprintf("round: %d\n", count++);
 
+	//unsigned nThreads = std::min(mQueue.size(), nCores);
         #pragma omp parallel for num_threads(nCores)
         for (unsigned i = 0; i < mQueue.size(); ++i)
         {
