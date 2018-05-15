@@ -117,12 +117,7 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
     }
     return false;
 }
-
-static bool isInVector(const std::vector<uint64_t> &vec, uint64_t n)
-{
-    return std::find(vec.begin(), vec.end(), n) != vec.end();
-}
-
+    
 bool ProposalQueue::birth(AtomicDomain &domain)
 {
     uint64_t pos = domain.randomFreePosition();
