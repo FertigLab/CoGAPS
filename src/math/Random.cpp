@@ -4,6 +4,9 @@
 #include "../GapsAssert.h"
 
 // TODO remove boost dependency
+// TODO make concurrent random generation safe
+// spawn a random generator for each thread
+// - no way to acheive consistent results across different nThreads
 
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
@@ -45,25 +48,45 @@ void gaps::random::setSeed(uint32_t seed)
 float gaps::random::normal(float mean, float var)
 {
     boost::random::normal_distribution<float> dist(mean, var);
-    return dist(rng);
+    float ret = 0.f;
+    #pragma omp critical(RNG)
+    {
+        ret = dist(rng);
+    }
+    return ret;
 }
 
 int gaps::random::poisson(float lambda)
 {
     boost::random::poisson_distribution<> dist(lambda);
-    return dist(rng);
+    int ret = 0;
+    #pragma omp critical(RNG)
+    {
+        ret = dist(rng);
+    }
+    return ret;
 }
 
 float gaps::random::exponential(float lambda)
 {
     boost::random::exponential_distribution<> dist(lambda);
-    return dist(rng);
+    float ret = 0.f;
+    #pragma omp critical(RNG)
+    {
+        ret = dist(rng);
+    }
+    return ret;
 }
 
 // open interval
 float gaps::random::uniform()
 {
-    return u01_dist();
+    float ret = 0.f;
+    #pragma omp critical(RNG)
+    {
+        ret = u01_dist();
+    }
+    return ret;
 }
 
 float gaps::random::uniform(float a, float b)
@@ -75,7 +98,12 @@ float gaps::random::uniform(float a, float b)
     else
     {
         boost::random::uniform_real_distribution<> dist(a,b);
-        return dist(rng);
+        float ret = 0.f;
+        #pragma omp critical(RNG)
+        {
+            ret = dist(rng);
+        }
+        return ret;
     }
 }
 
@@ -83,7 +111,12 @@ uint64_t gaps::random::uniform64()
 {
     boost::random::uniform_int_distribution<uint64_t> dist(0,
         std::numeric_limits<uint64_t>::max());
-    return dist(rng);
+    uint64_t ret = 0;
+    #pragma omp critical(RNG)
+    {
+        ret = dist(rng);
+    }
+    return ret;
 }
 
 uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
@@ -95,7 +128,12 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     else
     {
         boost::random::uniform_int_distribution<uint64_t> dist(a,b);
-        return dist(rng);
+        uint64_t ret = 0;
+        #pragma omp critical(RNG)
+        {
+            ret = dist(rng);
+        }
+        return ret;
     }
 }
 
