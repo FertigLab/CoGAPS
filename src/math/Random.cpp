@@ -20,6 +20,7 @@
 #include <boost/math/distributions/gamma.hpp>
 
 #include <stdint.h>
+#include <omp.h>
 
 #define Q_GAMMA_THRESHOLD 0.000001f
 #define Q_GAMMA_MIN_VALUE 0.0
@@ -27,8 +28,7 @@
 //typedef boost::random::mt19937 RNGType;
 typedef boost::random::mt11213b RNGType; // should be faster
 
-static RNGType rng;
-static boost::random::uniform_01<RNGType&> u01_dist(rng);
+static std::vector<RNGType> rng;
 
 void gaps::random::save(Archive &ar)
 {
@@ -42,51 +42,45 @@ void gaps::random::load(Archive &ar)
 
 void gaps::random::setSeed(uint32_t seed)
 {
-    rng.seed(seed);
+    unsigned n = omp_get_max_threads();
+
+    rng.push_back(RNGType());
+    rng[0].seed(seed);
+
+    boost::random::uniform_int_distribution<uint32_t> seedDist(0,
+        std::numeric_limits<uint32_t>::max());
+
+    for (unsigned i = 1; i < n; ++i)
+    {
+        rng.push_back(RNGType());
+        uint32_t newSeed = seedDist(rng[i-1]);
+        rng[i].seed(newSeed);
+    }
 }
 
 float gaps::random::normal(float mean, float var)
 {
     boost::random::normal_distribution<float> dist(mean, var);
-    float ret = 0.f;
-    #pragma omp critical(RNG)
-    {
-        ret = dist(rng);
-    }
-    return ret;
+    return dist(rng[omp_get_thread_num()]);
 }
 
 int gaps::random::poisson(float lambda)
 {
     boost::random::poisson_distribution<> dist(lambda);
-    int ret = 0;
-    #pragma omp critical(RNG)
-    {
-        ret = dist(rng);
-    }
-    return ret;
+    return dist(rng[omp_get_thread_num()]);
 }
 
 float gaps::random::exponential(float lambda)
 {
     boost::random::exponential_distribution<> dist(lambda);
-    float ret = 0.f;
-    #pragma omp critical(RNG)
-    {
-        ret = dist(rng);
-    }
-    return ret;
+    return dist(rng[omp_get_thread_num()]);
 }
 
-// open interval
 float gaps::random::uniform()
 {
     float ret = 0.f;
-    #pragma omp critical(RNG)
-    {
-        ret = u01_dist();
-    }
-    return ret;
+    boost::random::uniform_01<RNGType&> u01_dist(rng[omp_get_thread_num()]);
+    return u01_dist();
 }
 
 float gaps::random::uniform(float a, float b)
@@ -98,12 +92,7 @@ float gaps::random::uniform(float a, float b)
     else
     {
         boost::random::uniform_real_distribution<> dist(a,b);
-        float ret = 0.f;
-        #pragma omp critical(RNG)
-        {
-            ret = dist(rng);
-        }
-        return ret;
+        return dist(rng[omp_get_thread_num()]);
     }
 }
 
@@ -111,12 +100,7 @@ uint64_t gaps::random::uniform64()
 {
     boost::random::uniform_int_distribution<uint64_t> dist(0,
         std::numeric_limits<uint64_t>::max());
-    uint64_t ret = 0;
-    #pragma omp critical(RNG)
-    {
-        ret = dist(rng);
-    }
-    return ret;
+    return dist(rng[omp_get_thread_num()]);
 }
 
 uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
@@ -128,12 +112,7 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     else
     {
         boost::random::uniform_int_distribution<uint64_t> dist(a,b);
-        uint64_t ret = 0;
-        #pragma omp critical(RNG)
-        {
-            ret = dist(rng);
-        }
-        return ret;
+        return dist(rng[omp_get_thread_num()]);
     }
 }
 
