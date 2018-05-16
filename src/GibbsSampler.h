@@ -178,7 +178,8 @@ void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps, unsigned nCores)
     while (n < nSteps)
     {
         //GAPS_ASSERT(nSteps - (mQueue.size() + n) >= 0);
-        mQueue.populate(mDomain, nSteps - (mQueue.size() + n));
+        mQueue.populate(mDomain, nSteps - n);
+        //mQueue.populate(mDomain, nSteps - (mQueue.size() + n));
         
         //GAPS_ASSERT(mQueue.size() > 0);
         mNumQueues += 1.f;

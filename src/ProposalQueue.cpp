@@ -28,6 +28,7 @@ void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
     while (nIter++ < limit && makeProposal(domain));
 }
 
+// TODO efficiently allow clearing a range of proposals
 void ProposalQueue::clear(unsigned n)
 {
     //mQueue.erase(mQueue.end() - n, mQueue.end());
