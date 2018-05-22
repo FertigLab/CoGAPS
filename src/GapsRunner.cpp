@@ -108,8 +108,8 @@ void GapsRunner::runBurnPhase()
         mASampler.setAnnealingTemp(std::min(1.f,temp));
         mPSampler.setAnnealingTemp(std::min(1.f,temp));
         updateSampler();
-        displayStatus("Equil: ", mEquilIter);
         storeSamplerInfo(mNumAAtomsEquil, mNumPAtomsEquil, mChiSqEquil);
+        displayStatus("Equil: ", mEquilIter);
     }
 }
 
@@ -131,9 +131,45 @@ void GapsRunner::runSampPhase()
         makeCheckpointIfNeeded();
         updateSampler();
         mStatistics.update(mASampler, mPSampler);
-        displayStatus("Samp: ", mSampleIter);
         storeSamplerInfo(mNumAAtomsSample, mNumPAtomsSample, mChiSqSample);
+        displayStatus("Samp: ", mSampleIter);
     }
+}
+
+
+// sum coef * log(i) for i = 1 to total, fit coef from number of atoms
+// approximates sum of number of atoms
+// this should be proportional to total number of updates
+static double estNumUpdates(double current, double total, float nAtoms)
+{
+    double coef = nAtoms / std::log(current);
+    return coef * std::log(std::sqrt(2 * total * gaps::algo::pi)) +
+        total * coef * std::log(total) - total * coef;
+}
+
+double GapsRunner::estPercentComplete()
+{
+    unsigned nIter = 0;
+    float nAtomsA = 0.f, nAtomsP = 0.f;
+    if (mPhase == GAPS_BURN)
+    {
+        nIter = mCurrentIter;
+        nAtomsA = mNumAAtomsEquil[mCurrentIter];
+        nAtomsP = mNumPAtomsEquil[mCurrentIter];
+    }
+    else if (mPhase == GAPS_SAMP)
+    {
+        nIter = mEquilIter + mCoolIter + mCurrentIter;
+        nAtomsA = mNumAAtomsSample[mCurrentIter];
+        nAtomsP = mNumPAtomsSample[mCurrentIter];
+    }
+
+    unsigned totalIter = mEquilIter + mCoolIter + mSampleIter;
+
+    return (estNumUpdates(nIter, nIter, nAtomsA) +
+        estNumUpdates(nIter, nIter, nAtomsP)) /
+        (estNumUpdates(nIter, totalIter, nAtomsA) +
+        estNumUpdates(nIter, totalIter, nAtomsP));
 }
 
 void GapsRunner::updateSampler()
@@ -156,34 +192,35 @@ void GapsRunner::storeSamplerInfo(Vector &atomsA, Vector &atomsP, Vector &chi2)
     mIterP = gaps::random::poisson(std::max(atomsP[mCurrentIter], 10.f));
 }
 
+static void printTime(const std::string &message, unsigned totalSeconds)
+{
+    int hours = totalSeconds / 3600;
+    totalSeconds -= hours * 3600;
+    int minutes = totalSeconds / 60;
+    totalSeconds -= minutes * 60;
+    int seconds = totalSeconds;
+    printf("%s: %02d:%02d:%02d\n", message.c_str(), hours, minutes, seconds);
+}
+
+// need to call storeSamplerInfo before calling this function
 void GapsRunner::displayStatus(const std::string &type, unsigned nIterTotal)
 {
     if (mNumOutputs > 0 && (mCurrentIter + 1) % mNumOutputs == 0 && mPrintMessages)
     {
+        // print algo status
         Rprintf("%s %d of %d, Atoms:%lu(%lu) Chi2 = %.2f\n", type.c_str(),
             mCurrentIter + 1, nIterTotal, mASampler.nAtoms(),
             mPSampler.nAtoms(), mASampler.chi2());
-        bpt::time_duration diff = bpt_now() - mStartTime;
-        double elapsed = diff.total_milliseconds() / 1000.0;
-        Rprintf("Elapsed Time: %.3f seconds\n", elapsed);
 
-        double prop = 0.0;
-        switch (mPhase)
-        {
-            case GAPS_BURN:
-                prop = mCurrentIter;
-                break;
-            case GAPS_COOL:
-                prop = mEquilIter + mCurrentIter;
-                break;
-            case GAPS_SAMP:
-                prop = mEquilIter + mCoolIter + mCurrentIter;
-                break;
-        }   
-        prop = (double)(mEquilIter + mCoolIter + mSampleIter) / prop;
-        double est = diff.total_milliseconds() * prop / 1000.0;
-        Rprintf("Estimated Total Time: %.3f seconds\n", est);
-        Rprintf("Estimated Remaining Time: %.3f seconds\n", est - elapsed);        
+        // compute time
+        bpt::time_duration diff = bpt_now() - mStartTime;
+        double elapsed = diff.total_seconds();
+        double estTotal = elapsed / estPercentComplete();
+
+        // print time messages
+        printTime("Elapsed Time", elapsed);
+        printTime("Estimated Total Time", estTotal);
+        printTime("Estimated Remaining Time", estTotal - elapsed);
     }
 }
 

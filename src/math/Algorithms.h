@@ -27,6 +27,7 @@ namespace gaps
 namespace algo
 {
     const float epsilon = 1.0e-10f;
+    const float pi = 3.14159265358979323846264f;
 
     bool isVectorZero(const float *vec, unsigned size);
 
