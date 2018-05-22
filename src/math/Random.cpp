@@ -29,6 +29,7 @@
 typedef boost::random::mt11213b RNGType; // should be faster
 
 static std::vector<RNGType> rng;
+//static RNGType rng;
 
 void gaps::random::save(Archive &ar)
 {
