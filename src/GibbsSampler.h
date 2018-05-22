@@ -420,30 +420,20 @@ float GibbsSampler<T, MatA, MatB>::gibbsMass(unsigned row, unsigned col, float m
     AlphaParameters alpha = impl()->alphaParameters(row, col);
     alpha.s *= mAnnealingTemp;
     alpha.su *= mAnnealingTemp;
-    float mean = (alpha.su - mLambda) / alpha.s;
-    float sd = 1.f / std::sqrt(alpha.s);
-    float pLower = gaps::random::p_norm(0.f, mean, sd);
 
-    float newMass = 0.f;
-    if (pLower == 1.f || alpha.s < 0.00001f)
+    if (alpha.s > gaps::algo::epsilon)
     {
-        newMass = mass < 0.f ? std::abs(mass) : 0.f;
-    }
-    else if (pLower >= 0.99f) // what's the point of this? TODO
-    {
-        float tmp1 = gaps::random::d_norm(0.f, mean, sd);
-        float tmp2 = gaps::random::d_norm(10.f * mLambda, mean, sd);
+        float mean = (alpha.su - mLambda) / alpha.s;
+        float sd = 1.f / std::sqrt(alpha.s);
+        float pLower = gaps::random::p_norm(0.f, mean, sd);
 
-        if (tmp1 > gaps::algo::epsilon && std::abs(tmp1 - tmp2) < gaps::algo::epsilon)
+        if (pLower < 1.f)
         {
-            return mass < 0.f ? 0.0 : mass;
+            float m = gaps::random::inverseNormSample(pLower, 1.f, mean, sd);
+            return std::max(std::min(m, mMaxGibbsMass), 0.f);
         }
     }
-    else
-    {
-        newMass = gaps::random::inverseNormSample(pLower, 1.f, mean, sd);
-    }
-    return std::max(std::min(newMass, mMaxGibbsMass), 0.f);
+    return std::min(mass < 0.f ? std::abs(mass) : 0.f, mMaxGibbsMass);
 }
 
 template <class T, class MatA, class MatB>
@@ -456,7 +446,7 @@ unsigned r2, unsigned c2, float m2)
 
     if (alpha.s > gaps::algo::epsilon)
     {
-        float mean = alpha.su / alpha.s;
+        float mean = alpha.su / alpha.s; // TODO why not subtract lambda
         float sd = 1.f / std::sqrt(alpha.s);
         float pLower = gaps::random::p_norm(-m1, mean, sd);
         float pUpper = gaps::random::p_norm(m2, mean, sd);
