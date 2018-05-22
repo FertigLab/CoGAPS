@@ -9,7 +9,7 @@ const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
     mLambda = alpha * std::sqrt(nFactor / meanD);
     mMaxGibbsMass = maxGibbsMass / mLambda;
     //mQueue.setDimensionSize(D.nrow());
-    mQueue.setDimensionSize(mBinSize * mNumCols);
+    mQueue.setDimensionSize(mBinSize, mNumCols);
 }
 
 unsigned AmplitudeGibbsSampler::getRow(uint64_t pos) const
@@ -113,7 +113,7 @@ const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
     mLambda = alpha * std::sqrt(nFactor / meanD);
     mMaxGibbsMass = maxGibbsMass / mLambda;
     //mQueue.setDimensionSize(D.ncol());
-    mQueue.setDimensionSize(mBinSize * mNumRows);
+    mQueue.setDimensionSize(mBinSize , mNumRows);
 }
 
 unsigned PatternGibbsSampler::getRow(uint64_t pos) const

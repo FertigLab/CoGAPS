@@ -2,6 +2,8 @@
 #include "ProposalQueue.h"
 #include "math/Random.h"
 
+// TODO invalidate 
+
 void ProposalQueue::setNumBins(unsigned nBins)
 {
     mNumBins = nBins;
@@ -12,9 +14,10 @@ void ProposalQueue::setDomainSize(uint64_t size)
     mDomainSize = size;
 }
 
-void ProposalQueue::setDimensionSize(uint64_t size)
+void ProposalQueue::setDimensionSize(uint64_t binSize, uint64_t dimLength)
 {
-    mDimensionSize = size;
+    mDimensionSize = binSize * dimLength;
+    mUsedIndices.setDimensionSize(mNumBins / dimLength);
 }
 
 void ProposalQueue::setAlpha(float alpha)
@@ -157,10 +160,9 @@ bool ProposalQueue::move(AtomicDomain &domain)
     uint64_t lbound = domain.hasLeft(a) ? domain.left(a).pos : 0;
     uint64_t rbound = domain.hasRight(a) ? domain.right(a).pos : mDomainSize;
 
-    uint64_t low = *(mUsedPositions.lower_bound(lbound));
-    if (low != *(mUsedPositions.end()) && low <= rbound)
+    if (!mUsedPositions.isEmptyInterval(lbound, rbound))
     {
-        return false; //atomic conflict - don't know neighbors
+        return false;
     }
 
     uint64_t newLocation = gaps::random::uniform64(lbound, rbound - 1);
@@ -182,43 +184,24 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
     Atom a1 = domain.randomAtom();
     Atom a2 = domain.hasRight(a1) ? domain.right(a1) : domain.front();
 
-    //if (domain.hasRight(a1))
-    //{
-    //    if (*(mUsedPositions.lower_bound(a1.pos)) <= a2.pos)
-    //    {
-    //        return false;
-    //    }
-    //}
-    //else
-    //{
-    //    if (*(mUsedPositions.end()) >= a1.pos || *(mUsedPositions.begin()) <= a2.pos)
-    //    {
-    //        return false;
-    //    }
-    //}
-
     if (domain.hasRight(a1)) // has neighbor
     {
-        std::set<uint64_t>::iterator low = mUsedPositions.lower_bound(a1.pos);
-        if (low != mUsedPositions.end() && *low <= a2.pos)
+        if (!mUsedPositions.isEmptyInterval(a1.pos, a2.pos))
         {
             return false;
         }
     }
     else // exchange with first atom
     {
-        for (std::set<uint64_t>::iterator it = mUsedPositions.begin(); it != mUsedPositions.end(); ++it)
+        if (!mUsedPositions.isEmptyInterval(a1.pos, mDomainSize))
         {
-            if (*it >= a1.pos || *it <= domain.front().pos)
-            {
-                return false; // atomic conflict - don't know right neighbor
-            }
+            return false;
         }
-        //std::set<uint64_t>::iterator it = mUsedPositions.upper_bound(a1.pos);
-        //if (it != mUsedPositions.end() || *(mUsedPositions.begin()) <= a2.pos)
-        //{
-        //    return false;
-        //}
+        
+        if (!mUsedPositions.isEmptyInterval(0, domain.front().pos))
+        {
+            return false;
+        }
     }
 
     if (mUsedIndices.count(a1.pos / mDimensionSize) || mUsedIndices.count(a2.pos / mDimensionSize))

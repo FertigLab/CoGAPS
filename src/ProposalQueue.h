@@ -3,6 +3,7 @@
 
 #include "Archive.h"
 #include "AtomicDomain.h"
+#include "data_structures/FixedHashSet.h"
 
 #include <boost/unordered_set.hpp>
 #include <stdint.h>
@@ -21,6 +22,15 @@ struct AtomicProposal
     {}
 };
 
+// Note that mUsedIndices can only contain 1 entry per row/col - otherwise
+// there will be a conflict - one option is to make a static allocation at
+// the start the size of the total rows/cols, make it a vector of bool or char
+// and store 0/1 - clear takes a long time though. could store a vector of used
+// indices as well, use the vector to clear quickly
+
+// could use unique indentifier integer - increment with each clear, only return
+// true if equal to indentifier
+
 // generate single atomic proposal for now
 class ProposalQueue
 {
@@ -28,8 +38,8 @@ private:
 
     std::vector<AtomicProposal> mQueue; // not really a queue for now
     
-    boost::unordered_set<uint64_t> mUsedIndices; // used rows/cols for A/P matrix
-    std::set<uint64_t> mUsedPositions; // used positions in atomic domain
+    IntFixedHashSet mUsedIndices;
+    IntDenseOrderedSet mUsedPositions;
 
     uint64_t mMinAtoms;
     uint64_t mMaxAtoms;
@@ -58,7 +68,7 @@ public:
     void setNumBins(unsigned nBins);
     void setDomainSize(uint64_t size);
     void setAlpha(float alpha);
-    void setDimensionSize(uint64_t size);
+    void setDimensionSize(uint64_t binSize, uint64_t dimLength);
 
     // modify/access queue
     void populate(AtomicDomain &domain, unsigned limit);
