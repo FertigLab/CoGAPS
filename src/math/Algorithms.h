@@ -1,7 +1,7 @@
 #ifndef __COGAPS_ALGORITHMS_H__
 #define __COGAPS_ALGORITHMS_H__
 
-#include "Matrix.h"
+#include "../data_structures/Matrix.h"
 
 #define GAPS_SQ(x) ((x) * (x))
 

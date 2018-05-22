@@ -1,5 +1,5 @@
 #include "catch.h"
-#include "../math/Matrix.h"
+#include "../data_structures/Matrix.h"
 
 TEST_CASE("Test Matrix.h")
 {

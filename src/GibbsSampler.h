@@ -3,7 +3,7 @@
 
 #include "GapsAssert.h"
 #include "Archive.h"
-#include "math/Matrix.h"
+#include "data_structures/Matrix.h"
 #include "math/Random.h"
 #include "math/Algorithms.h"
 #include "ProposalQueue.h"

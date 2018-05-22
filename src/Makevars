@@ -8,7 +8,7 @@ OBJECTS =   AtomicDomain.o \
             RcppExports.o \
             test-runner.o \
             math/Algorithms.o \
-            math/Matrix.o \
+            data_structures/Matrix.o \
             math/Random.o \
             cpp_tests/testAlgorithms.o \
             cpp_tests/testAtomicDomain.o \

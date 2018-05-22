@@ -1,5 +1,5 @@
 #include "Algorithms.h"
-#include "Matrix.h"
+#include "../data_structures/Matrix.h"
 #include "SIMD.h"
 
 #include <algorithm>

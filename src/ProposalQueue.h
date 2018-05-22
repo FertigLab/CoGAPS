@@ -3,7 +3,7 @@
 
 #include "Archive.h"
 #include "AtomicDomain.h"
-#include "data_structures/FixedHashSet.h"
+#include "data_structures/EfficientSets.h"
 
 #include <boost/unordered_set.hpp>
 #include <stdint.h>

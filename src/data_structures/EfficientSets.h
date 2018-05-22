@@ -1,5 +1,5 @@
-#ifndef __COGAPS_FIXED_HASH_SET__
-#define __COGAPS_FIXED_HASH_SET__
+#ifndef __COGAPS_EFFICIENT_SETS_H__
+#define __COGAPS_EFFICIENT_SETS_H__
 
 #include <stdint.h>
 
@@ -20,7 +20,7 @@ public:
     void insert(uint64_t n) {mSet[n] = mCurrentKey;}
 };
 
-// have vector with at least some % of holes
+// have sorted vector with at least some % of holes
 // even distribute entries along it
 // when shift happens, should be minimal
 
