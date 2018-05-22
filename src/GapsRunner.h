@@ -75,6 +75,7 @@ public:
     void runBurnPhase();
     void runCoolPhase();
     void runSampPhase();
+    double estPercentComplete();
 
 public:
 

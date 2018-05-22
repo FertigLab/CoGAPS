@@ -48,8 +48,8 @@ unsigned ProposalQueue::size() const
 
 const AtomicProposal& ProposalQueue::operator[](int n) const
 {
-    //return mQueue[mQueue.size() - 1 - n];
-    return mQueue[n];
+    return mQueue[mQueue.size() - 1 - n];
+    //return mQueue[n];
 }
 
 void ProposalQueue::acceptDeath()
