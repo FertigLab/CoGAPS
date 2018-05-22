@@ -50,7 +50,8 @@ mStatistics(D.nrow(), D.ncol(), nFactor)
 Rcpp::List GapsRunner::run()
 {
     // reset the checkpoint timer
-    mLastCheckpoint = bpt_now();
+    mStartTime = bpt_now();
+    mLastCheckpoint = mStartTime;
 
     // cascade down the various phases of the algorithm
     // this allows for starting in the middle of the algorithm
@@ -162,6 +163,27 @@ void GapsRunner::displayStatus(const std::string &type, unsigned nIterTotal)
         Rprintf("%s %d of %d, Atoms:%lu(%lu) Chi2 = %.2f\n", type.c_str(),
             mCurrentIter + 1, nIterTotal, mASampler.nAtoms(),
             mPSampler.nAtoms(), mASampler.chi2());
+        bpt::time_duration diff = bpt_now() - mStartTime;
+        double elapsed = diff.total_milliseconds() / 1000.0;
+        Rprintf("Elapsed Time: %.3f seconds\n", elapsed);
+
+        double prop = 0.0;
+        switch (mPhase)
+        {
+            case GAPS_BURN:
+                prop = mCurrentIter;
+                break;
+            case GAPS_COOL:
+                prop = mEquilIter + mCurrentIter;
+                break;
+            case GAPS_SAMP:
+                prop = mEquilIter + mCoolIter + mCurrentIter;
+                break;
+        }   
+        prop = (double)(mEquilIter + mCoolIter + mSampleIter) / prop;
+        double est = diff.total_milliseconds() * prop / 1000.0;
+        Rprintf("Estimated Total Time: %.3f seconds\n", est);
+        Rprintf("Estimated Remaining Time: %.3f seconds\n", est - elapsed);        
     }
 }
 

@@ -64,7 +64,6 @@ private:
     std::vector<Atom> mAtoms;
     std::map<uint64_t, uint64_t> mAtomPositions;
 
-    // TODO google_dense_set - first profile and benchmark
     boost::unordered_set<uint64_t> mUsedPositions;
 
     mutable std::vector<RawAtom> mInsertCache;

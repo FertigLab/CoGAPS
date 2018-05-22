@@ -2,7 +2,7 @@
 #define __COGAPS_GAPS_STATISTICS_H__
 
 #include "GibbsSampler.h"
-#include "math/Matrix.h"
+#include "data_structures/Matrix.h"
 
 class GapsStatistics
 {

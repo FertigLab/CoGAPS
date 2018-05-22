@@ -2,8 +2,6 @@
 #include "ProposalQueue.h"
 #include "math/Random.h"
 
-// TODO invalidate 
-
 void ProposalQueue::setNumBins(unsigned nBins)
 {
     mNumBins = nBins;

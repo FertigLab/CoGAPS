@@ -2,7 +2,7 @@
 #define __COGAPS_GAPS_RUNNER_H__
 
 #include "Archive.h"
-#include "math/Matrix.h"
+#include "data_structures/Matrix.h"
 #include "GibbsSampler.h"
 #include "GapsStatistics.h"
 
@@ -64,6 +64,8 @@ public:
     GapsStatistics mStatistics;
 
     unsigned mNumCores;
+
+    bpt::ptime mStartTime;
 
     void createCheckpoint();
     void makeCheckpointIfNeeded();
