@@ -8,7 +8,6 @@ const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
     float meanD = gaps::algo::mean(mDMatrix);
     mLambda = alpha * std::sqrt(nFactor / meanD);
     mMaxGibbsMass = maxGibbsMass / mLambda;
-    //mQueue.setDimensionSize(D.nrow());
     mQueue.setDimensionSize(mBinSize, mNumCols);
 }
 
@@ -112,7 +111,6 @@ const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
     float meanD = gaps::algo::mean(mDMatrix);
     mLambda = alpha * std::sqrt(nFactor / meanD);
     mMaxGibbsMass = maxGibbsMass / mLambda;
-    //mQueue.setDimensionSize(D.ncol());
     mQueue.setDimensionSize(mBinSize , mNumRows);
 }
 
