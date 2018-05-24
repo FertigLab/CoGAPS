@@ -128,6 +128,13 @@ CoGapsFromCheckpoint <- function(D, S, path, checkpointFile=NA)
     cogapsFromCheckpoint_cpp(D, S, path, checkpointFile)
 }
 
+#' CoGAPS with file input for matrix
+#' @export
+CoGAPSFromFile <- function(D)
+{
+    cogapsFromFile_cpp(D)
+}
+
 #' Display Information About Package Compilation
 #'
 #' @details displays information about how the package was compiled, i.e. which

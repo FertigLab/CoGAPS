@@ -1,8 +1,27 @@
 #include "math/SIMD.h"
 #include "GapsRunner.h"
+#include "file_parser/CsvParser.h"
 
 #include <Rcpp.h>
 #include <omp.h>
+
+// [[Rcpp::export]]
+Rcpp::List cogapsFromFile_cpp(const std::string D)
+{
+    CsvParser csv(D);
+
+    while (csv.hasNext())
+    {
+        MatrixElement m = csv.getNext();
+        Rcpp::Rcout << m.row << "," << m.col << "," << m.value << '\n';
+    }
+
+    for (unsigned i = 0; i < csv.mRowNames.size(); ++i)
+        Rcpp::Rcout << csv.mRowNames[i] << '\n';
+
+    for (unsigned i = 0; i < csv.mColNames.size(); ++i)
+        Rcpp::Rcout << csv.mColNames[i] << '\n';
+}
 
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D,

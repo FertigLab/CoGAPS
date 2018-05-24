@@ -51,9 +51,14 @@ RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
 }
 
 RowMatrix::RowMatrix(const std::string &path)
-{
-
-}
+{/*
+    CsvParser csv(path);
+    while (csv.hasNext())
+    {
+        MatrixElement m = csv.getNext();
+        this->operator(m.row, m.col) = m.value;
+    }
+*/}
 
 void RowMatrix::operator=(const RowMatrix &mat)
 {
