@@ -14,8 +14,10 @@ const Rcpp::NumericMatrix &FP, unsigned checkpointInterval,
 const std::string &cptFile, unsigned pumpThreshold, unsigned nPumpSamples,
 unsigned nCores)
 {
-    unsigned availableCores = omp_get_max_threads();
-    Rprintf("Running on %d out of %d available cores\n", nCores, availableCores);
+    #ifdef __GAPS_OPENMP__
+        unsigned availableCores = omp_get_max_threads();
+        Rprintf("Running on %d out of %d available cores\n", nCores, availableCores);
+    #endif
 
     // create internal state from parameters and run from there
     GapsRunner runner(D, S, nFactor, nEquil, nEquilCool, nSample,
@@ -61,7 +63,7 @@ std::string getBuildReport_cpp()
     std::string simd = "SIMD not enabled\n";
 #endif
 
-#if defined(_OPENMP)
+#ifdef __GAPS_OPENMP__
     std::string openmp = "Compiled with OpenMP\n";
 #else
     std::string openmp = "Compiler did not support OpenMP\n";

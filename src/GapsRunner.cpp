@@ -207,11 +207,6 @@ void GapsRunner::displayStatus(const std::string &type, unsigned nIterTotal)
 {
     if (mNumOutputs > 0 && (mCurrentIter + 1) % mNumOutputs == 0 && mPrintMessages)
     {
-        // print algo status
-        Rprintf("%s %d of %d, Atoms:%lu(%lu) Chi2 = %.2f\n", type.c_str(),
-            mCurrentIter + 1, nIterTotal, mASampler.nAtoms(),
-            mPSampler.nAtoms(), mASampler.chi2());
-
         // compute time
         bpt::time_duration diff = bpt_now() - mStartTime;
         double elapsed = diff.total_seconds();
@@ -221,6 +216,12 @@ void GapsRunner::displayStatus(const std::string &type, unsigned nIterTotal)
         printTime("Elapsed Time", elapsed);
         printTime("Estimated Total Time", estTotal);
         printTime("Estimated Remaining Time", estTotal - elapsed);
+
+        // print algo status
+        Rprintf("%s %d of %d, Atoms:%lu(%lu) Chi2 = %.2f\n\n", type.c_str(),
+            mCurrentIter + 1, nIterTotal, mASampler.nAtoms(),
+            mPSampler.nAtoms(), mASampler.chi2());
+
     }
 }
 

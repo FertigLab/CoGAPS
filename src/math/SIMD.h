@@ -5,8 +5,10 @@
     #define __x86_64__ 1
 #endif
 
-#if !defined(_OPENMP)
+#ifndef _OPENMP
     #warning "Compiler does not support OpenMP"
+#else
+    #define __GAPS_OPENMP__
 #endif
 
 #ifndef SSE_INSTR_SET

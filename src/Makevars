@@ -9,7 +9,9 @@ OBJECTS =   AtomicDomain.o \
             test-runner.o \
             math/Algorithms.o \
             data_structures/Matrix.o \
+            data_structures/Vector.o \
             math/Random.o \
+            file_parser/CsvParser.o \
             cpp_tests/testAlgorithms.o \
             cpp_tests/testAtomicDomain.o \
             cpp_tests/testGapsRunner.o \
