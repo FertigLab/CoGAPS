@@ -63,7 +63,7 @@ std::string getBuildReport_cpp()
     std::string simd = "SIMD not enabled\n";
 #endif
 
-#if defined(_GAPS_OPENMP)
+#if defined(__GAPS_OPENMP__)
     std::string openmp = "Compiled with OpenMP\n";
 #else
     std::string openmp = "Compiler did not support OpenMP\n";
