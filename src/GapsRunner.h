@@ -3,6 +3,7 @@
 
 #include "Archive.h"
 #include "data_structures/Matrix.h"
+#include "data_structures/Vector.h"
 #include "GibbsSampler.h"
 #include "GapsStatistics.h"
 

@@ -11,7 +11,6 @@
 
 #include <Rcpp.h>
 #include <algorithm>
-#include <omp.h>
 
 // forward declarations needed for friend classes
 class AmplitudeGibbsSampler;

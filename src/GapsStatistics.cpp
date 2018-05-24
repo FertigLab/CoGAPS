@@ -12,17 +12,16 @@ const PatternGibbsSampler &PSampler)
 {
     mStatUpdates++;
 
-    Vector normVec(mNumPatterns);
     for (unsigned j = 0; j < mNumPatterns; ++j)
     {
-        normVec[j] = gaps::algo::sum(PSampler.mMatrix.getRow(j));
-        normVec[j] = normVec[j] == 0 ? 1.f : normVec[j];
+        float norm = gaps::algo::sum(PSampler.mMatrix.getRow(j));
+        norm = norm == 0.f ? 1.f : norm;
 
-        Vector quot(PSampler.mMatrix.getRow(j) / normVec[j]);
+        Vector quot(PSampler.mMatrix.getRow(j) / norm);
         mPMeanMatrix.getRow(j) += quot;
         mPStdMatrix.getRow(j) += gaps::algo::elementSq(quot);
 
-        Vector prod(ASampler.mMatrix.getCol(j) * normVec[j]);
+        Vector prod(ASampler.mMatrix.getCol(j) * norm);
         mAMeanMatrix.getCol(j) += prod;
         mAStdMatrix.getCol(j) += gaps::algo::elementSq(prod); 
     }

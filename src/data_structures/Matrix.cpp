@@ -1,26 +1,5 @@
 #include "Matrix.h"
 
-#include <stdexcept>
-
-static const float EPSILON = 1.e-10;
-
-/******************************** HELPER *******************************/
-
-static void updateHelper2(float& val, float delta)
-{
-    val = std::abs(val + delta) < EPSILON ? 0.0 : val + delta;
-}
-
-template<class GenericMatrix>
-static void updateHelper(GenericMatrix &mat, const MatrixChange &change)
-{
-    updateHelper2(mat(change.row1, change.col1), change.delta1);
-    if (change.nChanges > 1)
-    {
-        updateHelper2(mat(change.row2, change.col2), change.delta2);
-    }
-}
-
 template<class GenericMatrix>
 static Rcpp::NumericMatrix convertToRMatrix(const GenericMatrix &mat)
 {
@@ -35,118 +14,16 @@ static Rcpp::NumericMatrix convertToRMatrix(const GenericMatrix &mat)
     return rmat;
 }
 
-/******************************** VECTOR *******************************/
-
-void Vector::concat(const Vector& vec)
+template<class MatA, class MatB>
+static void copyMatrix(MatA &dest, const MatB &source)
 {
-    mValues.insert(mValues.end(), vec.mValues.begin(), vec.mValues.end());
-}
-
-void Vector::operator+=(const Vector &vec)
-{
-    for (unsigned i = 0; i < size(); ++i)
+    for (unsigned i = 0; i < source.nRow(); ++i)
     {
-        mValues[i] += vec[i];
+        for (unsigned j = 0; j < source.nCol(); ++j)
+        {
+            dest(i,j) = source(i,j);
+        }
     }
-}
-
-void Vector::operator=(const Vector &vec)
-{
-    mValues = vec.mValues;
-}
-
-Vector Vector::operator+(Vector vec) const
-{
-    for (unsigned i = 0; i < size(); ++i)
-    {
-        vec[i] += mValues[i];
-    }
-    return vec;
-}
-
-Vector Vector::operator-(Vector vec) const
-{
-    for (unsigned i = 0; i < size(); ++i)
-    {
-        vec[i] -= mValues[i];
-    }
-    return vec;
-}
-
-Vector Vector::operator*(Vector vec) const
-{
-    for (unsigned i = 0; i < size(); ++i)
-    {
-        vec[i] *= mValues[i];
-    }
-    return vec;
-}
-
-Vector Vector::operator/(Vector vec) const
-{
-    for (unsigned i = 0; i < size(); ++i)
-    {
-        vec[i] /= mValues[i];
-    }
-    return vec;
-}
-
-Vector Vector::operator+(float val) const
-{
-    Vector vec(*this);
-    for (unsigned i = 0; i < size(); ++i)
-    {
-        vec[i] += val;
-    }
-    return vec;
-}
-
-Vector Vector::operator-(float val) const
-{
-    Vector vec(*this);
-    for (unsigned i = 0; i < size(); ++i)
-    {
-        vec[i] -= val;
-    }
-    return vec;
-}
-
-Vector Vector::operator*(float val) const
-{
-    Vector vec(*this);
-    for (unsigned i = 0; i < size(); ++i)
-    {
-        vec[i] *= val;
-    }
-    return vec;
-}
-
-Vector Vector::operator/(float val) const
-{
-    Vector vec(*this);
-    for (unsigned i = 0; i < size(); ++i)
-    {
-        vec[i] /= val;
-    }
-    return vec;
-}
-
-Archive& operator<<(Archive &ar, Vector &vec)
-{
-    for (unsigned i = 0; i < vec.size(); ++i)
-    {
-        ar << vec[i];
-    }
-    return ar;
-}
-
-Archive& operator>>(Archive &ar, Vector &vec)
-{
-    for (unsigned i = 0; i < vec.size(); ++i)
-    {
-        ar >> vec.mValues[i];
-    }
-    return ar;
 }
     
 /****************************** ROW MATRIX *****************************/
@@ -173,36 +50,24 @@ RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
     }
 }
 
-RowMatrix::RowMatrix(const RowMatrix &mat)
-: mNumRows(mat.nRow()), mNumCols(mat.nCol())
+RowMatrix::RowMatrix(const std::string &path)
 {
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        mRows.push_back(mat.getRow(i));
-    }
+
 }
 
-RowMatrix::RowMatrix(const ColMatrix &mat)
-: mNumRows(mat.nRow()), mNumCols(mat.nCol())
+void RowMatrix::operator=(const RowMatrix &mat)
 {
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        mRows.push_back(Vector(mNumCols));
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            this->operator()(i,j) = mat(i,j);
-        }
-    }
+    copyMatrix(*this, mat);
 }
 
-void RowMatrix::update(const MatrixChange &change)
+void RowMatrix::operator=(const ColMatrix &mat)
 {
-    updateHelper<RowMatrix>(*this, change);
+    copyMatrix(*this, mat);
 }
 
 Rcpp::NumericMatrix RowMatrix::rMatrix() const
 {
-    return convertToRMatrix<RowMatrix>(*this);
+    return convertToRMatrix(*this);
 }
 
 RowMatrix RowMatrix::operator/(float val) const
@@ -213,17 +78,6 @@ RowMatrix RowMatrix::operator/(float val) const
         mat.getRow(i) = mRows[i] / val;
     }
     return mat;
-}
-
-void RowMatrix::operator=(const ColMatrix &mat)
-{
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            this->operator()(i,j) = mat(i,j);
-        }
-    }
 }
 
 Archive& operator<<(Archive &ar, RowMatrix &mat)
@@ -268,18 +122,9 @@ ColMatrix::ColMatrix(const Rcpp::NumericMatrix &rmat)
     }
 }
 
-ColMatrix::ColMatrix(const ColMatrix &mat)
-: mNumRows(mat.nRow()), mNumCols(mat.nCol())
+ColMatrix::ColMatrix(const std::string &path)
 {
-    for (unsigned j = 0; j < mNumCols; ++j)
-    {
-        mCols.push_back(mat.getCol(j));
-    }
-}
 
-void ColMatrix::update(const MatrixChange &change)
-{
-    updateHelper<ColMatrix>(*this, change);
 }
 
 ColMatrix ColMatrix::operator/(float val) const
@@ -292,20 +137,19 @@ ColMatrix ColMatrix::operator/(float val) const
     return mat;
 }
 
+void ColMatrix::operator=(const ColMatrix &mat)
+{
+    copyMatrix(*this, mat);
+}
+
 void ColMatrix::operator=(const RowMatrix &mat)
 {
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            this->operator()(i,j) = mat(i,j);
-        }
-    }
+    copyMatrix(*this, mat);
 }
 
 Rcpp::NumericMatrix ColMatrix::rMatrix() const
 {
-    return convertToRMatrix<ColMatrix>(*this);
+    return convertToRMatrix(*this);
 }
 
 Archive& operator<<(Archive &ar, ColMatrix &mat)
