@@ -20,7 +20,14 @@
 #include <boost/math/distributions/gamma.hpp>
 
 #include <stdint.h>
-#include <omp.h>
+
+#ifdef __GAPS_OPENMP__
+    #include <omp.h>
+#else
+    typedef int omp_int_t;
+    inline omp_int_t omp_get_thread_num() { return 0; }
+    inline omp_int_t omp_get_max_threads() { return 1; }
+#endif
 
 #define Q_GAMMA_THRESHOLD 0.000001f
 #define Q_GAMMA_MIN_VALUE 0.0
