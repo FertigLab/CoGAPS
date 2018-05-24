@@ -5,6 +5,17 @@
 
 using namespace Rcpp;
 
+// cogapsFromFile_cpp
+Rcpp::List cogapsFromFile_cpp(const std::string D);
+RcppExport SEXP _CoGAPS_cogapsFromFile_cpp(SEXP DSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string >::type D(DSEXP);
+    rcpp_result_gen = Rcpp::wrap(cogapsFromFile_cpp(D));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cogaps_cpp
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix& D, const Rcpp::NumericMatrix& S, unsigned nFactor, unsigned nEquil, unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots, float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP, unsigned seed, bool messages, bool singleCellRNASeq, char whichMatrixFixed, const Rcpp::NumericMatrix& FP, unsigned checkpointInterval, const std::string& cptFile, unsigned pumpThreshold, unsigned nPumpSamples, unsigned nCores);
 RcppExport SEXP _CoGAPS_cogaps_cpp(SEXP DSEXP, SEXP SSEXP, SEXP nFactorSEXP, SEXP nEquilSEXP, SEXP nEquilCoolSEXP, SEXP nSampleSEXP, SEXP nOutputsSEXP, SEXP nSnapshotsSEXP, SEXP alphaASEXP, SEXP alphaPSEXP, SEXP maxGibbmassASEXP, SEXP maxGibbmassPSEXP, SEXP seedSEXP, SEXP messagesSEXP, SEXP singleCellRNASeqSEXP, SEXP whichMatrixFixedSEXP, SEXP FPSEXP, SEXP checkpointIntervalSEXP, SEXP cptFileSEXP, SEXP pumpThresholdSEXP, SEXP nPumpSamplesSEXP, SEXP nCoresSEXP) {
@@ -76,6 +87,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_CoGAPS_cogapsFromFile_cpp", (DL_FUNC) &_CoGAPS_cogapsFromFile_cpp, 1},
     {"_CoGAPS_cogaps_cpp", (DL_FUNC) &_CoGAPS_cogaps_cpp, 22},
     {"_CoGAPS_cogapsFromCheckpoint_cpp", (DL_FUNC) &_CoGAPS_cogapsFromCheckpoint_cpp, 7},
     {"_CoGAPS_getBuildReport_cpp", (DL_FUNC) &_CoGAPS_getBuildReport_cpp, 0},

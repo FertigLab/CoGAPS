@@ -1,41 +1,52 @@
 #include "CsvParser.h"
 
+#include <iostream>
+
+// TODO need to parse by rows - otherwise it would be neccesary to
+// know dimensions beforehand
+
 // open file, read column names
-CsvParser::CsvParser(const std::string &path)
+CsvParser::CsvParser(const std::string &path) : mCurrentRow(0), mCurrentCol(0)
 {
     mFile.open(path.c_str());
 
     std::string line;
-    std::getline(mFile, line); // read first entry (blank)
-    
-    while (!std::isdigit(mFile.peek()))
+    std::getline(mFile, line, ','); // read first entry (blank)
+
+    std::size_t pos;
+    std::getline(mFile, line, ',');
+    while ((pos = line.find('\n')) == std::string::npos)
     {
-        std::getline(mFile, line)
         mColNames.push_back(line);
+        std::getline(mFile, line, ',');
     }
-    mRowNames.push_back(mColNames.back());
-    mColNames.pop_back(); // read one too far
+    mColNames.push_back(line.substr(0,pos));
+    mRowNames.push_back(line.substr(pos+1));
 }
 
-bool CsvParser::hasNext() const
+bool CsvParser::hasNext()
 {
     return mFile.peek() != EOF;
 }
 
-MatrixElement CsvParser::getNext() const
+MatrixElement CsvParser::getNext()
 {
-    int c = mFile.peek();
-    
     std::string line;
-    std::getline(mFile, line);
-    if (std::isdigit(c)) // matrix element
+    std::getline(mFile, line, ',');
+
+    std::size_t pos;
+    if ((pos = line.find('\n')) != std::string::npos)
     {
-        Rcout << line << '\n';
-        return MatrixElement(0,0,0.f);
+        if (pos + 1 < line.size())
+        {
+            mRowNames.push_back(line.substr(pos + 1));
+        }
+        unsigned col = mCurrentCol;
+        mCurrentCol = 0;
+        return MatrixElement(mCurrentRow++, col, line.substr(0, pos));
     }
-    else // row name
+    else
     {
-        mRowNames.push_back(line);
-        return getNext();
+        return MatrixElement(mCurrentRow, mCurrentCol++, line);
     }
 }

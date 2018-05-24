@@ -9,7 +9,8 @@
 
 class CsvParser
 {
-private:
+//private:
+public:
 
     std::ifstream mFile;
 
@@ -23,8 +24,8 @@ public:
 
     CsvParser(const std::string &path);
 
-    bool hasNext() const;
-    MatrixElement getNext() const; 
+    bool hasNext();
+    MatrixElement getNext(); 
 };
 
 #endif
