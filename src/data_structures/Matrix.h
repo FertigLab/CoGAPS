@@ -2,9 +2,9 @@
 #define __COGAPS_MATRIX_H__
 
 #include "../Archive.h"
+#include "Vector.h"
 
 #include <Rcpp.h>
-#include <boost/align/aligned_allocator.hpp>
 #include <vector>
 
 struct MatrixChange
@@ -32,46 +32,6 @@ struct MatrixChange
     {}
 };
 
-namespace bal = boost::alignment;
-typedef std::vector<float, bal::aligned_allocator<float,32> > aligned_vector;
-
-class Vector
-{
-private:
-
-    aligned_vector mValues;
-
-public:
-
-    Vector(unsigned size) : mValues(aligned_vector(size, 0.f)) {}
-    Vector(unsigned size, float val) : mValues(aligned_vector(size, val)) {}
-    Vector(const aligned_vector &v) : mValues(v) {}
-    Vector(const Vector &vec) : mValues(vec.mValues) {}
-
-    const float* ptr() const {return &mValues[0];}
-    float* ptr() {return &mValues[0];}
-
-    float& operator[](unsigned i) {return mValues[i];}
-    float operator[](unsigned i) const {return mValues[i];}
-    unsigned size() const {return mValues.size();}
-
-    Rcpp::NumericVector rVec() const {return Rcpp::wrap(mValues);}
-    void concat(const Vector& vec);
-    void operator+=(const Vector &vec);
-    void operator=(const Vector &vec);
-
-    Vector operator+(Vector vec) const;
-    Vector operator-(Vector vec) const;
-    Vector operator*(Vector vec) const;
-    Vector operator/(Vector vec) const;
-    Vector operator+(float val) const;
-    Vector operator-(float val) const;
-    Vector operator*(float val) const;
-    Vector operator/(float val) const;
-
-    friend Archive& operator<<(Archive &ar, Vector &vec);
-    friend Archive& operator>>(Archive &ar, Vector &vec);
-};
 
 class ColMatrix;
 
@@ -82,14 +42,11 @@ private:
     std::vector<Vector> mRows;
     unsigned mNumRows, mNumCols;
 
-    RowMatrix() {}
-
 public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
     RowMatrix(const Rcpp::NumericMatrix &rmat);
-    RowMatrix(const RowMatrix &mat);
-    RowMatrix(const ColMatrix &mat);
+    RowMatrix(const std::string &path);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -105,9 +62,9 @@ public:
 
     RowMatrix operator/(float val) const;
 
+    void operator=(const RowMatrix &mat);
     void operator=(const ColMatrix &mat);
 
-    void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
 
     friend Archive& operator<<(Archive &ar, RowMatrix &mat);
@@ -121,14 +78,11 @@ private:
     std::vector<Vector> mCols;
     unsigned mNumRows, mNumCols;
 
-    ColMatrix() {}
-
 public:
 
     ColMatrix(unsigned nrow, unsigned ncol);
     ColMatrix(const Rcpp::NumericMatrix &rmat);
-    ColMatrix(const ColMatrix &mat);
-    ColMatrix(const RowMatrix &mat);
+    ColMatrix(const std::string &path);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -144,9 +98,9 @@ public:
 
     ColMatrix operator/(float val) const;
 
+    void operator=(const ColMatrix &mat);
     void operator=(const RowMatrix &mat);
 
-    void update(const MatrixChange &change);
     Rcpp::NumericMatrix rMatrix() const;
 
     friend Archive& operator<<(Archive &ar, ColMatrix &mat);

@@ -21,7 +21,7 @@
 
 #include <stdint.h>
 
-#if defined(__GAPS_OPENMP__)
+#ifdef __GAPS_OPENMP__
     #include <omp.h>
 #else
     typedef int omp_int_t;

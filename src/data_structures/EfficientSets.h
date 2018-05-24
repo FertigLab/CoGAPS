@@ -20,7 +20,7 @@ public:
     void insert(uint64_t n) {mSet[n] = mCurrentKey;}
 };
 
-// have sorted vector with at least some % of holes
+// TODO have sorted vector with at least some % of holes
 // even distribute entries along it
 // when shift happens, should be minimal
 
@@ -37,7 +37,7 @@ public:
     void insert(uint64_t p) {mVec.push_back(p);}
     void clear() {mVec.clear();}
 
-    // inclusive of a and b
+    // inclusive of a and b, TODO improve performance
     bool isEmptyInterval(uint64_t a, uint64_t b)
     {
         for (unsigned i = 0; i < mVec.size(); ++i)
