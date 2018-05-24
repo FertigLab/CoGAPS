@@ -7,6 +7,8 @@
 
 #if !defined(_OPENMP)
     #warning "Compiler does not support OpenMP"
+#else
+    #define __GAPS_OPENMP__
 #endif
 
 #ifndef SSE_INSTR_SET

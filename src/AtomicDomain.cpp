@@ -2,7 +2,6 @@
 #include "AtomicDomain.h"
 #include "math/Random.h"
 
-#include <omp.h>
 #include <stdint.h>
 #include <utility>
 
@@ -15,10 +14,7 @@ Atom AtomicDomain::front() const
 // O(1)
 Atom AtomicDomain::randomAtom() const
 {
-    uint64_t ndx = gaps::random::uniform64(0, mAtoms.size() - 1);
-    //GAPS_ASSERT(mAtoms.size() >= 1);
-    //GAPS_ASSERT(ndx < mAtoms.size());
-    return mAtoms[ndx];
+    return mAtoms[gaps::random::uniform64(0, mAtoms.size() - 1)];
 }
 
 // Average Case O(1)
