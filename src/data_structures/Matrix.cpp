@@ -1,7 +1,5 @@
 #include "Matrix.h"
 
-/******************************** HELPER *******************************/
-
 template<class GenericMatrix>
 static Rcpp::NumericMatrix convertToRMatrix(const GenericMatrix &mat)
 {
@@ -50,6 +48,11 @@ RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
             this->operator()(i,j) = rmat(i,j);
         }
     }
+}
+
+RowMatrix::RowMatrix(const std::string &path)
+{
+
 }
 
 void RowMatrix::operator=(const RowMatrix &mat)
@@ -117,6 +120,11 @@ ColMatrix::ColMatrix(const Rcpp::NumericMatrix &rmat)
             this->operator()(i,j) = rmat(i,j);
         }
     }
+}
+
+ColMatrix::ColMatrix(const std::string &path)
+{
+
 }
 
 ColMatrix ColMatrix::operator/(float val) const
