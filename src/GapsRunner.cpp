@@ -221,7 +221,6 @@ void GapsRunner::displayStatus(const std::string &type, unsigned nIterTotal)
         Rprintf("%s %d of %d, Atoms:%lu(%lu) Chi2 = %.2f\n\n", type.c_str(),
             mCurrentIter + 1, nIterTotal, mASampler.nAtoms(),
             mPSampler.nAtoms(), mASampler.chi2());
-
     }
 }
 
