@@ -70,7 +70,7 @@ RowMatrix::RowMatrix(const std::string &path)
     while (csv.hasNext())
     {
         MatrixElement e(csv.getNext());
-        this->operator(e.row, e.col) = e.value;
+        this->operator()(e.row, e.col) = e.value;
     }
 }
 

@@ -23,7 +23,7 @@ public:
     bool hasNext();
     MatrixElement getNext();
 
-    static MatrixDimension getDimensions(const std::string &path);
+    static MatrixDimensions getDimensions(const std::string &path);
 };
 
 #endif

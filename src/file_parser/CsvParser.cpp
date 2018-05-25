@@ -1,38 +1,39 @@
 #include "CsvParser.h"
 #include "../math/Algorithms.h"
 
+#include <fstream>
 #include <iostream>
 
 // get the number of rows and cols in a csv file
-MatrixDimension CsvParser::getDimensions(const std::string &path)
+MatrixDimensions CsvParser::getDimensions(const std::string &path)
 {
     // initialize struct that holds dimensions
-    MatrixDimension dim(0,0);
+    MatrixDimensions dim(0,0);
 
     // open file stream
-    std::ifstream str(path);
+    std::ifstream file_str(path.c_str());
 
     // read first entry (blank)
     std::string line;
-    std::getline(mFile, line, ',');
+    std::getline(file_str, line, ',');
 
     // get col size
     std::size_t pos;
     do
     {
-        std::getline(mFile, line, ',');
+        std::getline(file_str, line, ',');
         dim.nCol++;
     }
     while ((pos = line.find('\n')) == std::string::npos);
 
     // get row size
     dim.nRow++; // acount for current row
-    while (mFile.peek() != EOF)
+    while (file_str.peek() != EOF)
     {
         // throw away data
         do
         {
-            std::getline(mFile, line, ',');
+            std::getline(file_str, line, ',');
         }
         while ((pos = line.find('\n')) == std::string::npos);
 
@@ -49,7 +50,7 @@ MatrixDimension CsvParser::getDimensions(const std::string &path)
 // open file, read column names
 CsvParser::CsvParser(const std::string &path) : mCurrentRow(0), mCurrentCol(0)
 {
-    mFile.open(path);
+    mFile.open(path.c_str());
 }
 
 bool CsvParser::hasNext()
