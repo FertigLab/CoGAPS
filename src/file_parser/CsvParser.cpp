@@ -2,9 +2,7 @@
 
 #include <iostream>
 
-// TODO need to parse by rows - otherwise it would be neccesary to
-// know dimensions beforehand
-
+// read through whole file once, store row/col names - gives dimensions
 // open file, read column names
 CsvParser::CsvParser(const std::string &path) : mCurrentRow(0), mCurrentCol(0)
 {
@@ -21,15 +19,43 @@ CsvParser::CsvParser(const std::string &path) : mCurrentRow(0), mCurrentCol(0)
         std::getline(mFile, line, ',');
     }
     mColNames.push_back(line.substr(0,pos));
+
     mRowNames.push_back(line.substr(pos+1));
+    while (mFile.peek() != EOF)
+    {
+        while ((pos = line.find('\n')) == std::string::npos)
+        {
+            std::getline(mFile, line, ',');
+        }
+        mRowNames.push_back(line.substr(pos+1));
+    }
+
+    for (unsigned i = 0; i < mRowNames.size(); ++i)
+    {
+        std::cout << mRowNames[i] << '\n';
+    }
+    for (unsigned j = 0; j < mColNames.size(); ++j)
+    {
+        std::cout << mRowNames[j] << '\n';
+    }
 }
 
-bool CsvParser::hasNext()
+bool hasNextRow()
 {
-    return mFile.peek() != EOF;
+
 }
 
-MatrixElement CsvParser::getNext()
+std::vector<float> getNextRow()
+{
+
+}
+
+void skipNextRow()
+{
+
+}
+
+/*MatrixElement CsvParser::getNext()
 {
     std::string line;
     std::getline(mFile, line, ',');
@@ -49,4 +75,4 @@ MatrixElement CsvParser::getNext()
     {
         return MatrixElement(mCurrentRow, mCurrentCol++, line);
     }
-}
+}*/

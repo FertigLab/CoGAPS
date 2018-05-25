@@ -9,7 +9,7 @@
 Rcpp::List cogapsFromFile_cpp(const std::string D)
 {
     CsvParser csv(D);
-
+/*
     while (csv.hasNext())
     {
         MatrixElement m = csv.getNext();
@@ -21,6 +21,8 @@ Rcpp::List cogapsFromFile_cpp(const std::string D)
 
     for (unsigned i = 0; i < csv.mColNames.size(); ++i)
         Rcpp::Rcout << csv.mColNames[i] << '\n';
+*/
+    Rcpp::Rcout << csv.nRow() << "," << csv.nCol() << '\n';
 }
 
 // [[Rcpp::export]]

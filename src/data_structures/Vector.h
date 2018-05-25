@@ -18,6 +18,7 @@ private:
 public:
 
     Vector(unsigned size) : mValues(aligned_vector(size, 0.f)) {}
+    Vector(std::vector<float> v) : mValues(aligned_vector(v)) {}
 
     const float* ptr() const {return &mValues[0];}
     float* ptr() {return &mValues[0];}
