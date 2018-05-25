@@ -8,21 +8,13 @@
 // [[Rcpp::export]]
 Rcpp::List cogapsFromFile_cpp(const std::string D)
 {
-    CsvParser csv(D);
-/*
-    while (csv.hasNext())
-    {
-        MatrixElement m = csv.getNext();
-        Rcpp::Rcout << m.row << "," << m.col << "," << m.value << '\n';
-    }
+    // CsvParser csv(D);
+    //Rcpp::Rcout << csv.nRow() << "," << csv.nCol() << '\n';
 
-    for (unsigned i = 0; i < csv.mRowNames.size(); ++i)
-        Rcpp::Rcout << csv.mRowNames[i] << '\n';
-
-    for (unsigned i = 0; i < csv.mColNames.size(); ++i)
-        Rcpp::Rcout << csv.mColNames[i] << '\n';
-*/
-    Rcpp::Rcout << csv.nRow() << "," << csv.nCol() << '\n';
+    //RowMatrix mat(D);
+    RowMatrix mat(D);
+    Rcpp::Rcout << mat.nRow() << "," << mat.nCol() << '\n';
+    //Rcpp::Rcout << gaps::algo::sum(mat) << '\n';
 }
 
 // [[Rcpp::export]]

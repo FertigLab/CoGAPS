@@ -1,5 +1,13 @@
 #include "Vector.h"
 
+Vector::Vector(const std::vector<float> &v) : mValues(v.size())
+{
+    for (unsigned i = 0; i < v.size(); ++i)
+    {
+        mValues[i] = v[i];
+    }
+}
+
 void Vector::concat(const Vector& vec)
 {
     mValues.insert(mValues.end(), vec.mValues.begin(), vec.mValues.end());

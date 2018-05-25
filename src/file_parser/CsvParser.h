@@ -1,6 +1,8 @@
 #ifndef __COGAPS_CSV_PARSER_H__
 #define __COGAPS_CSV_PARSER_H__
 
+#include "MatrixElement.h"
+
 #include <fstream>
 #include <vector>
 #include <string>
@@ -11,27 +13,17 @@ private:
 
     std::ifstream mFile;
 
-    std::vector<std::string> mRowNames;
-    std::vector<std::string> mColNames;
-
     unsigned mCurrentRow;
     unsigned mCurrentCol;
 
 public:
 
-    // read through whole file once, store row/col names - gives dimensions
     CsvParser(const std::string &path);
 
-    unsigned nRow() const { return mRowNames.size(); }
-    unsigned nCol() const { return mColNames.size(); }
+    bool hasNext();
+    MatrixElement getNext();
 
-    bool hasNextRow();
-    std::vector<float> getNextRow(); 
-    void skipNextRow();
-
-    bool hasNextCol();
-    std::vector<float> getNextCol();
-    void skipNextCol();
+    static MatrixDimension getDimensions(const std::string &path);
 };
 
 #endif

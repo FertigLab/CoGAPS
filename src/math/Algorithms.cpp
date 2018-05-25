@@ -3,6 +3,16 @@
 #include "SIMD.h"
 
 #include <algorithm>
+#include <string>
+#include <sstream>
+
+float gaps::algo::stringToFloat(const std::string &s)
+{
+    std::stringstream ss(s);
+    float f;
+    ss >> f;
+    return f;
+}
 
 float gaps::algo::sum(const Vector &vec)
 {
