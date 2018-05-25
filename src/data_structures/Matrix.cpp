@@ -1,5 +1,6 @@
 #include "Matrix.h"
 #include "../file_parser/CsvParser.h"
+#include "../file_parser/MatrixElement.h"
 
 template<class GenericMatrix>
 static Rcpp::NumericMatrix convertToRMatrix(const GenericMatrix &mat)
@@ -53,15 +54,24 @@ RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
 
 RowMatrix::RowMatrix(const std::string &path)
 {
-    CsvParser csv(path);
-
-    while (csv.hasNextRow())
+    // get matrix dimensions
+    MatrixDimensions dim(CsvParser::getDimensions(path));
+    mNumRows = dim.nRow;
+    mNumCols = dim.nCol;
+        
+    // allocate matrix
+    for (unsigned i = 0; i < mNumRows; ++i)
     {
-        mRows.push_back(Vector(csv.getNextRow()));
+        mRows.push_back(Vector(mNumCols));
     }
 
-    mNumRows = mRows.size();
-    mNumCols = mRows[0].size();
+    // populate matrix
+    CsvParser csv(path);
+    while (csv.hasNext())
+    {
+        MatrixElement e(csv.getNext());
+        this->operator(e.row, e.col) = e.value;
+    }
 }
 
 void RowMatrix::operator=(const RowMatrix &mat)
