@@ -199,7 +199,7 @@ static void printTime(const std::string &message, unsigned totalSeconds)
     int minutes = totalSeconds / 60;
     totalSeconds -= minutes * 60;
     int seconds = totalSeconds;
-    printf("%s: %02d:%02d:%02d\n", message.c_str(), hours, minutes, seconds);
+    Rprintf("%s: %02d:%02d:%02d\n", message.c_str(), hours, minutes, seconds);
 }
 
 // need to call storeSamplerInfo before calling this function

@@ -22,12 +22,12 @@ struct MatrixElement
     }
 };
 
-struct MatrixDimension
+struct MatrixDimensions
 {
     unsigned nRow;
     unsigned nCol;
 
-    MatrixDimension(unsigned nr, unsigned nc) : nRow(nr), nCol(nc) {}
+    MatrixDimensions(unsigned nr, unsigned nc) : nRow(nr), nCol(nc) {}
 };
 
 #endif
