@@ -49,6 +49,14 @@ mStatistics(D.nrow(), D.ncol(), nFactor)
 // execute the steps of the algorithm, return list to R
 Rcpp::List GapsRunner::run()
 {
+    #ifdef __GAPS_OPENMP__
+        if (mPrintMessages)
+        {
+            unsigned availableCores = omp_get_max_threads();
+            Rprintf("Running on %d out of %d available cores\n", mNumCores, availableCores);
+        }
+    #endif
+
     // reset the checkpoint timer
     mStartTime = bpt_now();
     mLastCheckpoint = mStartTime;

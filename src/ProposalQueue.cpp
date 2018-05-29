@@ -26,7 +26,15 @@ void ProposalQueue::setAlpha(float alpha)
 void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
 {
     unsigned nIter = 0;
-    while (nIter++ < limit && makeProposal(domain));
+    bool success = true;
+    while (nIter++ < limit && success)
+    {
+        success = makeProposal(domain);
+        if (!success)
+        {
+            mUseCachedRng = true;
+        }
+    }
 }
 
 // TODO efficiently allow clearing a range of proposals
@@ -48,8 +56,7 @@ unsigned ProposalQueue::size() const
 
 const AtomicProposal& ProposalQueue::operator[](int n) const
 {
-    return mQueue[mQueue.size() - 1 - n];
-    //return mQueue[n];
+    return mQueue[n];
 }
 
 void ProposalQueue::acceptDeath()
@@ -64,11 +71,14 @@ void ProposalQueue::rejectDeath()
     mMinAtoms++;
 }
 
-void ProposalQueue::rejectBirth()
+void ProposalQueue::acceptBirth()
 {
     #pragma omp atomic
-    mMinAtoms--;
+    mMinAtoms++;
+}
 
+void ProposalQueue::rejectBirth()
+{
     #pragma omp atomic
     mMaxAtoms--;
 }
@@ -96,26 +106,29 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
     }
 
     float bdProb = mMaxAtoms < 2 ? 0.6667f : 0.5f;
-    float u1 = gaps::random::uniform(); // cache these values if a failure
+
+    mU1 = mUseCachedRng ? mU1 : gaps::random::uniform();
+    mU2 = mUseCachedRng ? mU2: gaps::random::uniform();
+    mUseCachedRng = false;
+
     float lowerBound = deathProb(mMinAtoms);
     float upperBound = deathProb(mMaxAtoms);
 
-    if (u1 <= bdProb)
+    if (mU1 <= bdProb)
     {
-        float u2 = gaps::random::uniform(); // happens, needed to prevent bias
-        if (u2 >= upperBound)
+        if (mU2 >= upperBound)
         {
             return birth(domain);
         }
-        if (u2 < lowerBound)
+        if (mU2 < lowerBound)
         {
             return death(domain);
         }
         return false;
     }
-    else if (u1 >= bdProb)
+    else if (mU1 >= bdProb)
     {
-        return (u1 < 0.75f || mMaxAtoms < 2) ? move(domain) : exchange(domain);
+        return (mU1 < 0.75f || mMaxAtoms < 2) ? move(domain) : exchange(domain);
     }
     return false;
 }
@@ -132,7 +145,7 @@ bool ProposalQueue::birth(AtomicDomain &domain)
     mUsedIndices.insert(pos / mDimensionSize);
     mUsedPositions.insert(pos);
     domain.insert(pos, 0.f);
-    ++mMinAtoms;
+    ++mMinAtoms; // TODO could be rejected
     ++mMaxAtoms;
     return true;
 }

@@ -3,7 +3,6 @@
 #include "file_parser/CsvParser.h"
 
 #include <Rcpp.h>
-#include <omp.h>
 
 // [[Rcpp::export]]
 Rcpp::List cogapsFromFile_cpp(const std::string D)
@@ -12,9 +11,12 @@ Rcpp::List cogapsFromFile_cpp(const std::string D)
     //Rcpp::Rcout << csv.nRow() << "," << csv.nCol() << '\n';
 
     //RowMatrix mat(D);
-    RowMatrix mat(D);
-    Rcpp::Rcout << mat.nRow() << "," << mat.nCol() << '\n';
-    //Rcpp::Rcout << gaps::algo::sum(mat) << '\n';
+    RowMatrix rmat(D);
+    ColMatrix cmat(D);
+    Rcpp::Rcout << rmat.nRow() << "," << rmat.nCol() << '\n';
+    Rcpp::Rcout << cmat.nRow() << "," << cmat.nCol() << '\n';
+    Rcpp::Rcout << gaps::algo::sum(rmat) << '\n';
+    Rcpp::Rcout << gaps::algo::sum(cmat) << '\n';
 }
 
 // [[Rcpp::export]]
@@ -27,11 +29,6 @@ const Rcpp::NumericMatrix &FP, unsigned checkpointInterval,
 const std::string &cptFile, unsigned pumpThreshold, unsigned nPumpSamples,
 unsigned nCores)
 {
-    #ifdef __GAPS_OPENMP__
-        unsigned availableCores = omp_get_max_threads();
-        Rprintf("Running on %d out of %d available cores\n", nCores, availableCores);
-    #endif
-
     // create internal state from parameters and run from there
     GapsRunner runner(D, S, nFactor, nEquil, nEquilCool, nSample,
         nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,

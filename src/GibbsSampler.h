@@ -251,6 +251,7 @@ unsigned col)
         mDomain.updateMass(pos, mass);
         mMatrix(row, col) += mass;
         impl()->updateAPMatrix(row, col, mass);
+        mQueue.acceptBirth();
     }
     else
     {
