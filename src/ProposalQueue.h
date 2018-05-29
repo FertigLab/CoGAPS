@@ -50,6 +50,10 @@ private:
 
     float mAlpha;
 
+    bool mUseCachedRng;
+    float mU1;
+    float mU2;
+
     float deathProb(uint64_t nAtoms) const;
     bool birth(AtomicDomain &domain);
     bool death(AtomicDomain &domain);
@@ -61,7 +65,8 @@ private:
 public:
 
     ProposalQueue(unsigned nBins, float alpha)
-        : mMinAtoms(0), mMaxAtoms(0), mNumBins(nBins), mAlpha(alpha)
+        : mMinAtoms(0), mMaxAtoms(0), mNumBins(nBins), mAlpha(alpha),
+        mUseCachedRng(false), mU1(0.f), mU2(0.f)
     {}
 
     // set parameters
@@ -79,6 +84,7 @@ public:
     // update min/max atoms
     void acceptDeath();
     void rejectDeath();
+    void acceptBirth();
     void rejectBirth();
 
     // serialization

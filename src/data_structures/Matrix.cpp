@@ -141,11 +141,26 @@ ColMatrix::ColMatrix(const Rcpp::NumericMatrix &rmat)
     }
 }
 
-// skip over bytes per row to efficiently get to columns
-// need to be able to read columns in parallel
 ColMatrix::ColMatrix(const std::string &path)
 {
+    // get matrix dimensions
+    MatrixDimensions dim(CsvParser::getDimensions(path));
+    mNumRows = dim.nRow;
+    mNumCols = dim.nCol;
+        
+    // allocate matrix
+    for (unsigned i = 0; i < mNumCols; ++i)
+    {
+        mCols.push_back(Vector(mNumRows));
+    }
 
+    // populate matrix
+    CsvParser csv(path);
+    while (csv.hasNext())
+    {
+        MatrixElement e(csv.getNext());
+        this->operator()(e.row, e.col) = e.value;
+    }
 }
 
 ColMatrix ColMatrix::operator/(float val) const

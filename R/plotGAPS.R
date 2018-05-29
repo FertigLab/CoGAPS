@@ -11,39 +11,8 @@
 #' data(SimpSim)
 #' plotGAPS(SimpSim.result$Amean, SimpSim.result$Pmean)
 #' @export
-plotGAPS <- function(A, P, outputPDF="")
+plotGAPS <- function(A, P)
 {
-    if (outputPDF != "")
-    {
-        pdf(file=paste(outputPDF, "-Patterns", ".pdf", sep=""))
-    }
-    else
-    {
-        dev.new()
-    }
-
-    arrayIdx <- 1:ncol(P)
-    maxP <- max(P)
-    nPatt <- dim(P)[1]
-    matplot(arrayIdx, t(P), type='l', lwd=3, xlim=c(1,ncol(P)), ylim=c(0,maxP),
-        xlab='Samples',ylab='Relative Strength',col=rainbow(nPatt))
-    title(main='Inferred Patterns')
-    legend("topright", paste("Pattern", 1:nPatt, sep = ""), pch = 1:nPatt,
-        lty=1,cex=0.8,col=rainbow(nPatt),bty="y",ncol=5)
-
-    if (outputPDF == "")
-    {
-        dev.new()
-    }
-    else
-    {
-        dev.off()
-        pdf(file=paste(outputPDF, "-Amplitude", ".pdf", sep=""))
-    }
-
+    plotP(P)
     heatmap(A, Rowv=NA, Colv=NA)
-    if (outputPDF != "")
-    {
-        dev.off()
-    }
 }

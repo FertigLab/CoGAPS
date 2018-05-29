@@ -51,6 +51,8 @@ MatrixDimensions CsvParser::getDimensions(const std::string &path)
 CsvParser::CsvParser(const std::string &path) : mCurrentRow(0), mCurrentCol(0)
 {
     mFile.open(path.c_str());
+    std::string line;
+    std::getline(mFile, line); // get rid of first line (column names)
 }
 
 bool CsvParser::hasNext()
@@ -65,11 +67,13 @@ MatrixElement CsvParser::getNext()
     std::getline(mFile, line, ',');
     if ((pos = line.find('\n')) != std::string::npos) // end of line
     {
-        return MatrixElement(mCurrentRow, mCurrentCol, line.substr(0, pos));
+        unsigned col = mCurrentCol;
+        mCurrentCol = 0;
+        return MatrixElement(mCurrentRow++, col, line.substr(0, pos));
     }
     else if (std::isdigit(line[0])) // data
     {
-        return MatrixElement(mCurrentRow, mCurrentCol, line);
+        return MatrixElement(mCurrentRow, mCurrentCol++, line);
     }
     else // row/col name
     {
