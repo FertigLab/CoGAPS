@@ -14,7 +14,7 @@ Atom AtomicDomain::front() const
 // O(1)
 Atom AtomicDomain::randomAtom() const
 {
-    uint64_t ndx = gaps::random::Generator::uniform64(0, mAtoms.size() - 1);
+    uint64_t ndx = gaps::random::uniform64(0, mAtoms.size() - 1);
     return mAtoms[ndx];
 }
 
@@ -24,7 +24,7 @@ uint64_t AtomicDomain::randomFreePosition() const
     uint64_t pos = 0;
     do
     {
-        pos = gaps::random::Generator::uniform64(0, mDomainSize);
+        pos = gaps::random::uniform64(0, mDomainSize);
     } while (mUsedPositions.count(pos) > 0); // hash map => count is O(l)
     return pos;
 }
