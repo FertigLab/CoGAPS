@@ -6,6 +6,7 @@
 #include <boost/align/aligned_allocator.hpp>
 #include <vector>
 
+// need to align data for SIMD
 namespace bal = boost::alignment;
 typedef std::vector<float, bal::aligned_allocator<float,32> > aligned_vector;
 
@@ -17,8 +18,8 @@ private:
 
 public:
 
-    Vector(unsigned size) : mValues(aligned_vector(size, 0.f)) {}
-    Vector(const std::vector<float> &v);
+    explicit Vector(unsigned size) : mValues(aligned_vector(size, 0.f)) {}
+    explicit Vector(const std::vector<float> &v);
 
     const float* ptr() const {return &mValues[0];}
     float* ptr() {return &mValues[0];}

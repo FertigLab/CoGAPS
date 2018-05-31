@@ -217,4 +217,3 @@ postFinalPhase <- function(finalResult, consensusPatterns)
     class(finalResult) <- append(class(finalResult), "CoGAPS")
     return(finalResult)
 }
-

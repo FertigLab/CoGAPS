@@ -203,4 +203,3 @@ sc_postFinalPhase <- function(finalResult, consensusAs)
     class(finalResult) <- append(class(finalResult), "CoGAPS")
     return(finalResult)
 }
-

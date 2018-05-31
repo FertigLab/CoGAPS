@@ -1,4 +1,4 @@
-PKG_CPPFLAGS =  -DSIMD -DGAPS_NDEBUG -msse4.2 -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -fopenmp
+PKG_CXXFLAGS =  -DNSIMD -DGAPS_NDEBUG -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -Werror
 OBJECTS =   AtomicDomain.o \
             Cogaps.o \
             GapsRunner.o \
@@ -7,13 +7,17 @@ OBJECTS =   AtomicDomain.o \
             ProposalQueue.o \
             RcppExports.o \
             test-runner.o \
-            math/Algorithms.o \
             data_structures/Matrix.o \
             data_structures/Vector.o \
-            math/Random.o \
             file_parser/CsvParser.o \
+            file_parser/TsvParser.o \
+            file_parser/MtxParser.o \
+            math/Algorithms.o \
+            math/Random.o \
             cpp_tests/testAlgorithms.o \
             cpp_tests/testAtomicDomain.o \
+            cpp_tests/testEfficientSets.o \
+            cpp_tests/testFileParsers.o \
             cpp_tests/testGapsRunner.o \
             cpp_tests/testGibbsSampler.o \
             cpp_tests/testMatrix.o \

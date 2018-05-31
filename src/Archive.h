@@ -6,7 +6,7 @@
 
 // flags for opening an archive
 #define ARCHIVE_READ  std::ios::in
-#define ARCHIVE_WRITE std::ios::out | std::ios::trunc
+#define ARCHIVE_WRITE (std::ios::out | std::ios::trunc)
 
 // magic number written to beginning of archive files
 // needs to be updated everytime to method of checkpointing changes

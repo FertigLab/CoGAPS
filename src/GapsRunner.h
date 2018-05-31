@@ -2,10 +2,11 @@
 #define __COGAPS_GAPS_RUNNER_H__
 
 #include "Archive.h"
+#include "GapsStatistics.h"
+#include "GibbsSampler.h"
+
 #include "data_structures/Matrix.h"
 #include "data_structures/Vector.h"
-#include "GibbsSampler.h"
-#include "GapsStatistics.h"
 
 #include <Rcpp.h>
 
@@ -71,7 +72,7 @@ public:
     void createCheckpoint();
     void makeCheckpointIfNeeded();
     void displayStatus(const std::string &type, unsigned nIterTotal);
-    void storeSamplerInfo(Vector &atomA, Vector &atomsP, Vector &chi2);
+    void storeSamplerInfo(Vector &atomsA, Vector &atomsP, Vector &chi2);
     void updateSampler();
     void runBurnPhase();
     void runCoolPhase();

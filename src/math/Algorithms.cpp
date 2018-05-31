@@ -3,8 +3,8 @@
 #include "SIMD.h"
 
 #include <algorithm>
-#include <string>
 #include <sstream>
+#include <string>
 
 float gaps::algo::stringToFloat(const std::string &s)
 {

@@ -6,7 +6,7 @@
 #endif
 
 #ifndef _OPENMP
-    #warning "Compiler does not support OpenMP"
+    #pragma message("Compiler does not support OpenMP")
 #else
     #define __GAPS_OPENMP__
 #endif
@@ -69,10 +69,10 @@ namespace simd
     #define SET_SCALAR(x) x
     #define LOAD_PACKED(x) *(x)
     #define STORE_PACKED(p,x) *p = x
-    #define ADD_PACKED(a,b) (a+b)
-    #define SUB_PACKED(a,b) (a-b)
-    #define MUL_PACKED(a,b) (a*b)
-    #define DIV_PACKED(a,b) (a/b)
+    #define ADD_PACKED(a,b) ((a)+(b))
+    #define SUB_PACKED(a,b) ((a)-(b))
+    #define MUL_PACKED(a,b) ((a)*(b))
+    #define DIV_PACKED(a,b) ((a)/(b))
 #endif
 
 class Index

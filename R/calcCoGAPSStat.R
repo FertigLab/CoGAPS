@@ -128,4 +128,3 @@ calcCoGAPSStat <- function (Amean, Asd, GStoGenes, numPerm=500)
 
     return(results)
 }
-

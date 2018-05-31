@@ -21,7 +21,7 @@ unsigned AmplitudeGibbsSampler::getCol(uint64_t pos) const
     return (pos / mBinSize) % mNumCols;
 }
 
-bool AmplitudeGibbsSampler::canUseGibbs(unsigned row, unsigned col) const
+bool AmplitudeGibbsSampler::canUseGibbs(unsigned row, unsigned col) const // NOLINT(misc-unused-parameters)
 {
     return !gaps::algo::isVectorZero(mOtherMatrix->rowPtr(col),
         mOtherMatrix->nCol());
@@ -76,10 +76,7 @@ unsigned r2, unsigned c2)
             mSMatrix.rowPtr(r1), mAPMatrix.rowPtr(r1), mOtherMatrix->rowPtr(c1),
             mOtherMatrix->rowPtr(c2));
     }
-    else
-    {
-        return alphaParameters(r1, c1) + alphaParameters(r2, c2);
-    }
+    return alphaParameters(r1, c1) + alphaParameters(r2, c2);
 }
 
 float AmplitudeGibbsSampler::computeDeltaLL(unsigned row, unsigned col, float mass)
@@ -98,10 +95,7 @@ unsigned r2, unsigned c2, float m2)
             mSMatrix.rowPtr(r1), mAPMatrix.rowPtr(r1), mOtherMatrix->rowPtr(c1),
             m1, mOtherMatrix->rowPtr(c2), m2);
     }
-    else
-    {
-        return computeDeltaLL(r1, c1, m1) + computeDeltaLL(r2, c2, m2);
-    }
+    return computeDeltaLL(r1, c1, m1) + computeDeltaLL(r2, c2, m2);
 }
 
 PatternGibbsSampler::PatternGibbsSampler(const Rcpp::NumericMatrix &D,
@@ -124,7 +118,7 @@ unsigned PatternGibbsSampler::getCol(uint64_t pos) const
     return pos / (mBinSize * mNumRows);
 }
 
-bool PatternGibbsSampler::canUseGibbs(unsigned row, unsigned col) const
+bool PatternGibbsSampler::canUseGibbs(unsigned row, unsigned col) const // NOLINT(misc-unused-parameters)
 {
     return !gaps::algo::isVectorZero(mOtherMatrix->colPtr(row),
         mOtherMatrix->nRow());
@@ -179,10 +173,7 @@ unsigned r2, unsigned c2)
             mSMatrix.colPtr(c1), mAPMatrix.colPtr(c1), mOtherMatrix->colPtr(r1),
             mOtherMatrix->colPtr(r2));
     }
-    else
-    {
-        return alphaParameters(r1, c1) + alphaParameters(r2, c2);
-    }
+    return alphaParameters(r1, c1) + alphaParameters(r2, c2);
 }
 
 float PatternGibbsSampler::computeDeltaLL(unsigned row, unsigned col, float mass)
@@ -201,8 +192,5 @@ unsigned r2, unsigned c2, float m2)
             mSMatrix.colPtr(c1), mAPMatrix.colPtr(c1), mOtherMatrix->colPtr(r1),
             m1, mOtherMatrix->colPtr(r2), m2);
     }
-    else
-    {
-        return computeDeltaLL(r1, c1, m1) + computeDeltaLL(r2, c2, m2);
-    }
+    return computeDeltaLL(r1, c1, m1) + computeDeltaLL(r2, c2, m2);
 }

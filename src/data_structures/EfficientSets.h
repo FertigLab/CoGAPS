@@ -1,6 +1,8 @@
 #ifndef __COGAPS_EFFICIENT_SETS_H__
 #define __COGAPS_EFFICIENT_SETS_H__
 
+#include <vector>
+
 #include <stdint.h>
 
 class IntFixedHashSet
@@ -23,7 +25,6 @@ public:
 // TODO have sorted vector with at least some % of holes
 // even distribute entries along it
 // when shift happens, should be minimal
-
 class IntDenseOrderedSet
 {
 private:

@@ -21,7 +21,7 @@ mNumCores(nCores)
 {
     mASampler.sync(mPSampler);
     mPSampler.sync(mASampler);
-    gaps::random::setSeed(seed);
+    gaps::random::Generator::setSeed(seed);
 }
 
 GapsRunner::GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
@@ -32,8 +32,8 @@ mChiSqSample(nSample), mNumAAtomsSample(nSample), mNumPAtomsSample(nSample),
 mASampler(D, S, nFactor), mPSampler(D, S, nFactor),
 mStatistics(D.nrow(), D.ncol(), nFactor)
 {
-    Archive ar(cptFile, ARCHIVE_READ);
-    gaps::random::load(ar);
+    //Archive ar(cptFile, ARCHIVE_READ);
+    //gaps::random::load(ar);
 
    //ar >> mChiSqEquil >> mNumAAtomsEquil >> mNumPAtomsEquil >> mChiSqSample
    //    >> mNumAAtomsSample >> mNumPAtomsSample >> mIterA >> mIterP
@@ -42,8 +42,8 @@ mStatistics(D.nrow(), D.ncol(), nFactor)
    //    >> mCheckpointInterval >> mCheckpointFile >> mNumUpdatesA
    //    >> mNumUpdatesP >> mASampler >> mPSampler >> mStatistics;
 
-    mASampler.sync(mPSampler);
-    mPSampler.sync(mASampler);
+    //mASampler.sync(mPSampler);
+    //mPSampler.sync(mASampler);
 }
 
 // execute the steps of the algorithm, return list to R
@@ -112,7 +112,8 @@ void GapsRunner::runBurnPhase()
     {
         Rcpp::checkUserInterrupt();
         makeCheckpointIfNeeded();
-        float temp = ((float)mCurrentIter + 2.f) / ((float)mEquilIter / 2.f);
+        float temp = (static_cast<float>(mCurrentIter) + 2.f) /
+            (static_cast<float>(mEquilIter) / 2.f);
         mASampler.setAnnealingTemp(std::min(1.f,temp));
         mPSampler.setAnnealingTemp(std::min(1.f,temp));
         updateSampler();
@@ -196,8 +197,8 @@ void GapsRunner::storeSamplerInfo(Vector &atomsA, Vector &atomsP, Vector &chi2)
     chi2[mCurrentIter] = mASampler.chi2();
     atomsA[mCurrentIter] = mASampler.nAtoms();
     atomsP[mCurrentIter] = mPSampler.nAtoms();
-    mIterA = gaps::random::poisson(std::max(atomsA[mCurrentIter], 10.f));
-    mIterP = gaps::random::poisson(std::max(atomsP[mCurrentIter], 10.f));
+    mIterA = gaps::random::Generator::poisson(std::max(atomsA[mCurrentIter], 10.f));
+    mIterP = gaps::random::Generator::poisson(std::max(atomsP[mCurrentIter], 10.f));
 }
 
 static void printTime(const std::string &message, unsigned totalSeconds)
@@ -236,35 +237,35 @@ void GapsRunner::displayStatus(const std::string &type, unsigned nIterTotal)
 void GapsRunner::createCheckpoint()
 {
     // create backup file
-    std::rename(mCheckpointFile.c_str(), (mCheckpointFile + ".backup").c_str());
+    //std::rename(mCheckpointFile.c_str(), (mCheckpointFile + ".backup").c_str());
 
     // record starting time
-    bpt::ptime start = bpt_now();
+    //bpt::ptime start = bpt_now();
 
     // save state to file, write magic number at beginning
-    Archive ar(mCheckpointFile, ARCHIVE_WRITE);
-    gaps::random::save(ar);
+    //Archive ar(mCheckpointFile, ARCHIVE_WRITE);
+    //gaps::random::save(ar);
     //ar << mChiSqEquil << mNumAAtomsEquil << mNumPAtomsEquil << mChiSqSample
     //    << mNumAAtomsSample << mNumPAtomsSample << mIterA << mIterP
     //    << mEquilIter << mCoolIter << mSampleIter << mNumPatterns << mNumOutputs
     //    << mPrintMessages << mCurrentIter << mPhase << mSeed
     //    << mCheckpointInterval << mNumUpdatesA << mNumUpdatesP << mASampler
     //    << mPSampler << mStatistics;
-    ar.close();
+    //ar.close();
 
     // display time it took to create checkpoint
-    bpt::time_duration diff = bpt_now() - start;
-    double elapsed = diff.total_milliseconds() / 1000.;
-    Rprintf("created checkpoint in %.3f seconds\n", elapsed);
+    //bpt::time_duration diff = bpt_now() - start;
+    //double elapsed = diff.total_milliseconds() / 1000.;
+    //Rprintf("created checkpoint in %.3f seconds\n", elapsed);
 
     // delete backup file
-    std::remove((mCheckpointFile + ".backup").c_str());
+    //std::remove((mCheckpointFile + ".backup").c_str());
 }
 
 void GapsRunner::makeCheckpointIfNeeded()
 {
     bpt::time_duration diff = bpt_now() - mLastCheckpoint;
-    long sec = diff.total_milliseconds() / 1000;
+    int64_t sec = diff.total_milliseconds() / 1000;
     if (sec > mCheckpointInterval && mCheckpointInterval > 0)
     {
         createCheckpoint();

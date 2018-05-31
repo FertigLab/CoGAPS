@@ -1,4 +1,4 @@
-#include "CsvParser.h"
+#include "TsvParser.h"
 #include "../math/Algorithms.h"
 
 #include <fstream>
@@ -6,7 +6,7 @@
 
 // read through whole file once, store row/col names - gives dimensions
 // open file, throw away column names
-CsvParser::CsvParser(const std::string &path) :  mNumRows(0), mNumCols(0),
+TsvParser::TsvParser(const std::string &path) :  mNumRows(0), mNumCols(0),
 mCurrentRow(0), mCurrentCol(0)
 {
     // open file stream
@@ -14,13 +14,13 @@ mCurrentRow(0), mCurrentCol(0)
 
     // read first entry (blank)
     std::string line;
-    std::getline(file_str, line, ',');
+    std::getline(file_str, line, '\t');
 
     // get col size
     std::size_t pos;
     do
     {
-        std::getline(file_str, line, ',');
+        std::getline(file_str, line, '\t');
         ++mNumCols;
     }
     while ((pos = line.find('\n')) == std::string::npos);
@@ -32,7 +32,7 @@ mCurrentRow(0), mCurrentCol(0)
         // throw away data
         do
         {
-            std::getline(file_str, line, ',');
+            std::getline(file_str, line, '\t');
         }
         while ((pos = line.find('\n')) == std::string::npos);
 
@@ -48,16 +48,16 @@ mCurrentRow(0), mCurrentCol(0)
     std::getline(mFile, line); // get rid of first line (column names)
 }
 
-bool CsvParser::hasNext()
+bool TsvParser::hasNext()
 {
     return mFile.peek() != EOF;
 }
 
-MatrixElement CsvParser::getNext()
+MatrixElement TsvParser::getNext()
 {
     std::string line;
     std::size_t pos;
-    std::getline(mFile, line, ',');
+    std::getline(mFile, line, '\t');
     if ((pos = line.find('\n')) != std::string::npos) // end of line
     {
         unsigned col = mCurrentCol;
