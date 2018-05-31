@@ -19,7 +19,7 @@ struct Atom
 //private:    
 public:
 
-    friend AtomicDomain;
+    friend class AtomicDomain;
     uint64_t leftNdx; // shift these up 1, 0 == no neighbor
     uint64_t rightNdx;
 

@@ -2,37 +2,14 @@
 #define __COGAPS_MATRIX_H__
 
 #include "../Archive.h"
+#include "../file_parser/MatrixElement.h"
 #include "Vector.h"
 
 #include <Rcpp.h>
 #include <vector>
 
-struct MatrixChange
-{
-    char label;
-    unsigned nChanges;
-
-    unsigned row1;
-    unsigned col1;
-    float delta1;
-    
-    unsigned row2;
-    unsigned col2;
-    float delta2;
-
-    MatrixChange(char l, unsigned r, unsigned c, float d)
-        : label(l), nChanges(1), row1(r), col1(c), delta1(d), row2(0),
-        col2(0), delta2(0.f)
-    {}
-
-    MatrixChange(char l, unsigned r1, unsigned c1, float d1, unsigned r2,
-    unsigned c2, float d2)
-        : label(l), nChanges(2), row1(r1), col1(c1), delta1(d1), row2(r2),
-        col2(c2), delta2(d2)
-    {}
-};
-
-
+// forward declarations
+class RowMatrix;
 class ColMatrix;
 
 class RowMatrix
@@ -46,7 +23,9 @@ public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
     RowMatrix(const Rcpp::NumericMatrix &rmat);
-    RowMatrix(const std::string &path);
+    
+    template <class Parser>
+    RowMatrix(Parser &p, unsigned nrow, unsigned ncol);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -62,8 +41,8 @@ public:
 
     RowMatrix operator/(float val) const;
 
-    void operator=(const RowMatrix &mat);
-    void operator=(const ColMatrix &mat);
+    RowMatrix& operator=(const RowMatrix &mat);
+    RowMatrix& operator=(const ColMatrix &mat);
 
     Rcpp::NumericMatrix rMatrix() const;
 
@@ -82,7 +61,9 @@ public:
 
     ColMatrix(unsigned nrow, unsigned ncol);
     ColMatrix(const Rcpp::NumericMatrix &rmat);
-    ColMatrix(const std::string &path);
+
+    template <class Parser>
+    ColMatrix(Parser &p, unsigned nrow, unsigned ncol);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -98,13 +79,52 @@ public:
 
     ColMatrix operator/(float val) const;
 
-    void operator=(const ColMatrix &mat);
-    void operator=(const RowMatrix &mat);
+    ColMatrix& operator=(const ColMatrix &mat);
+    ColMatrix& operator=(const RowMatrix &mat);
 
     Rcpp::NumericMatrix rMatrix() const;
 
     friend Archive& operator<<(Archive &ar, ColMatrix &mat);
     friend Archive& operator>>(Archive &ar, ColMatrix &mat);
 };
+
+
+// construct RowMatrix from file
+template <class Parser>
+RowMatrix::RowMatrix(Parser &p, unsigned nrow, unsigned ncol) : mNumRows(nrow),
+mNumCols(ncol)
+{
+    // allocate matrix
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        mRows.push_back(Vector(mNumCols));
+    }
+
+    // populate matrix
+    while (p.hasNext())
+    {
+        MatrixElement e(p.getNext());
+        this->operator()(e.row, e.col) = e.value;
+    }
+}
+
+// construct ColMatrix from file
+template <class Parser>
+ColMatrix::ColMatrix(Parser &p, unsigned nrow, unsigned ncol) : mNumRows(nrow),
+mNumCols(ncol)
+{
+    // allocate matrix
+    for (unsigned j = 0; j < mNumCols; ++j)
+    {
+        mCols.push_back(Vector(mNumRows));
+    }
+
+    // populate matrix
+    while (p.hasNext())
+    {
+        MatrixElement e(p.getNext());
+        this->operator()(e.row, e.col) = e.value;
+    }
+}
 
 #endif

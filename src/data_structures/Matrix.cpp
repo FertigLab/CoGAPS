@@ -2,8 +2,8 @@
 #include "../file_parser/CsvParser.h"
 #include "../file_parser/MatrixElement.h"
 
-template<class GenericMatrix>
-static Rcpp::NumericMatrix convertToRMatrix(const GenericMatrix &mat)
+template<class Matrix>
+static Rcpp::NumericMatrix convertToRMatrix(const Matrix &mat)
 {
     Rcpp::NumericMatrix rmat(mat.nRow(), mat.nCol());
     for (unsigned i = 0; i < mat.nRow(); ++i)
@@ -52,36 +52,16 @@ RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
     }
 }
 
-RowMatrix::RowMatrix(const std::string &path)
-{
-    // get matrix dimensions
-    MatrixDimensions dim(CsvParser::getDimensions(path));
-    mNumRows = dim.nRow;
-    mNumCols = dim.nCol;
-        
-    // allocate matrix
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        mRows.push_back(Vector(mNumCols));
-    }
-
-    // populate matrix
-    CsvParser csv(path);
-    while (csv.hasNext())
-    {
-        MatrixElement e(csv.getNext());
-        this->operator()(e.row, e.col) = e.value;
-    }
-}
-
-void RowMatrix::operator=(const RowMatrix &mat)
+RowMatrix& RowMatrix::operator=(const RowMatrix &mat)
 {
     copyMatrix(*this, mat);
+    return *this;
 }
 
-void RowMatrix::operator=(const ColMatrix &mat)
+RowMatrix& RowMatrix::operator=(const ColMatrix &mat)
 {
     copyMatrix(*this, mat);
+    return *this;
 }
 
 Rcpp::NumericMatrix RowMatrix::rMatrix() const
@@ -141,28 +121,6 @@ ColMatrix::ColMatrix(const Rcpp::NumericMatrix &rmat)
     }
 }
 
-ColMatrix::ColMatrix(const std::string &path)
-{
-    // get matrix dimensions
-    MatrixDimensions dim(CsvParser::getDimensions(path));
-    mNumRows = dim.nRow;
-    mNumCols = dim.nCol;
-        
-    // allocate matrix
-    for (unsigned i = 0; i < mNumCols; ++i)
-    {
-        mCols.push_back(Vector(mNumRows));
-    }
-
-    // populate matrix
-    CsvParser csv(path);
-    while (csv.hasNext())
-    {
-        MatrixElement e(csv.getNext());
-        this->operator()(e.row, e.col) = e.value;
-    }
-}
-
 ColMatrix ColMatrix::operator/(float val) const
 {
     ColMatrix mat(mNumRows, mNumCols);
@@ -173,14 +131,16 @@ ColMatrix ColMatrix::operator/(float val) const
     return mat;
 }
 
-void ColMatrix::operator=(const ColMatrix &mat)
+ColMatrix& ColMatrix::operator=(const ColMatrix &mat)
 {
     copyMatrix(*this, mat);
+    return *this;
 }
 
-void ColMatrix::operator=(const RowMatrix &mat)
+ColMatrix& ColMatrix::operator=(const RowMatrix &mat)
 {
     copyMatrix(*this, mat);
+    return *this;
 }
 
 Rcpp::NumericMatrix ColMatrix::rMatrix() const

@@ -5,11 +5,11 @@
 
 TEST_CASE("Test Random.h - Random Number Generation")
 {
-    gaps::random::setSeed(0);
+    gaps::random::Generator::setSeed(0);
 
     SECTION("Make sure uniform01 is working")
     {
-        REQUIRE(gaps::random::uniform() != gaps::random::uniform());
+        REQUIRE(gaps::random::Generator::uniform() != gaps::random::Generator::uniform());
     }
 
     SECTION("Test uniform distribution over unit interval")
@@ -19,9 +19,9 @@ TEST_CASE("Test Random.h - Random Number Generation")
         unsigned N = 10000;
         for (unsigned i = 0; i < N; ++i)
         {
-            min = std::min(gaps::random::uniform(), min);
-            max = std::max(gaps::random::uniform(), max);
-            sum += gaps::random::uniform();
+            min = std::min(gaps::random::Generator::uniform(), min);
+            max = std::max(gaps::random::Generator::uniform(), max);
+            sum += gaps::random::Generator::uniform();
         }
         REQUIRE(sum / N == Approx(0.5f).epsilon(0.01f));
         REQUIRE(min >= 0.f);
@@ -33,14 +33,14 @@ TEST_CASE("Test Random.h - Random Number Generation")
     SECTION("Test uniform distribution over general interval")
     {
         // bounds equal
-        REQUIRE(gaps::random::uniform(4.3f, 4.3f) == 4.3f);
+        REQUIRE(gaps::random::Generator::uniform(4.3f, 4.3f) == 4.3f);
 
         // full range possible
         float min = 10., max = 0.;
         for (unsigned i = 0; i < 1000; ++i)
         {
-            min = std::min(gaps::random::uniform(0.f,10.f), min);
-            max = std::max(gaps::random::uniform(0.f,10.f), max);
+            min = std::min(gaps::random::Generator::uniform(0.f,10.f), min);
+            max = std::max(gaps::random::Generator::uniform(0.f,10.f), max);
         }
         REQUIRE(min < 0.1f);
         REQUIRE(max > 9.9f);
@@ -58,7 +58,7 @@ TEST_CASE("Test Random.h - Random Number Generation")
         float norm[1024];
         for (unsigned i = 0; i < 1024; ++i)
         {
-            norm[i] = gaps::random::normal(0.f, 1.f);
+            norm[i] = gaps::random::Generator::normal(0.f, 1.f);
             mean += norm[i];
         }
 
@@ -78,7 +78,7 @@ TEST_CASE("Test Random.h - Random Number Generation")
         float total = 0.f;
         for (unsigned i = 0; i < 10000; ++i)
         {
-            float num = gaps::random::poisson(4.f);
+            float num = gaps::random::Generator::poisson(4.f);
             total += num;
 
             REQUIRE((int)num == num); // should be integer
@@ -93,7 +93,7 @@ TEST_CASE("Test Random.h - Random Number Generation")
         float total = 0.f;
         for (unsigned i = 0; i < 10000; ++i)
         {
-            float num = gaps::random::exponential(1.f);
+            float num = gaps::random::Generator::exponential(1.f);
             total += num;
 
             REQUIRE(num >= 0.f); // should be non-negative

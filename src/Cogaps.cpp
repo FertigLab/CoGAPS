@@ -1,23 +1,8 @@
-#include "math/SIMD.h"
 #include "GapsRunner.h"
-#include "file_parser/CsvParser.h"
+#include "file_parser/MtxParser.h"
+#include "math/SIMD.h"
 
 #include <Rcpp.h>
-
-// [[Rcpp::export]]
-Rcpp::List cogapsFromFile_cpp(const std::string D)
-{
-    // CsvParser csv(D);
-    //Rcpp::Rcout << csv.nRow() << "," << csv.nCol() << '\n';
-
-    //RowMatrix mat(D);
-    RowMatrix rmat(D);
-    ColMatrix cmat(D);
-    Rcpp::Rcout << rmat.nRow() << "," << rmat.nCol() << '\n';
-    Rcpp::Rcout << cmat.nRow() << "," << cmat.nCol() << '\n';
-    Rcpp::Rcout << gaps::algo::sum(rmat) << '\n';
-    Rcpp::Rcout << gaps::algo::sum(cmat) << '\n';
-}
 
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D,
@@ -37,7 +22,6 @@ unsigned nCores)
     return runner.run();
 }
 
-// TODO add checksum to verify D,S matrices
 // [[Rcpp::export]]
 Rcpp::List cogapsFromCheckpoint_cpp(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil,
@@ -45,6 +29,12 @@ unsigned nSample, const std::string &fileName, const std::string &cptFile)
 {   
     GapsRunner runner(D, S, nFactor, nEquil, nSample, cptFile);
     return runner.run();
+}
+
+// [[Rcpp::export]]
+void cogapsFromFile_cpp(const std::string &D)
+{
+    // TODO implement
 }
 
 // used to convert defined macro values into strings

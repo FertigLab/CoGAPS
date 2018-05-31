@@ -38,15 +38,11 @@ void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
 }
 
 // TODO efficiently allow clearing a range of proposals
-void ProposalQueue::clear(unsigned n)
+void ProposalQueue::clear()
 {
-    //mQueue.erase(mQueue.end() - n, mQueue.end());
-    //mUsedIndices.erase(mUsedIndices.end() - n, mUsedIndices.end());
-    //mUsedPositions.erase(mUsedPositions.end() - n, mUsedPositions.end());
     mQueue.clear();
     mUsedPositions.clear();
     mUsedIndices.clear();
-    //GAPS_ASSERT(mMaxAtoms - mMinAtoms <= mQueue.size());
 }
 
 unsigned ProposalQueue::size() const
@@ -107,8 +103,8 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
 
     float bdProb = mMaxAtoms < 2 ? 0.6667f : 0.5f;
 
-    mU1 = mUseCachedRng ? mU1 : gaps::random::uniform();
-    mU2 = mUseCachedRng ? mU2: gaps::random::uniform();
+    mU1 = mUseCachedRng ? mU1 : gaps::random::Generator::uniform();
+    mU2 = mUseCachedRng ? mU2: gaps::random::Generator::uniform();
     mUseCachedRng = false;
 
     float lowerBound = deathProb(mMinAtoms);
@@ -126,11 +122,7 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
         }
         return false;
     }
-    else if (mU1 >= bdProb)
-    {
-        return (mU1 < 0.75f || mMaxAtoms < 2) ? move(domain) : exchange(domain);
-    }
-    return false;
+    return (mU1 < 0.75f || mMaxAtoms < 2) ? move(domain) : exchange(domain);
 }
     
 bool ProposalQueue::birth(AtomicDomain &domain)
@@ -176,7 +168,7 @@ bool ProposalQueue::move(AtomicDomain &domain)
         return false;
     }
 
-    uint64_t newLocation = gaps::random::uniform64(lbound, rbound - 1);
+    uint64_t newLocation = gaps::random::Generator::uniform64(lbound, rbound - 1);
     if (mUsedIndices.count(a.pos / mDimensionSize) || mUsedIndices.count(newLocation / mDimensionSize))
     {
         return false; // matrix conflict - can't compute deltaLL
