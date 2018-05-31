@@ -21,7 +21,7 @@ mNumCores(nCores)
 {
     mASampler.sync(mPSampler);
     mPSampler.sync(mASampler);
-    gaps::random::Generator::setSeed(seed);
+    gaps::random::setSeed(seed);
 }
 
 GapsRunner::GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
@@ -197,8 +197,8 @@ void GapsRunner::storeSamplerInfo(Vector &atomsA, Vector &atomsP, Vector &chi2)
     chi2[mCurrentIter] = mASampler.chi2();
     atomsA[mCurrentIter] = mASampler.nAtoms();
     atomsP[mCurrentIter] = mPSampler.nAtoms();
-    mIterA = gaps::random::Generator::poisson(std::max(atomsA[mCurrentIter], 10.f));
-    mIterP = gaps::random::Generator::poisson(std::max(atomsP[mCurrentIter], 10.f));
+    mIterA = gaps::random::poisson(std::max(atomsA[mCurrentIter], 10.f));
+    mIterP = gaps::random::poisson(std::max(atomsP[mCurrentIter], 10.f));
 }
 
 static void printTime(const std::string &message, unsigned totalSeconds)

@@ -243,7 +243,7 @@ void GibbsSampler<T, MatA, MatB>::birth(uint64_t pos, unsigned row,
 unsigned col)
 {
     float mass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, 0.f)
-        : gaps::random::Generator::exponential(mLambda);
+        : gaps::random::exponential(mLambda);
     if (mass >= gaps::algo::epsilon)
     {
         mDomain.updateMass(pos, mass);
@@ -273,7 +273,7 @@ unsigned col)
     float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, -mass) : 0.f;
     mass = newMass < gaps::algo::epsilon ? mass : newMass;
     float deltaLL = impl()->computeDeltaLL(row, col, mass);
-    if (deltaLL * mAnnealingTemp >= std::log(gaps::random::Generator::uniform()))
+    if (deltaLL * mAnnealingTemp >= std::log(gaps::random::uniform()))
     {
         mDomain.updateMass(pos, mass);
         mMatrix(row, col) += mass;
@@ -295,7 +295,7 @@ unsigned r1, unsigned c1, unsigned r2, unsigned c2)
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
     {
         float deltaLL = impl()->computeDeltaLL(r1, c1, -mass, r2, c2, mass);
-        if (deltaLL * mAnnealingTemp > std::log(gaps::random::Generator::uniform()))
+        if (deltaLL * mAnnealingTemp > std::log(gaps::random::uniform()))
         {
             removeMass(src, mass, r1, c1);
             addMass(dest, mass, r2, c2);
@@ -311,7 +311,7 @@ void GibbsSampler<T, MatA, MatB>::exchange(uint64_t p1, float m1, uint64_t p2,
 float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 {
     float pUpper = gaps::random::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
-    float newMass = gaps::random::Generator::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
+    float newMass = gaps::random::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
     {
         if ((m1 > m2 && newMass - m1 < 0) || (m1 < m2 && m2 - newMass < 0))
@@ -347,7 +347,7 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
         {
             float deltaLL = impl()->computeDeltaLL(r1, c1, delta, r2, c2, -delta);
             float priorLL = (pOld == 0.f) ? 1.f : pOld / pNew;
-            float u = std::log(gaps::random::Generator::uniform() * priorLL);
+            float u = std::log(gaps::random::uniform() * priorLL);
             if (u < deltaLL * mAnnealingTemp)
             {
                 acceptExchange(p1, m1, delta, p2, m2, -delta, r1, c1, r2, c2);
@@ -418,7 +418,7 @@ float GibbsSampler<T, MatA, MatB>::gibbsMass(unsigned row, unsigned col, float m
 
         if (pLower < 1.f)
         {
-            float m = gaps::random::Generator::inverseNormSample(pLower, 1.f, mean, sd);
+            float m = gaps::random::inverseNormSample(pLower, 1.f, mean, sd);
             return std::max(std::min(m, mMaxGibbsMass), 0.f);
         }
     }
@@ -442,7 +442,7 @@ unsigned r2, unsigned c2, float m2)
 
         if (!(pLower >  0.95f || pUpper < 0.05f))
         {
-            float delta = gaps::random::Generator::inverseNormSample(pLower, pUpper, mean, sd);
+            float delta = gaps::random::inverseNormSample(pLower, pUpper, mean, sd);
             return std::min(std::max(-m1, delta), m2); // conserve mass
         }
     }
