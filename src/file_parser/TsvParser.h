@@ -20,7 +20,7 @@ private:
 
 public:
 
-    TsvParser(const std::string &path);
+    explicit TsvParser(const std::string &path);
 
     unsigned nRow() const { return mNumRows; }
     unsigned nCol() const { return mNumCols; }

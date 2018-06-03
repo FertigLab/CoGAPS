@@ -196,5 +196,5 @@ void AtomicDomain::flushCache()
 // O(logN)
 void AtomicDomain::updateMass(uint64_t pos, float newMass)
 {
-    mAtoms[mAtomPositions.at(pos)].mass = newMass;
+    mAtoms[mAtomPositions.at(pos)].mass = newMass; // TODO at is C++11
 }

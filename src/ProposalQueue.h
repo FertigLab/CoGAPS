@@ -6,8 +6,9 @@
 #include "data_structures/EfficientSets.h"
 
 #include <boost/unordered_set.hpp>
-#include <stdint.h>
+
 #include <cstddef>
+#include <stdint.h>
 
 struct AtomicProposal
 {
@@ -65,8 +66,8 @@ private:
 public:
 
     ProposalQueue(unsigned nBins, float alpha)
-        : mMinAtoms(0), mMaxAtoms(0), mNumBins(nBins), mAlpha(alpha),
-        mUseCachedRng(false), mU1(0.f), mU2(0.f)
+        : mMinAtoms(0), mMaxAtoms(0), mNumBins(nBins), mDimensionSize(0),
+        mDomainSize(0), mAlpha(alpha), mUseCachedRng(false), mU1(0.f), mU2(0.f)
     {}
 
     // set parameters

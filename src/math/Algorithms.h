@@ -116,7 +116,7 @@ float gaps::algo::nonZeroMean(const GenericMatrix &mat)
             }
         }
     }
-    return sum / (float)nNonZeros;
+    return sum / static_cast<float>(nNonZeros);
 }
 
 template<class GenericMatrix>
@@ -129,8 +129,8 @@ const GenericMatrix &meanMat, unsigned nUpdates)
     {
         for (unsigned c = 0; c < retMat.nCol(); ++c)
         {
-            meanTerm = meanMat(r,c) * meanMat(r,c) / (float)nUpdates;
-            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / ((float)nUpdates - 1.f));
+            meanTerm = meanMat(r,c) * meanMat(r,c) / static_cast<float>(nUpdates);
+            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / (static_cast<float>(nUpdates) - 1.f));
         }
     }
     return retMat;

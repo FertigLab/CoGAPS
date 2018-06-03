@@ -43,14 +43,14 @@ public:
     template<typename T>
     friend Archive& operator<<(Archive &ar, T val)
     {
-        ar.mStream.write(reinterpret_cast<char*>(&val), sizeof(T));
+        ar.mStream.write(reinterpret_cast<char*>(&val), sizeof(T)); // NOLINT
         return ar;
     }
 
     template<typename T>
     friend Archive& operator>>(Archive &ar, T &val)
     {
-        ar.mStream.read(reinterpret_cast<char*>(&val), sizeof(T));
+        ar.mStream.read(reinterpret_cast<char*>(&val), sizeof(T)); // NOLINT
         return ar;
     }
 };

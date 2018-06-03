@@ -4,10 +4,11 @@
 #include "Archive.h"
 
 #include <boost/unordered_set.hpp>
-#include <stdint.h>
+
 #include <cstddef>
-#include <vector>
 #include <map>
+#include <stdint.h>
+#include <vector>
 
 class AtomicDomain;
 

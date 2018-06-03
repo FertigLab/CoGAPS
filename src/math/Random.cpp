@@ -8,16 +8,17 @@
 // spawn a random generator for each thread
 // - no way to acheive consistent results across different nThreads
 
-#include <boost/random/uniform_01.hpp>
-#include <boost/random/uniform_real_distribution.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/poisson_distribution.hpp>
-#include <boost/random/exponential_distribution.hpp>
-#include <boost/random/mersenne_twister.hpp>
 
-#include <boost/math/distributions/normal.hpp>
 #include <boost/math/distributions/exponential.hpp>
 #include <boost/math/distributions/gamma.hpp>
+#include <boost/math/distributions/normal.hpp>
+
+#include <boost/random/exponential_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/poisson_distribution.hpp>
+#include <boost/random/uniform_01.hpp>
+#include <boost/random/uniform_real_distribution.hpp>
 
 #include <stdint.h>
 
@@ -35,59 +36,60 @@
 //typedef boost::random::mt19937 RNGType;
 typedef boost::random::mt11213b RNGType; // should be faster
 
-static std::vector<RNGType> rng;
-//static RNGType rng;
+static std::vector<RNGType>& rng()
+{
+    static std::vector<RNGType> allRngs(omp_get_max_threads());
+    return allRngs;
+}
 
 void gaps::random::save(Archive &ar)
 {
-    ar << rng;
+    //ar << rng;
 }
 
 void gaps::random::load(Archive &ar)
 {
-    ar >> rng;
+    //ar >> rng;
 }
 
 void gaps::random::setSeed(uint32_t seed)
 {
     unsigned n = omp_get_max_threads();
 
-    rng.push_back(RNGType());
-    rng[0].seed(seed);
+    rng().at(0).seed(seed);
 
     boost::random::uniform_int_distribution<uint32_t> seedDist(0,
         std::numeric_limits<uint32_t>::max());
 
     for (unsigned i = 1; i < n; ++i)
     {
-        rng.push_back(RNGType());
-        uint32_t newSeed = seedDist(rng[i-1]);
-        rng[i].seed(newSeed);
+        uint32_t newSeed = seedDist(rng().at(i-1));
+        rng().at(i).seed(newSeed);
     }
 }
 
 float gaps::random::normal(float mean, float var)
 {
     boost::random::normal_distribution<float> dist(mean, var);
-    return dist(rng[omp_get_thread_num()]);
+    return dist(rng().at(omp_get_thread_num()));
 }
 
 int gaps::random::poisson(float lambda)
 {
     boost::random::poisson_distribution<> dist(lambda);
-    return dist(rng[omp_get_thread_num()]);
+    return dist(rng().at(omp_get_thread_num()));
 }
 
 float gaps::random::exponential(float lambda)
 {
     boost::random::exponential_distribution<> dist(lambda);
-    return dist(rng[omp_get_thread_num()]);
+    return dist(rng().at(omp_get_thread_num()));
 }
 
 float gaps::random::uniform()
 {
     float ret = 0.f;
-    boost::random::uniform_01<RNGType&> u01_dist(rng[omp_get_thread_num()]);
+    boost::random::uniform_01<RNGType&> u01_dist(rng().at(omp_get_thread_num()));
     return u01_dist();
 }
 
@@ -97,18 +99,15 @@ float gaps::random::uniform(float a, float b)
     {
         return a;
     }
-    else
-    {
-        boost::random::uniform_real_distribution<> dist(a,b);
-        return dist(rng[omp_get_thread_num()]);
-    }
+    boost::random::uniform_real_distribution<> dist(a,b);
+    return dist(rng().at(omp_get_thread_num()));
 }
 
 uint64_t gaps::random::uniform64()
 {
     boost::random::uniform_int_distribution<uint64_t> dist(0,
         std::numeric_limits<uint64_t>::max());
-    return dist(rng[omp_get_thread_num()]);
+    return dist(rng().at(omp_get_thread_num()));
 }
 
 uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
@@ -117,11 +116,8 @@ uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
     {
         return a;
     }
-    else
-    {
-        boost::random::uniform_int_distribution<uint64_t> dist(a,b);
-        return dist(rng[omp_get_thread_num()]);
-    }
+    boost::random::uniform_int_distribution<uint64_t> dist(a,b);
+    return dist(rng().at(omp_get_thread_num()));
 }
 
 float gaps::random::d_gamma(float d, float shape, float scale)
@@ -142,11 +138,8 @@ float gaps::random::q_gamma(float q, float shape, float scale)
     {
         return Q_GAMMA_MIN_VALUE;
     }
-    else
-    {
-        boost::math::gamma_distribution<> gam(shape, scale);
-        return quantile(gam, q);
-    }
+    boost::math::gamma_distribution<> gam(shape, scale);
+    return quantile(gam, q);
 }
 
 float gaps::random::d_norm(float d, float mean, float sd)

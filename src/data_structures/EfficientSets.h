@@ -33,8 +33,6 @@ private:
 
 public:
 
-    IntDenseOrderedSet() {}
-
     void insert(uint64_t p) {mVec.push_back(p);}
     void clear() {mVec.clear();}
 

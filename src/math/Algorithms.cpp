@@ -111,8 +111,8 @@ AlphaParameters gaps::algo::alphaParameters(unsigned size, const float *D,
 const float *S, const float *AP, const float *mat)
 {
     gaps::simd::packedFloat ratio, pMat, pD, pAP, pS;
-    gaps::simd::packedFloat partialS = 0.f, partialSU = 0.f;
-    gaps::simd::Index i = 0;
+    gaps::simd::packedFloat partialS(0.f), partialSU(0.f);
+    gaps::simd::Index i(0);
     for (; i <= size - i.increment(); ++i)
     {   
         pMat.load(mat + i);
@@ -138,8 +138,8 @@ AlphaParameters gaps::algo::alphaParameters(unsigned size, const float *D,
 const float *S, const float *AP, const float *mat1, const float *mat2)
 {
     gaps::simd::packedFloat ratio, pMat1, pMat2, pD, pAP, pS;
-    gaps::simd::packedFloat partialS = 0.f, partialSU = 0.f;
-    gaps::simd::Index i = 0;
+    gaps::simd::packedFloat partialS(0.f), partialSU(0.f);
+    gaps::simd::Index i(0);
     for (; i <= size - i.increment(); ++i)
     {   
         pMat1.load(mat1 + i);
@@ -165,9 +165,9 @@ const float *S, const float *AP, const float *mat1, const float *mat2)
 float gaps::algo::deltaLL(unsigned size, const float *D, const float *S,
 const float *AP, const float *mat, float delta)
 {
-    const gaps::simd::packedFloat pDelta = delta, two = 2.f;
-    gaps::simd::packedFloat d, pMat, pD, pAP, pS, partialSum = 0.f;
-    gaps::simd::Index i = 0;
+    const gaps::simd::packedFloat pDelta(delta), two(2.f);
+    gaps::simd::packedFloat d, pMat, pD, pAP, pS, partialSum(0.f);
+    gaps::simd::Index i(0);
     for (; i <= size - i.increment(); ++i)
     {   
         pMat.load(mat + i);
@@ -190,9 +190,9 @@ float gaps::algo::deltaLL(unsigned size, const float *D, const float *S,
 const float *AP, const float *mat1, float delta1, const float *mat2,
 float delta2)
 {
-    const gaps::simd::packedFloat pDelta1 = delta1, pDelta2 = delta2, two = 2.f;
-    gaps::simd::packedFloat d, pMat1, pMat2, pD, pAP, pS, partialSum = 0.f;
-    gaps::simd::Index i = 0;
+    const gaps::simd::packedFloat pDelta1(delta1), pDelta2(delta2), two(2.f);
+    gaps::simd::packedFloat d, pMat1, pMat2, pD, pAP, pS, partialSum(0.f);
+    gaps::simd::Index i(0);
     for (; i <= size - i.increment(); ++i)
     {   
         pMat1.load(mat1 + i);

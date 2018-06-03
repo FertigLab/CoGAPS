@@ -1,15 +1,16 @@
 #ifndef __COGAPS_GIBBS_SAMPLER_H__
 #define __COGAPS_GIBBS_SAMPLER_H__
 
-#include "GapsAssert.h"
 #include "Archive.h"
-#include "data_structures/Matrix.h"
-#include "math/Random.h"
-#include "math/Algorithms.h"
-#include "ProposalQueue.h"
 #include "AtomicDomain.h"
+#include "GapsAssert.h"
+#include "ProposalQueue.h"
+#include "data_structures/Matrix.h"
+#include "math/Algorithms.h"
+#include "math/Random.h"
 
 #include <Rcpp.h>
+
 #include <algorithm>
 
 // forward declarations needed for friend classes
@@ -56,8 +57,8 @@ protected:
     void death(uint64_t pos, float mass, unsigned row, unsigned col);
     void move(uint64_t src, float mass, uint64_t dest, unsigned r1, unsigned c1,
         unsigned r2, unsigned c2);
-    void exchange(uint64_t p1, float mass1, uint64_t p2, float mass2,
-        unsigned r1, unsigned c1, unsigned r2, unsigned c2);
+    void exchange(uint64_t p1, float m1, uint64_t p2, float m2, unsigned r1,
+        unsigned c1, unsigned r2, unsigned c2);
 
     float gibbsMass(unsigned row, unsigned col, float mass);
     float gibbsMass(unsigned r1, unsigned c1, float m1, unsigned r2,
@@ -65,7 +66,7 @@ protected:
 
     void addMass(uint64_t pos, float mass, unsigned row, unsigned col);
     void removeMass(uint64_t pos, float mass, unsigned row, unsigned col);
-    float updateAtomMass(uint64_t pos, float mass, float delta);
+    bool updateAtomMass(uint64_t pos, float mass, float delta);
 
     void acceptExchange(uint64_t p1, float m1, float d1, uint64_t p2, float m2,
         float d2, unsigned r1, unsigned c1, unsigned r2, unsigned c2);
@@ -150,8 +151,8 @@ GibbsSampler<T, MatA, MatB>::GibbsSampler(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nrow, unsigned ncol, float alpha)
     :
 mMatrix(nrow, ncol), mOtherMatrix(NULL), mDMatrix(D), mSMatrix(S),
-mAPMatrix(D.nrow(), D.ncol()), mQueue(nrow * ncol, alpha),
-mAnnealingTemp(0.f), mNumRows(nrow), mNumCols(ncol),
+mAPMatrix(D.nrow(), D.ncol()), mQueue(nrow * ncol, alpha), mLambda(0.f),
+mMaxGibbsMass(0.f), mAnnealingTemp(0.f), mNumRows(nrow), mNumCols(ncol),
 mAvgQueue(0.f), mNumQueues(0.f)
 {
     mBinSize = std::numeric_limits<uint64_t>::max()
@@ -343,16 +344,13 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
             acceptExchange(p1, m1, delta, p2, m2, -delta, r1, c1, r2, c2);
             return;
         }
-        else // normal case
+        float deltaLL = impl()->computeDeltaLL(r1, c1, delta, r2, c2, -delta);
+        float priorLL = (pOld == 0.f) ? 1.f : pOld / pNew;
+        float u = std::log(gaps::random::uniform() * priorLL);
+        if (u < deltaLL * mAnnealingTemp)
         {
-            float deltaLL = impl()->computeDeltaLL(r1, c1, delta, r2, c2, -delta);
-            float priorLL = (pOld == 0.f) ? 1.f : pOld / pNew;
-            float u = std::log(gaps::random::uniform() * priorLL);
-            if (u < deltaLL * mAnnealingTemp)
-            {
-                acceptExchange(p1, m1, delta, p2, m2, -delta, r1, c1, r2, c2);
-                return;
-            }
+            acceptExchange(p1, m1, delta, p2, m2, -delta, r1, c1, r2, c2);
+            return;
         }
     }
     mQueue.rejectDeath();
@@ -361,7 +359,7 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 // helper function for acceptExchange, used to conditionally update the mass
 // at a single position, deleting the atom if the new mass is too small
 template <class T, class MatA, class MatB>
-float GibbsSampler<T, MatA, MatB>::updateAtomMass(uint64_t pos, float mass,
+bool GibbsSampler<T, MatA, MatB>::updateAtomMass(uint64_t pos, float mass,
 float delta)
 {
     if (mass + delta < gaps::algo::epsilon)
@@ -370,11 +368,8 @@ float delta)
         mQueue.acceptDeath();
         return false;
     }
-    else
-    {
-        mDomain.updateMass(pos, mass + delta);
-        return true;
-    }
+    mDomain.updateMass(pos, mass + delta);
+    return true;
 }
 
 // helper function for exchange step, updates the atomic domain, matrix, and

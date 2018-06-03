@@ -1,4 +1,9 @@
 #include "GapsRunner.h"
+#include "math/SIMD.h"
+
+#ifdef __GAPS_OPENMP__
+    #include <omp.h>
+#endif
 
 GapsRunner::GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
 unsigned nFactor, unsigned nEquil, unsigned nCool, unsigned nSample,
