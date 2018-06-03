@@ -17,7 +17,7 @@ private:
 
 public:
 
-    MtxParser(const std::string &path);
+    explicit MtxParser(const std::string &path);
 
     unsigned nRow() const { return mNumRows; }
     unsigned nCol() const { return mNumCols; }

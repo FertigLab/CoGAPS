@@ -55,7 +55,7 @@ public:
     uint32_t mSeed;
 
     bpt::ptime mLastCheckpoint;
-    long mCheckpointInterval;
+    int64_t mCheckpointInterval;
     std::string mCheckpointFile;
 
     unsigned mNumUpdatesA;

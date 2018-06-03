@@ -68,7 +68,7 @@ namespace simd
     const unsigned index_increment = 1;
     #define SET_SCALAR(x) x
     #define LOAD_PACKED(x) *(x)
-    #define STORE_PACKED(p,x) *p = x
+    #define STORE_PACKED(p,x) *(p) = (x)
     #define ADD_PACKED(a,b) ((a)+(b))
     #define SUB_PACKED(a,b) ((a)-(b))
     #define MUL_PACKED(a,b) ((a)*(b))
@@ -78,10 +78,13 @@ namespace simd
 class Index
 {
 private:
+
     unsigned index;
+
 public:
-    Index(unsigned i) : index(i) {}
-    void operator=(unsigned val) { index = val; }
+
+    explicit Index(unsigned i) : index(i) {}
+    Index& operator=(unsigned val) { index = val; return *this; }
     bool operator<(unsigned comp) { return index < comp; }
     bool operator<=(unsigned comp) { return index <= comp; }
     void operator++() { index += index_increment; }
@@ -102,16 +105,16 @@ private:
 
 public:
 
-    packedFloat() {}
-    packedFloat(float val) : mData(SET_SCALAR(val)) {}
+    packedFloat() : mData() {}
+    explicit packedFloat(float val) : mData(SET_SCALAR(val)) {}
 #if defined( __GAPS_SSE__ ) || defined( __GAPS_AVX__ )
-    packedFloat(gaps_packed_t val) : mData(val) {}
+    explicit packedFloat(gaps_packed_t val) : mData(val) {}
 #endif
 
-    packedFloat operator+(packedFloat b) const { return ADD_PACKED(mData, b.mData); }
-    packedFloat operator-(packedFloat b) const { return SUB_PACKED(mData, b.mData); }
-    packedFloat operator*(packedFloat b) const { return MUL_PACKED(mData, b.mData); }
-    packedFloat operator/(packedFloat b) const { return DIV_PACKED(mData, b.mData); }
+    packedFloat operator+(packedFloat b) const { return packedFloat(ADD_PACKED(mData, b.mData)); }
+    packedFloat operator-(packedFloat b) const { return packedFloat(SUB_PACKED(mData, b.mData)); }
+    packedFloat operator*(packedFloat b) const { return packedFloat(MUL_PACKED(mData, b.mData)); }
+    packedFloat operator/(packedFloat b) const { return packedFloat(DIV_PACKED(mData, b.mData)); }
 
     void operator+=(packedFloat val) { mData = ADD_PACKED(mData, val.mData); }
     void load(const float *ptr) { mData = LOAD_PACKED(ptr); }

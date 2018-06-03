@@ -22,7 +22,7 @@ private:
 public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
-    RowMatrix(const Rcpp::NumericMatrix &rmat);
+    explicit RowMatrix(const Rcpp::NumericMatrix &rmat);
     
     template <class Parser>
     RowMatrix(Parser &p, unsigned nrow, unsigned ncol);
@@ -41,7 +41,6 @@ public:
 
     RowMatrix operator/(float val) const;
 
-    RowMatrix& operator=(const RowMatrix &mat);
     RowMatrix& operator=(const ColMatrix &mat);
 
     Rcpp::NumericMatrix rMatrix() const;
@@ -60,7 +59,7 @@ private:
 public:
 
     ColMatrix(unsigned nrow, unsigned ncol);
-    ColMatrix(const Rcpp::NumericMatrix &rmat);
+    explicit ColMatrix(const Rcpp::NumericMatrix &rmat);
 
     template <class Parser>
     ColMatrix(Parser &p, unsigned nrow, unsigned ncol);
@@ -79,7 +78,6 @@ public:
 
     ColMatrix operator/(float val) const;
 
-    ColMatrix& operator=(const ColMatrix &mat);
     ColMatrix& operator=(const RowMatrix &mat);
 
     Rcpp::NumericMatrix rMatrix() const;

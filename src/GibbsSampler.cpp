@@ -45,7 +45,7 @@ void AmplitudeGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float del
     unsigned size = mAPMatrix.nCol();
 
     gaps::simd::packedFloat pOther, pAP;
-    gaps::simd::Index i = 0;
+    gaps::simd::Index i(0);
     gaps::simd::packedFloat pDelta(delta);
     for (; i <= size - i.increment(); ++i)
     {
@@ -142,7 +142,7 @@ void PatternGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta
     unsigned size = mAPMatrix.nRow();
 
     gaps::simd::packedFloat pOther, pAP;
-    gaps::simd::Index i = 0;
+    gaps::simd::Index i(0);
     gaps::simd::packedFloat pDelta(delta);
     for (; i <= size - i.increment(); ++i)
     {

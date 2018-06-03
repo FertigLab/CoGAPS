@@ -52,12 +52,6 @@ RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
     }
 }
 
-RowMatrix& RowMatrix::operator=(const RowMatrix &mat)
-{
-    copyMatrix(*this, mat);
-    return *this;
-}
-
 RowMatrix& RowMatrix::operator=(const ColMatrix &mat)
 {
     copyMatrix(*this, mat);
@@ -129,12 +123,6 @@ ColMatrix ColMatrix::operator/(float val) const
         mat.getCol(j) = mCols[j] / val;
     }
     return mat;
-}
-
-ColMatrix& ColMatrix::operator=(const ColMatrix &mat)
-{
-    copyMatrix(*this, mat);
-    return *this;
 }
 
 ColMatrix& ColMatrix::operator=(const RowMatrix &mat)
