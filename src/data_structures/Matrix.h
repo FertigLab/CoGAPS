@@ -7,6 +7,7 @@
 
 #include <Rcpp.h>
 #include <vector>
+#include <algorithm>
 
 // forward declarations
 class RowMatrix;
@@ -15,7 +16,7 @@ class ColMatrix;
 class RowMatrix
 {
 private:
-    
+
     std::vector<Vector> mRows;
     unsigned mNumRows, mNumCols;
 
@@ -23,7 +24,7 @@ public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
     explicit RowMatrix(const Rcpp::NumericMatrix &rmat);
-    
+
     template <class Parser>
     RowMatrix(Parser &p, unsigned nrow, unsigned ncol);
 
@@ -66,6 +67,9 @@ public:
 
     template <class Parser>
     ColMatrix(Parser &p, unsigned nrow, unsigned ncol);
+
+    template <class Parser>
+    ColMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -134,12 +138,34 @@ template <class Parser>
 RowMatrix::RowMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols)
 {
     // TODO implement
+    for (unsigned i = 0; i < mNumRows; i++) {
+        mRows.push_back(Vector(whichCols.size()));
+    }
+
+    while (p.hasNext()) {
+        MatrixElement e(p.getNext());
+        auto newColsIndex = std::find(whichCols.begin(), whichCols.end(), e.col);
+        if (newColsIndex != whichCols.end()) {
+            this->operator()(e.row, newColsIndex - whichCols.begin()) = e.value;
+        }
+    }
 }
 
 template <class Parser>
-ColMatrix::ColMatrix(Parser &p, std::vector<unsigned> whichRows, unsigned ncol)
+ColMatrix::ColMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols)
 {
     // TODO implement
+    for (unsigned j = 0; j < whichCols.size(); j++) {
+        mCols.push_back(Vector(mNumRows));
+    }
+
+    while(p.hasNext()) {
+        MatrixElement e(p.getNext());
+        auto newColsIndex = std::find(whichCols.begin(), whichCols.end(), e.col);
+        if (newColsIndex != whichCols.end()) {
+            this->operator()(e.row, newColsIndex - whichCols.begin()) = e.value;
+        }
+    }
 }
 
 #endif
