@@ -4,7 +4,7 @@
 \alias{plotP}
 \title{Plot the P Matrix}
 \usage{
-plotP(Pmean, Psd)
+plotP(Pmean, Psd = NULL)
 }
 \arguments{
 \item{Pmean}{matrix of mean values of P}
