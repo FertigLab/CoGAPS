@@ -4,7 +4,7 @@
 \alias{plotGAPS}
 \title{Plot Decomposed A and P Matrices}
 \usage{
-plotGAPS(A, P)
+plotGAPS(A, P, file = NULL)
 }
 \arguments{
 \item{A}{the mean A matrix}
