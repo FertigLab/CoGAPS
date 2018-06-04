@@ -108,16 +108,6 @@ mNumCols(ncol)
     }
 }
 
-// This should construct a matrix, only reading the columns in "whichCols"
-// from the file. The matrix should have "nrow" rows and "whichCols.size()"
-// columns.
-template <class Parser>
-RowMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols)
-{
-
-
-}
-
 // construct ColMatrix from file
 template <class Parser>
 ColMatrix::ColMatrix(Parser &p, unsigned nrow, unsigned ncol) : mNumRows(nrow),
@@ -135,6 +125,21 @@ mNumCols(ncol)
         MatrixElement e(p.getNext());
         this->operator()(e.row, e.col) = e.value;
     }
+}
+
+// This should construct a matrix, only reading the columns in "whichCols"
+// from the file. The matrix should have "nrow" rows and "whichCols.size()"
+// columns.
+template <class Parser>
+RowMatrix::RowMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols)
+{
+    // TODO implement
+}
+
+template <class Parser>
+ColMatrix::ColMatrix(Parser &p, std::vector<unsigned> whichRows, unsigned ncol)
+{
+    // TODO implement
 }
 
 #endif
