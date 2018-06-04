@@ -14,7 +14,7 @@ Description: Coordinated Gene Activity in Pattern Sets (CoGAPS)
 Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>,
     Thomas D. Sherman <tomsherman159@gmail.com>
 Depends:
-    R (>= 3.4.0),
+    R (>= 3.3.0),
     Rcpp (>= 0.11.0)
 Imports:
     RColorBrewer (>= 1.0.5),
