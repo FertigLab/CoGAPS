@@ -123,13 +123,13 @@ public:
 #if defined( __GAPS_AVX__ )
     float scalar()
     {
-        float* ra = (float*)&mData;
+        float* ra = reinterpret_cast<float*>(&mData);
         return ra[0] + ra[1] + ra[2] + ra[3] + ra[4] + ra[5] + ra[6] + ra[7];
     }
 #elif defined( __GAPS_SSE__ )
     float scalar()
     {
-        float* ra = (float*)&mData;
+        float* ra = reinterpret_cast<float*>(&mData);
         return ra[0] + ra[1] + ra[2] + ra[3];
     }
 #else
