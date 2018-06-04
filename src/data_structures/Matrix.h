@@ -138,15 +138,18 @@ template <class Parser>
 RowMatrix::RowMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols)
 {
     // TODO implement
-    for (unsigned i = 0; i < mNumRows; i++) {
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
         mRows.push_back(Vector(whichCols.size()));
     }
 
-    while (p.hasNext()) {
+    while (p.hasNext())
+    {
         MatrixElement e(p.getNext());
-        auto newColsIndex = std::find(whichCols.begin(), whichCols.end(), e.col);
-        if (newColsIndex != whichCols.end()) {
-            this->operator()(e.row, newColsIndex - whichCols.begin()) = e.value;
+        std::vector<unsigned>::iterator newColsIndex = std::find(whichCols.begin(), whichCols.end(), e.col);
+        if (newColsIndex != whichCols.end())
+        {
+            this->operator()(e.row, std::distance(whichCols.begin(), newColsIndex)) = e.value;
         }
     }
 }
@@ -155,15 +158,18 @@ template <class Parser>
 ColMatrix::ColMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols)
 {
     // TODO implement
-    for (unsigned j = 0; j < whichCols.size(); j++) {
+    for (unsigned j = 0; j < whichCols.size(); ++j)
+    {
         mCols.push_back(Vector(mNumRows));
     }
 
-    while(p.hasNext()) {
+    while(p.hasNext())
+    {
         MatrixElement e(p.getNext());
-        auto newColsIndex = std::find(whichCols.begin(), whichCols.end(), e.col);
-        if (newColsIndex != whichCols.end()) {
-            this->operator()(e.row, newColsIndex - whichCols.begin()) = e.value;
+        std::vector<unsigned>::iterator newColsIndex = std::find(whichCols.begin(), whichCols.end(), e.col);
+        if (newColsIndex != whichCols.end())
+        {
+            this->operator()(e.row, std::distance(whichCols.begin(), newColsIndex)) = e.value;
         }
     }
 }
