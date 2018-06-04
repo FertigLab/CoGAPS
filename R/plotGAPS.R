@@ -11,12 +11,22 @@
 #' data(SimpSim)
 #' plotGAPS(SimpSim.result$Amean, SimpSim.result$Pmean)
 #' @export
-plotGAPS <- function(A, P, file=NULL)
+plotGAPS <- function(A, P, filename=NULL)
 {
-    if (!is.null(pdf)) { pdf(file) }
-
+    if (!is.null(pdf))
+    {
+        pdf(file=paste(filename, "-Patterns", ".pdf", sep=""))
+    }
     plotP(P)
+
+    if (!is.null(pdf))
+    {
+        pdf(file=paste(filename, "-Amplitude", ".pdf", sep=""))
+    }
     heatmap(A, Rowv=NA, Colv=NA)
 
-    if (!is.null(pdf)) { dev.off() }
+    if (!is.null(pdf))
+    {
+        dev.off()
+    }
 }
