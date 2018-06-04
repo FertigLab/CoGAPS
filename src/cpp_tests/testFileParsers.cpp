@@ -20,12 +20,13 @@ TEST_CASE("Test Parsers")
         //std::string mtxPath = pkgEnv.find("gistMtxPath");
 
         Rcpp::Function systemFile("system.file");
-        //Rcpp::string mtxPath = systemFile("data/GIST.mtx", "CoGAPS");
+        std::string mtxPath = Rcpp::as<std::string>(systemFile("data/GIST.mtx", "CoGAPS"));
 
-        std::ifstream is("/mnt/c/Users/tsherma4/Documents/CoGAPS/Repo/data/GIST.mtx");
-        std::string line;
-        std::getline(is, line);
+        //std::ifstream is("/mnt/c/Users/tsherma4/Documents/CoGAPS/Repo/data/GIST.mtx");
+        
+        std::string line(mtxPath);
+        //std::getline(is, line);
         std::cout << "\n" <<  line << "\nTHIS IS TEST OUTPUT\n";
-        is.close();
+        //is.close();
     }
 }
