@@ -1,5 +1,7 @@
 #include "GapsRunner.h"
 #include "math/SIMD.h"
+#include "math/Random.h"
+#include <algorithm>
 
 #ifdef __GAPS_OPENMP__
     #include <omp.h>
@@ -13,15 +15,23 @@ static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned n
 {
     // TODO implement
     std::vector< std::vector<unsigned> > sampleIndices;
-    unsigned count = 1;
+    std::vector<unsigned> sampled;
 
     for (unsigned i = 0; i < (n - 1) % nSets; ++i)
     {
         std::vector<unsigned> set;
         for (unsigned i = 0; i < ((unsigned) (n - 1) / nSets) + 1; ++i)
         {
-            set.push_back(count);
-            ++count;
+            while(true)
+            {
+                unsigned sample = gaps::random::uniform64(1, n);
+                if (find(sampled.begin(), sampled.end(), sample) == sampled.end())
+                {
+                    set.push_back(sample);
+                    sampled.push_back(sample);
+                    break;
+                }
+            }
         }
         sampleIndices.push_back(set);
     }
@@ -31,8 +41,16 @@ static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned n
         std::vector<unsigned> set;
         for (unsigned i = 0; i < (unsigned) (n - 1) / nSets; ++i)
         {
-            set.push_back(count);
-            ++count;
+            while(true)
+            {
+                unsigned sample = gaps::random::uniform64(1, n);
+                if (find(sampled.begin(), sampled.end(), sample) == sampled.end())
+                {
+                    set.push_back(sample);
+                    sampled.push_back(sample);
+                    break;
+                }
+            }
         }
         sampleIndices.push_back(set);
     }
