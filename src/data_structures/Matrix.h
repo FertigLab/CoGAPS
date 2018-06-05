@@ -7,6 +7,7 @@
 
 #include <Rcpp.h>
 #include <vector>
+#include <algorithm>
 
 // forward declarations
 class RowMatrix;
@@ -15,7 +16,7 @@ class ColMatrix;
 class RowMatrix
 {
 private:
-    
+
     std::vector<Vector> mRows;
     unsigned mNumRows, mNumCols;
 
@@ -23,9 +24,12 @@ public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
     explicit RowMatrix(const Rcpp::NumericMatrix &rmat);
-    
+
     template <class Parser>
     RowMatrix(Parser &p, unsigned nrow, unsigned ncol);
+
+    template <class Parser>
+    RowMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -64,6 +68,9 @@ public:
     template <class Parser>
     ColMatrix(Parser &p, unsigned nrow, unsigned ncol);
 
+    template <class Parser>
+    ColMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols);
+
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
 
@@ -85,7 +92,6 @@ public:
     friend Archive& operator<<(Archive &ar, ColMatrix &mat);
     friend Archive& operator>>(Archive &ar, ColMatrix &mat);
 };
-
 
 // construct RowMatrix from file
 template <class Parser>
@@ -122,6 +128,49 @@ mNumCols(ncol)
     {
         MatrixElement e(p.getNext());
         this->operator()(e.row, e.col) = e.value;
+    }
+}
+
+// This should construct a matrix, only reading the columns in "whichCols"
+// from the file. The matrix should have "nrow" rows and "whichCols.size()"
+// columns.
+template <class Parser>
+RowMatrix::RowMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols)
+{
+    // TODO implement
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        mRows.push_back(Vector(whichCols.size()));
+    }
+
+    while (p.hasNext())
+    {
+        MatrixElement e(p.getNext());
+        std::vector<unsigned>::iterator newColsIndex = std::find(whichCols.begin(), whichCols.end(), e.col);
+        if (newColsIndex != whichCols.end())
+        {
+            this->operator()(e.row, std::distance(whichCols.begin(), newColsIndex)) = e.value;
+        }
+    }
+}
+
+template <class Parser>
+ColMatrix::ColMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols)
+{
+    // TODO implement
+    for (unsigned j = 0; j < whichCols.size(); ++j)
+    {
+        mCols.push_back(Vector(mNumRows));
+    }
+
+    while(p.hasNext())
+    {
+        MatrixElement e(p.getNext());
+        std::vector<unsigned>::iterator newColsIndex = std::find(whichCols.begin(), whichCols.end(), e.col);
+        if (newColsIndex != whichCols.end())
+        {
+            this->operator()(e.row, std::distance(whichCols.begin(), newColsIndex)) = e.value;
+        }
     }
 }
 
