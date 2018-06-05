@@ -26,7 +26,7 @@ TEST_CASE("Test Parsers")
         
         std::string line(mtxPath);
         //std::getline(is, line);
-        std::cout << "\n" <<  line << "\nTHIS IS TEST OUTPUT\n";
+        Rcpp::Rcout << "\n" <<  line << "\nTHIS IS TEST OUTPUT\n";
         //is.close();
     }
 }
