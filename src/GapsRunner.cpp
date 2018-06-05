@@ -13,7 +13,52 @@
 // samples gene names as well
 static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
 {
-    // TODO implement
+    std::vector< std::vector<unsigned> > sampleIndices;
+    std::vector<unsigned> toBeSampled;
+    for (unsigned i = 1; i < n; ++i)
+    {
+        toBeSampled.push_back(i);
+    }
+
+    for (unsigned i = 0; i < (n - 1); ++i)
+    {
+        std::vector<unsigned> set = gaps::random::sample(toBeSampled, (int) (n - 1) / (nSets - 1));
+        sampleIndices.push_back(set);
+        for(std::vector<unsigned>::iterator it = set.begin(); it != set.end(); ++it)
+        {
+            unsigned index = *it;
+            std::vector<unsigned>::iterator it2 = toBeSampled.begin();
+            while(it2 != toBeSampled.end())
+            {
+                if(*it2 == index)
+                {
+                    it2 = toBeSampled.erase(it);
+                }
+                else
+                    it2++;
+            }
+        }
+    }
+    std::vector<unsigned> set = gaps::random::sample(toBeSampled, (n - 1) % (nSets - 1));
+    sampleIndices.push_back(set);
+    for(std::vector<unsigned>::iterator it = set.begin(); it != set.end(); ++it)
+    {
+        unsigned index = *it;
+        std::vector<unsigned>::iterator it2 = toBeSampled.begin();
+        while(it2 != toBeSampled.end())
+        {
+            if(*it2 == index)
+            {
+                it2 = toBeSampled.erase(it);
+            }
+            else
+                it2++;
+        }
+    }
+
+    return sampleIndices;
+
+    /*
     std::vector< std::vector<unsigned> > sampleIndices;
     std::vector<unsigned> sampled;
 
@@ -56,6 +101,7 @@ static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned n
     }
 
     return sampleIndices;
+    */
 }
 
 GapsRunner::GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
