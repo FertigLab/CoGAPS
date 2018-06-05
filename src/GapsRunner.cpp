@@ -5,6 +5,15 @@
     #include <omp.h>
 #endif
 
+// create "nSets" vectors where each vector contains a vector of indices in the
+// range [1,n)
+// see createGWCoGAPSSets.R - here we just sample indices, that function
+// samples gene names as well
+static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
+{
+    // TODO implement
+}
+
 GapsRunner::GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
 unsigned nFactor, unsigned nEquil, unsigned nCool, unsigned nSample,
 unsigned nOutputs, unsigned nSnapshots, float alphaA, float alphaP,
