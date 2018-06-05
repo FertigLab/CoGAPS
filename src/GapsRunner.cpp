@@ -12,6 +12,32 @@
 static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
 {
     // TODO implement
+    std::vector< std::vector<unsigned> > sampleIndices;
+    unsigned count = 1;
+
+    for (unsigned i = 0; i < (n - 1) % nSets; ++i)
+    {
+        std::vector<unsigned> set;
+        for (unsigned i = 0; i < ((unsigned) (n - 1) / nSets) + 1; ++i)
+        {
+            set.push_back(count);
+            ++count;
+        }
+        sampleIndices.push_back(set);
+    }
+
+    for (unsigned i = (n - 1) % nSets; i < nSets; ++i)
+    {
+        std::vector<unsigned> set;
+        for (unsigned i = 0; i < (unsigned) (n - 1) / nSets; ++i)
+        {
+            set.push_back(count);
+            ++count;
+        }
+        sampleIndices.push_back(set);
+    }
+
+    return sampleIndices;
 }
 
 GapsRunner::GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
