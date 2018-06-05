@@ -125,4 +125,3 @@ calcCoGAPSStat(SimpSim.result$Amean, SimpSim.result$Asd, GStoGenes=GSets, numPer
 Now using the `computeGeneGSProb` function, we can use the gene set statistic (returned from calcCoGAPSStat) to compute a statistic to quantify the likely membership of each gene annotated to a set based on its inferred activity. 
 $$ computeGeneGSProb(Amean, Asd, GStoGenes, numPerm=500) $$
 The statistic used to infer membership compares the expression pattern of a gene annotated as a member of a gene set to the common expression pattern of all annotated members of that gene set. The function outputs the p-value of a set membership for each gene specified in GStoGenes. 
-
