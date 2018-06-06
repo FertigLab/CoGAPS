@@ -22,38 +22,12 @@ static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned n
 
     for (unsigned i = 0; i < (n - 1); ++i)
     {
-        std::vector<unsigned> set = gaps::random::sample(toBeSampled, (int) (n - 1) / (nSets - 1));
-        sampleIndices.push_back(set);
-        for(std::vector<unsigned>::iterator it = set.begin(); it != set.end(); ++it)
-        {
-            unsigned index = *it;
-            std::vector<unsigned>::iterator it2 = toBeSampled.begin();
-            while(it2 != toBeSampled.end())
-            {
-                if(*it2 == index)
-                {
-                    it2 = toBeSampled.erase(it);
-                }
-                else
-                    it2++;
-            }
-        }
+        sampleIndices.push_back(gaps::random::sample(toBeSampled, (int) (n - 1) / (nSets - 1)));
     }
-    std::vector<unsigned> set = gaps::random::sample(toBeSampled, (n - 1) % (nSets - 1));
-    sampleIndices.push_back(set);
-    for(std::vector<unsigned>::iterator it = set.begin(); it != set.end(); ++it)
+
+    if (!toBeSampled.empty())
     {
-        unsigned index = *it;
-        std::vector<unsigned>::iterator it2 = toBeSampled.begin();
-        while(it2 != toBeSampled.end())
-        {
-            if(*it2 == index)
-            {
-                it2 = toBeSampled.erase(it);
-            }
-            else
-                it2++;
-        }
+        sampleIndices.push_back(toBeSampled);
     }
 
     return sampleIndices;
