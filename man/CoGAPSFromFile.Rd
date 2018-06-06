@@ -6,7 +6,17 @@
 \usage{
 CoGAPSFromFile(D)
 }
+\arguments{
+\item{D}{file path for data matrix}
+}
+\value{
+list with A and P matrix estimates
+}
 \description{
 CoGAPS with file input for matrix
+}
+\examples{
+ file <- system.file("extdata/GIST.mtx", package="CoGAPS")
+ CoGAPSFromFile(file)
 }
 

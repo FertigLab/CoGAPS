@@ -18,7 +18,7 @@ class AtomicDomain;
 struct Atom
 {
 //private:    
-public:
+public: // TODO
 
     friend class AtomicDomain;
     uint64_t leftNdx; // shift these up 1, 0 == no neighbor
