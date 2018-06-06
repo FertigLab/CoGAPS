@@ -21,6 +21,7 @@
 #include <boost/random/uniform_real_distribution.hpp>
 
 #include <stdint.h>
+#include <algorithm>
 
 #ifdef __GAPS_OPENMP__
     #include <omp.h>
@@ -180,7 +181,20 @@ float gaps::random::inverseGammaSample(float a, float b, float mean, float sd)
     return gaps::random::q_gamma(u, mean, sd);
 }
 
-std::vector<unsigned> sample(const std::vector<unsigned> &elements, unsigned n) {
+std::vector<unsigned> sample(std::vector<unsigned> &elements, unsigned n) {
+    std::vector<unsigned> sampleVect;
+    for (unsigned i = 0; i < n; ++i)
+    {
+        if (elements.empty()) {
+            break;
+        }
+        unsigned sampleIndex = gaps::random::uniform64(0, elements.size());
+        sampleVect.push_back(elements.at(sampleIndex));
+        elements.erase(std::remove(elements.begin(), elements.end(), elements.at(sampleIndex)), elements.end());
+    }
+    return sampleVect;
+
+    /*
     std::vector<unsigned> sampleVect;
     std::vector<unsigned> sampledIndices;
     for (unsigned i = 0; i < n; ++i)
@@ -197,4 +211,5 @@ std::vector<unsigned> sample(const std::vector<unsigned> &elements, unsigned n) 
         }
     }
     return sampleVect;
+    */
 }
