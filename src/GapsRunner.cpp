@@ -1,9 +1,83 @@
 #include "GapsRunner.h"
 #include "math/SIMD.h"
+#include "math/Random.h"
+#include "GapsAssert.h"
+#include <algorithm>
 
 #ifdef __GAPS_OPENMP__
     #include <omp.h>
 #endif
+
+// create "nSets" vectors where each vector contains a vector of indices in the
+// range [0,n)
+// see createGWCoGAPSSets.R - here we just sample indices, that function
+// samples gene names as well
+static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
+{
+    unsigned setSize = (int) n / nSets;
+    std::vector< std::vector<unsigned> > sampleIndices;
+    std::vector<unsigned> toBeSampled;
+    for (unsigned i = 1; i < n; ++i)
+    {
+        toBeSampled.push_back(i);
+    }
+
+    for (unsigned i = 0; i < (nSets - 1); ++i)
+    {
+        sampleIndices.push_back(gaps::random::sample(toBeSampled, setSize));
+    }
+
+    GAPS_ASSERT(!toBeSampled.empty());
+
+    sampleIndices.push_back(toBeSampled);
+
+    return sampleIndices;
+
+    /*
+    std::vector< std::vector<unsigned> > sampleIndices;
+    std::vector<unsigned> sampled;
+
+    for (unsigned i = 0; i < (n - 1) % nSets; ++i)
+    {
+        std::vector<unsigned> set;
+        for (unsigned i = 0; i < ((unsigned) (n - 1) / nSets) + 1; ++i)
+        {
+            while(true)
+            {
+                unsigned sample = gaps::random::uniform64(1, n);
+                if (find(sampled.begin(), sampled.end(), sample) == sampled.end())
+                {
+                    set.push_back(sample);
+                    sampled.push_back(sample);
+                    break;
+                }
+            }
+        }
+        sampleIndices.push_back(set);
+    }
+
+    for (unsigned i = (n - 1) % nSets; i < nSets; ++i)
+    {
+        std::vector<unsigned> set;
+        for (unsigned i = 0; i < (unsigned) (n - 1) / nSets; ++i)
+        {
+            while(true)
+            {
+                unsigned sample = gaps::random::uniform64(1, n);
+                if (find(sampled.begin(), sampled.end(), sample) == sampled.end())
+                {
+                    set.push_back(sample);
+                    sampled.push_back(sample);
+                    break;
+                }
+            }
+        }
+        sampleIndices.push_back(set);
+    }
+
+    return sampleIndices;
+    */
+}
 
 GapsRunner::GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
 unsigned nFactor, unsigned nEquil, unsigned nCool, unsigned nSample,
