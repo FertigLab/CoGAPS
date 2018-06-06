@@ -185,12 +185,12 @@ std::vector<unsigned> sample(std::vector<unsigned> &elements, unsigned n) {
     std::vector<unsigned> sampleVect;
     for (unsigned i = 0; i < n; ++i)
     {
-        if (elements.empty()) {
-            break;
-        }
+        GAPS_ASSERT(n <= elements.size());
         unsigned sampleIndex = gaps::random::uniform64(0, elements.size());
         sampleVect.push_back(elements.at(sampleIndex));
-        elements.erase(std::remove(elements.begin(), elements.end(), elements.at(sampleIndex)), elements.end());
+
+        elements[sampleIndex] = elements.back();
+        elements.pop_back();
     }
     return sampleVect;
 

@@ -1,6 +1,7 @@
 #include "GapsRunner.h"
 #include "math/SIMD.h"
 #include "math/Random.h"
+#include "GapsAssert.h"
 #include <algorithm>
 
 #ifdef __GAPS_OPENMP__
@@ -13,6 +14,7 @@
 // samples gene names as well
 static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
 {
+    unsigned setSize = (int) (n - 1) / (nSets - 1);
     std::vector< std::vector<unsigned> > sampleIndices;
     std::vector<unsigned> toBeSampled;
     for (unsigned i = 1; i < n; ++i)
@@ -20,15 +22,14 @@ static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned n
         toBeSampled.push_back(i);
     }
 
-    for (unsigned i = 0; i < (n - 1); ++i)
+    for (unsigned i = 0; i < (nSets - 1); ++i)
     {
-        sampleIndices.push_back(gaps::random::sample(toBeSampled, (int) (n - 1) / (nSets - 1)));
+        sampleIndices.push_back(gaps::random::sample(toBeSampled, setSize));
     }
 
-    if (!toBeSampled.empty())
-    {
-        sampleIndices.push_back(toBeSampled);
-    }
+    GAPS_ASSERT(!toBeSampled.empty());
+
+    sampleIndices.push_back(toBeSampled);
 
     return sampleIndices;
 
