@@ -51,6 +51,8 @@ the fixed patterns}
 
 \item{checkpointFile}{name of the checkpoint file}
 
+\item{nCores}{number of cpu cores to run in parallel over}
+
 \item{...}{keeps backwards compatibility with arguments from older versions}
 }
 \value{

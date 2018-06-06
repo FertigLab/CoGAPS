@@ -34,6 +34,7 @@
 #' @param fixedPatterns matrix of fixed values in either A or P matrix
 #' @param checkpointInterval time (in seconds) between creating a checkpoint
 #' @param checkpointFile name of the checkpoint file
+#' @param nCores number of cpu cores to run in parallel over
 #' @param ... keeps backwards compatibility with arguments from older versions
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
@@ -130,6 +131,12 @@ CoGapsFromCheckpoint <- function(D, S, path, checkpointFile=NA)
 
 #' CoGAPS with file input for matrix
 #' @export
+#'
+#' @param D file path for data matrix
+#' @return list with A and P matrix estimates
+#' @examples
+#'  file <- system.file("extdata/GIST.mtx", package="CoGAPS")
+#'  CoGAPSFromFile(file)
 CoGAPSFromFile <- function(D)
 {
     cogapsFromFile_cpp(D)
