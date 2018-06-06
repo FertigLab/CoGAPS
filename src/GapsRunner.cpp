@@ -9,12 +9,12 @@
 #endif
 
 // create "nSets" vectors where each vector contains a vector of indices in the
-// range [1,n)
+// range [0,n)
 // see createGWCoGAPSSets.R - here we just sample indices, that function
 // samples gene names as well
 static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
 {
-    unsigned setSize = (int) (n - 1) / (nSets - 1);
+    unsigned setSize = (int) n / nSets;
     std::vector< std::vector<unsigned> > sampleIndices;
     std::vector<unsigned> toBeSampled;
     for (unsigned i = 1; i < n; ++i)
