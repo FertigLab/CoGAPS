@@ -126,7 +126,7 @@ const float *S, const float *AP, const float *mat)
     float fratio, s = partialS.scalar(), su = partialSU.scalar();
     for (unsigned j = i.value(); j < size; ++j)
     {
-        fratio = mat[j] / S[j];
+        fratio = mat[j] / S[j]; // can save one division here by dividing by S^2
         s += fratio * fratio;
         su += (fratio * (D[j] - AP[j])) / S[j];
     }
