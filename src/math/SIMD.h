@@ -5,16 +5,12 @@
     #define __x86_64__ 1
 #endif
 
-#ifndef _OPENMP
-    #pragma message("Compiler does not support OpenMP")
-#else
+#ifdef _OPENMP
     #define __GAPS_OPENMP__
 #endif
 
 #ifndef SSE_INSTR_SET
-    #ifndef SIMD
-        #define SSE_INSTR_SET 0
-    #elif defined ( __AVX2__ )
+    #if defined ( __AVX2__ )
         #define SSE_INSTR_SET 8
     #elif defined ( __AVX__ )
         #define SSE_INSTR_SET 7
@@ -23,7 +19,6 @@
     #elif defined ( __SSE4_1__ )
         #define SSE_INSTR_SET 5
     #else
-        #error "SIMD not supported"
         #define SSE_INSTR_SET 0
     #endif
 #endif
