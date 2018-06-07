@@ -1788,6 +1788,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# get C++ compiler from R configuration
+CXX=`"${R_HOME}/bin/R" CMD config CXX`
+
+# Switch to a C++ compiler, and check if it works.
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -2695,6 +2699,9 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
+# macro to check if compile flag throws error
+
+# Check if compiling debug version
 # Check whether --enable-debug was given.
 if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug; build_debug=yes
@@ -2703,13 +2710,13 @@ else
 fi
 
 
+# Check if specific version of SIMD instructions requested
 # Check whether --enable-simd was given.
 if test "${enable_simd+set}" = set; then :
   enableval=$enable_simd; simd_version=$enableval
 else
   simd_version=sse
 fi
-
 
 
 GAPS_CPP_FLAGS=
@@ -2721,14 +2728,155 @@ if test "x$build_debug" = "xyes" ; then
 fi
 
 if test "x$simd_version" = "xsse" ; then
-    echo "Using SSE"
-    GAPS_CXX_FLAGS+=" -msse4.2 "
+    echo "Compiling with SSE instructions"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -msse4.2" >&5
+$as_echo_n "checking whether C++ compiler accepts -msse4.2... " >&6; }
+if ${ax_cv_check_cxxflags___msse4_2+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    ax_check_save_flags=$CXXFLAGS
+    CXXFLAGS="$CXXFLAGS  -msse4.2"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ax_cv_check_cxxflags___msse4_2=yes
+else
+  ax_cv_check_cxxflags___msse4_2=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    CXXFLAGS=$ax_check_save_flags
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___msse4_2" >&5
+$as_echo "$ax_cv_check_cxxflags___msse4_2" >&6; }
+if test "x$ax_cv_check_cxxflags___msse4_2" = xyes; then :
+  GAPS_CXX_FLAGS+=" -msse4.2 "
+else
+  :
+fi
+
+elif test "x$simd_version" = "xyes" ; then
+    echo "Compiling with SSE instructions"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -msse4.2" >&5
+$as_echo_n "checking whether C++ compiler accepts -msse4.2... " >&6; }
+if ${ax_cv_check_cxxflags___msse4_2+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    ax_check_save_flags=$CXXFLAGS
+    CXXFLAGS="$CXXFLAGS  -msse4.2"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ax_cv_check_cxxflags___msse4_2=yes
+else
+  ax_cv_check_cxxflags___msse4_2=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    CXXFLAGS=$ax_check_save_flags
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___msse4_2" >&5
+$as_echo "$ax_cv_check_cxxflags___msse4_2" >&6; }
+if test "x$ax_cv_check_cxxflags___msse4_2" = xyes; then :
+  GAPS_CXX_FLAGS+=" -msse4.2 "
+else
+  :
+fi
+
 elif test "x$simd_version" = "xavx" ; then
-    echo "Using AVX"
-    GAPS_CXX_FLAGS+=" -mavx "
+    echo "Compiling with AVX instructions"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -mavx" >&5
+$as_echo_n "checking whether C++ compiler accepts -mavx... " >&6; }
+if ${ax_cv_check_cxxflags___mavx+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    ax_check_save_flags=$CXXFLAGS
+    CXXFLAGS="$CXXFLAGS  -mavx"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ax_cv_check_cxxflags___mavx=yes
+else
+  ax_cv_check_cxxflags___mavx=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    CXXFLAGS=$ax_check_save_flags
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___mavx" >&5
+$as_echo "$ax_cv_check_cxxflags___mavx" >&6; }
+if test "x$ax_cv_check_cxxflags___mavx" = xyes; then :
+  GAPS_CXX_FLAGS+=" -mavx "
+else
+  :
+fi
+
 elif test "x$simd_version" = "xavx512" ; then
-    echo "Using AVX-512"
-    GAPS_CXX_FLAGS+=" -mavx512f "
+    echo "Compiling with AVX-512 instructions"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -mavx512f" >&5
+$as_echo_n "checking whether C++ compiler accepts -mavx512f... " >&6; }
+if ${ax_cv_check_cxxflags___mavx512f+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    ax_check_save_flags=$CXXFLAGS
+    CXXFLAGS="$CXXFLAGS  -mavx512f"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ax_cv_check_cxxflags___mavx512f=yes
+else
+  ax_cv_check_cxxflags___mavx512f=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    CXXFLAGS=$ax_check_save_flags
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___mavx512f" >&5
+$as_echo "$ax_cv_check_cxxflags___mavx512f" >&6; }
+if test "x$ax_cv_check_cxxflags___mavx512f" = xyes; then :
+  GAPS_CXX_FLAGS+=" -mavx512f "
+else
+  :
+fi
+
+elif test "x$simd_version" = "xno" ; then
+    echo "Compiling without SIMD instructions"
 else
     echo "Error: Invalid SIMD type"
     exit -1
