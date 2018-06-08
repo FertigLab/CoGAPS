@@ -94,25 +94,16 @@ public:
 template <class Matrix, class Parser>
 inline void fill(Matrix &mat, Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
 {
-    // TODO implement
+    unsigned rowSelect = partitionRows ? 0 : 1;
+    unsigned colSelect = partitionRows ? 1 : 0;
+    
     while (p.hasNext())
     {
         MatrixElement e(p.getNext());
-        if (partitionRows)
+        std::vector<unsigned>::iterator newRowIndex = std::find(whichIndices.begin(), whichIndices.end(), e[rowSelect]);
+        if (newRowIndex != whichIndices.end())
         {
-            std::vector<unsigned>::iterator newRowIndex = std::find(whichIndices.begin(), whichIndices.end(), e.row);
-            if (newRowIndex != whichIndices.end())
-            {
-                mat.operator()(std::distance(whichIndices.begin(), newRowIndex), e.col) = e.value;
-            }
-        }
-        else //transpose
-        {
-            std::vector<unsigned>::iterator newRowIndex = std::find(whichIndices.begin(), whichIndices.end(), e.col);
-            if (newRowIndex != whichIndices.end())
-            {
-                mat.operator()(std::distance(whichIndices.begin(), newRowIndex), e.row) = e.value;
-            }
+            mat.operator()(std::distance(whichIndices.begin(), newRowIndex), e[colSelect]) = e.value;
         }
     }
 }
