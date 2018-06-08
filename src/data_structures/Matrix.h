@@ -26,10 +26,7 @@ public:
     explicit RowMatrix(const Rcpp::NumericMatrix &rmat);
 
     template <class Parser>
-    RowMatrix(Parser &p, unsigned nrow, unsigned ncol);
-
-    template <class Parser>
-    RowMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols);
+    RowMatrix(Parser &p, bool parseRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -66,10 +63,7 @@ public:
     explicit ColMatrix(const Rcpp::NumericMatrix &rmat);
 
     template <class Parser>
-    ColMatrix(Parser &p, unsigned nrow, unsigned ncol);
-
-    template <class Parser>
-    ColMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols);
+    ColMatrix(Parser &p, bool parseRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -92,6 +86,47 @@ public:
     friend Archive& operator<<(Archive &ar, ColMatrix &mat);
     friend Archive& operator>>(Archive &ar, ColMatrix &mat);
 };
+
+
+// if partitionRows is false, partition columns instead
+// rows of matrix should be partition dimension, i.e. need to transpose
+// is partitionRows is false
+template <class Matrix, class Parser>
+inline fill(Matrix &mat, Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
+{
+    // TODO implement
+}
+
+template <class Parser>
+RowMatrix::RowMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
+: mNumRows(?), mNumCols(?)
+{
+    // allocate matrix
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        mRows.push_back(Vector(mNumCols));
+    }
+
+    // fill in matrix
+    fill(*this, p, partitionRows, whichIndices);
+}
+
+template <class Parser>
+ColMatrix::ColMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
+: mNumRows(?), mNumCols(?)
+{
+    // allocate matrix
+    for (unsigned j = 0; j < mNumCols; ++j)
+    {
+        mCols.push_back(Vector(mNumRows));
+    }
+
+    // fill in matrix
+    fill(*this, p, partitionRows, whichIndices);
+}
+
+
+//// BELOW CODE IS OUTDATED, REMOVE BEFORE MERGE
 
 // construct RowMatrix from file
 template <class Parser>
