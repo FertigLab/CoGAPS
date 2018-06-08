@@ -14,7 +14,7 @@ MtxParser::MtxParser(const std::string &path) : mNumRows(0), mNumCols(0)
         std::getline(mFile, line);
     }
     std::stringstream ss(line); // this line contains dimensions
-    
+
     // store dimensions
     ss >> mNumRows >> mNumCols;
 }
@@ -27,6 +27,6 @@ bool MtxParser::hasNext()
 MatrixElement MtxParser::getNext()
 {
     MatrixElement e(0, 0, 0.f);
-    mFile >> e.row >> e.col >> e.value;
+    mFile >> e.dim[0] >> e.dim[1] >> e.value;
     return e;
 }
