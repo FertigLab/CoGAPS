@@ -92,15 +92,37 @@ public:
 // rows of matrix should be partition dimension, i.e. need to transpose
 // is partitionRows is false
 template <class Matrix, class Parser>
-inline fill(Matrix &mat, Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
+inline void fill(Matrix &mat, Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
 {
     // TODO implement
+    while (p.hasNext())
+    {
+        MatrixElement e(p.getNext());
+        if (partitionRows)
+        {
+            std::vector<unsigned>::iterator newRowIndex = std::find(whichIndices.begin(), whichIndices.end(), e.row);
+            if (newRowIndex != whichIndices.end())
+            {
+                mat.operator()(std::distance(whichIndices.begin(), newRowIndex), e.col) = e.value;
+            }
+        }
+        else //transpose
+        {
+            std::vector<unsigned>::iterator newRowIndex = std::find(whichIndices.begin(), whichIndices.end(), e.col);
+            if (newRowIndex != whichIndices.end())
+            {
+                mat.operator()(std::distance(whichIndices.begin(), newRowIndex), e.row) = e.value;
+            }
+        }
+    }
 }
 
 template <class Parser>
 RowMatrix::RowMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
-: mNumRows(?), mNumCols(?)
 {
+    unsigned mNumRows = whichIndices.size();
+    unsigned mNumCols = partitionRows ? p.nCol() : p.nRow();
+
     // allocate matrix
     for (unsigned i = 0; i < mNumRows; ++i)
     {
@@ -113,8 +135,10 @@ RowMatrix::RowMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichI
 
 template <class Parser>
 ColMatrix::ColMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
-: mNumRows(?), mNumCols(?)
 {
+    unsigned mNumRows = whichIndices.size();
+    unsigned mNumCols = partitionRows ? p.nCol() : p.nRow();
+
     // allocate matrix
     for (unsigned j = 0; j < mNumCols; ++j)
     {
@@ -128,6 +152,7 @@ ColMatrix::ColMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichI
 
 //// BELOW CODE IS OUTDATED, REMOVE BEFORE MERGE
 
+/*
 // construct RowMatrix from file
 template <class Parser>
 RowMatrix::RowMatrix(Parser &p, unsigned nrow, unsigned ncol) : mNumRows(nrow),
@@ -208,5 +233,6 @@ ColMatrix::ColMatrix(Parser &p, unsigned nrow, std::vector<unsigned> whichCols)
         }
     }
 }
+*/
 
 #endif
