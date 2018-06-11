@@ -9,24 +9,78 @@
 
 TEST_CASE("Test Parsers")
 {
-    SECTION("Test RowMatrix")
-    {    
-        //CsvParser csv("data/GIST.csv");
-        //TsvParser tsv("data/GIST.tsv");
-        //MtxParser mtx("data/GIST.mtx");
+    SECTION("Test CsvParser")
+    {
+        CsvParser p("../../inst/extdata/GIST.csv");
+        REQUIRE(p.nRow() == 1363);
+        REQUIRE(p.nCol() == 9);
 
-        //Rcpp::Environment pkgEnv;
-        //pkgEnv = Rcpp::Environment::namespace_env("CoGAPS");
-        //std::string mtxPath = pkgEnv.find("gistMtxPath");
+        unsigned row = 0;
+        unsigned col = 0;
+        unsigned count = 0;
+        while (p.hasNext())
+        {
+            MatrixElement e(p.getNext());
+            REQUIRE(e.row() == row);
+            REQUIRE(e.col() == col);
 
-        Rcpp::Function systemFile("system.file");
-        std::string mtxPath = Rcpp::as<std::string>(systemFile("data/GIST.mtx", "CoGAPS"));
+            ++count;
+            ++col;
+            if (col == 9) {
+                ++row;
+                col = 0;
+            }
+        }
+        REQUIRE(count == 12267);
+    }
 
-        //std::ifstream is("/mnt/c/Users/tsherma4/Documents/CoGAPS/Repo/data/GIST.mtx");
-        
-        std::string line(mtxPath);
-        //std::getline(is, line);
-        Rcpp::Rcout << "\n" <<  line << "\nTHIS IS TEST OUTPUT\n";
-        //is.close();
+    SECTION("Test TsvParser")
+    {
+        TsvParser p("../../inst/extdata/GIST.tsv");
+        REQUIRE(p.nRow() == 1363);
+        REQUIRE(p.nCol() == 9);
+
+        unsigned row = 0;
+        unsigned col = 0;
+        unsigned count = 0;
+        while (p.hasNext())
+        {
+            MatrixElement e(p.getNext());
+            REQUIRE(e.row() == row);
+            REQUIRE(e.col() == col);
+
+            ++count;
+            ++col;
+            if (col == 9) {
+                ++row;
+                col = 0;
+            }
+        }
+        REQUIRE(count == 12267);
+    }
+
+    SECTION("Test MtxParser")
+    {
+        MtxParser p("../../inst/extdata/GIST.mtx");
+        REQUIRE(p.nRow() == 1363);
+        REQUIRE(p.nCol() == 9);
+
+        unsigned row = 0;
+        unsigned col = 0;
+        unsigned count = 0;
+        while (p.hasNext())
+        {
+            MatrixElement e(p.getNext());
+            REQUIRE(e.row() == row);
+            REQUIRE(e.col() == col);
+
+            ++count;
+            ++row;
+            if (row == 1363) {
+                ++col;
+                row = 0;
+            }
+        }
+        REQUIRE(count == 12267);
     }
 }

@@ -187,7 +187,6 @@ TEST_CASE("Test Matrix.h")
         REQUIRE(sum == 20);
     }
 
-/*
     SECTION("Matrix Initialization from .mtx file")
     {
         std::vector<unsigned> whichRows;
@@ -200,6 +199,7 @@ TEST_CASE("Test Matrix.h")
         {
             whichCols.push_back(i);
         }
+
         MtxParser p1("../../inst/extdata/GIST.mtx");
         RowMatrix mtxRowMatrix(p1, true, whichRows);
         REQUIRE(mtxRowMatrix.nRow() == 1363);
@@ -322,7 +322,6 @@ TEST_CASE("Test Matrix.h")
         sum = (int) sum;
         REQUIRE(sum == 20);
     }
-*/
 
     SECTION("Matrix Initialization from .csv file")
     {
