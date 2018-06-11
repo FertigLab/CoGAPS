@@ -4202,14 +4202,14 @@ else
   :
 fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -Wall" >&5
-$as_echo_n "checking whether C++ compiler accepts -Wall... " >&6; }
-if ${ax_cv_check_cxxflags___Wall+:} false; then :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -Wextra" >&5
+$as_echo_n "checking whether C++ compiler accepts -Wextra... " >&6; }
+if ${ax_cv_check_cxxflags___Wextra+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
   ax_check_save_flags=$CXXFLAGS
-  CXXFLAGS="$CXXFLAGS  -Wall"
+  CXXFLAGS="$CXXFLAGS  -Wextra"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -4222,29 +4222,29 @@ main ()
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  ax_cv_check_cxxflags___Wall=yes
+  ax_cv_check_cxxflags___Wextra=yes
 else
-  ax_cv_check_cxxflags___Wall=no
+  ax_cv_check_cxxflags___Wextra=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CXXFLAGS=$ax_check_save_flags
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___Wall" >&5
-$as_echo "$ax_cv_check_cxxflags___Wall" >&6; }
-if test "x$ax_cv_check_cxxflags___Wall" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___Wextra" >&5
+$as_echo "$ax_cv_check_cxxflags___Wextra" >&6; }
+if test "x$ax_cv_check_cxxflags___Wextra" = xyes; then :
   GAPS_CXX_FLAGS+=" -Wextra "
 else
   :
 fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -Wall" >&5
-$as_echo_n "checking whether C++ compiler accepts -Wall... " >&6; }
-if ${ax_cv_check_cxxflags___Wall+:} false; then :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -Werror" >&5
+$as_echo_n "checking whether C++ compiler accepts -Werror... " >&6; }
+if ${ax_cv_check_cxxflags___Werror+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
   ax_check_save_flags=$CXXFLAGS
-  CXXFLAGS="$CXXFLAGS  -Wall"
+  CXXFLAGS="$CXXFLAGS  -Werror"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -4257,16 +4257,16 @@ main ()
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-  ax_cv_check_cxxflags___Wall=yes
+  ax_cv_check_cxxflags___Werror=yes
 else
-  ax_cv_check_cxxflags___Wall=no
+  ax_cv_check_cxxflags___Werror=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CXXFLAGS=$ax_check_save_flags
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___Wall" >&5
-$as_echo "$ax_cv_check_cxxflags___Wall" >&6; }
-if test "x$ax_cv_check_cxxflags___Wall" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___Werror" >&5
+$as_echo "$ax_cv_check_cxxflags___Werror" >&6; }
+if test "x$ax_cv_check_cxxflags___Werror" = xyes; then :
   GAPS_CXX_FLAGS+=" -Werror "
 else
   :
