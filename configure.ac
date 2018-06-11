@@ -45,8 +45,8 @@ if test "x$build_debug" = "xyes" ; then
     echo "Building Debug Version of CoGAPS"
     GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
     AX_CHECK_COMPILE_FLAG([-Wall], [GAPS_CXX_FLAGS+=" -Wall "])
-    AX_CHECK_COMPILE_FLAG([-Wall], [GAPS_CXX_FLAGS+=" -Wextra "])
-    AX_CHECK_COMPILE_FLAG([-Wall], [GAPS_CXX_FLAGS+=" -Werror "])
+    AX_CHECK_COMPILE_FLAG([-Wextra], [GAPS_CXX_FLAGS+=" -Wextra "])
+    AX_CHECK_COMPILE_FLAG([-Werror], [GAPS_CXX_FLAGS+=" -Werror "])
 fi
 
 # set compile flags for SIMD
