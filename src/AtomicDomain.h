@@ -30,7 +30,7 @@ public:
     float mass;
 
     Atom(uint64_t p, float m)
-        : pos(p), mass(m), leftNdx(0), rightNdx(0)
+        : leftNdx(0), rightNdx(0), pos(p), mass(m)
     {}
 
     bool operator==(const Atom &other) const
