@@ -46,7 +46,7 @@ public:
     unsigned mCoolIter;
     unsigned mSampleIter;
 
-    unsigned mNumPatterns;
+    //unsigned mNumPatterns;
     unsigned mNumOutputs;
     bool mPrintMessages;
 

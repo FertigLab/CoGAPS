@@ -639,6 +639,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_debug
+enable_warnings
 enable_simd
 '
       ac_precious_vars='build_alias
@@ -1272,6 +1273,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-debug          build debug version of CoGAPS
+  --enable-warnings       compile CoGAPS with warning messages
   --enable-simd           specify simd instruction set (sse, avx)
 
 Some influential environment variables:
@@ -2982,6 +2984,15 @@ else
 fi
 
 
+# Check if compiler warnings should be turned on
+# Check whether --enable-warnings was given.
+if test "${enable_warnings+set}" = set; then :
+  enableval=$enable_warnings; warnings=yes
+else
+  warnings=no
+fi
+
+
 # Check if specific version of SIMD instructions requested
 # Check whether --enable-simd was given.
 if test "${enable_simd+set}" = set; then :
@@ -4167,6 +4178,10 @@ echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compile
 if test "x$build_debug" = "xyes" ; then
     echo "Building Debug Version of CoGAPS"
     GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
+fi
+
+# set compile flags if warnings enabled
+if test "x$warnings" = "xyes" ; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -Wall" >&5
 $as_echo_n "checking whether C++ compiler accepts -Wall... " >&6; }
 if ${ax_cv_check_cxxflags___Wall+:} false; then :
@@ -4268,6 +4283,76 @@ fi
 $as_echo "$ax_cv_check_cxxflags___Werror" >&6; }
 if test "x$ax_cv_check_cxxflags___Werror" = xyes; then :
   GAPS_CXX_FLAGS+=" -Werror "
+else
+  :
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -Wno-unused-parameter" >&5
+$as_echo_n "checking whether C++ compiler accepts -Wno-unused-parameter... " >&6; }
+if ${ax_cv_check_cxxflags___Wno_unused_parameter+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ax_check_save_flags=$CXXFLAGS
+  CXXFLAGS="$CXXFLAGS  -Wno-unused-parameter"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ax_cv_check_cxxflags___Wno_unused_parameter=yes
+else
+  ax_cv_check_cxxflags___Wno_unused_parameter=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CXXFLAGS=$ax_check_save_flags
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___Wno_unused_parameter" >&5
+$as_echo "$ax_cv_check_cxxflags___Wno_unused_parameter" >&6; }
+if test "x$ax_cv_check_cxxflags___Wno_unused_parameter" = xyes; then :
+  GAPS_CXX_FLAGS+=" -Wno-unused-parameter "
+else
+  :
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts -Wno-unused-function" >&5
+$as_echo_n "checking whether C++ compiler accepts -Wno-unused-function... " >&6; }
+if ${ax_cv_check_cxxflags___Wno_unused_function+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ax_check_save_flags=$CXXFLAGS
+  CXXFLAGS="$CXXFLAGS  -Wno-unused-function"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ax_cv_check_cxxflags___Wno_unused_function=yes
+else
+  ax_cv_check_cxxflags___Wno_unused_function=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CXXFLAGS=$ax_check_save_flags
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags___Wno_unused_function" >&5
+$as_echo "$ax_cv_check_cxxflags___Wno_unused_function" >&6; }
+if test "x$ax_cv_check_cxxflags___Wno_unused_function" = xyes; then :
+  GAPS_CXX_FLAGS+=" -Wno-unused-function "
 else
   :
 fi

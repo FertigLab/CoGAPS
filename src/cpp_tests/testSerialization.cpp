@@ -1,12 +1,8 @@
 #include "catch.h"
 #include "../Archive.h"
-#include "../math/Matrix.h"
-#include "../AtomicSupport.h"
+#include "../data_structures/Matrix.h"
 #include "../GibbsSampler.h"
-#include "../InternalState.h"
 #include "../math/Random.h"
-
-#if 0
 
 TEST_CASE("Test Archive.h")
 {
@@ -124,39 +120,8 @@ TEST_CASE("Test Archive.h")
             }
         }
     }
-    
-    SECTION("Atomic Serialization")
-    {
-        MatrixChange dummy('A', 0, 0, 0.f);
-        AtomicSupport domain_read('A',100,100), domain_write('A',100,100);
-        std::vector<uint64_t> locations;
-        for (unsigned i = 0; i < 100; ++i)
-        {
-            AtomicProposal prop = domain_write.makeProposal();
-            locations.push_back(prop.pos1);
-            locations.push_back(prop.pos2);
-            domain_write.acceptProposal(prop, dummy);
-        }
-
-        Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
-        arWrite << domain_write;
-        arWrite.close();
-    
-        Archive arRead("test_ar.temp", ARCHIVE_READ);
-        arRead >> domain_read;
-        arRead.close();
-
-        REQUIRE(domain_read.alpha() == domain_write.alpha());
-        REQUIRE(domain_read.lambda() == domain_write.lambda());
-        REQUIRE(domain_read.numAtoms() == domain_write.numAtoms());
-    }
 
     SECTION("GibbsSampler Serialization")
-    {
-        //TODO
-    }
-
-    SECTION("GapsInternalState Serialization")
     {
         //TODO
     }
@@ -199,5 +164,3 @@ TEST_CASE("Test Archive.h")
         }
     }
 }
-
-#endif

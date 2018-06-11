@@ -33,6 +33,8 @@ public:
     void concat(const Vector& vec);
     void operator+=(const Vector &vec);
 
+    Vector operator-(Vector v) const;
+
     Vector operator*(float val) const;
     Vector operator/(float val) const;
 

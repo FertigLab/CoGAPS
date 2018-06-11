@@ -17,8 +17,7 @@ class AtomicDomain;
 // first index. AtomicDomain is responsible for managing this correctly.
 struct Atom
 {
-//private:    
-public: // TODO
+private:    
 
     friend class AtomicDomain;
     uint64_t leftNdx; // shift these up 1, 0 == no neighbor
@@ -42,6 +41,10 @@ public:
     {
         return !(pos == other.pos);
     }
+
+    // serialization
+    friend Archive& operator<<(Archive &ar, Atom &domain);
+    friend Archive& operator>>(Archive &ar, Atom &domain);
 };
 
 struct RawAtom
