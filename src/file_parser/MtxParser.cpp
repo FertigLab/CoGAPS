@@ -27,6 +27,11 @@ bool MtxParser::hasNext()
 MatrixElement MtxParser::getNext()
 {
     MatrixElement e(0, 0, 0.f);
-    mFile >> e.dim[0] >> e.dim[1] >> e.value;
+    unsigned buff;
+    mFile >> buff;
+    e.dim[0] = buff - 1;
+    mFile >> buff;
+    e.dim[1] = buff - 1;
+    mFile >> e.value;
     return e;
 }
