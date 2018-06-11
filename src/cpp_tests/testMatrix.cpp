@@ -49,4 +49,3 @@ TEST_CASE("Test Matrix.h")
         REQUIRE(cmS.nCol() == 9);
     }
 }
-

@@ -10,11 +10,9 @@
 
 // create "nSets" vectors where each vector contains a vector of indices in the
 // range [0,n)
-// see createGWCoGAPSSets.R - here we just sample indices, that function
-// samples gene names as well
 static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
 {
-    unsigned setSize = (int) n / nSets;
+    unsigned setSize = n / nSets;
     std::vector< std::vector<unsigned> > sampleIndices;
     std::vector<unsigned> toBeSampled;
     for (unsigned i = 1; i < n; ++i)
@@ -32,51 +30,6 @@ static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned n
     sampleIndices.push_back(toBeSampled);
 
     return sampleIndices;
-
-    /*
-    std::vector< std::vector<unsigned> > sampleIndices;
-    std::vector<unsigned> sampled;
-
-    for (unsigned i = 0; i < (n - 1) % nSets; ++i)
-    {
-        std::vector<unsigned> set;
-        for (unsigned i = 0; i < ((unsigned) (n - 1) / nSets) + 1; ++i)
-        {
-            while(true)
-            {
-                unsigned sample = gaps::random::uniform64(1, n);
-                if (find(sampled.begin(), sampled.end(), sample) == sampled.end())
-                {
-                    set.push_back(sample);
-                    sampled.push_back(sample);
-                    break;
-                }
-            }
-        }
-        sampleIndices.push_back(set);
-    }
-
-    for (unsigned i = (n - 1) % nSets; i < nSets; ++i)
-    {
-        std::vector<unsigned> set;
-        for (unsigned i = 0; i < (unsigned) (n - 1) / nSets; ++i)
-        {
-            while(true)
-            {
-                unsigned sample = gaps::random::uniform64(1, n);
-                if (find(sampled.begin(), sampled.end(), sample) == sampled.end())
-                {
-                    set.push_back(sample);
-                    sampled.push_back(sample);
-                    break;
-                }
-            }
-        }
-        sampleIndices.push_back(set);
-    }
-
-    return sampleIndices;
-    */
 }
 
 GapsRunner::GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
@@ -89,7 +42,7 @@ char whichMatrixFixed, const Rcpp::NumericMatrix &FP, unsigned nCores)
 mChiSqEquil(nEquil), mNumAAtomsEquil(nEquil), mNumPAtomsEquil(nEquil),
 mChiSqSample(nSample), mNumAAtomsSample(nSample), mNumPAtomsSample(nSample),
 mIterA(10), mIterP(10), mEquilIter(nEquil), mCoolIter(nCool),
-mSampleIter(nSample), mNumPatterns(nFactor), mNumOutputs(nOutputs),
+mSampleIter(nSample), mNumOutputs(nOutputs),
 mPrintMessages(messages), mCurrentIter(0), mPhase(GAPS_BURN), mSeed(seed),
 mCheckpointInterval(cptInterval), mCheckpointFile(cptFile),
 mNumUpdatesA(0), mNumUpdatesP(0),
@@ -111,18 +64,19 @@ mChiSqSample(nSample), mNumAAtomsSample(nSample), mNumPAtomsSample(nSample),
 mASampler(D, S, nFactor), mPSampler(D, S, nFactor),
 mStatistics(D.nrow(), D.ncol(), nFactor)
 {
-    //Archive ar(cptFile, ARCHIVE_READ);
-    //gaps::random::load(ar);
+    Archive ar(cptFile, ARCHIVE_READ);
+    gaps::random::load(ar);
 
-   //ar >> mChiSqEquil >> mNumAAtomsEquil >> mNumPAtomsEquil >> mChiSqSample
-   //    >> mNumAAtomsSample >> mNumPAtomsSample >> mIterA >> mIterP
-   //    >> mEquilIter >> mCoolIter >> mSampleIter >> mNumPatterns >> mNumOutputs
-   //    >> mPrintMessages >> mCurrentIter >> mPhase >> mSeed
-   //    >> mCheckpointInterval >> mCheckpointFile >> mNumUpdatesA
-   //    >> mNumUpdatesP >> mASampler >> mPSampler >> mStatistics;
+    ar >> mChiSqEquil >> mNumAAtomsEquil >> mNumPAtomsEquil >> mChiSqSample
+        >> mNumAAtomsSample >> mNumPAtomsSample >> mIterA >> mIterP
+        >> mEquilIter >> mCoolIter >> mSampleIter >> mNumOutputs
+        >> mPrintMessages >> mCurrentIter >> mPhase >> mSeed >> mLastCheckpoint
+        >> mCheckpointInterval >> mCheckpointFile >> mNumUpdatesA
+        >> mNumUpdatesP >> mASampler >> mPSampler >> mStatistics >> mNumCores
+        >> mStartTime;
 
-    //mASampler.sync(mPSampler);
-    //mPSampler.sync(mASampler);
+    mASampler.sync(mPSampler);
+    mPSampler.sync(mASampler);
 }
 
 // execute the steps of the algorithm, return list to R
@@ -224,7 +178,6 @@ void GapsRunner::runSampPhase()
     }
 }
 
-
 // sum coef * log(i) for i = 1 to total, fit coef from number of atoms
 // approximates sum of number of atoms
 // this should be proportional to total number of updates
@@ -316,29 +269,30 @@ void GapsRunner::displayStatus(const std::string &type, unsigned nIterTotal)
 void GapsRunner::createCheckpoint()
 {
     // create backup file
-    //std::rename(mCheckpointFile.c_str(), (mCheckpointFile + ".backup").c_str());
+    std::rename(mCheckpointFile.c_str(), (mCheckpointFile + ".backup").c_str());
 
     // record starting time
-    //bpt::ptime start = bpt_now();
+    bpt::ptime start = bpt_now();
 
     // save state to file, write magic number at beginning
-    //Archive ar(mCheckpointFile, ARCHIVE_WRITE);
-    //gaps::random::save(ar);
-    //ar << mChiSqEquil << mNumAAtomsEquil << mNumPAtomsEquil << mChiSqSample
-    //    << mNumAAtomsSample << mNumPAtomsSample << mIterA << mIterP
-    //    << mEquilIter << mCoolIter << mSampleIter << mNumPatterns << mNumOutputs
-    //    << mPrintMessages << mCurrentIter << mPhase << mSeed
-    //    << mCheckpointInterval << mNumUpdatesA << mNumUpdatesP << mASampler
-    //    << mPSampler << mStatistics;
-    //ar.close();
+    Archive ar(mCheckpointFile, ARCHIVE_WRITE);
+    gaps::random::save(ar);
+    ar << mChiSqEquil << mNumAAtomsEquil << mNumPAtomsEquil << mChiSqSample
+        << mNumAAtomsSample << mNumPAtomsSample << mIterA << mIterP
+        << mEquilIter << mCoolIter << mSampleIter << mNumOutputs
+        << mPrintMessages << mCurrentIter << mPhase << mSeed << mLastCheckpoint
+        << mCheckpointInterval << mCheckpointFile << mNumUpdatesA
+        << mNumUpdatesP << mASampler << mPSampler << mStatistics << mNumCores
+        << mStartTime;
+    ar.close();
 
     // display time it took to create checkpoint
-    //bpt::time_duration diff = bpt_now() - start;
-    //double elapsed = diff.total_milliseconds() / 1000.;
-    //Rprintf("created checkpoint in %.3f seconds\n", elapsed);
+    bpt::time_duration diff = bpt_now() - start;
+    double elapsed = diff.total_milliseconds() / 1000.;
+    Rprintf("created checkpoint in %.3f seconds\n", elapsed);
 
     // delete backup file
-    //std::remove((mCheckpointFile + ".backup").c_str());
+    std::remove((mCheckpointFile + ".backup").c_str());
 }
 
 void GapsRunner::makeCheckpointIfNeeded()

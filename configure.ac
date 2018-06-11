@@ -19,6 +19,10 @@ AC_PROG_CXX
 AC_ARG_ENABLE(debug, [AC_HELP_STRING([--enable-debug],
     [build debug version of CoGAPS])], [build_debug=yes], [build_debug=no])
 
+# Check if compiler warnings should be turned on
+AC_ARG_ENABLE(warnings, [AC_HELP_STRING([--enable-warnings],
+    [compile CoGAPS with warning messages])], [warnings=yes], [warnings=no])
+
 # Check if specific version of SIMD instructions requested
 AC_ARG_ENABLE(simd, [AC_HELP_STRING([--enable-simd],
     [specify simd instruction set (sse, avx)])],
@@ -44,9 +48,15 @@ echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compile
 if test "x$build_debug" = "xyes" ; then
     echo "Building Debug Version of CoGAPS"
     GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
+fi
+
+# set compile flags if warnings enabled
+if test "x$warnings" = "xyes" ; then
     AX_CHECK_COMPILE_FLAG([-Wall], [GAPS_CXX_FLAGS+=" -Wall "])
     AX_CHECK_COMPILE_FLAG([-Wextra], [GAPS_CXX_FLAGS+=" -Wextra "])
     AX_CHECK_COMPILE_FLAG([-Werror], [GAPS_CXX_FLAGS+=" -Werror "])
+    AX_CHECK_COMPILE_FLAG([-Wno-unused-parameter], [GAPS_CXX_FLAGS+=" -Wno-unused-parameter "])
+    AX_CHECK_COMPILE_FLAG([-Wno-unused-function], [GAPS_CXX_FLAGS+=" -Wno-unused-function "])
 fi
 
 # set compile flags for SIMD
