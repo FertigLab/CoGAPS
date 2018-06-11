@@ -96,7 +96,7 @@ inline void fill(Matrix &mat, Parser &p, bool partitionRows, std::vector<unsigne
 {
     unsigned rowSelect = partitionRows ? 0 : 1;
     unsigned colSelect = partitionRows ? 1 : 0;
-    
+
     while (p.hasNext())
     {
         MatrixElement e(p.getNext());
@@ -111,8 +111,8 @@ inline void fill(Matrix &mat, Parser &p, bool partitionRows, std::vector<unsigne
 template <class Parser>
 RowMatrix::RowMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
 {
-    unsigned mNumRows = whichIndices.size();
-    unsigned mNumCols = partitionRows ? p.nCol() : p.nRow();
+    mNumRows = whichIndices.size();
+    mNumCols = partitionRows ? p.nCol() : p.nRow();
 
     // allocate matrix
     for (unsigned i = 0; i < mNumRows; ++i)
@@ -127,8 +127,8 @@ RowMatrix::RowMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichI
 template <class Parser>
 ColMatrix::ColMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
 {
-    unsigned mNumRows = whichIndices.size();
-    unsigned mNumCols = partitionRows ? p.nCol() : p.nRow();
+    mNumRows = whichIndices.size();
+    mNumCols = partitionRows ? p.nCol() : p.nRow();
 
     // allocate matrix
     for (unsigned j = 0; j < mNumCols; ++j)
