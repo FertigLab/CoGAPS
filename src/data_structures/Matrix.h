@@ -103,7 +103,8 @@ inline void fill(Matrix &mat, Parser &p, bool partitionRows, std::vector<unsigne
         std::vector<unsigned>::iterator newRowIndex = std::find(whichIndices.begin(), whichIndices.end(), e[rowSelect]);
         if (newRowIndex != whichIndices.end())
         {
-            mat.operator()(std::distance(whichIndices.begin(), newRowIndex), e[colSelect]) = e.value;
+            unsigned row = std::distance(whichIndices.begin(), newRowIndex);
+            mat.operator()(row, e[colSelect]) = e.value;
         }
     }
 }
