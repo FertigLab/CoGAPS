@@ -36,6 +36,8 @@ private:
 
     std:vector<GapsRunner*> mRunners;
 
+    void runOneCycle(unsigned k);
+
 public:
 
     GapsDispatcher() : mNumPatterns(3), mMaxIterations(1000),
@@ -71,7 +73,7 @@ public:
     void loadData(const RowMatrix &D);
     void loadData(const std::string &pathToData);    
     
-    Rcpp::List run();
+    GapsReturn run();
 };
 
 #endif
