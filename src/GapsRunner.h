@@ -81,7 +81,10 @@ public:
 
 public:
 
-    // construct from parameters
+    // construct from file name
+    GapsRunner();
+
+    // construct from R object
     GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
         unsigned nFactor, unsigned nEquil, unsigned nCool, unsigned nSample,
         unsigned nOutputs, unsigned nSnapshots, float alphaA, float alphaP,
@@ -94,8 +97,22 @@ public:
         unsigned nFactor, unsigned nEquil, unsigned nSample,
         const std::string &cptFile);
 
-    // run all phases of algorithm
-    Rcpp::List run();
+    void run();
+    void halt();
+
+    void startSampling();
+
+    ColMatrix getAMatrix();
+    RowMatrix getPMatrix();
+
+    ColMatrix
+
+    void setPMatrix(const RowMatrix &Pmaster, float weight);
+
+    ColMatrix AMean() const;
+    ColMatrix AStd() const;
+    RowMatrix PMean() const;
+    RowMatrix PStd() const;
 };
 
 #endif // __COGAPS_GAPS_RUNNER_H__

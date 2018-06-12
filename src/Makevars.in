@@ -4,6 +4,7 @@ PKG_LIBS = @GAPS_LIBS@
 
 OBJECTS =   AtomicDomain.o \
             Cogaps.o \
+            GapsDispatcher.o \
             GapsRunner.o \
             GapsStatistics.o \
             GibbsSampler.o \

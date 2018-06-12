@@ -1,28 +1,56 @@
-#include "GapsRunner.h"
-#include "file_parser/MtxParser.h"
+#include "GapsDispatcher.h"
 #include "math/SIMD.h"
 
 #include <Rcpp.h>
 
-// [[Rcpp::export]]
-Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil,
-unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots,
-float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP,
-unsigned seed, bool messages, bool singleCellRNASeq, char whichMatrixFixed,
-const Rcpp::NumericMatrix &FP, unsigned checkpointInterval,
-const std::string &cptFile, unsigned pumpThreshold, unsigned nPumpSamples,
-unsigned nCores)
+template <class T>
+static Rcpp::List cogapsRun(T data, unsigned nPatterns,
+unsigned maxIter, unsigned outputFrequency, unsigned seed, float alphaA,
+float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool messages,
+bool singleCellRNASeq)
 {
-    // create internal state from parameters and run from there
-    GapsRunner runner(D, S, nFactor, nEquil, nEquilCool, nSample,
-        nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
-        messages, singleCellRNASeq, checkpointInterval, cptFile,
-        whichMatrixFixed, FP, nCores);
-    return runner.run();
+    GapsDispatcher dispatcher;
+
+    dispatcher.setNumPatterns(nPatterns);
+    dispatcher.setMaxIterations(maxIter);
+    dispatcher.setOutputFrequency(outputFrequency);
+    dispatcher.setSeed(seed);
+    
+    dispatcher.setAlpha(alphaA, alphaP);
+    dispatcher.setMaxGibbsMass(maxGibbsmassA, maxGibbsmassP);
+
+    dispatcher.printMessages(messages);
+    dispatcher.singleCellRNASeq(singleCellRNASeq);
+    
+    dispatcher.loadData(D);
+    dispatcher.useDefaultUncertainty(); 
+
+    return dispatcher.run();
 }
 
 // [[Rcpp::export]]
+Rcpp::List cogapsFromFile_cpp(const std::string &D, unsigned nPatterns,
+unsigned maxIter, unsigned outputFrequency, unsigned seed, float alphaA,
+float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool messages,
+bool singleCellRNASeq)
+{
+    return cogapsRun(D, nPatterns, maxIter, outputFrequency, seed,
+        alphaA, alphaP, maxGibbsmassA, maxGibbsMassP, messages,
+        singleCellRNASeq);
+}
+
+// [[Rcpp::export]]
+Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D, unsigned nPatterns,
+unsigned maxIter, unsigned outputFrequency, unsigned seed, float alphaA,
+float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool messages,
+bool singleCellRNASeq)
+{
+    return cogapsRun(RowMatrix(D), nPatterns, maxIter, outputFrequency, seed,
+        alphaA, alphaP, maxGibbsmassA, maxGibbsMassP, messages,
+        singleCellRNASeq);
+}
+
+/*
 Rcpp::List cogapsFromCheckpoint_cpp(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil,
 unsigned nSample, const std::string &fileName, const std::string &cptFile)
@@ -30,12 +58,7 @@ unsigned nSample, const std::string &fileName, const std::string &cptFile)
     GapsRunner runner(D, S, nFactor, nEquil, nSample, cptFile);
     return runner.run();
 }
-
-// [[Rcpp::export]]
-void cogapsFromFile_cpp(const std::string &D)
-{
-    // TODO implement
-}
+*/
 
 // used to convert defined macro values into strings
 #define STR_HELPER(x) #x
