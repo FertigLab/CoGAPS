@@ -41,12 +41,16 @@
 #' data(SimpSim)
 #' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 #' @export
-CoGAPS <- function(D, S, nFactor=7, nEquil=1000, nSample=1000, nOutputs=1000,
+CoGAPS <- function(D, S=NULL, nFactor=7, nEquil=1000, nSample=1000, nOutputs=1000,
 nSnapshots=0, alphaA=0.01, alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100,
 seed=-1, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed='N',
 fixedPatterns=matrix(0), checkpointInterval=0, 
 checkpointFile="gaps_checkpoint.out", nCores=1, ...)
 {
+    #returns a default uncertainty matrix of 0.1*D dataset if it's greater than 0.1
+    if(is.null(S))
+    S <- pmax(0.1*D, 0.1)
+    
     # get v2 arguments
     oldArgs <- list(...)
     if (!is.null(oldArgs$nOutR))
