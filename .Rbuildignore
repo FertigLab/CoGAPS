@@ -33,3 +33,4 @@
 ^src/cpp_tests/testMatrix.o
 ^src/cpp_tests/testProposalQueue.o
 ^src/cpp_tests/testRandom.o
+^src/cpp_tests/testSerialization.o
