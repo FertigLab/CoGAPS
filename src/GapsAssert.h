@@ -25,4 +25,10 @@
     #define GAPS_ASSERT_MSG(cond, msg) ((void)sizeof(cond))
 #endif 
 
+#define GAPS_ERROR(msg)                             \
+    do {                                            \
+        Rcpp::Rcout << "error: " << msg << '\n';    \
+        Rcpp::stop("CoGAPS aborted");                              \
+    } while(0)
+
 #endif
