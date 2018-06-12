@@ -1,12 +1,3 @@
----
-  title: "class-CoGAPSParams"
-author: "Hyejune Limb"
-date: "6/11/2018"
-output: html_document
----
-  
-  ```{r}
-
 CoGAPSParams <- setClass("CoGAPSParams", slots = c(
   nFactor = "numeric",
   nEquil = "numeric",
@@ -81,4 +72,3 @@ setValidity("CoGAPSParams",
             }
 )
 
-```
