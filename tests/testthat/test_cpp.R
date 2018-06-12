@@ -5,7 +5,9 @@ test_that("Catch unit tests pass",
     data(SimpSim)
     data(GIST)
 
-    gistMtxPath <- system.file("data/GIST.mtx", package="CoGAPS")
+    gistCsvPath <<- system.file("extdata/GIST.csv", package="CoGAPS")
+    gistTsvPath <<- system.file("extdata/GIST.tsv", package="CoGAPS")
+    gistMtxPath <<- system.file("extdata/GIST.mtx", package="CoGAPS")
 
     run_catch_unit_tests()
 })
