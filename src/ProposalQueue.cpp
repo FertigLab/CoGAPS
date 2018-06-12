@@ -37,7 +37,6 @@ void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
     }
 }
 
-// TODO efficiently allow clearing a range of proposals
 void ProposalQueue::clear()
 {
     mQueue.clear();
@@ -219,4 +218,18 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
     mUsedPositions.insert(a2.pos);
     --mMinAtoms;
     return true;
+}
+
+Archive& operator<<(Archive &ar, ProposalQueue &queue)
+{
+    ar << queue.mMinAtoms << queue.mMaxAtoms << queue.mNumBins
+        << queue.mDimensionSize << queue.mDomainSize << queue.mAlpha;
+    return ar;
+}
+
+Archive& operator>>(Archive &ar, ProposalQueue &queue)
+{
+    ar >> queue.mMinAtoms >> queue.mMaxAtoms >> queue.mNumBins
+        >> queue.mDimensionSize >> queue.mDomainSize >> queue.mAlpha;
+    return ar;
 }

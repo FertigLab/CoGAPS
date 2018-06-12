@@ -4,6 +4,12 @@
 #include "GibbsSampler.h"
 #include "data_structures/Matrix.h"
 
+enum PumpThreshold
+{
+    PUMP_UNIQUE=1,
+    PUMP_CUT=2
+};
+
 class GapsStatistics
 {
 private:
@@ -15,6 +21,10 @@ private:
     
     unsigned mStatUpdates;
     unsigned mNumPatterns;
+
+    ColMatrix mPumpMatrix;
+    PumpThreshold mPumpThreshold;
+    unsigned mPumpStatUpdates;
 
 public:
 
@@ -29,6 +39,13 @@ public:
 
     void update(const AmplitudeGibbsSampler &ASampler,
         const PatternGibbsSampler &PSampler);
+
+    void updatePump(const AmplitudeGibbsSampler &ASampler,
+        const PatternGibbsSampler &PSampler);
+
+    // serialization
+    friend Archive& operator<<(Archive &ar, GapsStatistics &stat);
+    friend Archive& operator>>(Archive &ar, GapsStatistics &stat);
 };
 
 #endif

@@ -42,7 +42,7 @@
 #' data(SimpSim)
 #' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 #' @export
-CoGAPS <- function(D, S, nFactor=7, nEquil=1000, nSample=1000, nOutputs=1000,
+CoGAPS <- function(D, S, nFactor=7, nEquil=250, nSample=250, nOutputs=1000,
 nSnapshots=0, alphaA=0.01, alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100,
 seed=-1, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed='N',
 fixedPatterns=matrix(0), checkpointInterval=0, 
@@ -114,6 +114,7 @@ checkpointFile="gaps_checkpoint.out", nCores=1, ...)
 }
 
 #' Restart CoGAPS from Checkpoint File
+#' @export
 #'
 #' @details loads the state of a previous CoGAPS run from a file and
 #'  continues the run from that point
@@ -122,6 +123,9 @@ checkpointFile="gaps_checkpoint.out", nCores=1, ...)
 #' @param path path to checkpoint file
 #' @param checkpointFile name for future checkpooints made
 #' @return list with A and P matrix estimates
+#' @examples
+#' data(SimpSim)
+#' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 CoGapsFromCheckpoint <- function(D, S, path, checkpointFile=NA)
 {
     if (is.na(checkpointFile))

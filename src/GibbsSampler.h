@@ -172,7 +172,6 @@ T* GibbsSampler<T, MatA, MatB>::impl()
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps, unsigned nCores)
 {
-    static unsigned count = 0;
     unsigned n = 0;
     while (n < nSteps)
     {

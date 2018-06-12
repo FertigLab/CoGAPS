@@ -45,12 +45,18 @@ static std::vector<RNGType>& rng()
 
 void gaps::random::save(Archive &ar)
 {
-    //ar << rng;
+    for (unsigned i = 0; i < rng().size(); ++i)
+    {
+        ar << rng().at(i);
+    }
 }
 
 void gaps::random::load(Archive &ar)
 {
-    //ar >> rng;
+    for (unsigned i = 0; i < rng().size(); ++i)
+    {
+        ar >> rng().at(i);
+    }
 }
 
 void gaps::random::setSeed(uint32_t seed)
@@ -89,7 +95,6 @@ float gaps::random::exponential(float lambda)
 
 float gaps::random::uniform()
 {
-    float ret = 0.f;
     boost::random::uniform_01<RNGType&> u01_dist(rng().at(omp_get_thread_num()));
     return u01_dist();
 }
