@@ -6,8 +6,10 @@
 #include "Vector.h"
 
 #include <Rcpp.h>
-#include <vector>
+
 #include <algorithm>
+#include <vector>
+
 
 // forward declarations
 class RowMatrix;
@@ -26,7 +28,7 @@ public:
     explicit RowMatrix(const Rcpp::NumericMatrix &rmat);
 
     template <class Parser>
-    RowMatrix(Parser &p, bool parseRows, std::vector<unsigned> whichIndices);
+    RowMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -63,7 +65,7 @@ public:
     explicit ColMatrix(const Rcpp::NumericMatrix &rmat);
 
     template <class Parser>
-    ColMatrix(Parser &p, bool parseRows, std::vector<unsigned> whichIndices);
+    ColMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}

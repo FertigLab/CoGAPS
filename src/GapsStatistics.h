@@ -28,12 +28,14 @@ private:
 
 public:
 
-    GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor);
+    GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor, PumpThreshold t=PUMP_CUT);
 
     Rcpp::NumericMatrix AMean() const;
     Rcpp::NumericMatrix AStd() const;
     Rcpp::NumericMatrix PMean() const;
     Rcpp::NumericMatrix PStd() const;
+    Rcpp::NumericMatrix pumpMatrix() const;
+    Rcpp::NumericMatrix meanPattern();
 
     float meanChiSq(const AmplitudeGibbsSampler &ASampler) const;
 
@@ -42,6 +44,8 @@ public:
 
     void updatePump(const AmplitudeGibbsSampler &ASampler,
         const PatternGibbsSampler &PSampler);
+
+    void patternMarkers(ColMatrix normedA, RowMatrix normedP, ColMatrix &statMatrix);
 
     // serialization
     friend Archive& operator<<(Archive &ar, GapsStatistics &stat);

@@ -108,20 +108,20 @@ public:
 #if defined( __GAPS_AVX512__ )
     float scalar()
     {
-        float* ra = reinterpret_cast<float*>(&mData);
+        float* ra = reinterpret_cast<float*>(&mData); // NOLINT
         return ra[0] + ra[1] + ra[2] + ra[3] + ra[4] + ra[5] + ra[6] + ra[7] +
             ra[8] + ra[9] + ra[10] + ra[11] + ra[12] + ra[13] + ra[14] + ra[15];
     }
 #elif defined( __GAPS_AVX__ )
     float scalar()
     {
-        float* ra = reinterpret_cast<float*>(&mData);
+        float* ra = reinterpret_cast<float*>(&mData); // NOLINT
         return ra[0] + ra[1] + ra[2] + ra[3] + ra[4] + ra[5] + ra[6] + ra[7];
     }
 #elif defined( __GAPS_SSE__ )
     float scalar()
     {
-        float* ra = reinterpret_cast<float*>(&mData);
+        float* ra = reinterpret_cast<float*>(&mData); // NOLINT
         return ra[0] + ra[1] + ra[2] + ra[3];
     }
 #else

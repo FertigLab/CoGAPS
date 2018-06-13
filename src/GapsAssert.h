@@ -27,8 +27,7 @@
 
 #define GAPS_ERROR(msg)                             \
     do {                                            \
-        Rcpp::Rcout << "error: " << msg << '\n';    \
-        Rcpp::stop("CoGAPS aborted");                              \
+        Rcpp::stop(msg);                            \
     } while(0)
 
 #endif

@@ -43,8 +43,8 @@ public:
     }
 
     // serialization
-    friend Archive& operator<<(Archive &ar, Atom &domain);
-    friend Archive& operator>>(Archive &ar, Atom &domain);
+    friend Archive& operator<<(Archive &ar, Atom &a);
+    friend Archive& operator>>(Archive &ar, Atom &a);
 };
 
 struct RawAtom

@@ -1,7 +1,7 @@
-#include "GapsRunner.h"
-#include "math/SIMD.h"
-#include "math/Random.h"
 #include "GapsAssert.h"
+#include "GapsRunner.h"
+#include "math/Random.h"
+#include "math/SIMD.h"
 #include <algorithm>
 
 #ifdef __GAPS_OPENMP__
@@ -34,10 +34,11 @@ static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned n
 
 GapsRunner::GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
 unsigned nFactor, unsigned nEquil, unsigned nCool, unsigned nSample,
-unsigned nOutputs, unsigned nSnapshots, float alphaA, float alphaP,
+unsigned nOutputs, float alphaA, float alphaP,
 float maxGibbsMassA, float maxGibbsMassP, uint32_t seed, bool messages,
 bool singleCellRNASeq, unsigned cptInterval, const std::string &cptFile,
-char whichMatrixFixed, const Rcpp::NumericMatrix &FP, unsigned nCores)
+char whichMatrixFixed, const Rcpp::NumericMatrix &FP, unsigned nCores,
+PumpThreshold pumpThreshold, unsigned nPumpSamples)
     :
 mChiSqEquil(nEquil), mNumAAtomsEquil(nEquil), mNumPAtomsEquil(nEquil),
 mChiSqSample(nSample), mNumAAtomsSample(nSample), mNumPAtomsSample(nSample),
@@ -46,11 +47,21 @@ mSampleIter(nSample), mNumOutputs(nOutputs),
 mPrintMessages(messages), mCurrentIter(0), mPhase(GAPS_BURN), mSeed(seed),
 mCheckpointInterval(cptInterval), mCheckpointFile(cptFile),
 mNumUpdatesA(0), mNumUpdatesP(0),
-mASampler(D, S, nFactor, alphaA, maxGibbsMassA),
-mPSampler(D, S, nFactor, alphaP, maxGibbsMassP),
-mStatistics(D.nrow(), D.ncol(), nFactor),
-mNumCores(nCores)
+mASampler(D, S, nFactor, alphaA, maxGibbsMassA, singleCellRNASeq),
+mPSampler(D, S, nFactor, alphaP, maxGibbsMassP, singleCellRNASeq),
+mStatistics(D.nrow(), D.ncol(), nFactor, pumpThreshold),
+mNumCores(nCores), mFixedMatrix(whichMatrixFixed),
+mNumPumpSamples(nPumpSamples)
 {
+    if (mFixedMatrix == 'A')
+    {
+        mASampler.setMatrix(ColMatrix(FP));
+    }
+    else if (mFixedMatrix == 'P')
+    {
+        mPSampler.setMatrix(RowMatrix(FP));
+    }
+
     mASampler.sync(mPSampler);
     mPSampler.sync(mASampler);
     gaps::random::setSeed(seed);
@@ -61,20 +72,21 @@ unsigned nFactor, unsigned nEquil, unsigned nSample, const std::string &cptFile)
     :
 mChiSqEquil(nEquil), mNumAAtomsEquil(nEquil), mNumPAtomsEquil(nEquil),
 mChiSqSample(nSample), mNumAAtomsSample(nSample), mNumPAtomsSample(nSample),
-mASampler(D, S, nFactor), mPSampler(D, S, nFactor),
+mCheckpointFile(cptFile), mASampler(D, S, nFactor), mPSampler(D, S, nFactor),
 mStatistics(D.nrow(), D.ncol(), nFactor)
 {
     Archive ar(cptFile, ARCHIVE_READ);
     gaps::random::load(ar);
+    unsigned storedPhase = 0;
 
     ar >> mChiSqEquil >> mNumAAtomsEquil >> mNumPAtomsEquil >> mChiSqSample
         >> mNumAAtomsSample >> mNumPAtomsSample >> mIterA >> mIterP
         >> mEquilIter >> mCoolIter >> mSampleIter >> mNumOutputs
-        >> mPrintMessages >> mCurrentIter >> mPhase >> mSeed >> mLastCheckpoint
-        >> mCheckpointInterval >> mCheckpointFile >> mNumUpdatesA
-        >> mNumUpdatesP >> mASampler >> mPSampler >> mStatistics >> mNumCores
-        >> mStartTime;
+        >> mPrintMessages >> mCurrentIter >> storedPhase >> mSeed
+        >> mCheckpointInterval >> mNumUpdatesA
+        >> mNumUpdatesP >> mASampler >> mPSampler >> mStatistics >> mNumCores;
 
+    mPhase = static_cast<GapsPhase>(storedPhase);
     mASampler.sync(mPSampler);
     mPSampler.sync(mASampler);
 }
@@ -135,7 +147,9 @@ Rcpp::List GapsRunner::run()
         Rcpp::Named("numUpdates") = mNumUpdatesA + mNumUpdatesP,
         Rcpp::Named("meanChi2") = meanChiSq,
         Rcpp::Named("AAvgQueue") = mASampler.getAvgQueue(),
-        Rcpp::Named("PAvgQueue") = mPSampler.getAvgQueue()
+        Rcpp::Named("PAvgQueue") = mPSampler.getAvgQueue(),
+        Rcpp::Named("pumpStats") = mStatistics.pumpMatrix(),
+        Rcpp::Named("meanPatternAssignment") = mStatistics.meanPattern()
     );
 }
 
@@ -173,6 +187,10 @@ void GapsRunner::runSampPhase()
         makeCheckpointIfNeeded();
         updateSampler();
         mStatistics.update(mASampler, mPSampler);
+        if (mNumPumpSamples != 0 && ((mCurrentIter + 1) % (mSampleIter / mNumPumpSamples)) == 0)
+        {
+            mStatistics.updatePump(mASampler, mPSampler);
+        }
         storeSamplerInfo(mNumAAtomsSample, mNumPAtomsSample, mChiSqSample);
         displayStatus("Samp: ", mSampleIter);
     }
@@ -215,13 +233,19 @@ double GapsRunner::estPercentComplete()
 
 void GapsRunner::updateSampler()
 {
-    mNumUpdatesA += mIterA;
-    mASampler.update(mIterA, mNumCores);
-    mPSampler.sync(mASampler);
+    if (mFixedMatrix != 'A')
+    {
+        mNumUpdatesA += mIterA;
+        mASampler.update(mIterA, mNumCores);
+        mPSampler.sync(mASampler);
+    }
 
-    mNumUpdatesP += mIterP;
-    mPSampler.update(mIterP, mNumCores);
-    mASampler.sync(mPSampler);
+    if (mFixedMatrix != 'P')
+    {
+        mNumUpdatesP += mIterP;
+        mPSampler.update(mIterP, mNumCores);
+        mASampler.sync(mPSampler);
+    }
 }
 
 void GapsRunner::storeSamplerInfo(Vector &atomsA, Vector &atomsP, Vector &chi2)
@@ -280,10 +304,10 @@ void GapsRunner::createCheckpoint()
     ar << mChiSqEquil << mNumAAtomsEquil << mNumPAtomsEquil << mChiSqSample
         << mNumAAtomsSample << mNumPAtomsSample << mIterA << mIterP
         << mEquilIter << mCoolIter << mSampleIter << mNumOutputs
-        << mPrintMessages << mCurrentIter << mPhase << mSeed << mLastCheckpoint
-        << mCheckpointInterval << mCheckpointFile << mNumUpdatesA
-        << mNumUpdatesP << mASampler << mPSampler << mStatistics << mNumCores
-        << mStartTime;
+        << mPrintMessages << mCurrentIter << static_cast<unsigned>(mPhase)
+        << mSeed 
+        << mCheckpointInterval << mNumUpdatesA
+        << mNumUpdatesP << mASampler << mPSampler << mStatistics << mNumCores;
     ar.close();
 
     // display time it took to create checkpoint
