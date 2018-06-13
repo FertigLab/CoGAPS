@@ -20,8 +20,8 @@
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 
-#include <stdint.h>
 #include <algorithm>
+#include <stdint.h>
 
 #ifdef __GAPS_OPENMP__
     #include <omp.h>

@@ -4,6 +4,8 @@
 #include <Rcpp.h>
 #include <fstream>
 
+#include <boost/random/mersenne_twister.hpp>
+
 // flags for opening an archive
 #define ARCHIVE_READ  std::ios::in
 #define ARCHIVE_WRITE (std::ios::out | std::ios::trunc)
@@ -41,11 +43,54 @@ public:
     void close() {mStream.close();}
 
     template<typename T>
+    friend Archive& writeToArchive(Archive &ar, T val)
+    {
+        ar.mStream.write(reinterpret_cast<char*>(&val), sizeof(T)); // NOLINT
+        return ar;
+    }
+
+    template<typename T>
+    friend Archive& readFromArchive(Archive &ar, T &val)
+    {
+        ar.mStream.read(reinterpret_cast<char*>(&val), sizeof(T)); // NOLINT
+        return ar;
+    }    
+
+    // explicitly define which types can be automatically written/read
+    // don't have C++11 and don't want to add another dependency on boost,
+    // so no template tricks
+
+    friend Archive& operator<<(Archive &ar, bool val)     { return writeToArchive(ar, val); }
+    friend Archive& operator<<(Archive &ar, int val)      { return writeToArchive(ar, val); }
+    friend Archive& operator<<(Archive &ar, unsigned val) { return writeToArchive(ar, val); }
+    friend Archive& operator<<(Archive &ar, uint64_t val) { return writeToArchive(ar, val); }
+    friend Archive& operator<<(Archive &ar, int64_t val)  { return writeToArchive(ar, val); }
+    friend Archive& operator<<(Archive &ar, float val)    { return writeToArchive(ar, val); }
+    friend Archive& operator<<(Archive &ar, double val)   { return writeToArchive(ar, val); }
+    friend Archive& operator<<(Archive &ar, boost::random::mt11213b val) { return writeToArchive(ar, val); }
+
+    friend Archive& operator>>(Archive &ar, bool &val)     { return readFromArchive(ar, val); }
+    friend Archive& operator>>(Archive &ar, int &val)      { return readFromArchive(ar, val); }
+    friend Archive& operator>>(Archive &ar, unsigned &val) { return readFromArchive(ar, val); }
+    friend Archive& operator>>(Archive &ar, uint64_t &val) { return readFromArchive(ar, val); }
+    friend Archive& operator>>(Archive &ar, int64_t &val)  { return readFromArchive(ar, val); }
+    friend Archive& operator>>(Archive &ar, float &val)    { return readFromArchive(ar, val); }
+    friend Archive& operator>>(Archive &ar, double &val)   { return readFromArchive(ar, val); }
+    friend Archive& operator>>(Archive &ar, boost::random::mt11213b &val) { return readFromArchive(ar, val); }
+
+/*
+    friend Archive& operator>>(Archive &ar, uint64_t &val)
+    {
+        return readPrimitiveFromArchive(ar, val);
+    }
+
+    template<typename T>
     friend Archive& operator<<(Archive &ar, T val)
     {
         ar.mStream.write(reinterpret_cast<char*>(&val), sizeof(T)); // NOLINT
         return ar;
     }
+
 
     template<typename T>
     friend Archive& operator>>(Archive &ar, T &val)
@@ -53,6 +98,7 @@ public:
         ar.mStream.read(reinterpret_cast<char*>(&val), sizeof(T)); // NOLINT
         return ar;
     }
+*/
 };
 
 #endif

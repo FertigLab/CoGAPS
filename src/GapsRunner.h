@@ -17,9 +17,9 @@ namespace bpt = boost::posix_time;
 
 enum GapsPhase
 {
-    GAPS_BURN,
-    GAPS_COOL,
-    GAPS_SAMP
+    GAPS_BURN=0,
+    GAPS_COOL=1,
+    GAPS_SAMP=2
 };
 
 // Manages all data and parameters for running CoGAPS; contains the high-level
@@ -69,6 +69,10 @@ public:
 
     bpt::ptime mStartTime;
 
+    char mFixedMatrix;
+
+    unsigned mNumPumpSamples;
+
     void createCheckpoint();
     void makeCheckpointIfNeeded();
     void displayStatus(const std::string &type, unsigned nIterTotal);
@@ -84,10 +88,11 @@ public:
     // construct from parameters
     GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
         unsigned nFactor, unsigned nEquil, unsigned nCool, unsigned nSample,
-        unsigned nOutputs, unsigned nSnapshots, float alphaA, float alphaP,
+        unsigned nOutputs, float alphaA, float alphaP,
         float maxGibbsMassA, float maxGibbsMassP, uint32_t seed, bool messages,
         bool singleCellRNASeq, unsigned cptInterval, const std::string &cptFile,
-        char whichMatrixFixed, const Rcpp::NumericMatrix &FP, unsigned nCores);
+        char whichMatrixFixed, const Rcpp::NumericMatrix &FP, unsigned nCores,
+        PumpThreshold pumpThreshold, unsigned nPumpSamples);
     
     // construct from checkpoint file
     GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,

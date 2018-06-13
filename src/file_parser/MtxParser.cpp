@@ -1,9 +1,11 @@
-#include "MtxParser.h"
 #include "MatrixElement.h"
+#include "MtxParser.h"
+
 #include "../GapsAssert.h"
 
-#include <sstream>
 #include <Rcpp.h>
+
+#include <sstream>
 
 MtxParser::MtxParser(const std::string &path) : mNumRows(0), mNumCols(0)
 {
