@@ -74,66 +74,20 @@ setValidity("CoGAPSParams",
 
 
 
-setGeneric('getParam', function(params, whichParam, ...)
-  {
-    standardGeneric('getParam')
-  }
-)
-
-setMethod('getParam', signature(params='GapsParams'), 
-          function(params, whichParam)
-          {
-            if (whichParam == "seed")
-             return(params@seed)
-            # check for all possible parameters just like the above two lines
-            if (whichParam == "nFactor")
-              return(params@nFactor)
-            if (whichParam == "nEquil")
-              return(params@nEquil)
-            if(whichParam == "nSample")
-              return(params@nSample)
-            if(whichParam == "nOutputs")
-              return(params@nOutputs)
-            if(whichParam == "nSnapshots")
-                return(params@nSnapshots)
-            if(whichParam == "alphaA")
-                return(params@alphaA)
-            if(whichParam == "alphaP")
-                return(params@alphaP)
-            if(whichParam == "maxGibbmassA")
-                return(params@maxGibbmassA)
-            if(whichParam == "maxGibbmassP")
-                return(params@maxGibbmassP)
-            if(whichParam == "messages")
-                return(params@messages)
-            if(whichParam == "singleCellRNASeq")
-                return(params@singleCellRNASeq)
-            if(whichParam == "whichMatrixFixed")
-                return(params@whichMatrixFixed)
-            if(whichParam == "fixedPatterns")
-                return(params@fixedPatterns)
-            if(whichParam == "checkpointInterval")
-                return(params@checkpointInterval)
-            if(whichParam == "checkpointFile")
-                return(params@checkpointFile)
-            if(whichParam == "nCores")
-                return(params@nCores)
-          }
-)
 
 
+#create a method to assign the value of parameter
 setGeneric('setParam', function(params, whichParam, ...)
 {
   standardGeneric('setParam')
 }
 )
 
-setMethod('setParam', signature(params='GapsParams'), 
+setMethod('setParam', signature(params='CoGAPSParams'), 
           function(params, whichParam)
           {
             if (whichParam == "seed")
               return(params@seed)
-            # check for all possible parameters just like the above two lines
             if (whichParam == "nFactor")
               return(params@nFactor)
             if (whichParam == "nEquil")
@@ -165,6 +119,36 @@ setMethod('setParam', signature(params='GapsParams'),
             if(whichParam == "checkpointFile")
               return(params@checkpointFile)
             if(whichParam == "nCores")
+              return(params@nCores)
+          }
+)
+
+#create a method to get the value of the parameter
+setGeneric('getParam', function(params)
+{
+  standardGeneric('getParam')
+}
+)
+
+setMethod('getParam', signature(params='CoGAPSParams'), 
+          function(params)
+          {
+              return(params@seed)
+              return(params@nFactor)
+              return(params@nEquil)
+              return(params@nSample)
+              return(params@nOutputs)
+              return(params@nSnapshots)
+              return(params@alphaA)
+              return(params@alphaP)
+              return(params@maxGibbmassA)
+              return(params@maxGibbmassP)
+              return(params@messages)
+              return(params@singleCellRNASeq)
+              return(params@whichMatrixFixed)
+              return(params@fixedPatterns)
+              return(params@checkpointInterval)
+              return(params@checkpointFile)
               return(params@nCores)
           }
 )
