@@ -42,7 +42,7 @@
 #' data(SimpSim)
 #' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 #' @export
-CoGAPS <- function(D, S, CoGAPSParams, ...)
+CoGAPS <- function(D, S, CoGAPSParams, GapsReturn ...)
 {
     # get v2 arguments
     oldArgs <- list(...)
