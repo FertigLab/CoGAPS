@@ -116,6 +116,12 @@ checkpointFile="gaps_checkpoint.out", nCores=1, ...)
     return(v2CoGAPS(result, ...)) # backwards compatible with v2
 }
 
+# take an object of type SingleCellExperiment and return a count matrix
+getRawCounts <- function(sce)
+{
+    # TODO implement this function
+}
+
 #' Restart CoGAPS from Checkpoint File
 #' @export
 #'
