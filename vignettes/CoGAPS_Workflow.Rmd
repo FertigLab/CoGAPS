@@ -1,6 +1,6 @@
 ---
 title: "CoGAPS Workflow Vignette"
-author: "Hyejune Limb"
+author: "Genevieve L. Stein-O'Brien"
 date: "`r doc_date()`"
 package: "`r pkg_ver('CoGAPS')`"
 bibliography: AppNote.bib
@@ -64,6 +64,8 @@ suppressMessages(library(CoGAPS))
 print(packageVersion("CoGAPS"))
 ```
 
+## Loading Sample Data
+Here we read in an example dataset: the `GIST` dataset from Ochs et al. (2009). contains gene expression data from gastrointestinal stromal tumor cell lines treated with Gleevec. The matrix contains 1363 genes by 9 samples of mean gene expression data. 
 ```{r}
 data("GIST")
 ```
@@ -84,18 +86,20 @@ for (nPatterns in patternRange)
 ```
 
 ## Selecting Number of Patterns
-Selecting the best value for nFactor (i.e. number of patterns) is the most difficult part of the analysis. The user may have different ways of selecting dimensionality. We are working on a more formal process for this. Here we show the simplest approach of plotting the error and selecting the least number of patterns that sufficiently reduce the error.
+Selecting the best value for nFactor (i.e. number of patterns) is the most difficult part of the analysis, as too many patterns are hard to analyze and too few do not show a comprehensive picture. 
+Here we show the simplest approach of selecting dimensionality by plotting the error and selecting the least number of patterns that sufficiently reduce the error.
 
 ```{r}
 chisq <- sapply(patternRange, function(i) cogapsResult[[i]]$meanChi2)
 plot(patternRange, chisq)
 ```
-
+In this example, we can see that 3 is the optimal number of patterns (nFactor), with significantly less error than with 2 patterns and quite comparable error with 4 patterns.
 ```{r}
 bestResult <- cogapsResult[[3]]
 ```
 
 ## Plotting outputs
+Once we select the number of patterns we are happy with, we can plot the patterns with their associated amplitudes.
 ```{r}
 # pdf("GIST_example.pdf") # uncomment to save file to pdf
 plotP(bestResult$Pmean)
@@ -118,7 +122,7 @@ $$ calcCoGAPSStat(Amean, Asd, GStoGenes, numPerm=500) $$
 
 ```{r}
 data("SimpSim")
-calcCoGAPSStat(SimpSim.result$Amean, SimpSim.result$Asd, GStoGenes=GSets, numPerm=500)
+stat <- calcCoGAPSStat(SimpSim.result$Amean, SimpSim.result$Asd, GStoGenes=GSets, numPerm=500)
 ```
 
 ## computeGeneGSProb
