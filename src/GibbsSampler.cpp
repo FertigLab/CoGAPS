@@ -2,12 +2,10 @@
 #include "math/SIMD.h"
 
 AmplitudeGibbsSampler::AmplitudeGibbsSampler(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
-    : GibbsSampler(D, S, D.nrow(), nFactor, alpha)
+const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass,
+bool singleCell)
+    : GibbsSampler(D, S, D.nrow(), nFactor, alpha, maxGibbsMass, singleCell, nFactor)
 {
-    float meanD = gaps::algo::mean(mDMatrix);
-    mLambda = alpha * std::sqrt(nFactor / meanD);
-    mMaxGibbsMass = maxGibbsMass / mLambda;
     mQueue.setDimensionSize(mBinSize, mNumCols);
 }
 
@@ -99,12 +97,10 @@ unsigned r2, unsigned c2, float m2)
 }
 
 PatternGibbsSampler::PatternGibbsSampler(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
-    : GibbsSampler(D, S, nFactor, D.ncol(), alpha)
+const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass,
+bool singleCell)
+    : GibbsSampler(D, S, nFactor, D.ncol(), alpha, maxGibbsMass, singleCell, nFactor)
 {
-    float meanD = gaps::algo::mean(mDMatrix);
-    mLambda = alpha * std::sqrt(nFactor / meanD);
-    mMaxGibbsMass = maxGibbsMass / mLambda;
     mQueue.setDimensionSize(mBinSize , mNumRows);
 }
 
