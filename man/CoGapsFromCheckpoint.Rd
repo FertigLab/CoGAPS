@@ -4,16 +4,20 @@
 \alias{CoGapsFromCheckpoint}
 \title{Restart CoGAPS from Checkpoint File}
 \usage{
-CoGapsFromCheckpoint(D, S, path, checkpointFile = NA)
+CoGapsFromCheckpoint(D, S, nFactor, nIter, checkpointFile)
 }
 \arguments{
 \item{D}{data matrix}
 
 \item{S}{uncertainty matrix}
 
-\item{path}{path to checkpoint file}
+\item{nFactor}{number of patterns}
 
-\item{checkpointFile}{name for future checkpooints made}
+\item{nIter}{number of iterations}
+
+\item{checkpointFile}{path to checkpoint file}
+
+\item{path}{path to checkpoint file}
 }
 \value{
 list with A and P matrix estimates
@@ -24,5 +28,9 @@ Restart CoGAPS from Checkpoint File
 \details{
 loads the state of a previous CoGAPS run from a file and
  continues the run from that point
+}
+\examples{
+data(SimpSim)
+result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 }
 

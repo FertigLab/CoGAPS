@@ -37,12 +37,12 @@ void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
     }
 }
 
-// TODO efficiently allow clearing a range of proposals
 void ProposalQueue::clear()
 {
     mQueue.clear();
     mUsedPositions.clear();
     mUsedIndices.clear();
+    GAPS_ASSERT(mMinAtoms == mMaxAtoms);
 }
 
 unsigned ProposalQueue::size() const
@@ -137,7 +137,6 @@ bool ProposalQueue::birth(AtomicDomain &domain)
     mUsedIndices.insert(pos / mDimensionSize);
     mUsedPositions.insert(pos);
     domain.insert(pos, 0.f);
-    ++mMinAtoms; // TODO could be rejected
     ++mMaxAtoms;
     return true;
 }
@@ -219,4 +218,18 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
     mUsedPositions.insert(a2.pos);
     --mMinAtoms;
     return true;
+}
+
+Archive& operator<<(Archive &ar, ProposalQueue &queue)
+{
+    ar << queue.mMinAtoms << queue.mMaxAtoms << queue.mNumBins
+        << queue.mDimensionSize << queue.mDomainSize << queue.mAlpha;
+    return ar;
+}
+
+Archive& operator>>(Archive &ar, ProposalQueue &queue)
+{
+    ar >> queue.mMinAtoms >> queue.mMaxAtoms >> queue.mNumBins
+        >> queue.mDimensionSize >> queue.mDomainSize >> queue.mAlpha;
+    return ar;
 }

@@ -198,3 +198,41 @@ void AtomicDomain::updateMass(uint64_t pos, float newMass)
 {
     mAtoms[mAtomPositions.at(pos)].mass = newMass; // TODO at is C++11
 }
+
+Archive& operator<<(Archive &ar, Atom &a)
+{
+    ar << a.leftNdx << a.rightNdx << a.pos << a.mass;
+    return ar;
+}
+
+Archive& operator>>(Archive &ar, Atom &a)
+{
+    ar >> a.leftNdx >> a.rightNdx >> a.pos >> a.mass;
+    return ar;
+}
+
+Archive& operator<<(Archive &ar, AtomicDomain &domain)
+{
+    unsigned nAtoms = domain.mAtoms.size();
+    ar << nAtoms << domain.mDomainSize;
+
+    for (unsigned i = 0; i < nAtoms; ++i)
+    {
+        ar << domain.mAtoms[i];
+    }
+    return ar;
+}
+
+Archive& operator>>(Archive &ar, AtomicDomain &domain)
+{
+    unsigned nAtoms = 0;
+    ar >> nAtoms >> domain.mDomainSize;
+
+    Atom a(0, 0.f);
+    for (unsigned i = 0; i < nAtoms; ++i)
+    {
+        ar >> a;
+        domain.insert(a.pos, a.mass);
+    }
+    return ar;
+}

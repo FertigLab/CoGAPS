@@ -21,6 +21,15 @@ void Vector::operator+=(const Vector &vec)
     }
 }
 
+Vector Vector::operator-(Vector v) const
+{
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        v[i] = mValues[i] - v[i];
+    }
+    return v;
+}
+
 Vector Vector::operator*(float val) const
 {
     Vector vec(*this);
