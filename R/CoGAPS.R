@@ -20,7 +20,6 @@
 #' @param nEquil number of iterations for burn-in
 #' @param nSample number of iterations for sampling
 #' @param nOutputs how often to print status into R by iterations
-#' @param nSnapshots the number of individual samples to capture
 #' @param alphaA sparsity parameter for A domain
 #' @param alphaP sparsity parameter for P domain
 #' @param maxGibbmassA limit truncated normal to max size
@@ -34,6 +33,7 @@
 #' @param fixedPatterns matrix of fixed values in either A or P matrix
 #' @param checkpointInterval time (in seconds) between creating a checkpoint
 #' @param checkpointFile name of the checkpoint file
+#' @param nCores number of cpu cores to run in parallel over
 #' @param ... keeps backwards compatibility with arguments from older versions
 #' @return list with A and P matrix estimates
 #' @importFrom methods new
@@ -102,7 +102,7 @@ checkpointFile="gaps_checkpoint.out", nCores=1, ...)
 
     # run algorithm with call to C++ code
     result <- cogaps_cpp(D, S, nFactor, nEquil, nEquil/10, nSample, nOutputs,
-        nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
+        alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
         singleCellRNASeq, whichMatrixFixed, fixedPatterns, checkpointInterval,
         checkpointFile, which(thresholdEnum==pumpThreshold), nPumpSamples,
         nCores)
@@ -117,23 +117,32 @@ checkpointFile="gaps_checkpoint.out", nCores=1, ...)
 }
 
 #' Restart CoGAPS from Checkpoint File
+#' @export
 #'
 #' @details loads the state of a previous CoGAPS run from a file and
 #'  continues the run from that point
 #' @param D data matrix
 #' @param S uncertainty matrix
+#' @param nFactor number of patterns
+#' @param nIter number of iterations
+#' @param checkpointFile path to checkpoint file
 #' @param path path to checkpoint file
-#' @param checkpointFile name for future checkpooints made
 #' @return list with A and P matrix estimates
-CoGapsFromCheckpoint <- function(D, S, path, checkpointFile=NA)
+#' @examples
+#' data(SimpSim)
+#' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
+CoGapsFromCheckpoint <- function(D, S, nFactor, nIter, checkpointFile)
 {
-    if (is.na(checkpointFile))
-        checkpointFile <- path
-    cogapsFromCheckpoint_cpp(D, S, path, checkpointFile)
+    cogapsFromCheckpoint_cpp(D, S, nFactor, nIter, nIter, checkpointFile)
 }
 
 #' CoGAPS with file input for matrix
-#' @export
+#'
+#' @param D file path for data matrix
+#' @return list with A and P matrix estimates
+#' @examples
+#'  file <- system.file("extdata/GIST.mtx", package="CoGAPS")
+#'  CoGAPSFromFile(file)
 CoGAPSFromFile <- function(D)
 {
     cogapsFromFile_cpp(D)

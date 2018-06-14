@@ -9,24 +9,79 @@
 
 TEST_CASE("Test Parsers")
 {
-    SECTION("Test RowMatrix")
-    {    
-        //CsvParser csv("data/GIST.csv");
-        //TsvParser tsv("data/GIST.tsv");
-        //MtxParser mtx("data/GIST.mtx");
+    Rcpp::Environment env = Rcpp::Environment::global_env();
+    std::string csvPath = Rcpp::as<std::string>(env["gistCsvPath"]);
+    std::string tsvPath = Rcpp::as<std::string>(env["gistTsvPath"]);
+    std::string mtxPath = Rcpp::as<std::string>(env["gistMtxPath"]);
 
-        //Rcpp::Environment pkgEnv;
-        //pkgEnv = Rcpp::Environment::namespace_env("CoGAPS");
-        //std::string mtxPath = pkgEnv.find("gistMtxPath");
+    SECTION("Test CsvParser")
+    {
+        CsvParser p(csvPath);
+        REQUIRE(p.nRow() == 1363);
+        REQUIRE(p.nCol() == 9);
 
-        Rcpp::Function systemFile("system.file");
-        std::string mtxPath = Rcpp::as<std::string>(systemFile("data/GIST.mtx", "CoGAPS"));
+        unsigned row = 0;
+        unsigned col = 0;
+        unsigned count = 0;
+        while (p.hasNext())
+        {
+            MatrixElement e(p.getNext());
+            REQUIRE(e.row() == row);
+            REQUIRE(e.col() == col);
 
-        //std::ifstream is("/mnt/c/Users/tsherma4/Documents/CoGAPS/Repo/data/GIST.mtx");
-        
-        std::string line(mtxPath);
-        //std::getline(is, line);
-        std::cout << "\n" <<  line << "\nTHIS IS TEST OUTPUT\n";
-        //is.close();
+            ++count;
+            ++col;
+            if (col == 9) {
+                ++row;
+                col = 0;
+            }
+        }
+        REQUIRE(count == 12267);
+    }
+
+    SECTION("Test TsvParser")
+    {
+        TsvParser p(tsvPath);
+        REQUIRE(p.nRow() == 1363);
+        REQUIRE(p.nCol() == 9);
+
+        unsigned row = 0;
+        unsigned col = 0;
+        unsigned count = 0;
+        while (p.hasNext())
+        {
+            MatrixElement e(p.getNext());
+            REQUIRE(e.row() == row);
+            REQUIRE(e.col() == col);
+
+            ++count;
+            ++col;
+            if (col == 9) {
+                ++row;
+                col = 0;
+            }
+        }
+        REQUIRE(count == 12267);
+    }
+
+    SECTION("Test MtxParser")
+    {
+        MtxParser p(mtxPath);
+        REQUIRE(p.nRow() == 1363);
+        REQUIRE(p.nCol() == 9);
+
+        unsigned count = 0;
+        while (p.hasNext())
+        {
+            MatrixElement e(p.getNext());
+
+            REQUIRE(e.row() < 1363);
+            REQUIRE(e.row() >= 0);
+            REQUIRE(e.col() < 9);
+            REQUIRE(e.col() >= 0);
+
+            ++count;
+        }
+        REQUIRE(count == 12267);
     }
 }

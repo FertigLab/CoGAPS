@@ -7,7 +7,7 @@
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil,
-unsigned nEquilCool, unsigned nSample, unsigned nOutputs, unsigned nSnapshots,
+unsigned nEquilCool, unsigned nSample, unsigned nOutputs,
 float alphaA, float alphaP, float maxGibbmassA, float maxGibbmassP,
 unsigned seed, bool messages, bool singleCellRNASeq, char whichMatrixFixed,
 const Rcpp::NumericMatrix &FP, unsigned checkpointInterval,
@@ -16,23 +16,24 @@ unsigned nCores)
 {
     // create internal state from parameters and run from there
     GapsRunner runner(D, S, nFactor, nEquil, nEquilCool, nSample,
-        nOutputs, nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
+        nOutputs, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed,
         messages, singleCellRNASeq, checkpointInterval, cptFile,
-        whichMatrixFixed, FP, nCores);
+        whichMatrixFixed, FP, nCores, static_cast<PumpThreshold>(pumpThreshold),
+        nPumpSamples);
     return runner.run();
 }
 
 // [[Rcpp::export]]
 Rcpp::List cogapsFromCheckpoint_cpp(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil,
-unsigned nSample, const std::string &fileName, const std::string &cptFile)
+unsigned nSample, const std::string &cptFile)
 {   
     GapsRunner runner(D, S, nFactor, nEquil, nSample, cptFile);
     return runner.run();
 }
 
 // [[Rcpp::export]]
-void cogapsFromFile_cpp(const std::string &D)
+void cogapsFromFile_cpp(const std::string &D) // NOLINT
 {
     // TODO implement
 }
