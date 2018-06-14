@@ -1,4 +1,5 @@
 #include "CsvParser.h"
+#include "../GapsAssert.h"
 #include "../math/Algorithms.h"
 
 #include <fstream>
@@ -15,12 +16,20 @@ mCurrentRow(0), mCurrentCol(0)
     // read first entry (blank)
     std::string line;
     std::getline(file_str, line, ',');
+    if (file_str.eof() || file_str.fail())
+    {
+        GAPS_ERROR("Invalid CSV file");
+    }
 
     // get col size
     std::size_t pos;
     do
     {
         std::getline(file_str, line, ',');
+        if (file_str.eof() || file_str.fail())
+        {
+            GAPS_ERROR("Invalid CSV file");
+        }
         ++mNumCols;
     }
     while ((pos = line.find('\n')) == std::string::npos);
@@ -50,6 +59,7 @@ mCurrentRow(0), mCurrentCol(0)
 
 bool CsvParser::hasNext()
 {
+    mFile >> std::ws;
     return mFile.peek() != EOF;
 }
 
