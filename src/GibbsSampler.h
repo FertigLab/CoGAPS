@@ -21,6 +21,15 @@ class GapsStatistics;
 /************************** GIBBS SAMPLER INTERFACE **************************/
 
 template <class T, class MatA, class MatB>
+class GibbsSampler;
+
+template <class T, class MatA, class MatB>
+Archive& operator<<(Archive &ar, GibbsSampler<T, MatA, MatB> &samp);
+
+template <class T, class MatA, class MatB>
+Archive& operator>>(Archive &ar, GibbsSampler<T, MatA, MatB> &samp);
+
+template <class T, class MatA, class MatB>
 class GibbsSampler
 {
 private:
@@ -74,7 +83,8 @@ protected:
 public:
 
     GibbsSampler(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
-        unsigned nrow, unsigned ncol, float alpha);
+        unsigned nrow, unsigned ncol, float alpha, float maxGibbsMass,
+        bool singleCell, unsigned nFactor);
 
     void update(unsigned nSteps, unsigned nCores);
     void setAnnealingTemp(float temp);
@@ -82,6 +92,12 @@ public:
     
     float chi2() const;
     uint64_t nAtoms() const;
+
+    void setMatrix(const MatA &mat);
+
+    // serialization
+    friend Archive& operator<< <T, MatA, MatB> (Archive &ar, GibbsSampler &samp);
+    friend Archive& operator>> <T, MatA, MatB> (Archive &ar, GibbsSampler &samp);
 };
 
 class AmplitudeGibbsSampler : public GibbsSampler<AmplitudeGibbsSampler, ColMatrix, RowMatrix>
@@ -101,7 +117,7 @@ public:
 
     AmplitudeGibbsSampler(const Rcpp::NumericMatrix &D,
         const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha=0.f,
-        float maxGibbsMass=0.f);
+        float maxGibbsMass=0.f, bool singleCell=false);
 
     void sync(PatternGibbsSampler &sampler);
 
@@ -131,7 +147,7 @@ public:
 
     PatternGibbsSampler(const Rcpp::NumericMatrix &D,
         const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha=0.f,
-        float maxGibbsMass=0.f);
+        float maxGibbsMass=0.f, bool singleCell=false);
 
     void sync(AmplitudeGibbsSampler &sampler);
 
@@ -148,7 +164,8 @@ public:
 
 template <class T, class MatA, class MatB>
 GibbsSampler<T, MatA, MatB>::GibbsSampler(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nrow, unsigned ncol, float alpha)
+const Rcpp::NumericMatrix &S, unsigned nrow, unsigned ncol, float alpha,
+float maxGibbsMass, bool singleCell, unsigned nFactor)
     :
 mMatrix(nrow, ncol), mOtherMatrix(NULL), mDMatrix(D), mSMatrix(S),
 mAPMatrix(D.nrow(), D.ncol()), mQueue(nrow * ncol, alpha), mLambda(0.f),
@@ -161,6 +178,11 @@ mAvgQueue(0.f), mNumQueues(0.f)
         % static_cast<uint64_t>(mNumRows * mNumCols);
     mQueue.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
     mDomain.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
+
+    float meanD = singleCell ? gaps::algo::nonZeroMean(mDMatrix) :
+        gaps::algo::mean(mDMatrix);
+    mLambda = alpha * std::sqrt(nFactor / meanD);
+    mMaxGibbsMass = maxGibbsMass / mLambda;
 }
 
 template <class T, class MatA, class MatB>
@@ -172,7 +194,6 @@ T* GibbsSampler<T, MatA, MatB>::impl()
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps, unsigned nCores)
 {
-    static unsigned count = 0;
     unsigned n = 0;
     while (n < nSteps)
     {
@@ -460,6 +481,30 @@ template <class T, class MatA, class MatB>
 uint64_t GibbsSampler<T, MatA, MatB>::nAtoms() const
 {   
     return mDomain.size();
+}
+
+template <class T, class MatA, class MatB>
+void GibbsSampler<T, MatA, MatB>::setMatrix(const MatA &mat)
+{   
+    mMatrix = mat;
+}
+
+template <class T, class MatA, class MatB>
+Archive& operator<<(Archive &ar, GibbsSampler<T, MatA, MatB> &samp)
+{
+    ar << samp.mMatrix << samp.mAPMatrix << samp.mQueue << samp.mDomain << samp.mLambda << samp.mMaxGibbsMass
+        << samp.mAnnealingTemp << samp.mNumRows << samp.mNumCols << samp.mBinSize << samp.mAvgQueue
+        << samp.mNumQueues;
+    return ar;
+}
+
+template <class T, class MatA, class MatB>
+Archive& operator>>(Archive &ar, GibbsSampler<T, MatA, MatB> &samp)
+{
+    ar >> samp.mMatrix >> samp.mAPMatrix >> samp.mQueue >> samp.mDomain >> samp.mLambda >> samp.mMaxGibbsMass
+        >> samp.mAnnealingTemp >> samp.mNumRows >> samp.mNumCols >> samp.mBinSize >> samp.mAvgQueue
+        >> samp.mNumQueues;
+    return ar;
 }
 
 #endif
