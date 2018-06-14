@@ -6,7 +6,10 @@
 #include "Vector.h"
 
 #include <Rcpp.h>
+
+#include <algorithm>
 #include <vector>
+
 
 // forward declarations
 class RowMatrix;
@@ -15,7 +18,7 @@ class ColMatrix;
 class RowMatrix
 {
 private:
-    
+
     std::vector<Vector> mRows;
     unsigned mNumRows, mNumCols;
 
@@ -23,9 +26,9 @@ public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
     explicit RowMatrix(const Rcpp::NumericMatrix &rmat);
-    
+
     template <class Parser>
-    RowMatrix(Parser &p, unsigned nrow, unsigned ncol);
+    RowMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -62,7 +65,7 @@ public:
     explicit ColMatrix(const Rcpp::NumericMatrix &rmat);
 
     template <class Parser>
-    ColMatrix(Parser &p, unsigned nrow, unsigned ncol);
+    ColMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -87,42 +90,57 @@ public:
 };
 
 
-// construct RowMatrix from file
-template <class Parser>
-RowMatrix::RowMatrix(Parser &p, unsigned nrow, unsigned ncol) : mNumRows(nrow),
-mNumCols(ncol)
+// if partitionRows is false, partition columns instead
+// rows of matrix should be partition dimension, i.e. need to transpose
+// is partitionRows is false
+template <class Matrix, class Parser>
+inline void fill(Matrix &mat, Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
 {
+    unsigned rowSelect = partitionRows ? 0 : 1;
+    unsigned colSelect = partitionRows ? 1 : 0;
+
+    while (p.hasNext())
+    {
+        MatrixElement e(p.getNext());
+        std::vector<unsigned>::iterator newRowIndex = std::find(whichIndices.begin(), whichIndices.end(), e[rowSelect]);
+        if (newRowIndex != whichIndices.end())
+        {
+            unsigned row = std::distance(whichIndices.begin(), newRowIndex);
+            mat.operator()(row, e[colSelect]) = e.value;
+        }
+    }
+}
+
+template <class Parser>
+RowMatrix::RowMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
+{
+    mNumRows = whichIndices.size();
+    mNumCols = partitionRows ? p.nCol() : p.nRow();
+
     // allocate matrix
     for (unsigned i = 0; i < mNumRows; ++i)
     {
         mRows.push_back(Vector(mNumCols));
     }
 
-    // populate matrix
-    while (p.hasNext())
-    {
-        MatrixElement e(p.getNext());
-        this->operator()(e.row, e.col) = e.value;
-    }
+    // fill in matrix
+    fill(*this, p, partitionRows, whichIndices);
 }
 
-// construct ColMatrix from file
 template <class Parser>
-ColMatrix::ColMatrix(Parser &p, unsigned nrow, unsigned ncol) : mNumRows(nrow),
-mNumCols(ncol)
+ColMatrix::ColMatrix(Parser &p, bool partitionRows, std::vector<unsigned> whichIndices)
 {
+    mNumRows = whichIndices.size();
+    mNumCols = partitionRows ? p.nCol() : p.nRow();
+
     // allocate matrix
     for (unsigned j = 0; j < mNumCols; ++j)
     {
         mCols.push_back(Vector(mNumRows));
     }
 
-    // populate matrix
-    while (p.hasNext())
-    {
-        MatrixElement e(p.getNext());
-        this->operator()(e.row, e.col) = e.value;
-    }
+    // fill in matrix
+    fill(*this, p, partitionRows, whichIndices);
 }
 
 #endif

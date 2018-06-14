@@ -1,4 +1,6 @@
-PKG_CXXFLAGS = -DNSIMD -DGAPS_NDEBUG -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0
+PKG_CPPFLAGS =  -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0  
+PKG_CXXFLAGS =  -fopenmp  -msse4.2 
+PKG_LIBS =  -fopenmp 
 
 OBJECTS =   AtomicDomain.o \
             Cogaps.o \
@@ -16,12 +18,10 @@ OBJECTS =   AtomicDomain.o \
             math/Algorithms.o \
             math/Random.o \
             cpp_tests/testAlgorithms.o \
-            cpp_tests/testAtomicDomain.o \
             cpp_tests/testEfficientSets.o \
             cpp_tests/testFileParsers.o \
             cpp_tests/testGapsRunner.o \
-            cpp_tests/testGibbsSampler.o \
             cpp_tests/testMatrix.o \
-            cpp_tests/testProposalQueue.o \
-            cpp_tests/testRandom.o
+            cpp_tests/testRandom.o \
+            cpp_tests/testSerialization.o
 

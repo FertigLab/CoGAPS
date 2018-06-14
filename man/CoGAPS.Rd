@@ -4,12 +4,12 @@
 \alias{CoGAPS}
 \title{CoGAPS Matrix Factorization Algorithm}
 \usage{
-CoGAPS(D, S, nFactor = 7, nEquil = 1000, nSample = 1000,
-  nOutputs = 1000, nSnapshots = 0, alphaA = 0.01, alphaP = 0.01,
-  maxGibbmassA = 100, maxGibbmassP = 100, seed = -1, messages = TRUE,
-  singleCellRNASeq = FALSE, whichMatrixFixed = "N",
-  fixedPatterns = matrix(0), checkpointInterval = 0,
-  checkpointFile = "gaps_checkpoint.out", nCores = 1, ...)
+CoGAPS(D, S, nFactor = 7, nEquil = 250, nSample = 250, nOutputs = 1000,
+  alphaA = 0.01, alphaP = 0.01, maxGibbmassA = 100, maxGibbmassP = 100,
+  seed = -1, messages = TRUE, singleCellRNASeq = FALSE,
+  whichMatrixFixed = "N", fixedPatterns = matrix(0),
+  checkpointInterval = 0, checkpointFile = "gaps_checkpoint.out",
+  nCores = 1, ...)
 }
 \arguments{
 \item{D}{data matrix}
@@ -24,8 +24,6 @@ greater than or equal to the number of rows of FP}
 \item{nSample}{number of iterations for sampling}
 
 \item{nOutputs}{how often to print status into R by iterations}
-
-\item{nSnapshots}{the number of individual samples to capture}
 
 \item{alphaA}{sparsity parameter for A domain}
 
@@ -50,6 +48,8 @@ the fixed patterns}
 \item{checkpointInterval}{time (in seconds) between creating a checkpoint}
 
 \item{checkpointFile}{name of the checkpoint file}
+
+\item{nCores}{number of cpu cores to run in parallel over}
 
 \item{...}{keeps backwards compatibility with arguments from older versions}
 }
