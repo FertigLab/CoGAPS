@@ -25,4 +25,9 @@
     #define GAPS_ASSERT_MSG(cond, msg) ((void)sizeof(cond))
 #endif 
 
+#define GAPS_ERROR(msg)                             \
+    do {                                            \
+        Rcpp::stop(msg);                            \
+    } while(0)
+
 #endif
