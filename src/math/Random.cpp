@@ -20,6 +20,7 @@
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
 
+#include <algorithm>
 #include <stdint.h>
 
 #ifdef __GAPS_OPENMP__
@@ -44,12 +45,18 @@ static std::vector<RNGType>& rng()
 
 void gaps::random::save(Archive &ar)
 {
-    //ar << rng;
+    for (unsigned i = 0; i < rng().size(); ++i)
+    {
+        ar << rng().at(i);
+    }
 }
 
 void gaps::random::load(Archive &ar)
 {
-    //ar >> rng;
+    for (unsigned i = 0; i < rng().size(); ++i)
+    {
+        ar >> rng().at(i);
+    }
 }
 
 void gaps::random::setSeed(uint32_t seed)
@@ -88,7 +95,6 @@ float gaps::random::exponential(float lambda)
 
 float gaps::random::uniform()
 {
-    float ret = 0.f;
     boost::random::uniform_01<RNGType&> u01_dist(rng().at(omp_get_thread_num()));
     return u01_dist();
 }
@@ -178,4 +184,37 @@ float gaps::random::inverseGammaSample(float a, float b, float mean, float sd)
         u = gaps::random::uniform(a, b);
     }
     return gaps::random::q_gamma(u, mean, sd);
+}
+
+std::vector<unsigned> sample(std::vector<unsigned> &elements, unsigned n) {
+    std::vector<unsigned> sampleVect;
+    for (unsigned i = 0; i < n; ++i)
+    {
+        GAPS_ASSERT(n <= elements.size());
+        unsigned sampleIndex = gaps::random::uniform64(0, elements.size());
+        sampleVect.push_back(elements.at(sampleIndex));
+
+        elements[sampleIndex] = elements.back();
+        elements.pop_back();
+    }
+    return sampleVect;
+
+    /*
+    std::vector<unsigned> sampleVect;
+    std::vector<unsigned> sampledIndices;
+    for (unsigned i = 0; i < n; ++i)
+    {
+        while(true)
+        {
+            unsigned sampleIndex = gaps::random::uniform64(0, elements.size());
+            if (find(sampledIndices.begin(), sampledIndices.end(), sampleIndex) == sampledIndices.end())
+            {
+                sampleVect.push_back(elements.at(sampleIndex));
+                sampledIndices.push_back(sampleIndex);
+                break;
+            }
+        }
+    }
+    return sampleVect;
+    */
 }

@@ -1,20 +1,8 @@
 #ifndef __COGAPS_SIMD_H__
 #define __COGAPS_SIMD_H__
 
-#if (defined(_M_AMD64) || defined(_M_X64) || defined(__amd64)) && ! defined(__x86_64__)
-    #define __x86_64__ 1
-#endif
-
-#ifndef _OPENMP
-    #pragma message("Compiler does not support OpenMP")
-#else
-    #define __GAPS_OPENMP__
-#endif
-
 #ifndef SSE_INSTR_SET
-    #ifndef SIMD
-        #define SSE_INSTR_SET 0
-    #elif defined ( __AVX2__ )
+    #if defined ( __AVX2__ )
         #define SSE_INSTR_SET 8
     #elif defined ( __AVX__ )
         #define SSE_INSTR_SET 7
@@ -23,7 +11,6 @@
     #elif defined ( __SSE4_1__ )
         #define SSE_INSTR_SET 5
     #else
-        #error "SIMD not supported"
         #define SSE_INSTR_SET 0
     #endif
 #endif
@@ -31,12 +18,9 @@
 #if SSE_INSTR_SET == 7
     #define __GAPS_AVX__
     #include <immintrin.h>
-#elif SSE_INSTR_SET == 6
+#elif SSE_INSTR_SET == 6 || SSE_INSTR_SET == 5
     #define __GAPS_SSE__
     #include <nmmintrin.h>
-#elif SSE_INSTR_SET == 5
-    #define __GAPS_SSE__
-    #include <smmintrin.h>
 #endif
 
 namespace gaps
@@ -49,6 +33,7 @@ namespace simd
     const unsigned index_increment = 8;
     #define SET_SCALAR(x) _mm256_set1_ps(x)
     #define LOAD_PACKED(x) _mm256_load_ps(x)
+    #define STORE_PACKED(p,x) _mm256_store_ps(p,x)
     #define ADD_PACKED(a,b) _mm256_add_ps(a,b)
     #define SUB_PACKED(a,b) _mm256_sub_ps(a,b)
     #define MUL_PACKED(a,b) _mm256_mul_ps(a,b)
@@ -107,7 +92,7 @@ public:
 
     packedFloat() : mData() {}
     explicit packedFloat(float val) : mData(SET_SCALAR(val)) {}
-#if defined( __GAPS_SSE__ ) || defined( __GAPS_AVX__ )
+#if defined( __GAPS_SSE__ ) || defined( __GAPS_AVX__ ) || defined( __GAPS_AVX512__ )
     explicit packedFloat(gaps_packed_t val) : mData(val) {}
 #endif
 
@@ -120,16 +105,23 @@ public:
     void load(const float *ptr) { mData = LOAD_PACKED(ptr); }
     void store(float *ptr) { STORE_PACKED(ptr, mData); }
 
-#if defined( __GAPS_AVX__ )
+#if defined( __GAPS_AVX512__ )
     float scalar()
     {
-        float* ra = reinterpret_cast<float*>(&mData);
+        float* ra = reinterpret_cast<float*>(&mData); // NOLINT
+        return ra[0] + ra[1] + ra[2] + ra[3] + ra[4] + ra[5] + ra[6] + ra[7] +
+            ra[8] + ra[9] + ra[10] + ra[11] + ra[12] + ra[13] + ra[14] + ra[15];
+    }
+#elif defined( __GAPS_AVX__ )
+    float scalar()
+    {
+        float* ra = reinterpret_cast<float*>(&mData); // NOLINT
         return ra[0] + ra[1] + ra[2] + ra[3] + ra[4] + ra[5] + ra[6] + ra[7];
     }
 #elif defined( __GAPS_SSE__ )
     float scalar()
     {
-        float* ra = reinterpret_cast<float*>(&mData);
+        float* ra = reinterpret_cast<float*>(&mData); // NOLINT
         return ra[0] + ra[1] + ra[2] + ra[3];
     }
 #else
@@ -142,6 +134,14 @@ public:
 
 } // namespace simd
 } // namespace gaps
+
+#if (defined(_M_AMD64) || defined(_M_X64) || defined(__amd64)) && ! defined(__x86_64__)
+    #define __x86_64__ 1
+#endif
+
+#ifdef _OPENMP
+    #define __GAPS_OPENMP__
+#endif
 
 #endif // __COGAPS_SIMD_H__
 
