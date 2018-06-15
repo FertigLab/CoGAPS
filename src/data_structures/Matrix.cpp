@@ -27,7 +27,7 @@ static void copyMatrix(MatA &dest, const MatB &source)
         }
     }
 }
-    
+
 /****************************** ROW MATRIX *****************************/
 
 RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
@@ -91,6 +91,65 @@ Archive& operator>>(Archive &ar, RowMatrix &mat)
     return ar;
 }
 
+void RowMatrix::writeToCsv(const std::string &path)
+{
+    std::ofstream outputFile;
+    outputFile.open(path.c_str());
+    outputFile << "\"\"";
+    for (unsigned i = 0; i < mNumCols; ++i)
+    {
+        outputFile << ",\"\"";
+    }
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        outputFile << "\"\"";
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            outputFile << "," << mRows[i][j];
+        }
+        outputFile << "\n";
+    }
+    outputFile.close();
+}
+
+void RowMatrix::writeToTsv(const std::string &path)
+{
+    std::ofstream outputFile;
+    outputFile.open(path.c_str());
+    outputFile << "\"\"";
+    for (unsigned i = 0; i < mNumCols; ++i)
+    {
+        outputFile << "\t\"\"";
+    }
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        outputFile << "\"\"";
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            outputFile << "\t" << mRows[i][j];
+        }
+        outputFile << "\n";
+    }
+    outputFile.close();
+}
+
+void RowMatrix::writeToMtx(const std::string &path)
+{
+    std::ofstream outputFile;
+    outputFile.open(path.c_str());
+    outputFile << "%%\n";
+    outputFile << mNumRows << " " << mNumCols << " " << (mNumRows * mNumCols);
+    outputFile << "\n";
+    for (unsigned j = 1; j <= mNumCols; ++j)
+    {
+        for (unsigned i = 1; i <= mNumRows; ++i)
+        {
+            outputFile << i << " " << j << " " << mRows[i][j] << "\n";
+        }
+    }
+    outputFile.close();
+}
+
 /**************************** COLUMN MATRIX ****************************/
 
 ColMatrix::ColMatrix(unsigned nrow, unsigned ncol)
@@ -152,4 +211,63 @@ Archive& operator>>(Archive &ar, ColMatrix &mat)
         ar >> mat.mCols[j];
     }
     return ar;
+}
+
+void ColMatrix::writeToCsv(const std::string &path)
+{
+    std::ofstream outputFile;
+    outputFile.open(path.c_str());
+    outputFile << "\"\"";
+    for (unsigned i = 0; i < mNumCols; ++i)
+    {
+        outputFile << ",\"\"";
+    }
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        outputFile << "\"\"";
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            outputFile << "," << mCols[j][i];
+        }
+        outputFile << "\n";
+    }
+    outputFile.close();
+}
+
+void ColMatrix::writeToTsv(const std::string &path)
+{
+    std::ofstream outputFile;
+    outputFile.open(path.c_str());
+    outputFile << "\"\"";
+    for (unsigned i = 0; i < mNumCols; ++i)
+    {
+        outputFile << "\t\"\"";
+    }
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        outputFile << "\"\"";
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            outputFile << "\t" << mCols[j][i];
+        }
+        outputFile << "\n";
+    }
+    outputFile.close();
+}
+
+void ColMatrix::writeToMtx(const std::string &path)
+{
+    std::ofstream outputFile;
+    outputFile.open(path.c_str());
+    outputFile << "%%\n";
+    outputFile << mNumRows << " " << mNumCols << " " << (mNumRows * mNumCols);
+    outputFile << "\n";
+    for (unsigned j = 1; j <= mNumCols; ++j)
+    {
+        for (unsigned i = 1; i <= mNumRows; ++i)
+        {
+            outputFile << i << " " << j << " " << mCols[j][i] << "\n";
+        }
+    }
+    outputFile.close();
 }
