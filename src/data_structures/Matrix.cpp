@@ -98,11 +98,11 @@ void RowMatrix::writeToCsv(const std::string &path)
     outputFile << "\"\"";
     for (unsigned i = 0; i < mNumCols; ++i)
     {
-        outputFile << ",\"\"";
+        outputFile << ",\"Col" << i << "\"";
     }
     for (unsigned i = 0; i < mNumRows; ++i)
     {
-        outputFile << "\"\"";
+        outputFile << "\"Row" << i << "\"";
         for (unsigned j = 0; j < mNumCols; ++j)
         {
             outputFile << "," << mRows[i][j];
@@ -119,11 +119,11 @@ void RowMatrix::writeToTsv(const std::string &path)
     outputFile << "\"\"";
     for (unsigned i = 0; i < mNumCols; ++i)
     {
-        outputFile << "\t\"\"";
+        outputFile << "\t\"Col" << i << "\"";
     }
     for (unsigned i = 0; i < mNumRows; ++i)
     {
-        outputFile << "\"\"";
+        outputFile << "\"Row" << i << "\"";
         for (unsigned j = 0; j < mNumCols; ++j)
         {
             outputFile << "\t" << mRows[i][j];
@@ -220,11 +220,11 @@ void ColMatrix::writeToCsv(const std::string &path)
     outputFile << "\"\"";
     for (unsigned i = 0; i < mNumCols; ++i)
     {
-        outputFile << ",\"\"";
+        outputFile << ",\"Col" << i << "\"";
     }
     for (unsigned i = 0; i < mNumRows; ++i)
     {
-        outputFile << "\"\"";
+        outputFile << "\"Row" << i << "\"";
         for (unsigned j = 0; j < mNumCols; ++j)
         {
             outputFile << "," << mCols[j][i];
@@ -241,11 +241,11 @@ void ColMatrix::writeToTsv(const std::string &path)
     outputFile << "\"\"";
     for (unsigned i = 0; i < mNumCols; ++i)
     {
-        outputFile << "\t\"\"";
+        outputFile << "\t\"Col" << i << "\"";
     }
     for (unsigned i = 0; i < mNumRows; ++i)
     {
-        outputFile << "\"\"";
+        outputFile << "\"Row" << i << "\"";
         for (unsigned j = 0; j < mNumCols; ++j)
         {
             outputFile << "\t" << mCols[j][i];
