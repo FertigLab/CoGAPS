@@ -50,6 +50,10 @@ public:
 
     friend Archive& operator<<(Archive &ar, RowMatrix &mat);
     friend Archive& operator>>(Archive &ar, RowMatrix &mat);
+
+    void writeToCsv(const std::string &path);
+    void writeToTsv(const std::string &path);
+    void writeToMtx(const std::string &path);
 };
 
 class ColMatrix
@@ -87,6 +91,10 @@ public:
 
     friend Archive& operator<<(Archive &ar, ColMatrix &mat);
     friend Archive& operator>>(Archive &ar, ColMatrix &mat);
+
+    void writeToCsv(const std::string &path);
+    void writeToTsv(const std::string &path);
+    void writeToMtx(const std::string &path);
 };
 
 
