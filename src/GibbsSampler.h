@@ -9,8 +9,6 @@
 #include "math/Algorithms.h"
 #include "math/Random.h"
 
-#include <Rcpp.h>
-
 #include <algorithm>
 
 // forward declarations needed for friend classes
@@ -73,8 +71,24 @@ protected:
 
 public:
 
-    GibbsSampler(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
-        unsigned nrow, unsigned ncol, float alpha);
+    GibbsSampler(const RowMatrix &D, const RowMatrix &S, unsigned nrow,
+        unsigned ncol, float alpha);
+
+    GibbsSampler(FileParser &p, unsigned nrow, unsigned ncol, float alpha)
+        :
+    mMatrix(nrow, ncol), mOtherMatrix(NULL), mDMatrix(p),
+    mSMatrix(mDMatrix * 0.1f), mAPMatrix(p.nRow(), p.nCol()),
+    mQueue(nrow * ncol, alpha), mLambda(0.f), mMaxGibbsMass(0.f),
+    mAnnealingTemp(0.f), mNumRows(nrow), mNumCols(ncol), mAvgQueue(0.f),
+    mNumQueues(0.f)
+    {
+        mBinSize = std::numeric_limits<uint64_t>::max()
+            / static_cast<uint64_t>(mNumRows * mNumCols);
+        uint64_t remain = std::numeric_limits<uint64_t>::max()
+            % static_cast<uint64_t>(mNumRows * mNumCols);
+        mQueue.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
+        mDomain.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
+    }
 
     void update(unsigned nSteps, unsigned nCores);
     void setAnnealingTemp(float temp);
@@ -82,6 +96,13 @@ public:
     
     float chi2() const;
     uint64_t nAtoms() const;
+
+    void setUncertainty(const RowMatrix &S) { mSMatrix = MatB(S); }
+
+    void setUncertainty(FileParser &p)
+    {
+        mSMatrix = MatB(p);
+    }
 };
 
 class AmplitudeGibbsSampler : public GibbsSampler<AmplitudeGibbsSampler, ColMatrix, RowMatrix>
@@ -99,9 +120,19 @@ private:
 
 public:
 
-    AmplitudeGibbsSampler(const Rcpp::NumericMatrix &D,
-        const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha=0.f,
-        float maxGibbsMass=0.f);
+    AmplitudeGibbsSampler(const RowMatrix &D, const RowMatrix &S,
+        unsigned nFactor, float alpha=0.f, float maxGibbsMass=0.f);
+
+    AmplitudeGibbsSampler(FileParser &p, unsigned nFactor, float alpha=0.f,
+    float maxGibbsMass=0.f)
+        :
+    GibbsSampler(p, p.nRow(), nFactor, alpha)
+    {
+        float meanD = gaps::algo::mean(mDMatrix);
+        mLambda = alpha * std::sqrt(nFactor / meanD);
+        mMaxGibbsMass = maxGibbsMass / mLambda;
+        mQueue.setDimensionSize(mBinSize, mNumCols);
+    }
 
     void sync(PatternGibbsSampler &sampler);
 
@@ -129,9 +160,19 @@ private:
 
 public:
 
-    PatternGibbsSampler(const Rcpp::NumericMatrix &D,
-        const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha=0.f,
-        float maxGibbsMass=0.f);
+    PatternGibbsSampler(const RowMatrix &D, const RowMatrix &S,
+        unsigned nFactor, float alpha=0.f, float maxGibbsMass=0.f);
+
+    PatternGibbsSampler(FileParser &p, unsigned nFactor, float alpha=0.f,
+    float maxGibbsMass=0.f)
+        :
+    GibbsSampler(p, nFactor, p.nCol(), alpha)
+    {
+        float meanD = gaps::algo::mean(mDMatrix);
+        mLambda = alpha * std::sqrt(nFactor / meanD);
+        mMaxGibbsMass = maxGibbsMass / mLambda;
+        mQueue.setDimensionSize(mBinSize , mNumRows);
+    }
 
     void sync(AmplitudeGibbsSampler &sampler);
 
@@ -147,11 +188,11 @@ public:
 /******************* IMPLEMENTATION OF TEMPLATED FUNCTIONS *******************/
 
 template <class T, class MatA, class MatB>
-GibbsSampler<T, MatA, MatB>::GibbsSampler(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nrow, unsigned ncol, float alpha)
+GibbsSampler<T, MatA, MatB>::GibbsSampler(const RowMatrix &D,
+const RowMatrix &S, unsigned nrow, unsigned ncol, float alpha)
     :
 mMatrix(nrow, ncol), mOtherMatrix(NULL), mDMatrix(D), mSMatrix(S),
-mAPMatrix(D.nrow(), D.ncol()), mQueue(nrow * ncol, alpha), mLambda(0.f),
+mAPMatrix(D.nRow(), D.nCol()), mQueue(nrow * ncol, alpha), mLambda(0.f),
 mMaxGibbsMass(0.f), mAnnealingTemp(0.f), mNumRows(nrow), mNumCols(ncol),
 mAvgQueue(0.f), mNumQueues(0.f)
 {

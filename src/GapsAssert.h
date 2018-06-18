@@ -1,12 +1,17 @@
 #ifndef __COGAPS_GAPS_ASSERT_H__
 #define __COGAPS_GAPS_ASSERT_H__
 
+#include "GapsPrint.h"
+#ifdef __GAPS_R_BUILD__
+#include <Rcpp.h>
+#endif
+
 #ifdef GAPS_DEBUG
     #define GAPS_ASSERT(cond)                                           \
         do {                                                            \
             if (!(cond))                                                \
             {                                                           \
-                Rprintf("assert failed %s %d\n", __FILE__, __LINE__);   \
+                gaps_printf("assert failed %s %d\n", __FILE__, __LINE__);   \
                 std::exit(0);                                           \
             }                                                           \
         } while(0)
@@ -15,7 +20,7 @@
         do {                                                            \
             if (!(cond))                                                \
             {                                                           \
-                Rcpp::Rcout << "assert failed " << __FILE__ << " " <<   \
+                gaps_cout << "assert failed " << __FILE__ << " " <<   \
                     __LINE__ << " , " << msg << '\n';                   \
                 std::exit(0);                                           \
             }                                                           \
@@ -25,10 +30,14 @@
     #define GAPS_ASSERT_MSG(cond, msg) ((void)sizeof(cond))
 #endif 
 
+#ifdef __GAPS_R_BUILD__
+#define gaps_stop Rcpp::stop
+#endif
+
 #define GAPS_ERROR(msg)                             \
     do {                                            \
-        Rcpp::Rcout << "error: " << msg << '\n';    \
-        Rcpp::stop("CoGAPS aborted");                              \
+        gaps_cout << "error: " << msg << '\n';    \
+        gaps_stop("CoGAPS aborted");                              \
     } while(0)
 
 #endif

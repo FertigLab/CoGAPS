@@ -1,12 +1,13 @@
 #ifndef __COGAPS_TSV_PARSER_H__
 #define __COGAPS_TSV_PARSER_H__
 
+#include "FileParser.h"
 #include "MatrixElement.h"
 
 #include <fstream>
 #include <string>
 
-class TsvParser
+class TsvParser : public AbstractFileParser
 {
 private:
 
@@ -21,6 +22,7 @@ private:
 public:
 
     explicit TsvParser(const std::string &path);
+    ~TsvParser() {}
 
     unsigned nRow() const { return mNumRows; }
     unsigned nCol() const { return mNumCols; }

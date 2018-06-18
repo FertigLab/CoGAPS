@@ -2,58 +2,86 @@
 
 #include <string>
 
+#ifdef __GAPS_OPENMP__
+    #include <omp.h>
+#endif
+
+static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
+{
+    unsigned setSize = n / nSets;
+    std::vector< std::vector<unsigned> > sampleIndices;
+    std::vector<unsigned> toBeSampled;
+    for (unsigned i = 0; i < n; ++i)
+    {
+        toBeSampled.push_back(i);
+    }
+
+    for (unsigned i = 0; i < (nSets - 1); ++i)
+    {
+        sampleIndices.push_back(gaps::random::sample(toBeSampled, setSize));
+    }
+
+    GAPS_ASSERT(!toBeSampled.empty());
+
+    sampleIndices.push_back(toBeSampled);
+    return sampleIndices;
+}
+
 void GapsDispatcher::runOneCycle(unsigned k)
 {
-
+    GAPS_ASSERT(mDataIsLoaded);
+    mRunners[0]->run(k, mOutputFrequency, mPrintMessages, mNumCoresPerSet);
 }
 
-Rcpp::List GapsDispatcher::run()
+GapsResult GapsDispatcher::run()
 {
-    unsigned iterPerCycle = mMaxIterations / 10;
-    unsigned whichCycle = 1;
-    while (whichCycle <= 10)
+    #ifdef __GAPS_OPENMP__
+    if (mPrintMessages)
     {
-        runOneCycle(iterPerCycle);
-        RowMatrix pMaster = syncPatterns();
-        broadcastPatterns(pMaster, static_cast<float>(whichCycle) / 10.f);
-        whichCycle++;
+        unsigned availableCores = omp_get_max_threads();
+        gaps_printf("Running on %d out of %d available cores\n",
+            mNumCoresPerSet, availableCores);
     }
-    
-    for (unsigned i = 0; i < mRunners.size(); ++i)
-    {
-        mRunners[i]->enableSampling();
-        mRunners[i]->fixPatternMatrix();
-    }
+    #endif
 
+    GapsResult result(mRunners[0]->nRow(), mRunners[0]->nCol());
+    GAPS_ASSERT(mDataIsLoaded);
+    runOneCycle(mMaxIterations);
+    mRunners[0]->startSampling();
     runOneCycle(mMaxIterations);
 
-    // stitch together matrices
+    result.Amean = mRunners[0]->AMean();
+    result.Pmean = mRunners[0]->PMean();
+    result.Asd = mRunners[0]->AStd();
+    result.Psd = mRunners[0]->PStd();
+    result.seed = mSeed;
+    return result;
 }
 
-void GapsDispatcher::useDefaultUncertainty()
+void GapsDispatcher::loadData(const RowMatrix &D)
 {
-
-}
-
-void GapsDispatcher::setUncertainty(const std::string &pathToMatrix)
-{
-
+    mRunners.push_back(new GapsRunner(D, mNumPatterns, mAlphaA,
+        mAlphaP, mMaxGibbsMassA, mMaxGibbsMassP, mSingleCell));
+    mDataIsLoaded = true;
 }
 
 void GapsDispatcher::setUncertainty(const RowMatrix &S)
 {
-
+    GAPS_ASSERT(mDataIsLoaded);
+    mRunners[0]->setUncertainty(S);
 }
 
-
-void GapsDispatcher::loadData(const RowMatrix &D)
+void GapsDispatcher::loadData(const std::string &pathToData)
 {
-
+    FileParser parser(pathToData);
+    mRunners.push_back(new GapsRunner(parser, mNumPatterns, mAlphaA,
+        mAlphaP, mMaxGibbsMassA, mMaxGibbsMassP, mSingleCell));
+    mDataIsLoaded = true;
 }
 
-void GapsDispatcher::loadData(const std::string &pathToData);   
+void GapsDispatcher::setUncertainty(const std::string &pathToMatrix)
 {
-
+    GAPS_ASSERT(mDataIsLoaded);
+    FileParser parser(pathToMatrix);
+    mRunners[0]->setUncertainty(parser);
 }
-
-    

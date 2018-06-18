@@ -1,7 +1,6 @@
 #ifndef __COGAPS_ARCHIVE_H__
 #define __COGAPS_ARCHIVE_H__
 
-#include <Rcpp.h>
 #include <fstream>
 
 // flags for opening an archive

@@ -21,22 +21,20 @@ public:
     explicit Vector(unsigned size) : mValues(aligned_vector(size, 0.f)) {}
     explicit Vector(const std::vector<float> &v);
 
-    const float* ptr() const {return &mValues[0];}
+    unsigned size() const {return mValues.size();}
+
     float* ptr() {return &mValues[0];}
+    const float* ptr() const {return &mValues[0];}
 
     float& operator[](unsigned i) {return mValues[i];}
     float operator[](unsigned i) const {return mValues[i];}
 
-    unsigned size() const {return mValues.size();}
-
-    Rcpp::NumericVector rVec() const {return Rcpp::wrap(mValues);}
-    void concat(const Vector& vec);
     void operator+=(const Vector &vec);
-
     Vector operator-(Vector v) const;
-
     Vector operator*(float val) const;
     Vector operator/(float val) const;
+
+    void concat(const Vector& vec);
 
     friend Archive& operator<<(Archive &ar, Vector &vec);
     friend Archive& operator>>(Archive &ar, Vector &vec);
