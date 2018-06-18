@@ -10,6 +10,9 @@ class GapsRunner
 {
 private:
 
+    unsigned mNumRows;
+    unsigned mNumCols;
+
     AmplitudeGibbsSampler mASampler;
     PatternGibbsSampler mPSampler;
     GapsStatistics mStatistics;
@@ -19,9 +22,6 @@ private:
     unsigned mNumUpdatesA;
     unsigned mNumUpdatesP;
 
-    unsigned mNumRows;
-    unsigned mNumCols;
-
     void updateSampler(unsigned nA, unsigned nP, unsigned nCores);
 
 public:
@@ -30,7 +30,7 @@ public:
         float alphaP, float maxGibbsMassA, float maxGibbsMassP,
         bool singleCell);
 
-    GapsRunner(FileParser &data, unsigned nPatterns, float alphaA,
+    GapsRunner(const std::string &pathToData, unsigned nPatterns, float alphaA,
         float alphaP, float maxGibbsMassA, float maxGibbsMassP,
         bool singleCell);
     
@@ -41,7 +41,7 @@ public:
     unsigned nCol() const { return mNumCols; }
 
     void setUncertainty(const RowMatrix &S);
-    void setUncertainty(FileParser &p);
+    void setUncertainty(const std::string &pathToMatrix);
 
     void startSampling() { mSamplePhase = true; }
 

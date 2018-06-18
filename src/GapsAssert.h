@@ -2,8 +2,14 @@
 #define __COGAPS_GAPS_ASSERT_H__
 
 #include "GapsPrint.h"
+
 #ifdef __GAPS_R_BUILD__
 #include <Rcpp.h>
+#endif
+
+#ifndef __GAPS_R_BUILD__
+#include <cstdlib>
+#include <iostream>
 #endif
 
 #ifdef GAPS_DEBUG
@@ -31,13 +37,15 @@
 #endif 
 
 #ifdef __GAPS_R_BUILD__
-#define gaps_stop Rcpp::stop
+#define gaps_stop Rcpp::stop("CoGAPS terminated")
+#else
+#define gaps_stop std::exit(0)
 #endif
 
 #define GAPS_ERROR(msg)                             \
     do {                                            \
         gaps_cout << "error: " << msg << '\n';    \
-        gaps_stop("CoGAPS aborted");                              \
+        gaps_stop;                              \
     } while(0)
 
 #endif
