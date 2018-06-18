@@ -85,7 +85,7 @@ function(D, S=NULL, params, ...)
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
-setMethod('CoGAPS', signature(D='SummarizedExperiemnt', params='CoGapsParams'),
+setMethod('CoGAPS', signature(D='SummarizedExperiment', params='CoGapsParams'),
 function(D, S=NULL, params, ...)
 {
   
@@ -99,7 +99,7 @@ function(D, S=NULL, params, ...)
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
-setMethod('CoGAPS', signature(D='SingleCellExperiemnt', params='CoGapsParams'),
+setMethod('CoGAPS', signature(D='SingleCellExperiment', params='CoGapsParams'),
 function(D, S=NULL, params, ...)
 {
    
@@ -124,4 +124,14 @@ RunCoGAPS <- function(D, S, params)
         result$Psd))
 }
 
+# Add merge function so the results from CoGAPS can be incorporated 
+# into a SingleCellExperiment
+MergeResults <- function(result)
+{  
+  mergedResults <- merge(result$Amean, return$Asd, return$Pmean, return$Psd)
+  resultsSCE <- SingleCellExperiment(assays=list(normcounts=cbind(result$Amean, result$Asd, result$Pmean, result$Psd))
+  show(resultsSCE)
+}
+  
+  
 # TODO(Tom) handle instance where function is called with deprecated parametres
