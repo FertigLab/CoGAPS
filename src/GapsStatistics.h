@@ -43,6 +43,9 @@ public:
     void updatePump(const AmplitudeGibbsSampler &ASampler,
         const PatternGibbsSampler &PSampler);
 
+    RowMatrix pumpMatrix() const;
+    RowMatrix meanPattern();
+
     void patternMarkers(ColMatrix normedA, RowMatrix normedP, ColMatrix &statMatrix);
 
     // serialization

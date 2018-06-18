@@ -4,6 +4,8 @@
 #include "../file_parser/TsvParser.h"
 #include "../file_parser/MtxParser.h"
 
+#if 0
+
 TEST_CASE("Test Matrix.h")
 {
     SECTION("Matrix/Vector Initialization")
@@ -107,4 +109,7 @@ TEST_CASE("Test Matrix Construction from file")
     testMatrixConstruction(tsvPath);
     testMatrixConstruction(mtxPath);
 }
+
+#endif
+
 #endif

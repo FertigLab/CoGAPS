@@ -24,6 +24,7 @@ public:
     RowMatrix(unsigned nrow, unsigned ncol);
 
     RowMatrix(const std::string &p);
+    RowMatrix(const ColMatrix &mat);
     //RowMatrix(const std::string &p, bool parseRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}

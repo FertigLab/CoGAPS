@@ -1,9 +1,21 @@
 #include "GibbsSampler.h"
 #include "math/SIMD.h"
 
-AmplitudeGibbsSampler::AmplitudeGibbsSampler(const RowMatrix &D,
-const RowMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
-    : GibbsSampler(D, S, D.nRow(), nFactor, alpha)
+/******************** AmplitudeGibbsSampler Implementation ********************/
+
+AmplitudeGibbsSampler::AmplitudeGibbsSampler(const RowMatrix &D, 
+unsigned nFactor, float alpha, float maxGibbsMass, bool singleCell)
+    :
+GibbsSampler(D, D.nRow(), nFactor, nFactor, alpha, maxGibbsMass, singleCell)
+{
+    mQueue.setDimensionSize(mBinSize, mNumCols);
+}
+
+AmplitudeGibbsSampler::AmplitudeGibbsSampler(const std::string &pathToData,
+unsigned nFactor, float alpha, float maxGibbsMass, bool singleCell)
+    :
+GibbsSampler(pathToData, FileParser(pathToData).nRow(), nFactor, nFactor, alpha, 
+maxGibbsMass, singleCell)
 {
     mQueue.setDimensionSize(mBinSize, mNumCols);
 }
@@ -95,9 +107,21 @@ unsigned r2, unsigned c2, float m2)
     return computeDeltaLL(r1, c1, m1) + computeDeltaLL(r2, c2, m2);
 }
 
+/********************* PatternGibbsSampler Implementation *********************/
+
 PatternGibbsSampler::PatternGibbsSampler(const RowMatrix &D,
-const RowMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
-    : GibbsSampler(D, S, nFactor, D.nCol(), alpha)
+unsigned nFactor, float alpha, float maxGibbsMass, bool singleCell)
+    :
+GibbsSampler(D, nFactor, D.nCol(), nFactor, alpha, maxGibbsMass, singleCell)
+{
+    mQueue.setDimensionSize(mBinSize, mNumRows);
+}
+
+PatternGibbsSampler::PatternGibbsSampler(const std::string &pathToData,
+unsigned nFactor, float alpha, float maxGibbsMass, bool singleCell)
+    :
+GibbsSampler(pathToData, nFactor, FileParser(pathToData).nCol(), nFactor, alpha,
+maxGibbsMass, singleCell)
 {
     mQueue.setDimensionSize(mBinSize , mNumRows);
 }
