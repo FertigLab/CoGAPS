@@ -19,6 +19,15 @@ class GapsStatistics;
 /************************** GIBBS SAMPLER INTERFACE **************************/
 
 template <class T, class MatA, class MatB>
+class GibbsSampler;
+
+template <class T, class MatA, class MatB>
+Archive& operator<<(Archive &ar, GibbsSampler<T, MatA, MatB> &samp);
+
+template <class T, class MatA, class MatB>
+Archive& operator>>(Archive &ar, GibbsSampler<T, MatA, MatB> &samp);
+
+template <class T, class MatA, class MatB>
 class GibbsSampler
 {
 private:
@@ -99,11 +108,11 @@ public:
     uint64_t nAtoms() const;
 
     void setUncertainty(const RowMatrix &S) { mSMatrix = MatB(S); }
+    void setUncertainty(const std::string &path) { mSMatrix = MatB(path); }
 
-    void setUncertainty(FileParser &p)
-    {
-        mSMatrix = MatB(p);
-    }
+    // serialization
+    friend Archive& operator<< <T, MatA, MatB> (Archive &ar, GibbsSampler &samp);
+    friend Archive& operator>> <T, MatA, MatB> (Archive &ar, GibbsSampler &samp);
 };
 
 class AmplitudeGibbsSampler : public GibbsSampler<AmplitudeGibbsSampler, ColMatrix, RowMatrix>
@@ -203,6 +212,11 @@ mAvgQueue(0.f), mNumQueues(0.f)
         % static_cast<uint64_t>(mNumRows * mNumCols);
     mQueue.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
     mDomain.setDomainSize(std::numeric_limits<uint64_t>::max() - remain);
+
+    float meanD = singleCell ? gaps::algo::nonZeroMean(mDMatrix) :
+        gaps::algo::mean(mDMatrix);
+    mLambda = alpha * std::sqrt(nFactor / meanD);
+    mMaxGibbsMass = maxGibbsMass / mLambda;
 }
 
 template <class T, class MatA, class MatB>
@@ -501,6 +515,30 @@ template <class T, class MatA, class MatB>
 uint64_t GibbsSampler<T, MatA, MatB>::nAtoms() const
 {   
     return mDomain.size();
+}
+
+template <class T, class MatA, class MatB>
+void GibbsSampler<T, MatA, MatB>::setMatrix(const MatA &mat)
+{   
+    mMatrix = mat;
+}
+
+template <class T, class MatA, class MatB>
+Archive& operator<<(Archive &ar, GibbsSampler<T, MatA, MatB> &samp)
+{
+    ar << samp.mMatrix << samp.mAPMatrix << samp.mQueue << samp.mDomain << samp.mLambda << samp.mMaxGibbsMass
+        << samp.mAnnealingTemp << samp.mNumRows << samp.mNumCols << samp.mBinSize << samp.mAvgQueue
+        << samp.mNumQueues;
+    return ar;
+}
+
+template <class T, class MatA, class MatB>
+Archive& operator>>(Archive &ar, GibbsSampler<T, MatA, MatB> &samp)
+{
+    ar >> samp.mMatrix >> samp.mAPMatrix >> samp.mQueue >> samp.mDomain >> samp.mLambda >> samp.mMaxGibbsMass
+        >> samp.mAnnealingTemp >> samp.mNumRows >> samp.mNumCols >> samp.mBinSize >> samp.mAvgQueue
+        >> samp.mNumQueues;
+    return ar;
 }
 
 #endif

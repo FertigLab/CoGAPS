@@ -28,7 +28,7 @@ private:
 
 public:
 
-    GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor);
+    GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor, PumpThreshold t=PUMP_CUT);
 
     ColMatrix AMean() const;
     RowMatrix PMean() const;
@@ -42,6 +42,8 @@ public:
 
     void updatePump(const AmplitudeGibbsSampler &ASampler,
         const PatternGibbsSampler &PSampler);
+
+    void patternMarkers(ColMatrix normedA, RowMatrix normedP, ColMatrix &statMatrix);
 
     // serialization
     friend Archive& operator<<(Archive &ar, GapsStatistics &stat);

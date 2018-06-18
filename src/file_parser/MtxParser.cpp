@@ -1,5 +1,6 @@
-#include "MtxParser.h"
 #include "MatrixElement.h"
+#include "MtxParser.h"
+
 #include "../GapsAssert.h"
 
 #include <sstream>

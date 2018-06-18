@@ -1,5 +1,6 @@
 # necessary yml
 language: r
+cache: packages
 sudo: required
 
 # use bioconductor
