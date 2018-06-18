@@ -43,7 +43,6 @@ public:
 
     bool hasNext() { return mParser->hasNext(); }
     MatrixElement getNext() { return mParser->getNext(); }
-    
 };
 
 #endif
