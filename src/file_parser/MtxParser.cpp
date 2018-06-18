@@ -3,7 +3,6 @@
 #include "../GapsAssert.h"
 
 #include <sstream>
-#include <Rcpp.h>
 
 MtxParser::MtxParser(const std::string &path) : mNumRows(0), mNumCols(0)
 {
