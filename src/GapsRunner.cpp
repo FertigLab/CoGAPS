@@ -13,8 +13,8 @@
 GapsRunner::GapsRunner(const RowMatrix &data, unsigned nPatterns, float alphaA,
 float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool singleCell)
     :
-mASampler(data, data * 0.1f, nPatterns, alphaA, maxGibbsMassA),
-mPSampler(data, data * 0.1f, nPatterns, alphaP, maxGibbsMassP),
+mASampler(data, data.pmax(0.1f), nPatterns, alphaA, maxGibbsMassA),
+mPSampler(data, data.pmax(0.1f), nPatterns, alphaP, maxGibbsMassP),
 mStatistics(data.nRow(), data.nCol(), nPatterns),
 mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0),
 mNumRows(data.nRow()), mNumCols(data.nCol())
@@ -76,6 +76,7 @@ unsigned nCores)
         {
             displayStatus(outputFreq, i, nIter);
         }
+
         if (mSamplePhase)
         {
             mStatistics.update(mASampler, mPSampler);

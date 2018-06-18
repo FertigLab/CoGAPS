@@ -41,6 +41,7 @@ public:
     RowMatrix operator*(float val) const;
     RowMatrix operator/(float val) const;
     RowMatrix& operator=(const ColMatrix &mat);
+    RowMatrix pmax(float scale) const;
 
     friend Archive& operator<<(Archive &ar, RowMatrix &mat);
     friend Archive& operator>>(Archive &ar, RowMatrix &mat);

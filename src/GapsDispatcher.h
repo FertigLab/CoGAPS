@@ -2,6 +2,7 @@
 #define __COGAPS_GAPS_DISPATCHER_H__
 
 #include "GapsRunner.h"
+#include "math/SIMD.h"
 
 #include <string>
 

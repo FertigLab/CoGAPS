@@ -103,6 +103,19 @@ RowMatrix RowMatrix::operator/(float val) const
     return mat;
 }
 
+RowMatrix RowMatrix::pmax(float scale) const
+{
+    RowMatrix mat(mNumRows, mNumCols);
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            mat(i,j) = std::max(this->operator()(i,j) * scale, scale);
+        }
+    }
+    return mat;
+}
+
 Archive& operator<<(Archive &ar, RowMatrix &mat)
 {
     for (unsigned i = 0; i < mat.nRow(); ++i)
