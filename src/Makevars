@@ -1,9 +1,10 @@
-PKG_CPPFLAGS =  -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0  
+PKG_CPPFLAGS =  -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__  
 PKG_CXXFLAGS =  -fopenmp  -msse4.2 
 PKG_LIBS =  -fopenmp 
 
 OBJECTS =   AtomicDomain.o \
             Cogaps.o \
+            GapsDispatcher.o \
             GapsRunner.o \
             GapsStatistics.o \
             GibbsSampler.o \
@@ -13,6 +14,7 @@ OBJECTS =   AtomicDomain.o \
             data_structures/Matrix.o \
             data_structures/Vector.o \
             file_parser/CsvParser.o \
+            file_parser/FileParser.o \
             file_parser/TsvParser.o \
             file_parser/MtxParser.o \
             math/Algorithms.o \
@@ -20,7 +22,6 @@ OBJECTS =   AtomicDomain.o \
             cpp_tests/testAlgorithms.o \
             cpp_tests/testEfficientSets.o \
             cpp_tests/testFileParsers.o \
-            cpp_tests/testGapsRunner.o \
             cpp_tests/testMatrix.o \
             cpp_tests/testRandom.o \
             cpp_tests/testSerialization.o

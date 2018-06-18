@@ -126,26 +126,26 @@ const PatternGibbsSampler &PSampler)
     }
 }
 
-Rcpp::NumericMatrix GapsStatistics::AMean() const
+ColMatrix GapsStatistics::AMean() const
 {
-    return (mAMeanMatrix / mStatUpdates).rMatrix();
+    return mAMeanMatrix / mStatUpdates;
 }
 
-Rcpp::NumericMatrix GapsStatistics::AStd() const
+ColMatrix GapsStatistics::AStd() const
 {
     return gaps::algo::computeStdDev(mAStdMatrix, mAMeanMatrix,
-        mStatUpdates).rMatrix();
+        mStatUpdates);
 }
 
-Rcpp::NumericMatrix GapsStatistics::PMean() const
+RowMatrix GapsStatistics::PMean() const
 {
-    return (mPMeanMatrix / mStatUpdates).rMatrix();
+    return mPMeanMatrix / mStatUpdates;
 }
 
-Rcpp::NumericMatrix GapsStatistics::PStd() const
+RowMatrix GapsStatistics::PStd() const
 {
     return gaps::algo::computeStdDev(mPStdMatrix, mPMeanMatrix,
-        mStatUpdates).rMatrix();
+        mStatUpdates);
 }
 
 float GapsStatistics::meanChiSq(const AmplitudeGibbsSampler &ASampler) const

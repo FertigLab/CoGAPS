@@ -1,9 +1,9 @@
 #include "GibbsSampler.h"
 #include "math/SIMD.h"
 
-AmplitudeGibbsSampler::AmplitudeGibbsSampler(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
-    : GibbsSampler(D, S, D.nrow(), nFactor, alpha)
+AmplitudeGibbsSampler::AmplitudeGibbsSampler(const RowMatrix &D,
+const RowMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
+    : GibbsSampler(D, S, D.nRow(), nFactor, alpha)
 {
     float meanD = gaps::algo::mean(mDMatrix);
     mLambda = alpha * std::sqrt(nFactor / meanD);
@@ -98,9 +98,9 @@ unsigned r2, unsigned c2, float m2)
     return computeDeltaLL(r1, c1, m1) + computeDeltaLL(r2, c2, m2);
 }
 
-PatternGibbsSampler::PatternGibbsSampler(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
-    : GibbsSampler(D, S, nFactor, D.ncol(), alpha)
+PatternGibbsSampler::PatternGibbsSampler(const RowMatrix &D,
+const RowMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
+    : GibbsSampler(D, S, nFactor, D.nCol(), alpha)
 {
     float meanD = gaps::algo::mean(mDMatrix);
     mLambda = alpha * std::sqrt(nFactor / meanD);

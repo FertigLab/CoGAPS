@@ -30,10 +30,10 @@ public:
 
     GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor);
 
-    Rcpp::NumericMatrix AMean() const;
-    Rcpp::NumericMatrix AStd() const;
-    Rcpp::NumericMatrix PMean() const;
-    Rcpp::NumericMatrix PStd() const;
+    ColMatrix AMean() const;
+    RowMatrix PMean() const;
+    ColMatrix AStd() const;
+    RowMatrix PStd() const;
 
     float meanChiSq(const AmplitudeGibbsSampler &ASampler) const;
 

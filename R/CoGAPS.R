@@ -44,7 +44,7 @@
 #' @export
 CoGAPS <- function(D, S, nFactor=7, nEquil=250, nSample=250, nOutputs=1000,
 nSnapshots=0, alphaA=0.01, alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100,
-seed=-1, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed='N',
+seed=NA, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed='N',
 fixedPatterns=matrix(0), checkpointInterval=0, 
 checkpointFile="gaps_checkpoint.out", nCores=1, ...)
 {
@@ -91,18 +91,14 @@ checkpointFile="gaps_checkpoint.out", nCores=1, ...)
     thresholdEnum <- c("unique", "cut")
     
     # get seed
-    if (seed < 0)
+    if (is.na(seed))
     {
-        # TODO get time in milliseconds
-        seed <- 0
+        seed <- 0 # TODO get time in milliseconds
     }
 
     # run algorithm with call to C++ code
-    result <- cogaps_cpp(D, S, nFactor, nEquil, nEquil/10, nSample, nOutputs,
-        nSnapshots, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
-        singleCellRNASeq, whichMatrixFixed, fixedPatterns, checkpointInterval,
-        checkpointFile, which(thresholdEnum==pumpThreshold), nPumpSamples,
-        nCores)
+    result <- cogaps_cpp(D, nFactor, nEquil, nOutputs, seed, alphaA, alphaP,
+        maxGibbmassA, maxGibbmassP, messages, singleCellRNASeq)
     
     # label matrices and return list
     patternNames <- paste('Patt', 1:nFactor, sep='')

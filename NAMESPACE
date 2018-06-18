@@ -2,6 +2,7 @@
 
 export(CoGAPS)
 export(CoGAPSFromFile)
+export(CoGapsFromCheckpoint)
 export(GWCoGAPS)
 export(GWCoGapsFromCheckpoint)
 export(binaryA)

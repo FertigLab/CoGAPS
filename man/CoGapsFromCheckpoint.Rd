@@ -25,4 +25,8 @@ Restart CoGAPS from Checkpoint File
 loads the state of a previous CoGAPS run from a file and
  continues the run from that point
 }
+\examples{
+data(SimpSim)
+result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
+}
 

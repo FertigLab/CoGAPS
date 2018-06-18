@@ -1,11 +1,11 @@
-#ifndef __COGAPS_DISPATCHER_H__
-#define __COGAPS_DISPATCHER_H__
+#ifndef __COGAPS_GAPS_DISPATCHER_H__
+#define __COGAPS_GAPS_DISPATCHER_H__
 
 #include "GapsRunner.h"
 
 #include <string>
 
-struct GapsReturn
+struct GapsResult
 {
     ColMatrix Amean;
     ColMatrix Asd;
@@ -14,6 +14,13 @@ struct GapsReturn
     
     float meanChiSq;
     uint32_t seed;
+
+    GapsResult(unsigned nrow, unsigned ncol) : Amean(nrow, ncol),
+        Asd(nrow, ncol), Pmean(nrow, ncol), Psd(nrow, ncol), meanChiSq(0.f),
+        seed(0)
+    {}
+
+    void writeCsv(const std::string &path);
 };
 
 // should be agnostic to external caller (R/Python/CLI)
@@ -32,27 +39,41 @@ private:
     float mMaxGibbsMassP;
 
     bool mPrintMessages;
-    bool mSingleCellRnaSeq;
+    bool mSingleCell;
 
-    std:vector<GapsRunner*> mRunners;
+    bool mDataIsLoaded;    
+
+    unsigned mNumCoresPerSet;
+
+    std::vector<GapsRunner*> mRunners;
 
     void runOneCycle(unsigned k);
 
 public:
 
-    GapsDispatcher() : mNumPatterns(3), mMaxIterations(1000),
-        mOutputFrequency(250), mSeed(0), mAlphaA(0.01), mAlphaP(0.01),
+    GapsDispatcher(uint32_t seed=0) : mNumPatterns(3), mMaxIterations(1000),
+        mOutputFrequency(250), mSeed(seed), mAlphaA(0.01), mAlphaP(0.01),
         mMaxGibbsMassA(100.f), mMaxGibbsMassP(100.f), mPrintMessages(true),
-        mSingleCellRnaSeq(false)
-    {}
+        mSingleCell(false), mDataIsLoaded(false), mNumCoresPerSet(1)
+    {
+        gaps::random::setSeed(mSeed);
+    }
+
+    ~GapsDispatcher()
+    {
+        for (unsigned i = 0; i < mRunners.size(); ++i)
+        {
+            delete mRunners[i];
+        }
+    }
 
     void setNumPatterns(unsigned n)     { mNumPatterns = n; }
     void setMaxIterations(unsigned n)   { mMaxIterations = n; }
     void setOutputFrequency(unsigned n) { mOutputFrequency = n; }
-    void setSeed(unsigned seed)         { mSeed = seed; }
+    void setNumCoresPerSet(unsigned n)  { mNumCoresPerSet = n; }
 
     void printMessages(bool print) { mPrintMessages = print; }
-    void singleCellRNASeq(bool sc) { mSingleCellRnaSeq = sc; }
+    void singleCell(bool sc) { mSingleCell = sc; }
 
     void setAlpha(float alphaA, float alphaP)
     {
@@ -65,15 +86,16 @@ public:
         mMaxGibbsMassA = maxA;
         mMaxGibbsMassP = maxP;
     }
+    
+    void loadCheckpointFile(const std::string &pathToCptFile);
 
-    void useDefaultUncertainty();
-    void setUncertainty(const std::string &pathToMatrix);
     void setUncertainty(const RowMatrix &S);
+    void setUncertainty(const std::string &pathToMatrix);
 
     void loadData(const RowMatrix &D);
-    void loadData(const std::string &pathToData);    
+    void loadData(const std::string &pathToData);
     
-    GapsReturn run();
+    GapsResult run();
 };
 
-#endif
+#endif // __COGAPS_GAPS_DISPATCHER_H__
