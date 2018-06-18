@@ -47,6 +47,8 @@ public:
 
     void displayStatus(unsigned outFreq, unsigned current, unsigned total);
 
+    void setFixedMatrix(char which, const RowMatrix &mat);
+
     ColMatrix AMean() const { return mStatistics.AMean(); }
     RowMatrix PMean() const { return mStatistics.PMean(); }
     ColMatrix AStd() const { return mStatistics.AStd(); }

@@ -5,19 +5,11 @@
 \title{CoGAPS Matrix Factorization Algorithm}
 \usage{
 CoGAPS(D, S, nFactor = 7, nEquil = 250, nSample = 250, nOutputs = 1000,
-<<<<<<< HEAD
   nSnapshots = 0, alphaA = 0.01, alphaP = 0.01, maxGibbmassA = 100,
   maxGibbmassP = 100, seed = NA, messages = TRUE,
   singleCellRNASeq = FALSE, whichMatrixFixed = "N",
   fixedPatterns = matrix(0), checkpointInterval = 0,
   checkpointFile = "gaps_checkpoint.out", nCores = 1, ...)
-=======
-  alphaA = 0.01, alphaP = 0.01, maxGibbmassA = 100, maxGibbmassP = 100,
-  seed = -1, messages = TRUE, singleCellRNASeq = FALSE,
-  whichMatrixFixed = "N", fixedPatterns = matrix(0),
-  checkpointInterval = 0, checkpointFile = "gaps_checkpoint.out",
-  nCores = 1, ...)
->>>>>>> develop
 }
 \arguments{
 \item{D}{data matrix}

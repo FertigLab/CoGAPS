@@ -48,6 +48,8 @@ private:
 
     std::vector<GapsRunner*> mRunners;
 
+    char mFixedMatrix;
+
     void runOneCycle(unsigned k);
 
 public:
@@ -55,7 +57,8 @@ public:
     GapsDispatcher(uint32_t seed=0) : mNumPatterns(3), mMaxIterations(1000),
         mOutputFrequency(250), mSeed(seed), mAlphaA(0.01), mAlphaP(0.01),
         mMaxGibbsMassA(100.f), mMaxGibbsMassP(100.f), mPrintMessages(true),
-        mSingleCell(false), mDataIsLoaded(false), mNumCoresPerSet(1)
+        mSingleCell(false), mDataIsLoaded(false), mNumCoresPerSet(1),
+        mFixedMatrix('N')
     {
         gaps::random::setSeed(mSeed);
     }
@@ -86,6 +89,12 @@ public:
     {
         mMaxGibbsMassA = maxA;
         mMaxGibbsMassP = maxP;
+    }
+
+    void setFixedMatrix(char which, const RowMatrix &mat)
+    {
+        mFixedMatrix = which;
+        mRunners[0]->setFixedMatrix(which, mat);
     }
     
     void loadCheckpointFile(const std::string &pathToCptFile);

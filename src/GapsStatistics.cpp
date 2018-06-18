@@ -158,19 +158,19 @@ float GapsStatistics::meanChiSq(const AmplitudeGibbsSampler &ASampler) const
         M);
 }
 
-Rcpp::NumericMatrix GapsStatistics::pumpMatrix() const
+RowMatrix GapsStatistics::pumpMatrix() const
 {
     unsigned denom = mPumpStatUpdates != 0 ? mPumpStatUpdates : 1.f;
-    return (mPumpMatrix / denom).rMatrix();
+    return RowMatrix(mPumpMatrix / denom);
 }
 
-Rcpp::NumericMatrix GapsStatistics::meanPattern()
+RowMatrix GapsStatistics::meanPattern()
 {
     ColMatrix Amean(mAMeanMatrix / static_cast<float>(mStatUpdates));
     RowMatrix Pmean(mPMeanMatrix / static_cast<float>(mStatUpdates));
     ColMatrix mat(mAMeanMatrix.nRow(), mAMeanMatrix.nCol());
     patternMarkers(Amean, Pmean, mat);
-    return mat.rMatrix();
+    return RowMatrix(mat);
 }
 
 Archive& operator<<(Archive &ar, GapsStatistics &stat)

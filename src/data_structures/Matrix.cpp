@@ -46,6 +46,19 @@ RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
     }
 }
 
+RowMatrix::RowMatrix(const ColMatrix &mat)
+: mNumRows(mat.nRow()), mNumCols(mat.nCol())
+{
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        mRows.push_back(Vector(mNumCols));
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            this->operator()(i,j) = mat(i,j);
+        }
+    }
+}
+
 RowMatrix::RowMatrix(const std::string &path)
 {
     FileParser p(path);

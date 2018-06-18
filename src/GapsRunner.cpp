@@ -14,20 +14,11 @@ GapsRunner::GapsRunner(const RowMatrix &data, unsigned nPatterns, float alphaA,
 float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool singleCell)
     :
 mNumRows(data.nRow()), mNumCols(data.nCol()),
-mASampler(data, data.pmax(0.1f), nPatterns, alphaA, maxGibbsMassA),
-mPSampler(data, data.pmax(0.1f), nPatterns, alphaP, maxGibbsMassP),
+mASampler(data, nPatterns, alphaA, maxGibbsMassA, singleCell),
+mPSampler(data, nPatterns, alphaP, maxGibbsMassP, singleCell),
 mStatistics(data.nRow(), data.nCol(), nPatterns),
 mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0)
 {
-    if (mFixedMatrix == 'A')
-    {
-        mASampler.setMatrix(ColMatrix(FP));
-    }
-    else if (mFixedMatrix == 'P')
-    {
-        mPSampler.setMatrix(RowMatrix(FP));
-    }
-
     mASampler.sync(mPSampler);
     mPSampler.sync(mASampler);
 }
@@ -37,13 +28,25 @@ float alphaA, float alphaP, float maxGibbsMassA, float maxGibbsMassP,
 bool singleCell)
     :
 mNumRows(FileParser(pathToData).nRow()), mNumCols(FileParser(pathToData).nCol()),
-mASampler(pathToData, nPatterns, alphaA, maxGibbsMassA),
-mPSampler(pathToData, nPatterns, alphaP, maxGibbsMassP),
+mASampler(pathToData, nPatterns, alphaA, maxGibbsMassA, singleCell),
+mPSampler(pathToData, nPatterns, alphaP, maxGibbsMassP, singleCell),
 mStatistics(mNumRows, mNumCols, nPatterns),
 mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0)
 {
     mASampler.sync(mPSampler);
     mPSampler.sync(mASampler);
+}
+
+void GapsRunner::setFixedMatrix(char which, const RowMatrix &mat)
+{
+    if (which == 'A')
+    {
+        mASampler.setMatrix(ColMatrix(mat));
+    }
+    else if (which == 'P')
+    {
+        mPSampler.setMatrix(mat);
+    }
 }
 
 void GapsRunner::setUncertainty(const std::string &pathToMatrix)
