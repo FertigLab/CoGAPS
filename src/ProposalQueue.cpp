@@ -42,6 +42,7 @@ void ProposalQueue::clear()
     mQueue.clear();
     mUsedPositions.clear();
     mUsedIndices.clear();
+    GAPS_ASSERT(mMinAtoms == mMaxAtoms);
 }
 
 unsigned ProposalQueue::size() const
@@ -136,7 +137,6 @@ bool ProposalQueue::birth(AtomicDomain &domain)
     mUsedIndices.insert(pos / mDimensionSize);
     mUsedPositions.insert(pos);
     domain.insert(pos, 0.f);
-    ++mMinAtoms; // TODO could be rejected
     ++mMaxAtoms;
     return true;
 }

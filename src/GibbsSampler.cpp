@@ -5,9 +5,6 @@ AmplitudeGibbsSampler::AmplitudeGibbsSampler(const RowMatrix &D,
 const RowMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
     : GibbsSampler(D, S, D.nRow(), nFactor, alpha)
 {
-    float meanD = gaps::algo::mean(mDMatrix);
-    mLambda = alpha * std::sqrt(nFactor / meanD);
-    mMaxGibbsMass = maxGibbsMass / mLambda;
     mQueue.setDimensionSize(mBinSize, mNumCols);
 }
 
@@ -102,9 +99,6 @@ PatternGibbsSampler::PatternGibbsSampler(const RowMatrix &D,
 const RowMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass)
     : GibbsSampler(D, S, nFactor, D.nCol(), alpha)
 {
-    float meanD = gaps::algo::mean(mDMatrix);
-    mLambda = alpha * std::sqrt(nFactor / meanD);
-    mMaxGibbsMass = maxGibbsMass / mLambda;
     mQueue.setDimensionSize(mBinSize , mNumRows);
 }
 

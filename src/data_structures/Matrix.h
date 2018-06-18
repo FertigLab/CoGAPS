@@ -5,8 +5,8 @@
 #include "../file_parser/FileParser.h"
 #include "Vector.h"
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 // forward declarations
 class RowMatrix;

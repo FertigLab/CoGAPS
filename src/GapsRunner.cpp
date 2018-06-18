@@ -19,6 +19,15 @@ mPSampler(data, data.pmax(0.1f), nPatterns, alphaP, maxGibbsMassP),
 mStatistics(data.nRow(), data.nCol(), nPatterns),
 mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0)
 {
+    if (mFixedMatrix == 'A')
+    {
+        mASampler.setMatrix(ColMatrix(FP));
+    }
+    else if (mFixedMatrix == 'P')
+    {
+        mPSampler.setMatrix(RowMatrix(FP));
+    }
+
     mASampler.sync(mPSampler);
     mPSampler.sync(mASampler);
 }

@@ -1,11 +1,11 @@
 #include "GapsStatistics.h"
 #include "math/Algorithms.h"
 
-GapsStatistics::GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor)
+GapsStatistics::GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor, PumpThreshold t)
     : mAMeanMatrix(nRow, nFactor), mAStdMatrix(nRow, nFactor),
         mPMeanMatrix(nFactor, nCol), mPStdMatrix(nFactor, nCol),
         mStatUpdates(0), mNumPatterns(nFactor), mPumpMatrix(nRow, nCol),
-        mPumpThreshold(PUMP_CUT), mPumpStatUpdates(0)
+        mPumpThreshold(t), mPumpStatUpdates(0)
 {}
 
 void GapsStatistics::update(const AmplitudeGibbsSampler &ASampler,
@@ -45,15 +45,9 @@ static unsigned geneThreshold(const ColMatrix &rankMatrix, unsigned pat)
     return static_cast<unsigned>(cutRank);
 }
 
-void GapsStatistics::updatePump(const AmplitudeGibbsSampler &ASampler,
-const PatternGibbsSampler &PSampler)
+void GapsStatistics::patternMarkers(ColMatrix normedA, RowMatrix normedP,
+ColMatrix &statMatrix)
 {
-    mPumpStatUpdates++;
-
-    // copy matrices so we can modify locally
-    ColMatrix normedA(ASampler.mMatrix);
-    RowMatrix normedP(PSampler.mMatrix);
-
     // helpful notation
     unsigned nGenes = normedA.nRow();
     unsigned nPatterns = normedA.nCol();
@@ -101,7 +95,7 @@ const PatternGibbsSampler &PSampler)
         for (unsigned i = 0; i < nGenes; ++i)
         {
             unsigned minNdx = gaps::algo::whichMin(rsStat.getRow(i));
-            mPumpMatrix(i,minNdx)++;
+            statMatrix(i,minNdx)++;
         }
     }
     else if (mPumpThreshold == PUMP_CUT)
@@ -119,11 +113,18 @@ const PatternGibbsSampler &PSampler)
             {
                 if (rankMatrix(i,j) <= cutRank)
                 {
-                    mPumpMatrix(i,j)++;
+                    statMatrix(i,j)++;
                 }
             }
         }
     }
+}
+
+void GapsStatistics::updatePump(const AmplitudeGibbsSampler &ASampler,
+const PatternGibbsSampler &PSampler)
+{
+    mPumpStatUpdates++;
+    patternMarkers(ASampler.mMatrix, PSampler.mMatrix, mPumpMatrix);
 }
 
 ColMatrix GapsStatistics::AMean() const
@@ -155,6 +156,21 @@ float GapsStatistics::meanChiSq(const AmplitudeGibbsSampler &ASampler) const
     RowMatrix M(gaps::algo::matrixMultiplication(A, P));
     return 2.f * gaps::algo::loglikelihood(ASampler.mDMatrix, ASampler.mSMatrix,
         M);
+}
+
+Rcpp::NumericMatrix GapsStatistics::pumpMatrix() const
+{
+    unsigned denom = mPumpStatUpdates != 0 ? mPumpStatUpdates : 1.f;
+    return (mPumpMatrix / denom).rMatrix();
+}
+
+Rcpp::NumericMatrix GapsStatistics::meanPattern()
+{
+    ColMatrix Amean(mAMeanMatrix / static_cast<float>(mStatUpdates));
+    RowMatrix Pmean(mPMeanMatrix / static_cast<float>(mStatUpdates));
+    ColMatrix mat(mAMeanMatrix.nRow(), mAMeanMatrix.nCol());
+    patternMarkers(Amean, Pmean, mat);
+    return mat.rMatrix();
 }
 
 Archive& operator<<(Archive &ar, GapsStatistics &stat)

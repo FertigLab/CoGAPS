@@ -85,7 +85,7 @@ bool singleCellRNASeq, unsigned nCores)
 /*
 Rcpp::List cogapsFromCheckpoint_cpp(const Rcpp::NumericMatrix &D,
 const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil,
-unsigned nSample, const std::string &fileName, const std::string &cptFile)
+unsigned nSample, const std::string &cptFile)
 {   
     GapsRunner runner(D, S, nFactor, nEquil, nSample, cptFile);
     return runner.run();
