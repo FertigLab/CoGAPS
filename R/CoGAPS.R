@@ -98,7 +98,7 @@ checkpointFile="gaps_checkpoint.out", nCores=1, ...)
 
     # run algorithm with call to C++ code
     result <- cogaps_cpp(D, nFactor, nEquil, nOutputs, seed, alphaA, alphaP,
-        maxGibbmassA, maxGibbmassP, messages, singleCellRNASeq)
+        maxGibbmassA, maxGibbmassP, messages, singleCellRNASeq, nCores)
     
     # label matrices and return list
     patternNames <- paste('Patt', 1:nFactor, sep='')

@@ -34,7 +34,7 @@ template <class T>
 static Rcpp::List cogapsRun(T data, unsigned nPatterns,
 unsigned maxIter, unsigned outputFrequency, unsigned seed, float alphaA,
 float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool messages,
-bool singleCell)
+bool singleCell, unsigned nCores)
 {
     GapsDispatcher dispatcher(seed);
 
@@ -47,6 +47,7 @@ bool singleCell)
 
     dispatcher.printMessages(messages);
     dispatcher.singleCell(singleCell);
+    dispatcher.setNumCoresPerSet(nCores);
     
     dispatcher.loadData(data);
 
@@ -67,18 +68,18 @@ bool singleCellRNASeq)
 {
     return cogapsRun(D, nPatterns, maxIter, outputFrequency, seed,
         alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages,
-        singleCellRNASeq);
+        singleCellRNASeq, 1);
 }
 
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D, unsigned nPatterns,
 unsigned maxIter, unsigned outputFrequency, unsigned seed, float alphaA,
 float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool messages,
-bool singleCellRNASeq)
+bool singleCellRNASeq, unsigned nCores)
 {
     return cogapsRun(convertRMatrix(D), nPatterns, maxIter, outputFrequency, seed,
         alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages,
-        singleCellRNASeq);
+        singleCellRNASeq, nCores);
 }
 
 /*

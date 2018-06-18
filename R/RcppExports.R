@@ -5,8 +5,8 @@ cogapsFromFile_cpp <- function(D, nPatterns, maxIter, outputFrequency, seed, alp
     .Call('_CoGAPS_cogapsFromFile_cpp', PACKAGE = 'CoGAPS', D, nPatterns, maxIter, outputFrequency, seed, alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages, singleCellRNASeq)
 }
 
-cogaps_cpp <- function(D, nPatterns, maxIter, outputFrequency, seed, alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages, singleCellRNASeq) {
-    .Call('_CoGAPS_cogaps_cpp', PACKAGE = 'CoGAPS', D, nPatterns, maxIter, outputFrequency, seed, alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages, singleCellRNASeq)
+cogaps_cpp <- function(D, nPatterns, maxIter, outputFrequency, seed, alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages, singleCellRNASeq, nCores) {
+    .Call('_CoGAPS_cogaps_cpp', PACKAGE = 'CoGAPS', D, nPatterns, maxIter, outputFrequency, seed, alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages, singleCellRNASeq, nCores)
 }
 
 getBuildReport_cpp <- function() {
