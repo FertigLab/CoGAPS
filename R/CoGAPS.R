@@ -78,7 +78,7 @@ function(Data, S=NULL, params, ...)
     if (is.null(S))
       S <- pmax(0.1 * Data, 0.1)
     
-    return(RunCoGAPS(Data, S, params))
+    return(RunCoGAPS(countMatrix, S, params))
     # TODO(Hyejune) convert data.frame to matrix and set default value for
     # S matrix if it's null - then call RunCoGAPS
 })
@@ -92,7 +92,7 @@ function(Data, S=NULL, params, ...)
     countMatrix = assay(Data, "counts")
     if (is.null(S))
       S <- pmax(0.1 * Data, 0.1)
-    return(RunCoGAPS(Data, S, params))
+    return(RunCoGAPS(countMatrix, S, params))
     # TODO(Hyejune) extract count matrix from SE object and set default value
     # S matrix if it's null - then call RunCoGAPS
 })
@@ -106,7 +106,7 @@ function(Data, S=NULL, params, ...)
     countMatrix = assay(Data, "counts")
     if (is.null(S))
       S <- pmax(0.1 * Data, 0.1)
-    result <- RunCoGAPS(Data, S, params)
+    result <- RunCoGAPS(countMatrix, S, params)
     
     Data@reducedDims <- SimpleList(Amean=result$Amean, Pmean=result$Pmean)
     return(Data)
