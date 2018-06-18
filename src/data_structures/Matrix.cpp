@@ -46,8 +46,12 @@ RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
     }
 }
 
-RowMatrix::RowMatrix(FileParser &p) : mNumRows(p.nRow()), mNumCols(p.nCol())
+RowMatrix::RowMatrix(const std::string &path)
 {
+    FileParser p(path);
+    mNumRows = p.nRow();
+    mNumCols = p.nCol();
+
     // allocate matrix
     for (unsigned i = 0; i < mNumRows; ++i)
     {
@@ -62,6 +66,7 @@ RowMatrix::RowMatrix(FileParser &p) : mNumRows(p.nRow()), mNumCols(p.nCol())
     }
 }
 
+/*
 RowMatrix::RowMatrix(FileParser &p, bool partitionRows, std::vector<unsigned> whichIndices)
 {
     mNumRows = whichIndices.size();
@@ -76,6 +81,7 @@ RowMatrix::RowMatrix(FileParser &p, bool partitionRows, std::vector<unsigned> wh
     // fill in matrix
     fill(*this, p, partitionRows, whichIndices);
 }
+*/
 
 RowMatrix& RowMatrix::operator=(const ColMatrix &mat)
 {
@@ -158,8 +164,12 @@ ColMatrix::ColMatrix(const RowMatrix &mat)
     }
 }
 
-ColMatrix::ColMatrix(FileParser &p) : mNumRows(p.nRow()), mNumCols(p.nCol())
+ColMatrix::ColMatrix(const std::string &path)
 {
+    FileParser p(path);
+    mNumRows = p.nRow();
+    mNumCols = p.nCol();
+
     // allocate matrix
     for (unsigned j = 0; j < mNumCols; ++j)
     {
@@ -174,6 +184,7 @@ ColMatrix::ColMatrix(FileParser &p) : mNumRows(p.nRow()), mNumCols(p.nCol())
     }
 }
 
+/*
 ColMatrix::ColMatrix(FileParser &p, bool partitionRows, std::vector<unsigned> whichIndices)
 {
     mNumRows = whichIndices.size();
@@ -188,6 +199,7 @@ ColMatrix::ColMatrix(FileParser &p, bool partitionRows, std::vector<unsigned> wh
     // fill in matrix
     fill(*this, p, partitionRows, whichIndices);
 }
+*/
 
 ColMatrix ColMatrix::operator*(float val) const
 {
@@ -213,6 +225,19 @@ ColMatrix& ColMatrix::operator=(const RowMatrix &mat)
 {
     copyMatrix(*this, mat);
     return *this;
+}
+
+ColMatrix ColMatrix::pmax(float scale) const
+{
+    ColMatrix mat(mNumRows, mNumCols);
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            mat(i,j) = std::max(this->operator()(i,j) * scale, scale);
+        }
+    }
+    return mat;
 }
 
 Archive& operator<<(Archive &ar, ColMatrix &mat)

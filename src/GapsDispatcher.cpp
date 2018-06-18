@@ -73,8 +73,7 @@ void GapsDispatcher::setUncertainty(const RowMatrix &S)
 
 void GapsDispatcher::loadData(const std::string &pathToData)
 {
-    FileParser parser(pathToData);
-    mRunners.push_back(new GapsRunner(parser, mNumPatterns, mAlphaA,
+    mRunners.push_back(new GapsRunner(pathToData, mNumPatterns, mAlphaA,
         mAlphaP, mMaxGibbsMassA, mMaxGibbsMassP, mSingleCell));
     mDataIsLoaded = true;
 }
@@ -82,6 +81,5 @@ void GapsDispatcher::loadData(const std::string &pathToData)
 void GapsDispatcher::setUncertainty(const std::string &pathToMatrix)
 {
     GAPS_ASSERT(mDataIsLoaded);
-    FileParser parser(pathToMatrix);
-    mRunners[0]->setUncertainty(parser);
+    mRunners[0]->setUncertainty(pathToMatrix);
 }

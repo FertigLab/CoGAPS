@@ -74,10 +74,11 @@ public:
     GibbsSampler(const RowMatrix &D, const RowMatrix &S, unsigned nrow,
         unsigned ncol, float alpha);
 
-    GibbsSampler(FileParser &p, unsigned nrow, unsigned ncol, float alpha)
+    GibbsSampler(const std::string pathToData, unsigned nrow, unsigned ncol,
+    float alpha)
         :
-    mMatrix(nrow, ncol), mOtherMatrix(NULL), mDMatrix(p),
-    mSMatrix(mDMatrix * 0.1f), mAPMatrix(p.nRow(), p.nCol()),
+    mMatrix(nrow, ncol), mOtherMatrix(NULL), mDMatrix(pathToData),
+    mSMatrix(mDMatrix.pmax(0.1f)), mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
     mQueue(nrow * ncol, alpha), mLambda(0.f), mMaxGibbsMass(0.f),
     mAnnealingTemp(0.f), mNumRows(nrow), mNumCols(ncol), mAvgQueue(0.f),
     mNumQueues(0.f)
@@ -123,10 +124,10 @@ public:
     AmplitudeGibbsSampler(const RowMatrix &D, const RowMatrix &S,
         unsigned nFactor, float alpha=0.f, float maxGibbsMass=0.f);
 
-    AmplitudeGibbsSampler(FileParser &p, unsigned nFactor, float alpha=0.f,
-    float maxGibbsMass=0.f)
+    AmplitudeGibbsSampler(const std::string &pathToData, unsigned nFactor,
+    float alpha=0.f, float maxGibbsMass=0.f)
         :
-    GibbsSampler(p, p.nRow(), nFactor, alpha)
+    GibbsSampler(pathToData, FileParser(pathToData).nRow(), nFactor, alpha)
     {
         float meanD = gaps::algo::mean(mDMatrix);
         mLambda = alpha * std::sqrt(nFactor / meanD);
@@ -163,10 +164,10 @@ public:
     PatternGibbsSampler(const RowMatrix &D, const RowMatrix &S,
         unsigned nFactor, float alpha=0.f, float maxGibbsMass=0.f);
 
-    PatternGibbsSampler(FileParser &p, unsigned nFactor, float alpha=0.f,
-    float maxGibbsMass=0.f)
+    PatternGibbsSampler(const std::string &pathToData, unsigned nFactor,
+    float alpha=0.f, float maxGibbsMass=0.f)
         :
-    GibbsSampler(p, nFactor, p.nCol(), alpha)
+    GibbsSampler(pathToData, nFactor, FileParser(pathToData).nCol(), alpha)
     {
         float meanD = gaps::algo::mean(mDMatrix);
         mLambda = alpha * std::sqrt(nFactor / meanD);
