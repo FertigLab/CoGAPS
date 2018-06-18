@@ -23,8 +23,8 @@ public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
 
-    RowMatrix(FileParser &p);
-    RowMatrix(FileParser &p, bool parseRows, std::vector<unsigned> whichIndices);
+    RowMatrix(const std::string &p);
+    //RowMatrix(const std::string &p, bool parseRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -59,8 +59,8 @@ public:
     ColMatrix(unsigned nrow, unsigned ncol);
     ColMatrix(const RowMatrix &mat);
 
-    ColMatrix(FileParser &p);
-    ColMatrix(FileParser &p, bool parseRows, std::vector<unsigned> whichIndices);
+    ColMatrix(const std::string &p);
+    //ColMatrix(const std::string &p, bool parseRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}
     unsigned nCol() const {return mNumCols;}
@@ -77,6 +77,7 @@ public:
     ColMatrix operator*(float val) const;
     ColMatrix operator/(float val) const;
     ColMatrix& operator=(const RowMatrix &mat);
+    ColMatrix pmax(float scale) const;
 
     friend Archive& operator<<(Archive &ar, ColMatrix &mat);
     friend Archive& operator>>(Archive &ar, ColMatrix &mat);
