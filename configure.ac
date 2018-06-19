@@ -13,10 +13,6 @@ AC_PROG_CXX
 AC_ARG_ENABLE(debug, [AC_HELP_STRING([--enable-debug],
     [build debug version of CoGAPS])], [build_debug=yes], [build_debug=no])
 
-# Check if compiling debug version with thread sanitizer
-AC_ARG_ENABLE(debug_tsan, [AC_HELP_STRING([--enable-debug-tsan],
-    [build debug version of CoGAPS])], [build_debug_tsan=yes], [build_debug_tsan=no])
-
 # Check if compiler warnings should be turned on
 AC_ARG_ENABLE(warnings, [AC_HELP_STRING([--enable-warnings],
     [compile CoGAPS with warning messages])], [warnings=yes], [warnings=no])
@@ -45,21 +41,7 @@ echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compile
 # set compile flags for debug build
 if test "x$build_debug" = "xyes" ; then
     echo "Building Debug Version of CoGAPS"
-    GAPS_CPP_FLAGS+=" -DGAPS_DEBUG -fno-omit-frame-pointer "
-    if test "x$ax_cv_cxx_compiler_vendor" = "xclang" ; then
-        GAPS_CPP_FLAGS+=" -fsanitize=address -fsanitize=undefined "
-        GAPS_LIBS+=" -fsanitize=address -fsanitize=undefined "
-    elif test "x$ax_cv_cxx_compiler_vendor" = "xgnu" ; then
-        GAPS_CPP_FLAGS+=" -fsanitize=address -fsanitize=undefined "
-        GAPS_LIBS+=" -fsanitize=address -fsanitize=undefined "
-    fi
-elif test "x$build_debug_tsan" = "xyes" ; then
-    echo "Building Debug Version of CoGAPS with thread sanitizer"
-    GAPS_CPP_FLAGS+=" -DGAPS_DEBUG -fno-omit-frame-pointer "
-    if test "x$ax_cv_cxx_compiler_vendor" = "xclang" ; then
-        GAPS_CPP_FLAGS+=" -fsanitize=thread "
-        GAPS_LIBS+=" -fsanitize=thread "
-    fi
+    GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
 fi
 
 # set compile flags if warnings enabled
