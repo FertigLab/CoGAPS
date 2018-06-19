@@ -639,7 +639,6 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_debug
-enable_debug_tsan
 enable_warnings
 enable_simd
 '
@@ -1274,7 +1273,6 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-debug          build debug version of CoGAPS
-  --enable-debug-tsan     build debug version of CoGAPS
   --enable-warnings       compile CoGAPS with warning messages
   --enable-simd           specify simd instruction set (sse, avx)
 
@@ -2986,15 +2984,6 @@ else
 fi
 
 
-# Check if compiling debug version with thread sanitizer
-# Check whether --enable-debug_tsan was given.
-if test "${enable_debug_tsan+set}" = set; then :
-  enableval=$enable_debug_tsan; build_debug_tsan=yes
-else
-  build_debug_tsan=no
-fi
-
-
 # Check if compiler warnings should be turned on
 # Check whether --enable-warnings was given.
 if test "${enable_warnings+set}" = set; then :
@@ -4132,21 +4121,7 @@ echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compile
 # set compile flags for debug build
 if test "x$build_debug" = "xyes" ; then
     echo "Building Debug Version of CoGAPS"
-    GAPS_CPP_FLAGS+=" -DGAPS_DEBUG -fno-omit-frame-pointer "
-    if test "x$ax_cv_cxx_compiler_vendor" = "xclang" ; then
-        GAPS_CPP_FLAGS+=" -fsanitize=address -fsanitize=undefined "
-        GAPS_LIBS+=" -fsanitize=address -fsanitize=undefined "
-    elif test "x$ax_cv_cxx_compiler_vendor" = "xgnu" ; then
-        GAPS_CPP_FLAGS+=" -fsanitize=address -fsanitize=undefined "
-        GAPS_LIBS+=" -fsanitize=address -fsanitize=undefined "
-    fi
-elif test "x$build_debug_tsan" = "xyes" ; then
-    echo "Building Debug Version of CoGAPS with thread sanitizer"
-    GAPS_CPP_FLAGS+=" -DGAPS_DEBUG -fno-omit-frame-pointer "
-    if test "x$ax_cv_cxx_compiler_vendor" = "xclang" ; then
-        GAPS_CPP_FLAGS+=" -fsanitize=thread "
-        GAPS_LIBS+=" -fsanitize=thread "
-    fi
+    GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
 fi
 
 # set compile flags if warnings enabled
