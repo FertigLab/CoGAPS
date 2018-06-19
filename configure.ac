@@ -1,11 +1,5 @@
-# include macros
-m4_builtin([include], m4/ax_check_compile_flag.m4)
-m4_builtin([include], m4/ax_compiler_vendor.m4)
-m4_builtin([include], m4/ax_compiler_version.m4)
-m4_builtin([include], m4/ax_openmp.m4)
-
 # get version of CoGAPS from DESCRIPTION file
-AC_INIT(CoGAPS, m4_esyscmd_s([awk -e '/^Version:/ {print $2}' Repo/DESCRIPTION]))
+AC_INIT(CoGAPS, m4_esyscmd_s([awk -e '/^Version:/ {print $2}' DESCRIPTION]))
 
 # get C++ compiler from R configuration
 CXX=`"${R_HOME}/bin/R" CMD config CXX`

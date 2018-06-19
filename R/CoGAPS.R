@@ -41,11 +41,10 @@
 #' data(SimpSim)
 #' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 #' @export
-CoGAPS <- function(D, S, nFactor=7, nEquil=250, nSample=250, nOutputs=1000,
-nSnapshots=0, alphaA=0.01, alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100,
-seed=NA, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed='N',
-fixedPatterns=matrix(0), checkpointInterval=0, 
-checkpointFile="gaps_checkpoint.out", nCores=1, ...)
+CoGAPS <- function(D, S, nFactor=7, nIter=1000, nOutputs=250, alphaA=0.01,
+alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100, seed=NA, messages=TRUE,
+singleCellRNASeq=FALSE, whichMatrixFixed='N', fixedPatterns=matrix(0),
+checkpointInterval=0, checkpointFile="gaps_checkpoint.out", nCores=1, ...)
 {
     # get v2 arguments
     oldArgs <- list(...)
@@ -55,10 +54,6 @@ checkpointFile="gaps_checkpoint.out", nCores=1, ...)
         maxGibbmassA <- oldArgs$max_gibbmass_paraA
     if (!is.null(oldArgs$max_gibbmass_paraP))
         maxGibbmassP <- oldArgs$max_gibbmass_paraP
-    if (!is.null(oldArgs$sampleSnapshots) & is.null(oldArgs$numSnapshots))
-        nSnapshots <- 100
-    if (!is.null(oldArgs$sampleSnapshots) & !is.null(oldArgs$numSnapshots))
-        nSnapshots <- oldArgs$numSnapshots
     if (missing(D) & !is.null(oldArgs$data))
         D <- oldArgs$data
     if (missing(S) & !is.null(oldArgs$unc))
@@ -96,7 +91,7 @@ checkpointFile="gaps_checkpoint.out", nCores=1, ...)
     }
 
     # run algorithm with call to C++ code
-    result <- cogaps_cpp(D, nFactor, nEquil, nOutputs, seed, alphaA, alphaP,
+    result <- cogaps_cpp(D, nFactor, nIter, nOutputs, seed, alphaA, alphaP,
         maxGibbmassA, maxGibbmassP, messages, singleCellRNASeq, nCores)
     
     # label matrices and return list
@@ -129,15 +124,20 @@ CoGapsFromCheckpoint <- function(D, S, nFactor, nIter, checkpointFile)
 }
 
 #' CoGAPS with file input for matrix
+#' @export
 #'
 #' @param D file path for data matrix
 #' @return list with A and P matrix estimates
 #' @examples
 #'  file <- system.file("extdata/GIST.mtx", package="CoGAPS")
 #'  CoGAPSFromFile(file)
-CoGAPSFromFile <- function(D)
+CoGAPSFromFile <- function(D, S, nFactor=7, nIter=1000, nOutputs=250, alphaA=0.01,
+alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100, seed=NA, messages=TRUE,
+singleCellRNASeq=FALSE, whichMatrixFixed='N', fixedPatterns=matrix(0),
+checkpointInterval=0, checkpointFile="gaps_checkpoint.out", nCores=1, ...)
 {
-    cogapsFromFile_cpp(D)
+    cogapsFromFile_cpp(D, nFactor, nIter, nOutputs, seed, alphaA, alphaP,
+        maxGibbmassA, maxGibbmassP, messages, singleCellRNASeq)
 }
 
 #' Display Information About Package Compilation

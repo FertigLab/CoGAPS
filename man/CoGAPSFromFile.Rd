@@ -4,7 +4,12 @@
 \alias{CoGAPSFromFile}
 \title{CoGAPS with file input for matrix}
 \usage{
-CoGAPSFromFile(D)
+CoGAPSFromFile(D, S, nFactor = 7, nIter = 1000, nOutputs = 250,
+  alphaA = 0.01, alphaP = 0.01, maxGibbmassA = 100, maxGibbmassP = 100,
+  seed = NA, messages = TRUE, singleCellRNASeq = FALSE,
+  whichMatrixFixed = "N", fixedPatterns = matrix(0),
+  checkpointInterval = 0, checkpointFile = "gaps_checkpoint.out",
+  nCores = 1, ...)
 }
 \arguments{
 \item{D}{file path for data matrix}
