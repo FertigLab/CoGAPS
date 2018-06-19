@@ -4,10 +4,9 @@
 \alias{CoGAPS}
 \title{CoGAPS Matrix Factorization Algorithm}
 \usage{
-CoGAPS(D, S, nFactor = 7, nEquil = 250, nSample = 250, nOutputs = 1000,
-  nSnapshots = 0, alphaA = 0.01, alphaP = 0.01, maxGibbmassA = 100,
-  maxGibbmassP = 100, seed = NA, messages = TRUE,
-  singleCellRNASeq = FALSE, whichMatrixFixed = "N",
+CoGAPS(D, S, nFactor = 7, nIter = 1000, nOutputs = 250, alphaA = 0.01,
+  alphaP = 0.01, maxGibbmassA = 100, maxGibbmassP = 100, seed = NA,
+  messages = TRUE, singleCellRNASeq = FALSE, whichMatrixFixed = "N",
   fixedPatterns = matrix(0), checkpointInterval = 0,
   checkpointFile = "gaps_checkpoint.out", nCores = 1, ...)
 }
@@ -18,10 +17,6 @@ CoGAPS(D, S, nFactor = 7, nEquil = 250, nSample = 250, nOutputs = 1000,
 
 \item{nFactor}{number of patterns (basis vectors, metagenes), which must be
 greater than or equal to the number of rows of FP}
-
-\item{nEquil}{number of iterations for burn-in}
-
-\item{nSample}{number of iterations for sampling}
 
 \item{nOutputs}{how often to print status into R by iterations}
 
@@ -52,6 +47,10 @@ the fixed patterns}
 \item{nCores}{number of cpu cores to run in parallel over}
 
 \item{...}{keeps backwards compatibility with arguments from older versions}
+
+\item{nEquil}{number of iterations for burn-in}
+
+\item{nSample}{number of iterations for sampling}
 }
 \value{
 list with A and P matrix estimates
