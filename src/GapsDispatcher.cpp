@@ -48,7 +48,17 @@ GapsResult GapsDispatcher::run()
 
     GapsResult result(mRunners[0]->nRow(), mRunners[0]->nCol());
     GAPS_ASSERT(mDataIsLoaded);
+
+    if (mPrintMessages)
+    {
+        gaps_printf("Calibration Phase\n");
+    }
     runOneCycle(mMaxIterations);
+
+    if (mPrintMessages)
+    {
+        gaps_printf("Sampling Phase\n");
+    }
     mRunners[0]->startSampling();
     runOneCycle(mMaxIterations);
 

@@ -17,9 +17,8 @@
 #' @param S uncertainty matrix (std devs for chi-squared of Log Likelihood)
 #' @param nFactor number of patterns (basis vectors, metagenes), which must be
 #' greater than or equal to the number of rows of FP
-#' @param nEquil number of iterations for burn-in
-#' @param nSample number of iterations for sampling
-#' @param nOutputs how often to print status into R by iterations
+#' @param nIter number of iterations per phase (calibration and sampling)
+#' @param nOutputs how often to print status (number of iterations)
 #' @param alphaA sparsity parameter for A domain
 #' @param alphaP sparsity parameter for P domain
 #' @param maxGibbmassA limit truncated normal to max size
@@ -41,7 +40,7 @@
 #' data(SimpSim)
 #' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 #' @export
-CoGAPS <- function(D, S, nFactor=7, nIter=1000, nOutputs=250, alphaA=0.01,
+CoGAPS <- function(D, S=NULL, nFactor=7, nIter=1000, nOutputs=250, alphaA=0.01,
 alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100, seed=NA, messages=TRUE,
 singleCellRNASeq=FALSE, whichMatrixFixed='N', fixedPatterns=matrix(0),
 checkpointInterval=0, checkpointFile="gaps_checkpoint.out", nCores=1, ...)
