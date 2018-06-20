@@ -49,8 +49,8 @@ if test "x$warnings" = "xyes" ; then
     AX_CHECK_COMPILE_FLAG([-Wall], [GAPS_CXX_FLAGS+=" -Wall "])
     AX_CHECK_COMPILE_FLAG([-Wextra], [GAPS_CXX_FLAGS+=" -Wextra "])
     AX_CHECK_COMPILE_FLAG([-Werror], [GAPS_CXX_FLAGS+=" -Werror "])
-    AX_CHECK_COMPILE_FLAG([-Wno-unused-parameter], [GAPS_CXX_FLAGS+=" -Wno-unused-parameter "])
-    AX_CHECK_COMPILE_FLAG([-Wno-unused-function], [GAPS_CXX_FLAGS+=" -Wno-unused-function "])
+    AX_CHECK_COMPILE_FLAG([-Wno-unused-parameter],
+        [GAPS_CXX_FLAGS+=" -Wno-unused-parameter "])
 fi
 
 # set compile flags for SIMD

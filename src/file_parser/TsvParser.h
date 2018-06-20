@@ -19,6 +19,9 @@ private:
     unsigned mCurrentRow;
     unsigned mCurrentCol;
 
+    TsvParser(const TsvParser &p); // don't allow copies
+    TsvParser& operator=(const TsvParser &p); // don't allow copies
+
 public:
 
     explicit TsvParser(const std::string &path);

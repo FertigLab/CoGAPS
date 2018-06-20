@@ -19,6 +19,9 @@ private:
     unsigned mCurrentRow;
     unsigned mCurrentCol;
 
+    CsvParser(const CsvParser &p); // don't allow copies
+    CsvParser& operator=(const CsvParser &p); // don't allow copies
+
 public:
 
     explicit CsvParser(const std::string &path);

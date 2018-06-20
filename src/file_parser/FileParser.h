@@ -6,7 +6,14 @@
 // file parser interface
 class AbstractFileParser
 {
+private:
+
+    AbstractFileParser(const AbstractFileParser &p); // don't allow copies
+    AbstractFileParser& operator=(const AbstractFileParser &p); // don't allow copies
+
 public:
+
+    AbstractFileParser() {}
 
     static AbstractFileParser* create(const std::string &path);
 
