@@ -16,6 +16,9 @@ private:
     unsigned mNumRows;
     unsigned mNumCols;
 
+    MtxParser(const MtxParser &p); // don't allow copies
+    MtxParser& operator=(const MtxParser &p); // don't allow copies
+
 public:
 
     explicit MtxParser(const std::string &path);

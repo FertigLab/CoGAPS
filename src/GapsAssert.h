@@ -13,20 +13,20 @@
 #endif
 
 #ifdef GAPS_DEBUG
-    #define GAPS_ASSERT(cond)                                           \
-        do {                                                            \
-            if (!(cond))                                                \
-            {                                                           \
-                gaps_printf("assert failed %s %d\n", __FILE__, __LINE__);   \
-                std::exit(0);                                           \
-            }                                                           \
+    #define GAPS_ASSERT(cond)                                             \
+        do {                                                              \
+            if (!(cond))                                                  \
+            {                                                             \
+                gaps_printf("assert failed %s %d\n", __FILE__, __LINE__); \
+                std::exit(0);                                             \
+            }                                                             \
         } while(0)
 
     #define GAPS_ASSERT_MSG(cond, msg)                                  \
         do {                                                            \
             if (!(cond))                                                \
             {                                                           \
-                gaps_cout << "assert failed " << __FILE__ << " " <<   \
+                gaps_cout << "assert failed " << __FILE__ << " " <<     \
                     __LINE__ << " , " << msg << '\n';                   \
                 std::exit(0);                                           \
             }                                                           \
@@ -42,10 +42,7 @@
 #define gaps_stop std::exit(0)
 #endif
 
-#define GAPS_ERROR(msg)                             \
-    do {                                            \
-        gaps_cout << "error: " << msg << '\n';    \
-        gaps_stop;                              \
-    } while(0)
+// NOLINTNEXTLINE
+#define GAPS_ERROR(msg) do {gaps_cout << "error: " << msg << '\n'; gaps_stop;} while(0)
 
 #endif

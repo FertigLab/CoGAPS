@@ -6,6 +6,7 @@
     #include <omp.h>
 #endif
 
+/*
 static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
 {
     unsigned setSize = n / nSets;
@@ -26,6 +27,7 @@ static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned n
     sampleIndices.push_back(toBeSampled);
     return sampleIndices;
 }
+*/
 
 void GapsDispatcher::runOneCycle(unsigned k)
 {

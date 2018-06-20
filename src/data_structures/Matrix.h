@@ -22,9 +22,9 @@ private:
 public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
+    explicit RowMatrix(const ColMatrix &mat);
 
-    RowMatrix(const std::string &p);
-    RowMatrix(const ColMatrix &mat);
+    explicit RowMatrix(const std::string &path);
     //RowMatrix(const std::string &p, bool parseRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}
@@ -58,9 +58,9 @@ private:
 public:
 
     ColMatrix(unsigned nrow, unsigned ncol);
-    ColMatrix(const RowMatrix &mat);
+    explicit ColMatrix(const RowMatrix &mat);
 
-    ColMatrix(const std::string &p);
+    explicit ColMatrix(const std::string &path);
     //ColMatrix(const std::string &p, bool parseRows, std::vector<unsigned> whichIndices);
 
     unsigned nRow() const {return mNumRows;}

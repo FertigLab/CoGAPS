@@ -52,13 +52,16 @@ private:
 
     void runOneCycle(unsigned k);
 
+    GapsDispatcher(const GapsDispatcher &p); // don't allow copies
+    GapsDispatcher& operator=(const GapsDispatcher &p); // don't allow copies
+
 public:
 
-    GapsDispatcher(uint32_t seed=0) : mNumPatterns(3), mMaxIterations(1000),
-        mOutputFrequency(250), mSeed(seed), mAlphaA(0.01), mAlphaP(0.01),
-        mMaxGibbsMassA(100.f), mMaxGibbsMassP(100.f), mPrintMessages(true),
-        mSingleCell(false), mDataIsLoaded(false), mNumCoresPerSet(1),
-        mFixedMatrix('N')
+    explicit GapsDispatcher(uint32_t seed=0) : mNumPatterns(3),
+        mMaxIterations(1000), mOutputFrequency(250), mSeed(seed), mAlphaA(0.01),
+        mAlphaP(0.01), mMaxGibbsMassA(100.f), mMaxGibbsMassP(100.f),
+        mPrintMessages(true), mSingleCell(false), mDataIsLoaded(false),
+        mNumCoresPerSet(1), mFixedMatrix('N')
     {
         gaps::random::setSeed(mSeed);
     }
