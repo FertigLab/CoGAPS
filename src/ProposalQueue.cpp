@@ -136,7 +136,6 @@ bool ProposalQueue::birth(AtomicDomain &domain)
     mQueue.push_back(AtomicProposal('B', pos));
     mUsedIndices.insert(pos / mDimensionSize);
     mUsedPositions.insert(pos);
-    domain.insert(pos, 0.f);
     ++mMaxAtoms;
     return true;
 }

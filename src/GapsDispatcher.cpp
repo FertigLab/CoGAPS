@@ -41,6 +41,7 @@ GapsResult GapsDispatcher::run()
     if (mPrintMessages)
     {
         unsigned availableCores = omp_get_max_threads();
+        mNumCoresPerSet = std::min(availableCores, mNumCoresPerSet);
         gaps_printf("Running on %d out of %d available cores\n",
             mNumCoresPerSet, availableCores);
     }
