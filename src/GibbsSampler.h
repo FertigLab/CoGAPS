@@ -300,14 +300,11 @@ unsigned col)
         : gaps::random::exponential(mLambda);
     if (mass >= gaps::algo::epsilon)
     {
-        mDomain.updateMass(pos, mass);
-        mMatrix(row, col) += mass;
-        impl()->updateAPMatrix(row, col, mass);
+        addMass(pos, mass, row, col);
         mQueue.acceptBirth();
     }
     else
     {
-        mDomain.cacheErase(pos);
         mQueue.rejectBirth();
     }
 }
