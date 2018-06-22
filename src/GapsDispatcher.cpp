@@ -86,9 +86,12 @@ void GapsDispatcher::setUncertainty(const RowMatrix &S)
 
 void GapsDispatcher::loadData(const std::string &pathToData)
 {
+    gaps_printf("Loading Data...");
+    gaps_flush();
     mRunners.push_back(new GapsRunner(pathToData, mNumPatterns, mAlphaA,
         mAlphaP, mMaxGibbsMassA, mMaxGibbsMassP, mSingleCell));
     mDataIsLoaded = true;
+    gaps_printf("Done!\n");
 }
 
 void GapsDispatcher::setUncertainty(const std::string &pathToMatrix)
