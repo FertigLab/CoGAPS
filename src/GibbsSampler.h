@@ -491,7 +491,7 @@ unsigned r2, unsigned c2, float m2)
             return std::min(std::max(-m1, delta), m2); // conserve mass
         }
     }
-    return -m1 - 1.f;
+    return -m1 - 1.f; // TODO this is janky
 }
 
 template <class T, class MatA, class MatB>
