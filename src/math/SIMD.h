@@ -116,7 +116,9 @@ public:
     float scalar()
     {
         float* ra = reinterpret_cast<float*>(&mData); // NOLINT
-        return ra[0] + ra[1] + ra[2] + ra[3] + ra[4] + ra[5] + ra[6] + ra[7];
+        mData = _mm256_hadd_ps(mData, mData);
+        mData = _mm256_hadd_ps(mData, mData);
+        return ra[0] + ra[4];
     }
 #elif defined( __GAPS_SSE__ )
     float scalar()
