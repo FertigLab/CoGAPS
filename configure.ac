@@ -30,9 +30,9 @@ GAPS_LIBS=
 # get compiler info
 AX_COMPILER_VENDOR
 AX_COMPILER_VERSION
-AX_OPENMP
 
 # set openmp flags
+AX_OPENMP
 GAPS_CXX_FLAGS+=" $OPENMP_CXXFLAGS "
 GAPS_LIBS+=" $OPENMP_CXXFLAGS "
 
@@ -46,28 +46,52 @@ fi
 
 # set compile flags if warnings enabled
 if test "x$warnings" = "xyes" ; then
-    AX_CHECK_COMPILE_FLAG([-Wall], [GAPS_CXX_FLAGS+=" -Wall "])
-    AX_CHECK_COMPILE_FLAG([-Wextra], [GAPS_CXX_FLAGS+=" -Wextra "])
-    AX_CHECK_COMPILE_FLAG([-Werror], [GAPS_CXX_FLAGS+=" -Werror "])
-    AX_CHECK_COMPILE_FLAG([-Wno-unused-parameter],
-        [GAPS_CXX_FLAGS+=" -Wno-unused-parameter "])
+    if test "x$ax_cv_cxx_compiler_vendor" = "xgnu" || test "x$ax_cv_cxx_compiler_vendor" = "xclang"; then
+        GAPS_CXX_FLAGS+=" -Wall -Wextra -Werror -Wno-unused-parameter "
+    fi
 fi
 
 # set compile flags for SIMD
+AX_EXT
+echo "Supported SIMD flags: " $SIMD_FLAGS
+
+if test "x$simd_version" != "xavx" && test "x$simd_version" != "xsse" && test "x$simd_version" != "xno" && test "x$simd_version" != "xyes" ; then
+    echo "Invalid SIMD Type, Defaulting to AVX"
+    simd_version=avx
+fi
+
+avx_supported=false
+if test "x$simd_version" = "xavx" || test "x$simd_version" = "xyes" ; then
+    for s in $SIMD_FLAGS; do
+        if test "x$s" = "x-mavx"; then
+            avx_supported=true
+            echo "Building with AVX instructions"
+            GAPS_CXX_FLAGS+=" -mavx "
+        fi
+    done
+    if test "x$avx_supported" = "xfalse" ; then
+        echo "Note: AVX not supported, trying for SSE"
+        simd_version=sse
+    fi
+fi
+
+sse_supported=false
 if test "x$simd_version" = "xsse" ; then
-    echo "Compiling with SSE instructions"
-    AX_CHECK_COMPILE_FLAG([-msse4.2], [GAPS_CXX_FLAGS+=" -msse4.2 "])
-elif test "x$simd_version" = "xyes" ; then
-    echo "Compiling with SSE instructions"
-    AX_CHECK_COMPILE_FLAG([-msse4.2], [GAPS_CXX_FLAGS+=" -msse4.2 "])
-elif test "x$simd_version" = "xavx" ; then
-    echo "Compiling with AVX instructions"
-    AX_CHECK_COMPILE_FLAG([-mavx], [GAPS_CXX_FLAGS+=" -mavx "])    
-elif test "x$simd_version" = "xno" ; then
-    echo "Compiling without SIMD instructions"
-else
-    echo "Error: Invalid SIMD type"
-    exit -1
+    for s in $SIMD_FLAGS; do
+        if test "x$s" = "x-msse4.2"; then
+            sse_supported=true
+            echo "Building with SSE instructions"
+            GAPS_CXX_FLAGS+=" -msse4.2 "
+        fi
+    done
+    if test "x$sse_supported" = "xfalse" ; then
+        echo "Note: SSE not supported"
+        simd_version=no
+    fi
+fi
+
+if test "x$simd_version" = "xno" ; then
+    echo "Building without SIMD instructions"
 fi
 
 # export variables containing flags
