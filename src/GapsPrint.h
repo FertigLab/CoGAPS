@@ -4,7 +4,7 @@
 #ifdef __GAPS_R_BUILD__
     #define gaps_printf Rprintf
     #define gaps_cout Rcpp::Rcout
-    #define gaps_flush ((void)sizeof(x))
+    #define gaps_flush(x) R_FlushConsole()
 #else
     #define gaps_printf printf
     #define gaps_cout std::cout

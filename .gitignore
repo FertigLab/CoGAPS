@@ -6,6 +6,8 @@
 *.so
 *.o
 
+.git
+
 # ignore OS X files
 *.DS_Store
 .Rproj.user
@@ -25,3 +27,4 @@ config.status
 aclocal.m4
 autom4te.cache/
 src/Makevars
+
