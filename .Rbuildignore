@@ -9,6 +9,8 @@
 ^inst/profiling/
 ^inst/vignettes/
 
+^.git
+
 ^src/AtomicDomain.o
 ^src/Cogaps.o
 ^src/GapsRunner.o
@@ -19,6 +21,7 @@
 ^src/test-runner.o
 ^src/data_structures/Matrix.o
 ^src/data_structures/Vector.o
+^src/file_parser/FileParser.o
 ^src/file_parser/CsvParser.o
 ^src/file_parser/TsvParser.o
 ^src/file_parser/MtxParser.o
