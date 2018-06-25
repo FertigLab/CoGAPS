@@ -15,7 +15,7 @@
     #endif
 #endif
 
-#if SSE_INSTR_SET == 7
+#if SSE_INSTR_SET > 6
     #define __GAPS_AVX__
     #include <immintrin.h>
 #elif SSE_INSTR_SET == 6 || SSE_INSTR_SET == 5
@@ -105,14 +105,7 @@ public:
     void load(const float *ptr) { mData = LOAD_PACKED(ptr); }
     void store(float *ptr) { STORE_PACKED(ptr, mData); }
 
-#if defined( __GAPS_AVX512__ )
-    float scalar()
-    {
-        float* ra = reinterpret_cast<float*>(&mData); // NOLINT
-        return ra[0] + ra[1] + ra[2] + ra[3] + ra[4] + ra[5] + ra[6] + ra[7] +
-            ra[8] + ra[9] + ra[10] + ra[11] + ra[12] + ra[13] + ra[14] + ra[15];
-    }
-#elif defined( __GAPS_AVX__ )
+#if defined( __GAPS_AVX__ )
     float scalar()
     {
         float* ra = reinterpret_cast<float*>(&mData); // NOLINT

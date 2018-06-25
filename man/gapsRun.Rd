@@ -20,14 +20,7 @@ gapsRun(D, S, ABins = data.frame(), PBins = data.frame(), nFactor = 7,
 
 \item{PBins}{unused}
 
-\item{nFactor}{number of patterns (basis vectors, metagenes), which must be
-greater than or equal to the number of rows of FP}
-
 \item{simulation_id}{unused}
-
-\item{nEquil}{number of iterations for burn-in}
-
-\item{nSample}{number of iterations for sampling}
 
 \item{nOutR}{number of output messages}
 
@@ -41,22 +34,13 @@ greater than or equal to the number of rows of FP}
 
 \item{numSnapshots}{how many snapshots to take}
 
-\item{alphaA}{sparsity parameter for A domain}
-
 \item{nMaxA}{unused}
 
 \item{max_gibbmass_paraA}{limit truncated normal to max size}
 
-\item{alphaP}{sparsity parameter for P domain}
-
 \item{nMaxP}{unused}
 
 \item{max_gibbmass_paraP}{limit truncated normal to max size}
-
-\item{seed}{a positive seed is used as-is, while any negative seed tells
-the algorithm to pick a seed based on the current time}
-
-\item{messages}{display progress messages}
 }
 \value{
 list with A and P matrix estimates
