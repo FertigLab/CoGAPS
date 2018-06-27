@@ -1,133 +1,169 @@
+#' @include class-CogapsParams.R
+NULL
+
 #' CoGAPS Matrix Factorization Algorithm
 #' @export
 #' @docType methods
 #' @rdname CoGAPS-methods
 #' 
-#' @details calls the C++ MCMC code and performs Bayesian
+#' @description calls the C++ MCMC code and performs Bayesian
 #' matrix factorization returning the two matrices that reconstruct
 #' the data matrix
-#' @param Data data
-#' @param S uncertainty
-#' @param params object of type CoGapsParams
+#' @details Currently, raw count matrices are the only supported R object. For
+#'  file types CoGAPS supports csv, tsv, and mtx
+#' @param data File name or R object (see details for supported types)
+#' @param params CogapsParams object
+#' @param uncertainty uncertainty matrix (same supported types as data)
+#' @param fixedMatrix data for fixing the values of either the A or P matrix;
+#'  used in conjuction with whichMatrixFixed (see CogapsParams)
+#' @param checkpointFile name of the checkpoint file
 #' @param ... keeps backwards compatibility with arguments from older versions
-#' @return object of type CoGapsResult
+#' @return CogapsResult object
 #' @importFrom methods new
 #' @examples
-#' data(SimpSim)
-<<<<<<< HEAD
-#' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
-#' @export
-CoGAPS <- function(Data, S, CoGAPSParams, GapsReturn ...)
+#' # Running from R object
+#' data(GIST)
+#' resultA <- CoGAPS(GIST.D)
+#' 
+#' # Running from file name
+#' gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
+#' resultB <- CoGAPS(gist_path)
+#'
+#' Setting Parameters
+#' params <- new("CogapsParams")
+#' params <- setParam(params, "nPatterns", 5)
+#' resultC <- CoGAPS(GIST.D, params)
+setGeneric("CoGAPS", function(data, params=new("CogapsParams"),
+uncertainty=NULL, fixedMatrix=NULL, checkpointFile=NULL, ...)
 {
-    #returns a default uncertainty matrix of 0.1*Data dataset if it's greater than 0.1
-    if(is.null(S))
-    S <- pmax(0.1*Data, 0.1)
-    
-    # get v2 arguments
-    oldArgs <- list(...)
-    if (!is.null(oldArgs$nOutR))
-        nOutputs <- oldArgs$nOutR
-    if (!is.null(oldArgs$max_gibbmass_paraA))
-        maxGibbmassA <- oldArgs$max_gibbmass_paraA
-    if (!is.null(oldArgs$max_gibbmass_paraP))
-        maxGibbmassP <- oldArgs$max_gibbmass_paraP
-    if (!is.null(oldArgs$sampleSnapshots) & is.null(oldArgs$numSnapshots))
-        nSnapshots <- 100
-    if (!is.null(oldArgs$sampleSnapshots) & !is.null(oldArgs$numSnapshots))
-        nSnapshots <- oldArgs$numSnapshots
-    if (missing(D) & !is.null(oldArgs$data))
-        Data <- oldArgs$data
-    if (missing(S) & !is.null(oldArgs$unc))
-        S <- oldArgs$unc
+    # parse parameters from ...
+    params <- parseOldParams(params, list(...))
+    params <- parseDirectParams(params, list(...))
 
-    # get pump arguments - hidden for now from user
-    pumpThreshold <- "unique"
-    nPumpSamples <- 0
-    if (!is.null(list(...)$pumpThreshold))
-        pumpThreshold <- list(...)$pumpThreshold
-    if (!is.null(list(...)$nPumpSamples))
-        pumpThreshold <- list(...)$nPumpSamples
-=======
-#' result <- CoGAPS(SimpSim.D, nFactor=3, nOutputs=250)
-setGeneric('CoGAPS', function(Data, S=NULL, params, ...)
-    {standardGeneric('RVsharing')})
->>>>>>> d4aca53ab9ee4ab023ea63049bda5a25e57b344b
+    # call method
+    gapsReturnList <- standardGeneric("CoGAPS")
+
+    # convert list to CogapsResult object
+    return(CogapsResult(
+        Amean       = gapsReturnList$Amean,
+        Asd         = gapsReturnList$Asd,
+        Pmean       = gapsReturnList$Pmean,
+        Psd         = gapsReturnList$Psd,
+        seed        = gapsReturnList$seed,
+        meanChiSq   = gapsReturnList$meanChiSq,
+        diagnostics = gapsReturnList$diagnostics
+    )) 
+})
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
-setMethod('CoGAPS', signature(Data='matrix', params='CoGapsParams'),
-function(Data, S=NULL, params, ...)
+#' @importFrom tools file_ext
+setMethod("CoGAPS", signature(data="character", params="CogapsParams"),
+function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
 {
-    # default to 10% of signal if no uncertainty matrix passed in by user
-    if (is.null(S))
+    # check file extension
+    if (!(file_ext(data) %in% c("tsv", "csv", "mtx")))
+        stop("unsupported file extension for data")
+
+    # check uncertainty matrix
+    if (!is.null(uncertainty))
     {
-        S <- pmax(0.1 * Data, 0.1)
+        if (class(uncertainty) != "character")
+            stop("uncertainty must be same data type as data (file name)")
+        if (!(file_ext(uncertainty) %in% c("tsv", "csv", "mtx")))
+            stop("unsupported file extension for uncertainty")
     }
 
-    return(RunCoGAPS(Data, S, params))
+    # call C++ function
+    cogaps_cpp_from_file(data, uncertainty, params@nPatterns,
+        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
+        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
+        params@messages, params@singleCell, params@checkpointOutFile)
 })
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
-setMethod('CoGAPS', signature(Data='data.frame', params='CoGapsParams'),
-function(Data, S=NULL, params, ...)
+setMethod("CoGAPS", signature(data="matrix", params="CogapsParams"),
+function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
 {
-   
-    countMatrix = data.matrix(Data)
-    
-    if (is.null(S))
-      S <- pmax(0.1 * Data, 0.1)
-    
-    return(RunCoGAPS(countMatrix, S, params))
-    # TODO(Hyejune) convert data.frame to matrix and set default value for
-    # S matrix if it's null - then call RunCoGAPS
-})
+    # check matrix
+    if (!is.null(uncertainty) & class(uncertainty) != "matrix")
+        stop("uncertainty must be same data type as data (matrix)")
+    checkDataMatrix(data, uncertainty)
 
-#' @rdname CoGAPS-methods
-#' @aliases CoGAPS
-setMethod('CoGAPS', signature(Data='SummarizedExperiment', params='CoGapsParams'),
-function(Data, S=NULL, params, ...)
-{
-  
-    countMatrix = assay(Data, "counts")
-    if (is.null(S))
-      S <- pmax(0.1 * Data, 0.1)
-    return(RunCoGAPS(countMatrix, S, params))
-    # TODO(Hyejune) extract count matrix from SE object and set default value
-    # S matrix if it's null - then call RunCoGAPS
-})
-
-#' @rdname CoGAPS-methods
-#' @aliases CoGAPS
-setMethod('CoGAPS', signature(Data='SingleCellExperiment', params='CoGapsParams'),
-function(Data, S=NULL, params, ...)
-{
-   
-    countMatrix = assay(Data, "counts")
-    if (is.null(S))
-      S <- pmax(0.1 * Data, 0.1)
-    result <- RunCoGAPS(countMatrix, S, params)
-    
-    Data@reducedDims <- SimpleList(Amean=result$Amean, Pmean=result$Pmean)
-    return(Data, Data@reducedDims)
-    
-    # TODO(Hyejune) extract count matrix from SCE object and set default value
-    # S matrix if it's null - then call RunCoGAPS
-})
-
-RunCoGAPS <- function(Data, S, params)
-{
-    thresholdEnum <- c("unique", "cut")
-    result <- cogaps_cpp(Data, S, params@nFactor, params@nIter, params@nIter / 10,
-        params@nIter, params@outputFrequency, params@alphaA, params@alphaP,
-        params@maxGibbmassA, params@maxGibbmassP, params@seed, params@messages,
-        params@singleCellRNASeq, params@whichMatrixFixed, params@fixedMatrix,
-        params@checkpointInterval, params@checkpointFile, 0, 0, params@nCores)
-
-    return(new('CoGapsResult', result$Amean, result$Asd, result$Pmean,
-        result$Psd))
+    # call C++ function
+    cogaps_cpp(data, uncertainty, params@nPatterns,
+        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
+        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
+        params@messages, params@singleCell, params@checkpointOutFile)})
 }
 
-  
-# TODO(Tom) handle instance where function is called with deprecated parametres
+#' @rdname CoGAPS-methods
+#' @aliases CoGAPS
+setMethod("CoGAPS", signature(data="data.frame", params="CogapsParams"),
+function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
+{
+    # check matrix
+    if (!is.null(uncertainty) & class(uncertainty) != "matrix")
+        stop("uncertainty must be matrix when data is a data.frame")
+    checkDataMatrix(data.matrix(data), uncertainty)
 
+    # call C++ function
+    cogaps_cpp(data.matrix(data), uncertainty, params@nPatterns,
+        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
+        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
+        params@messages, params@singleCell, params@checkpointOutFile)
+})
+
+#' @rdname CoGAPS-methods
+#' @aliases CoGAPS
+setMethod("CoGAPS", signature(data="SummarizedExperiment", params="CogapsParams"),
+function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
+{
+    # extract count matrix
+    countMatrix = assay(data, "counts")
+
+    # check matrix
+    if (!is.null(uncertainty) & class(uncertainty) != "matrix")
+        stop("uncertainty must be matrix when data is a SummarizedExperiment")
+    checkDataMatrix(countMatrix, uncertainty)
+
+    # call C++ function
+    cogaps_cpp(countMatrix, uncertainty, params@nPatterns,
+        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
+        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
+        params@messages, params@singleCell, params@checkpointOutFile)
+})
+
+#' @rdname CoGAPS-methods
+#' @aliases CoGAPS
+setMethod("CoGAPS", signature(data="SingleCellExperiment", params="CogapsParams"),
+function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
+{
+    # extract count matrix
+    countMatrix = assay(data, "counts")
+
+    # check matrix
+    if (!is.null(uncertainty) & class(uncertainty) != "matrix")
+        stop("uncertainty must be matrix when data is a SummarizedExperiment")
+    checkDataMatrix(countMatrix, uncertainty)
+
+    # check matrix
+    if (!is.null(uncertainty) & class(uncertainty) != "data.frame")
+        stop("Uncertainty must be same data type as data (data.frame)")
+    uncertainty <- ifelse(is.null(uncertainty), matrix(), data.matrix(uncertainty))
+    checkDataMatrix(as.matrix(data), uncertainty)
+}
+
+#' Information About Package Compilation
+#' @export
+#'
+#' @details returns information about how the package was compiled, i.e. which
+#'  compiler/version was used, which compile time options were enabled, etc...
+#' @return string containing build report
+#' @examples
+#' CoGAPS::buildReport()
+buildReport <- function()
+{
+    getBuildReport_cpp()
+}

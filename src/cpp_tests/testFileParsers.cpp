@@ -76,10 +76,7 @@ TEST_CASE("Test Parsers")
             MatrixElement e(p.getNext());
 
             REQUIRE(e.row() < 1363);
-            REQUIRE(e.row() >= 0);
             REQUIRE(e.col() < 9);
-            REQUIRE(e.col() >= 0);
-
             ++count;
         }
         REQUIRE(count == 12267);

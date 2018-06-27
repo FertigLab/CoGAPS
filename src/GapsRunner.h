@@ -1,106 +1,58 @@
 #ifndef __COGAPS_GAPS_RUNNER_H__
 #define __COGAPS_GAPS_RUNNER_H__
 
-#include "Archive.h"
 #include "GapsStatistics.h"
 #include "GibbsSampler.h"
 
 #include "data_structures/Matrix.h"
-#include "data_structures/Vector.h"
 
-#include <Rcpp.h>
-
-// boost time helpers
-#include <boost/date_time/posix_time/posix_time.hpp>
-namespace bpt = boost::posix_time;
-#define bpt_now() bpt::microsec_clock::local_time()
-
-enum GapsPhase
-{
-    GAPS_BURN=0,
-    GAPS_COOL=1,
-    GAPS_SAMP=2
-};
-
-// Manages all data and parameters for running CoGAPS; contains the high-level
-// algorithm logic
 class GapsRunner
 {
 private:
-#ifdef GAPS_INTERNAL_TESTS
-public:
-#endif
 
-    Vector mChiSqEquil;
-    Vector mNumAAtomsEquil;
-    Vector mNumPAtomsEquil;
+    unsigned mNumRows;
+    unsigned mNumCols;
 
-    Vector mChiSqSample;
-    Vector mNumAAtomsSample;
-    Vector mNumPAtomsSample;
-
-    unsigned mIterA;
-    unsigned mIterP;
-    
-    unsigned mEquilIter;
-    unsigned mCoolIter;
-    unsigned mSampleIter;
-
-    //unsigned mNumPatterns;
-    unsigned mNumOutputs;
-    bool mPrintMessages;
-
-    unsigned mCurrentIter;
-    GapsPhase mPhase;
-    uint32_t mSeed;
-
-    bpt::ptime mLastCheckpoint;
-    int64_t mCheckpointInterval;
-    std::string mCheckpointFile;
-
-    unsigned mNumUpdatesA;
-    unsigned mNumUpdatesP;
-    
     AmplitudeGibbsSampler mASampler;
     PatternGibbsSampler mPSampler;
     GapsStatistics mStatistics;
 
-    unsigned mNumCores;
+    bool mSamplePhase;
 
-    bpt::ptime mStartTime;
+    unsigned mNumUpdatesA;
+    unsigned mNumUpdatesP;
 
-    char mFixedMatrix;
-
-    unsigned mNumPumpSamples;
-
-    void createCheckpoint();
-    void makeCheckpointIfNeeded();
-    void displayStatus(const std::string &type, unsigned nIterTotal);
-    void storeSamplerInfo(Vector &atomsA, Vector &atomsP, Vector &chi2);
-    void updateSampler();
-    void runBurnPhase();
-    void runCoolPhase();
-    void runSampPhase();
-    double estPercentComplete();
+    void updateSampler(unsigned nA, unsigned nP, unsigned nCores);
 
 public:
 
-    // construct from parameters
-    GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
-        unsigned nFactor, unsigned nEquil, unsigned nCool, unsigned nSample,
-        unsigned nOutputs, float alphaA, float alphaP,
-        float maxGibbsMassA, float maxGibbsMassP, uint32_t seed, bool messages,
-        bool singleCellRNASeq, unsigned cptInterval, const std::string &cptFile,
-        char whichMatrixFixed, const Rcpp::NumericMatrix &FP, unsigned nCores,
-        PumpThreshold pumpThreshold, unsigned nPumpSamples);
-    
-    // construct from checkpoint file
-    GapsRunner(const Rcpp::NumericMatrix &D, const Rcpp::NumericMatrix &S,
-        unsigned nFactor, unsigned nEquil, unsigned nSample,
-        const std::string &cptFile);
+    GapsRunner(const RowMatrix &data, unsigned nPatterns, float alphaA,
+        float alphaP, float maxGibbsMassA, float maxGibbsMassP,
+        bool singleCell);
 
-    // run all phases of algorithm
-    Rcpp::List run();
+    GapsRunner(const std::string &pathToData, unsigned nPatterns, float alphaA,
+        float alphaP, float maxGibbsMassA, float maxGibbsMassP,
+        bool singleCell);
+    
+    void run(unsigned nIter, unsigned outputFreq, bool printMessages,
+        unsigned nCores);
+
+    unsigned nRow() const { return mNumRows; }
+    unsigned nCol() const { return mNumCols; }
+
+    void setUncertainty(const RowMatrix &S);
+    void setUncertainty(const std::string &pathToMatrix);
+
+    void startSampling() { mSamplePhase = true; }
+
+    void displayStatus(unsigned outFreq, unsigned current, unsigned total);
+
+    void setFixedMatrix(char which, const RowMatrix &mat);
+
+    ColMatrix AMean() const { return mStatistics.AMean(); }
+    RowMatrix PMean() const { return mStatistics.PMean(); }
+    ColMatrix AStd() const { return mStatistics.AStd(); }
+    RowMatrix PStd() const { return mStatistics.PStd(); }
 };
 
 #endif // __COGAPS_GAPS_RUNNER_H__
