@@ -1,10 +1,10 @@
-#' CoGapsParams
+#' CogapsParams
 #' @export 
 #'
 #' @description Encapsulates all parameters for the CoGAPS algorithm
-setClass("CoGapsParams", slots = c(
-    nFactor = "numeric",
-    nIter = "numeric",
+setClass("CogapsParams", slots = c(
+    nPatterns = "numeric",
+    nIterations = "numeric",
     outputFrequency = "numeric",
     alphaA = "numeric",
     alphaP = "numeric",
@@ -19,16 +19,16 @@ setClass("CoGapsParams", slots = c(
     nCores = "numeric"
 ))
 
-#' Constructor for CoGapsParams
-#' @return initialized CoGapsParams object
+#' Constructor for CogapsParams
+#' @return initialized CogapsParams object
 #' @importFrom methods callNextMethod
-setMethod("initialize", "CoGapsParams",
+setMethod("initialize", "CogapsParams",
     function(.Object, ...)
     {
         getMilliseconds <- function(time) floor((time$sec %% 1) * 1000)
 
-        .Object@nFactor <- 7
-        .Object@nIter <- 1000
+        .Object@nPatterns <- 7
+        .Object@nIterations <- 1000
         .Object@outputFrequency <- 500
         .Object@alphaA <- 0.01
         .Object@alphaP <- 0.01
@@ -47,12 +47,12 @@ setMethod("initialize", "CoGapsParams",
     }
 )
 
-setValidity("CoGapsParams",
+setValidity("CogapsParams",
     function(object)
     {
-        if (object@nFactor <= 0 || object@nFactor %% 1 != 0)
+        if (object@nPatterns <= 0 || object@nPatterns %% 1 != 0)
             "number of patterns must be an integer greater than zero"
-        if (object@nIter <= 0 || object@nIter %% 1 != 0)
+        if (object@nIterations <= 0 || object@nIterations %% 1 != 0)
             "number of iterations must be an integer greater than zero"
         if (object@outputFrequency <= 0 || object@outputFrequency %% 1 != 0)
             "the output frequency must be an integer greater than zero"
@@ -76,12 +76,12 @@ setValidity("CoGapsParams",
 #' @docType methods
 #' @rdname setParam-methods
 #'
-#' @param params an object of type CoGapsParams
+#' @param object an object of type CogapsParams
 #' @param whichParam a string with the name of the parameter to be changed
 #' @param value the value to set the parameter to
 #' @return the modified params object
 #' @examples
-#'  params <- new("CoGapsParams")
+#'  params <- new("CogapsParams")
 #'  params <- setParam(params, "seed", 123)
 setGeneric("setParam", function(object, whichParam, value)
     {standardGeneric("setParam")})
@@ -91,18 +91,38 @@ setGeneric("setParam", function(object, whichParam, value)
 #' @docType methods
 #' @rdname getParam-methods
 #'
-#' @param params an object of type CoGapsParams
+#' @param object an object of type CogapsParams
 #' @param whichParam a string with the name of the requested parameter
 #' @return the value of the parameter
 #' @examples
-#'  params <- new("CoGapsParams")
+#'  params <- new("CogapsParams")
 #'  getParam(params, "seed")
 setGeneric("getParam", function(object, whichParam)
     {standardGeneric("getParam")})
 
+#' parse list of old-style parameters, store relevant values
+#' @docType methods
+#' @rdname parseOldParams-methods
+#'
+#' @param object an object of type CogapsParams
+#' @param oldArgs named list of deprecated arguments
+#' @return an object of type CogapsParams
+setGeneric("parseOldParams", function(object, oldArgs)
+    {standardGeneric("parseOldParams")})
+
+#' parse list of parameters passed directly to CoGAPS
+#' @docType methods
+#' @rdname parseDirectParams-methods
+#'
+#' @param object an object of type CogapsParams
+#' @param oldArgs named list of arguments
+#' @return an object of type CogapsParams
+setGeneric("parseDirectParams", function(object, args)
+    {standardGeneric("parseDirectParams")})
+
 #' @rdname setParam-methods
 #' @aliases setParam
-setMethod("setParam", signature(object="CoGapsParams"), 
+setMethod("setParam", signature(object="CogapsParams"),
     function(object, whichParam, value)
     {
         slot(params, whichParam) <- value
@@ -113,9 +133,52 @@ setMethod("setParam", signature(object="CoGapsParams"),
 
 #' @rdname getParam-methods
 #' @aliases getParam
-setMethod("getParam", signature(object="CoGapsParams"), 
+setMethod("getParam", signature(object="CogapsParams"),
     function(object, whichParam)
     {
         slot(params, whichParam)
+    }
+)
+
+#' @rdname parseOldParams-methods
+#' @aliases parseOldParams
+setMethod("parseOldParams", signature(object="CogapsParams"),
+    function(object, oldArgs)
+    {
+        if (!is.null(oldArgs$nFactor))
+            params@nPatterns <- oldArgs$nFactor
+        if (!is.null(oldArgs$nEquil))
+            params@nIterations <- oldArgs$nEquil
+        if (!is.null(oldArgs$nSample))
+            params@nIterations <- oldArgs$nSample
+        if (!is.null(oldArgs$nOutputs))
+            params@outputFrequency <- nOutputs
+        if (!is.null(oldArgs$maxGibbmassA))
+            params@maxGibbsMassA <- oldArgs$maxGibbmassA
+        if (!is.null(oldArgs$maxGibbmassP))
+            params@maxGibbsMassA <- oldArgs$maxGibbmassP
+
+        if (!is.null(oldArgs$nSnapshots))
+            warning("snapshots not currently supported in release build")
+        if (!is.null(oldArgs$fixedPatterns))
+            stop("pass fixed matrix in with 'fixedMatrix' argument")
+        
+        return(params)
+    }
+)
+
+#' @rdname parseDirectParams-methods
+#' @aliases parseDirectParams
+setMethod("parseDirectParams", signature(object="CogapsParams"),
+    function(object, args)
+    {
+        for (s in slotNames(object))
+        {
+            if (!is.null(args[s]))
+            {
+                params <- setParam(object, s, args[s])
+            }
+        }
+        return(params)
     }
 )
