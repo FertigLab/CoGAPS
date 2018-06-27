@@ -1,7 +1,6 @@
 #ifndef __COGAPS_ARCHIVE_H__
 #define __COGAPS_ARCHIVE_H__
 
-#include <Rcpp.h>
 #include <fstream>
 
 #include <boost/random/mersenne_twister.hpp>

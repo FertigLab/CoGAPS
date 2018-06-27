@@ -15,7 +15,7 @@
     #endif
 #endif
 
-#if SSE_INSTR_SET == 7
+#if SSE_INSTR_SET > 6
     #define __GAPS_AVX__
     #include <immintrin.h>
 #elif SSE_INSTR_SET == 6 || SSE_INSTR_SET == 5
@@ -105,18 +105,13 @@ public:
     void load(const float *ptr) { mData = LOAD_PACKED(ptr); }
     void store(float *ptr) { STORE_PACKED(ptr, mData); }
 
-#if defined( __GAPS_AVX512__ )
+#if defined( __GAPS_AVX__ )
     float scalar()
     {
         float* ra = reinterpret_cast<float*>(&mData); // NOLINT
-        return ra[0] + ra[1] + ra[2] + ra[3] + ra[4] + ra[5] + ra[6] + ra[7] +
-            ra[8] + ra[9] + ra[10] + ra[11] + ra[12] + ra[13] + ra[14] + ra[15];
-    }
-#elif defined( __GAPS_AVX__ )
-    float scalar()
-    {
-        float* ra = reinterpret_cast<float*>(&mData); // NOLINT
-        return ra[0] + ra[1] + ra[2] + ra[3] + ra[4] + ra[5] + ra[6] + ra[7];
+        mData = _mm256_hadd_ps(mData, mData);
+        mData = _mm256_hadd_ps(mData, mData);
+        return ra[0] + ra[4];
     }
 #elif defined( __GAPS_SSE__ )
     float scalar()
@@ -142,6 +137,40 @@ public:
 #ifdef _OPENMP
     #define __GAPS_OPENMP__
 #endif
+
+// used to convert defined macro values into strings
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
+inline std::string buildReport()
+{
+#if defined( __clang__ )
+    std::string compiler = "Compiled with Clang\n";
+#elif defined( __INTEL_COMPILER )
+    std::string compiler = "Compiled with Intel ICC/ICPC\n";
+#elif defined( __GNUC__ )
+    std::string compiler = "Compiled with GCC v" + std::string(STR( __GNUC__ ))
+    + "." + std::string(STR( __GNUC_MINOR__ )) + '\n';
+#elif defined( _MSC_VER )
+    std::string compiler = "Compiled with Microsoft Visual Studio\n";
+#endif
+
+#if defined( __GAPS_AVX__ )
+    std::string simd = "AVX enabled\n";
+#elif defined( __GAPS_SSE__ )
+    std::string simd = "SSE enabled\n";
+#else
+    std::string simd = "SIMD not enabled\n";
+#endif
+
+#ifdef __GAPS_OPENMP__
+    std::string openmp = "Compiled with OpenMP\n";
+#else
+    std::string openmp = "Compiler did not support OpenMP\n";
+#endif
+
+    return compiler + simd + openmp;
+}
 
 #endif // __COGAPS_SIMD_H__
 

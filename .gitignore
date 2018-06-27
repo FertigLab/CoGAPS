@@ -6,6 +6,8 @@
 *.so
 *.o
 
+.git
+
 # ignore OS X files
 *.DS_Store
 .Rproj.user
@@ -19,8 +21,10 @@ update_remotes.sh
 # ignore emacs files
 *~
 
-# ignore profiling output
-inst/profiling/callgrind.out.*
-inst/profiling/vgcore.*
-inst/profiling/valgrind_out.txt
-*.temp
+# ignore temporary files from autoreconf
+config.log
+config.status
+aclocal.m4
+autom4te.cache/
+src/Makevars
+
