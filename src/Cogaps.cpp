@@ -61,68 +61,31 @@ bool singleCell, unsigned nCores)
 }
 
 // [[Rcpp::export]]
-Rcpp::List cogapsFromFile_cpp(const std::string &D, unsigned nPatterns,
-unsigned maxIter, unsigned outputFrequency, unsigned seed, float alphaA,
-float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool messages,
-bool singleCellRNASeq)
+Rcpp::List cogaps_cpp_from_file(const std::string &data, const std::string &unc,
+unsigned nPatterns, unsigned maxIterations, unsigned outputFrequency,
+uint32_t seed, float alphaA, float alphaP, float maxGibbsMassA,
+float maxGibbsMassP, bool messages, bool singleCellRNASeq,
+const std::string &checkpointOutFile)
 {
-    return cogapsRun(D, nPatterns, maxIter, outputFrequency, seed,
+    return cogapsRun(data, nPatterns, maxIter, outputFrequency, seed,
         alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages,
         singleCellRNASeq, 1);
 }
 
 // [[Rcpp::export]]
-Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &D, unsigned nPatterns,
-unsigned maxIter, unsigned outputFrequency, unsigned seed, float alphaA,
-float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool messages,
-bool singleCellRNASeq, unsigned nCores)
+Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data,
+const Rcpp::NumericMatrix &unc, unsigned nPatterns, unsigned maxIterations,
+unsigned outputFrequency, uint32_t seed, float alphaA, float alphaP,
+float maxGibbsMassA, float maxGibbsMassP, bool messages, bool singleCell,
+const std::string &checkpointOutFile)
 {
-    return cogapsRun(convertRMatrix(D), nPatterns, maxIter, outputFrequency, seed,
-        alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages,
-        singleCellRNASeq, nCores);
+    return cogapsRun(convertRMatrix(data), convertRMatrix(unc), nPatterns,
+        maxIterations, outputFrequency, seed, alphaA, alphaP, maxGibbsMassA,
+        maxGibbsMassP, messages, singleCell, nCores);
 }
-
-/*
-Rcpp::List cogapsFromCheckpoint_cpp(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nFactor, unsigned nEquil,
-unsigned nSample, const std::string &cptFile)
-{   
-    GapsRunner runner(D, S, nFactor, nEquil, nSample, cptFile);
-    return runner.run();
-}
-*/
-
-// used to convert defined macro values into strings
-#define STR_HELPER(x) #x
-#define STR(x) STR_HELPER(x)
 
 // [[Rcpp::export]]
 std::string getBuildReport_cpp()
 {
-#if defined( __clang__ )
-    std::string compiler = "Compiled with Clang\n";
-#elif defined( __INTEL_COMPILER )
-    std::string compiler = "Compiled with Intel ICC/ICPC\n";
-#elif defined( __GNUC__ )
-    std::string compiler = "Compiled with GCC v" + std::string(STR( __GNUC__ ))
-    + "." + std::string(STR( __GNUC_MINOR__ )) + '\n';
-#elif defined( _MSC_VER )
-    std::string compiler = "Compiled with Microsoft Visual Studio\n";
-#endif
-
-#if defined( __GAPS_AVX__ )
-    std::string simd = "AVX enabled\n";
-#elif defined( __GAPS_SSE__ )
-    std::string simd = "SSE enabled\n";
-#else
-    std::string simd = "SIMD not enabled\n";
-#endif
-
-#ifdef __GAPS_OPENMP__
-    std::string openmp = "Compiled with OpenMP\n";
-#else
-    std::string openmp = "Compiler did not support OpenMP\n";
-#endif
-
-    return compiler + simd + openmp;
+    return buildReport();
 }

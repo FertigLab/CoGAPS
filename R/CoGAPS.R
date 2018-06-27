@@ -1,4 +1,4 @@
-#' @include class-CoGapsParams.R
+#' @include class-CogapsParams.R
 NULL
 
 #' CoGAPS Matrix Factorization Algorithm
@@ -12,49 +12,89 @@ NULL
 #' @details Currently, raw count matrices are the only supported R object. For
 #'  file types CoGAPS supports csv, tsv, and mtx
 #' @param data File name or R object (see details for supported types)
-#' @param params CoGapsParams object
+#' @param params CogapsParams object
 #' @param uncertainty uncertainty matrix (same supported types as data)
 #' @param fixedMatrix data for fixing the values of either the A or P matrix;
-#'  used in conjuction with whichMatrixFixed (see CoGapsParams)
+#'  used in conjuction with whichMatrixFixed (see CogapsParams)
 #' @param checkpointFile name of the checkpoint file
 #' @param ... keeps backwards compatibility with arguments from older versions
-#' @return CoGapsResult object
+#' @return CogapsResult object
 #' @importFrom methods new
 #' @examples
-#' data(SimpSim)
-#' params <- new("CoGapsParams")
-#' result <- CoGAPS(SimpSim.D, params)
-setGeneric("CoGAPS", function(data, params=new("CoGapsParams"),
+#' # Running from R object
+#' data(GIST)
+#' resultA <- CoGAPS(GIST.D)
+#' 
+#' # Running from file name
+#' gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
+#' resultB <- CoGAPS(gist_path)
+#'
+#' Setting Parameters
+#' params <- new("CogapsParams")
+#' params <- setParam(params, "nPatterns", 5)
+#' resultC <- CoGAPS(GIST.D, params)
+setGeneric("CoGAPS", function(data, params=new("CogapsParams"),
 uncertainty=NULL, fixedMatrix=NULL, checkpointFile=NULL, ...)
 {
     # parse parameters from ...
-    params <- getTempParams(params, list(...))
+    params <- parseOldParams(params, list(...))
+    params <- parseDirectParams(params, list(...))
 
     # call method
-    standardGeneric("CoGAPS")
+    gapsReturnList <- standardGeneric("CoGAPS")
+
+    # convert list to CogapsResult object
+    return(CogapsResult(
+        Amean       = gapsReturnList$Amean,
+        Asd         = gapsReturnList$Asd,
+        Pmean       = gapsReturnList$Pmean,
+        Psd         = gapsReturnList$Psd,
+        seed        = gapsReturnList$seed,
+        meanChiSq   = gapsReturnList$meanChiSq,
+        diagnostics = gapsReturnList$diagnostics
+    )) 
 })
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
-setMethod("CoGAPS", signature(data="matrix", params="CoGapsParams"),
+setMethod("CoGAPS", signature(data="data.frame", params="CogapsParams"),
 function(data, params, uncertainty, fixedMatrix,
 checkpointFile, ...)
 {
     # check matrix
-    if (class(uncertainty) != "matrix")
-        stop("Uncertainty must be same data type as data (matrix)")
-    checkDataMatrix(data, uncertainty)
+    if (!is.null(uncertainty) & class(uncertainty) != "data.frame")
+        stop("Uncertainty must be same data type as data (data.frame)")
+    uncertainty <- ifelse(is.null(uncertainty), matrix(), as.matrix(uncertainty))
+    checkDataMatrix(as.matrix(data), uncertainty)
 
     # call C++ function
-    cogaps_cpp(data, uncertainty, nFactor, nIter, nOutputs, seed, alphaA,
-        alphaP, maxGibbsMassA, maxGibbsMassP, messages, singleCell,
-        checkpointFile))
+    cogaps_cpp(as.matrix(data), uncertainty, params@nPatterns,
+        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
+        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
+        params@messages, params@singleCell, params@checkpointOutFile)
 })
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
+setMethod("CoGAPS", signature(data="matrix", params="CogapsParams"),
+function(data, params, uncertainty, fixedMatrix,
+checkpointFile, ...)
+{
+    # check matrix
+    if (!is.null(uncertainty) & class(uncertainty) != "matrix")
+        stop("Uncertainty must be same data type as data (matrix)")
+    checkDataMatrix(data, uncertainty)
+
+    # call C++ function
+    cogaps_cpp(data, uncertainty, params@nPatterns,
+        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
+        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
+        params@messages, params@singleCell, params@checkpointOutFile)})
+
+#' @rdname CoGAPS-methods
+#' @aliases CoGAPS
 #' @importFrom tools file_ext
-setMethod("CoGAPS", signature(data="character", params="CoGapsParams"),
+setMethod("CoGAPS", signature(data="character", params="CogapsParams"),
 function(data, params, uncertainty, fixedMatrix,
 checkpointFile, ...)
 {
@@ -68,13 +108,14 @@ checkpointFile, ...)
         if (!(file_ext(uncertainty) %in% c("tsv", "csv", "mtx")))
             stop("unsupported file extension for uncertainty")
         if (class(uncertainty) != "character")
-            stop("Uncertainty must be same data type as data (file name)")
+            stop("uncertainty must be same data type as data (file name)")
     }
 
     # call C++ function
-    cogaps_cpp_from_file(data, uncertainty, nFactor, nIter, nOutputs, seed,
-        alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages, singleCell,
-        checkpointFile))
+    cogaps_cpp_from_file(data, uncertainty, params@nPatterns,
+        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
+        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
+        params@messages, params@singleCell, params@checkpointOutFile)
 })
 
 #' Information About Package Compilation

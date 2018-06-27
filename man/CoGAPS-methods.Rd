@@ -3,32 +3,35 @@
 \docType{methods}
 \name{CoGAPS}
 \alias{CoGAPS}
-\alias{CoGAPS,character,CoGapsParams-method}
-\alias{CoGAPS,matrix,CoGapsParams-method}
+\alias{CoGAPS,character,CogapsParams-method}
+\alias{CoGAPS,matrix,CogapsParams-method}
 \title{CoGAPS Matrix Factorization Algorithm}
 \usage{
-CoGAPS(data, params = new("CoGapsParams"), uncertainty = NULL,
-  checkpointFile = NULL, ...)
+CoGAPS(data, params = new("CogapsParams"), uncertainty = NULL,
+  fixedMatrix = NULL, checkpointFile = NULL, ...)
 
-\S4method{CoGAPS}{matrix,CoGapsParams}(data, params = new("CoGapsParams"),
-  uncertainty = NULL, checkpointFile = NULL, ...)
+\S4method{CoGAPS}{matrix,CogapsParams}(data, params = new("CogapsParams"),
+  uncertainty = NULL, fixedMatrix = NULL, checkpointFile = NULL, ...)
 
-\S4method{CoGAPS}{character,CoGapsParams}(data, params = new("CoGapsParams"),
-  uncertainty = NULL, checkpointFile = NULL, ...)
+\S4method{CoGAPS}{character,CogapsParams}(data, params = new("CogapsParams"),
+  uncertainty = NULL, fixedMatrix = NULL, checkpointFile = NULL, ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
 
-\item{params}{CoGapsParams object}
+\item{params}{CogapsParams object}
+
+\item{uncertainty}{uncertainty matrix (same supported types as data)}
+
+\item{fixedMatrix}{data for fixing the values of either the A or P matrix;
+used in conjuction with whichMatrixFixed (see CogapsParams)}
 
 \item{checkpointFile}{name of the checkpoint file}
 
 \item{...}{keeps backwards compatibility with arguments from older versions}
-
-\item{S}{uncertainty matrix (same supported types as data)}
 }
 \value{
-CoGapsResult object
+CogapsResult object
 }
 \description{
 calls the C++ MCMC code and performs Bayesian
@@ -41,7 +44,7 @@ Currently, raw count matrices are the only supported R object. For
 }
 \examples{
 data(SimpSim)
-params <- new("CoGapsParams")
+params <- new("CogapsParams")
 result <- CoGAPS(SimpSim.D, params)
 }
 

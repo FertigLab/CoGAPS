@@ -45,7 +45,7 @@ biocViews: GeneExpression, Transcription, GeneSetEnrichment,
 NeedsCompilation: yes
 RoxygenNote: 5.0.1
 Collate:
-    'class-CoGapsParams.R'
+    'class-CogapsParams.R'
     'CoGAPS.R'
     'GWCoGAPS.R'
     'RcppExports.R'
