@@ -109,7 +109,7 @@ function(Data, S=NULL, params, ...)
     result <- RunCoGAPS(countMatrix, S, params)
     
     Data@reducedDims <- SimpleList(Amean=result$Amean, Pmean=result$Pmean)
-    return(Data)
+    return(Data, Data@reducedDims)
     
     # TODO(Hyejune) extract count matrix from SCE object and set default value
     # S matrix if it's null - then call RunCoGAPS
@@ -130,3 +130,4 @@ RunCoGAPS <- function(Data, S, params)
 
   
 # TODO(Tom) handle instance where function is called with deprecated parametres
+
