@@ -1,26 +1,22 @@
 ---
 title: "CoGAPS Workflow Vignette"
 author: "Genevieve L. Stein-O'Brien"
-date: "`r doc_date()`"
+date: "21 June 2018"
 package: "`r pkg_ver('CoGAPS')`"
 bibliography: AppNote.bib
 vignette: >
-    %\VignetteIndexEntry{GWCoGAPS and PatternMarkers}
+    %\VignetteIndexEntry{CoGAPS}
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
 output: 
     BiocStyle::html_document
 ---
 
-```{r include=FALSE, cache=FALSE}
-library(CoGAPS)
-```
-
 # Introduction
 
 Gene Association in Pattern Sets (GAPS) infers underlying patterns in a matrix of measurements that can
 be interpreted as arising from the multiplication of two lower dimensional matrices. The first development of
-this code in R/Biocondcutor was focused on gene expression analysis, however the original concept was used
+this code in R/Bioconductor was focused on gene expression analysis, however the original concept was used
 in spectral imaging. The approach is a general form of matrix factorization using a stochastic algorithm. In
 this vignette, we will focus on gene expression analysis for concreteness, but the factorization is applicable
 more broadly.
@@ -34,7 +30,7 @@ membership based upon (2).
 GAPS is licensed under the GNU General Public License version 2. You may freely modify and redistribute
 GAPS under certain conditions that are described in the top level source directory file COPYING.
 
-  The R package CoGAPS is designed to facilitate the corresponding analysis of microarray measurements
+  The R package `CoGAPS` is designed to facilitate the corresponding analysis of microarray measurements
 by calling the GAPS C++ library. With the migration to C++ code, the installation as noted in Chapter 2
 should now be automatic. Running instructions for the GAPS and CoGAPS analyses are provided in Sections
 3.1 and 3.2, respectively. CoGAPS and GAPS are freely available at https://github.com/ejfertig/CoGAPS
@@ -57,23 +53,29 @@ Identifying context-specific transcription factor targets from prior knowledge a
 IEEE International Conference on Bioinformatics and Biomedicine, B310, in press.
 Please contact Elana J. Fertig ejfertig@jhmi.edu or Michael F. Ochs ochsm@tcnj.edu for assistance.
 
-# CoGAPS
-Here we read data into an R object, but we are currently adding support for passing a file name (.csv, .tsv, .mtx) for the data. This data comes with an uncertainty matrix (GIST.S) but we are also working on allowing just the data matrix to be passed.
-```{r}
-suppressMessages(library(CoGAPS))
-print(packageVersion("CoGAPS"))
+# Load CoGAPS
+Load the `CoGAPS` package as follows. The development version can be installed from GitHub. 
+
+```{r include=FALSE, cache=FALSE}
+library(CoGAPS)
 ```
 
-## Loading Sample Data
+## Load Data
+Read in sample data into an R object. `CoGAPS` allows data in the form of raw count matrices to be read in, so a count matrix will be extract from datasets in the form of data.frame, SummarizedExperiment, or SingleCellExperiment.
+The user may read in the data matrix along with an uncertainty matrix. However, the default uncertainty matrix is set to 10% of the data matrix if an uncertainty matrix is not read in. 
 Here we read in an example dataset: the `GIST` dataset from Ochs et al. (2009). contains gene expression data from gastrointestinal stromal tumor cell lines treated with Gleevec. The matrix contains 1363 genes by 9 samples of mean gene expression data. 
 ```{r}
-data("GIST")
+data("GIST.D")
+data("GIST.S")
 ```
 
 ## Running CoGAPS
-Here we run CoGAPS on the data set `GIST.D` for a few different values of nFactor (if the data matrix is M x N, then we find D = A * P, where A is M x nFactor and P is nFactor x N). Typically we run for 50000 iterations but we are also working on dynamically selecting the number of iterations so that the user can just pass a “max iterations” parameter if they choose, otherwise it will be handled internally.
+Here we run CoGAPS on the data set `GIST.D` with default parameters in the class CoGAPSParams. The parameters listed in CoGAPSParams include: nFactor, nIter, outputFrequency, alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages, singleCellRNASeq, whichMatrixFixed, fixedMatrix, checkpointInterval, checkpointFile, and nCores. Users may override the default parameters when calling CoGAPS.
+Calling CoGAPS will return four matrices of Amean, Asd, Pmean, and Psd, along with plots of each, where the A matrices are the amplitude matrices and P matrices are the pattern matrices. 
 
 ```{r}
+CoGAPSResult <- CoGAPS(GIST.D, CoGAPSParams)
+
 nIterations <- 2500
 patternRange <- 2:4
 cogapsResult <- list()
@@ -97,15 +99,6 @@ In this example, we can see that 3 is the optimal number of patterns (nFactor), 
 ```{r}
 bestResult <- cogapsResult[[3]]
 ```
-
-## Plotting outputs
-Once we select the number of patterns we are happy with, we can plot the patterns with their associated amplitudes.
-```{r}
-# pdf("GIST_example.pdf") # uncomment to save file to pdf
-plotP(bestResult$Pmean)
-# dev.off() # uncomment to save file to pdf
-```
-
 
 # Using CoGAPS-based statistics to infer gene membership in annotated gene sets
 
