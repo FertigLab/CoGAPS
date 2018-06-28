@@ -29,7 +29,9 @@ Imports:
     doParallel,
     foreach,
     ggplot2,
-    reshape2
+    reshape2,
+    SingleCellExperiment,
+    SummarizedExperiment
 Suggests:
     testthat,
     lintr,
@@ -49,11 +51,13 @@ Collate:
     'CoGAPS.R'
     'GWCoGAPS.R'
     'RcppExports.R'
+    'SMatrix.R'
     'binaryA.R'
     'calcCoGAPSStat.R'
     'calcGeneGSStat.R'
     'calcZ.R'
     'cellMatchR.R'
+    'class-CogapsResult.R'
     'createGWCoGAPSSets.R'
     'createscCoGAPSSets.R'
     'gapsInterPattern.R'

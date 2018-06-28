@@ -119,3 +119,7 @@ ignore.NA=FALSE, bySet=FALSE, plotDen=FALSE, ...)
         return(AByCDSWavgScaled)
     }
 }
+
+# pattern first then file name
+# dont overwrite
+# some elements are negative

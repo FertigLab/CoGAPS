@@ -3,6 +3,8 @@
 
 #include <Rcpp.h>
 
+#include <string>
+
 static RowMatrix convertRMatrix(const Rcpp::NumericMatrix &rmat)
 {
     RowMatrix mat(rmat.nrow(), rmat.ncol());
@@ -30,8 +32,18 @@ static Rcpp::NumericMatrix createRMatrix(const Matrix &mat)
     return rmat;
 }
 
+static bool nonNullUncertainty(const RowMatrix &mat)
+{
+    return mat.nRow() > 1 || mat.nCol() > 1;
+}
+
+static bool nonNullUncertainty(const std::string &path)
+{
+    return !path.empty();
+}
+
 template <class T>
-static Rcpp::List cogapsRun(T data, unsigned nPatterns,
+static Rcpp::List cogapsRun(const T &data, const T &unc, unsigned nPatterns,
 unsigned maxIter, unsigned outputFrequency, unsigned seed, float alphaA,
 float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool messages,
 bool singleCell, unsigned nCores)
@@ -51,6 +63,11 @@ bool singleCell, unsigned nCores)
     
     dispatcher.loadData(data);
 
+    if (nonNullUncertainty(unc))
+    {
+        dispatcher.setUncertainty(unc);
+    }
+
     GapsResult result(dispatcher.run());
     return Rcpp::List::create(
         Rcpp::Named("Amean") = createRMatrix(result.Amean),
@@ -64,12 +81,12 @@ bool singleCell, unsigned nCores)
 Rcpp::List cogaps_cpp_from_file(const std::string &data, const std::string &unc,
 unsigned nPatterns, unsigned maxIterations, unsigned outputFrequency,
 uint32_t seed, float alphaA, float alphaP, float maxGibbsMassA,
-float maxGibbsMassP, bool messages, bool singleCellRNASeq,
-const std::string &checkpointOutFile)
+float maxGibbsMassP, bool messages, bool singleCell,
+const std::string &checkpointOutFile, unsigned nCores)
 {
-    return cogapsRun(data, nPatterns, maxIter, outputFrequency, seed,
-        alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages,
-        singleCellRNASeq, 1);
+    return cogapsRun(data, unc, nPatterns, maxIterations, outputFrequency, seed,
+        alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages, singleCell,
+        nCores);
 }
 
 // [[Rcpp::export]]
@@ -77,7 +94,7 @@ Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data,
 const Rcpp::NumericMatrix &unc, unsigned nPatterns, unsigned maxIterations,
 unsigned outputFrequency, uint32_t seed, float alphaA, float alphaP,
 float maxGibbsMassA, float maxGibbsMassP, bool messages, bool singleCell,
-const std::string &checkpointOutFile)
+const std::string &checkpointOutFile, unsigned nCores)
 {
     return cogapsRun(convertRMatrix(data), convertRMatrix(unc), nPatterns,
         maxIterations, outputFrequency, seed, alphaA, alphaP, maxGibbsMassA,

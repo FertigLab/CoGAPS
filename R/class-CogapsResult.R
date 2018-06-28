@@ -33,8 +33,8 @@ function(object)
     print(paste(nPatterns, "patterns were learned"))
 })
 
-setMethod('plot', signature('CoGAPSResult'),
-function(object)
+setMethod('plot', signature(x='CogapsResult'),
+function(x)
 {
     colors <- rainbow(nrow(object@Pmean))
     xlimits <- c(0, ncol(object@Pmean) + 1)
@@ -52,6 +52,11 @@ function(object)
     pch = 1:nrow(object@Pmean), lty=1, cex=0.8, col=colors, bty="y", ncol=5)
 })
 
+#' @export
+setGeneric("MergeResultsWithSCE", function(result, SCE)
+    {standardGeneric("MergeResultsWithSCE")})
+
+#' @importClassesFrom SingleCellExperiment SingleCellExperiment
 setMethod("MergeResultsWithSCE", signature("CogapsResult", "SingleCellExperiment"),
 function(result, SCE)
 {
