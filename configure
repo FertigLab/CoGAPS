@@ -4081,7 +4081,7 @@ fi
 if test "${enable_simd+set}" = set; then :
   enableval=$enable_simd; simd_version=$enableval
 else
-  simd_version=sse
+  simd_version=avx
 fi
 
 
@@ -5199,22 +5199,7 @@ fi
 GAPS_CXX_FLAGS+=" $OPENMP_CXXFLAGS "
 GAPS_LIBS+=" $OPENMP_CXXFLAGS "
 
-echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compiler_version"
-
-# set compile flags for debug build
-if test "x$build_debug" = "xyes" ; then
-    echo "Building Debug Version of CoGAPS"
-    GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
-fi
-
-# set compile flags if warnings enabled
-if test "x$warnings" = "xyes" ; then
-    if test "x$ax_cv_cxx_compiler_vendor" = "xgnu" || test "x$ax_cv_cxx_compiler_vendor" = "xclang"; then
-        GAPS_CXX_FLAGS+=" -Wall -Wextra -Werror -Wno-unused-parameter "
-    fi
-fi
-
-# set compile flags for SIMD
+# detect SIMD support
 # Make sure we can run config.sub.
 $SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
   as_fn_error $? "cannot run $SHELL $ac_aux_dir/config.sub" "$LINENO" 5
@@ -6835,6 +6820,23 @@ fi
 
 
 
+
+echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compiler_version"
+
+# set compile flags for debug build
+if test "x$build_debug" = "xyes" ; then
+    echo "Building Debug Version of CoGAPS"
+    GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
+fi
+
+# set compile flags if warnings enabled
+if test "x$warnings" = "xyes" ; then
+    if test "x$ax_cv_cxx_compiler_vendor" = "xgnu" || test "x$ax_cv_cxx_compiler_vendor" = "xclang"; then
+        GAPS_CXX_FLAGS+=" -Wall -Wextra -Werror -Wno-unused-parameter "
+    fi
+fi
+
+# set compile flags for SIMD
 echo "Supported SIMD flags: " $SIMD_FLAGS
 
 if test "x$simd_version" != "xavx" && test "x$simd_version" != "xsse" && test "x$simd_version" != "xno" && test "x$simd_version" != "xyes" ; then

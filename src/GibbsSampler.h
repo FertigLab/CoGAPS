@@ -279,6 +279,7 @@ void GibbsSampler<T, MatA, MatB>::addMass(uint64_t pos, float mass, unsigned row
 {
     mDomain.cacheInsert(pos, mass);
     mMatrix(row, col) += mass;
+    GAPS_ASSERT(mMatrix(row, col) >= 0);
     impl()->updateAPMatrix(row, col, mass);
 }
 
@@ -287,6 +288,7 @@ void GibbsSampler<T, MatA, MatB>::removeMass(uint64_t pos, float mass, unsigned 
 {
     mDomain.cacheErase(pos);
     mMatrix(row, col) += -mass;
+    GAPS_ASSERT(mMatrix(row, col) >= 0);
     impl()->updateAPMatrix(row, col, -mass);
 }
 
@@ -319,6 +321,7 @@ unsigned col)
 
     //removeMass(pos, mass, row, col);
     mMatrix(row, col) += -mass;
+    GAPS_ASSERT(mMatrix(row, col) >= 0);
     impl()->updateAPMatrix(row, col, -mass);
 
     float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, -mass) : 0.f;
@@ -328,6 +331,7 @@ unsigned col)
     {
         mDomain.updateMass(pos, mass);
         mMatrix(row, col) += mass;
+        GAPS_ASSERT(mMatrix(row, col) >= 0);
         impl()->updateAPMatrix(row, col, mass);
         mQueue.rejectDeath();
     }
@@ -443,7 +447,9 @@ unsigned r2, unsigned c2)
     }
 
     mMatrix(r1, c1) += d1;
+    GAPS_ASSERT(mMatrix(r1, c1) >= 0);
     mMatrix(r2, c2) += d2;
+    GAPS_ASSERT(mMatrix(r2, c2) >= 0);
     impl()->updateAPMatrix(r1, c1, d1);
     impl()->updateAPMatrix(r2, c2, d2);
 }
