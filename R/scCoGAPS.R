@@ -13,6 +13,11 @@
 #' @param manualMatch logical indicating whether or not to stop after initial phase for manual pattern matching
 #' @param consensusAs fixed pattern matrix to be used to ensure reciprocity of A weights accross sets 
 #' @param ... additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}
+#' @examples
+#' data(SimpSim)
+#' sim_name <- "example"
+#' createscCoGAPSSets(SimpSim.D, nSets=2, sim_name)
+#' result <- scCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
 #' @return list of A and P estimates
 scCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manualMatch=FALSE, consensusAs=NULL, ...)
 {
