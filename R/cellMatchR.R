@@ -67,8 +67,8 @@ ignore.NA=FALSE, bySet=FALSE, plotDen=FALSE, ...)
             }
         }
 
-        AByClust[sapply(AByClust,is.null)] <- NULL
-        RtoMeanPattern[sapply(RtoMeanPattern,is.null)] <- NULL
+        AByClust[sapply(AByClust, is.null, simplify="array")] <- NULL
+        RtoMeanPattern[sapply(RtoMeanPattern, is.null, simplify="array")] <- NULL
         return(list("RtoMeanPattern"=RtoMeanPattern, "AByClust"=AByClust))
     }   
 
