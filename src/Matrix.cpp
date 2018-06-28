@@ -2,13 +2,13 @@
 
 #include <stdexcept>
 
-static const float EPSILON = 1.e-10;
+static const float EPSILON = 1.e-10f;
 
 /******************************** HELPER *******************************/
 
 static void updateHelper2(float& val, float delta)
 {
-    val = std::abs(val + delta) < EPSILON ? 0.0 : val + delta;
+    val = val + delta < EPSILON ? 0.f : val + delta;
 }
 
 template<class GenericMatrix>
