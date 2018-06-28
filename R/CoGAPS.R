@@ -85,6 +85,10 @@ checkpointFile="gaps_checkpoint.out", ...)
         singleCellRNASeq, whichMatrixFixed, fixedPatterns, checkpointInterval,
         checkpointFile, which(thresholdEnum==pumpThreshold), nPumpSamples)
     
+    # check that return matrix is non-negative
+    if (sum(result$Amean < 0) > 0 || sum(result$Pmean < 0) > 0)
+        warning("negative values detected in Amean and/or Pmean")
+
     # label matrices and return list
     patternNames <- paste('Patt', 1:nFactor, sep='')
     rownames(result$Amean) <- rownames(result$Asd) <- rownames(D)
