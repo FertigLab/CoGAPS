@@ -40,8 +40,10 @@ path="", anotionObj=NULL)
                 warning("Not all celltypes will be sampled from.")
             }
             ct.indx <- lapply(unique(anotionObj), function(x) which(anotionObj == x))
+            names(ct.indx) <- unique(anotionObj)
             cellset <- lapply(unique(anotionObj), function(x)
                 sample(colnames(D)[ct.indx[[x]]], samplingRatio[x],replace=TRUE))
+            cellset <- unlist(cellset)
         }
 
         # partition data
@@ -55,3 +57,5 @@ path="", anotionObj=NULL)
     }
     return(simulationName)
 }
+
+
