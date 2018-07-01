@@ -40,6 +40,7 @@ threshold="all", lp=NA, full=FALSE)
     }
     else
     {
+        nP<-dim(Amatrix)[2]
         # determine which genes are most associated with each pattern
 
         sstat<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))
