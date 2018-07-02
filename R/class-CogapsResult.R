@@ -1,6 +1,8 @@
 #' CogapsResult
 #' @export
-#'
+#' @example 
+#' # Return output from CogapsResult
+#' CogapsResult <- CoGAPS(GIST.D, CogapsParams)
 #' @description Contains all output from Cogaps run
 setClass("CogapsResult", slots=c(
     Amean = "matrix",

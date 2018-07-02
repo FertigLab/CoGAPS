@@ -1,6 +1,11 @@
 #' CogapsParams
 #' @export 
 #'
+#' @example 
+#' # Set parameters, change from default
+#' params <- new("CogapsParams")
+#' params <- setParam(params, "nPatterns", 5)
+#' resultC <- CoGAPS(GIST.D, params)
 #' @description Encapsulates all parameters for the CoGAPS algorithm
 setClass("CogapsParams", slots = c(
     nPatterns = "numeric",
