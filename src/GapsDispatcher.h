@@ -16,12 +16,14 @@ struct GapsResult
     float meanChiSq;
     uint32_t seed;
 
-    GapsResult(unsigned nrow, unsigned ncol) : Amean(nrow, ncol),
-        Asd(nrow, ncol), Pmean(nrow, ncol), Psd(nrow, ncol), meanChiSq(0.f),
-        seed(0)
+    GapsResult(unsigned nrow, unsigned ncol, uint32_t rngSeed) :
+        Amean(nrow, ncol), Asd(nrow, ncol), Pmean(nrow, ncol), Psd(nrow, ncol),
+        meanChiSq(0.f), seed(rngSeed)
     {}
 
     void writeCsv(const std::string &path);
+    void writeTsv(const std::string &path);
+    void writeGct(const std::string &path);
 };
 
 // should be agnostic to external caller (R/Python/CLI)
@@ -29,86 +31,99 @@ class GapsDispatcher
 {
 private:
 
-    unsigned mNumPatterns;
-    unsigned mMaxIterations;
-    unsigned mOutputFrequency;
     uint32_t mSeed;
+    unsigned mNumPatterns;
 
-    float mAlphaA;
-    float mAlphaP;
-    float mMaxGibbsMassA;
-    float mMaxGibbsMassP;
-
-    bool mPrintMessages;
-    bool mSingleCell;
-
-    bool mDataIsLoaded;    
-
+    unsigned mMaxIterations;
     unsigned mNumCoresPerSet;
+    bool mPrintMessages;
 
+    unsigned mCheckpointsCreated;
+    char mPhase; // 'C' for calibration, 'S' for sample
+
+    unsigned mCheckpointInterval;
+    std::string mCheckpointOutFile;
+
+    bool mInitialized;    
     std::vector<GapsRunner*> mRunners;
 
-    char mFixedMatrix;
-
     void runOneCycle(unsigned k);
+    void createCheckpoint() const;
 
     GapsDispatcher(const GapsDispatcher &p); // don't allow copies
     GapsDispatcher& operator=(const GapsDispatcher &p); // don't allow copies
 
+    template <class DataType>
+    void loadData(const DataType &data);
+
 public:
 
-    explicit GapsDispatcher(uint32_t seed=0) : mNumPatterns(3),
-        mMaxIterations(1000), mOutputFrequency(250), mSeed(seed), mAlphaA(0.01),
-        mAlphaP(0.01), mMaxGibbsMassA(100.f), mMaxGibbsMassP(100.f),
-        mPrintMessages(true), mSingleCell(false), mDataIsLoaded(false),
-        mNumCoresPerSet(1), mFixedMatrix('N')
-    {
-        gaps::random::setSeed(mSeed);
-    }
+    GapsDispatcher();
+    ~GapsDispatcher();
 
-    ~GapsDispatcher()
-    {
-        for (unsigned i = 0; i < mRunners.size(); ++i)
-        {
-            delete mRunners[i];
-        }
-    }
+    template <class DataType>
+    void initialize(const DataType &data, unsigned nPatterns, uint32_t seed=0);
 
-    void setNumPatterns(unsigned n)     { mNumPatterns = n; }
-    void setMaxIterations(unsigned n)   { mMaxIterations = n; }
-    void setOutputFrequency(unsigned n) { mOutputFrequency = n; }
-    void setNumCoresPerSet(unsigned n)  { mNumCoresPerSet = n; }
+    template <class DataType>
+    void initialize(const DataType &data, const std::string &cptFile);
 
-    void printMessages(bool print) { mPrintMessages = print; }
-    void singleCell(bool sc) { mSingleCell = sc; }
+    template <class DataType>
+    void setUncertainty(const DataType &unc);
 
-    void setAlpha(float alphaA, float alphaP)
-    {
-        mAlphaA = alphaA;
-        mAlphaP = alphaP;
-    }
-
-    void setMaxGibbsMass(float maxA, float maxP)
-    {
-        mMaxGibbsMassA = maxA;
-        mMaxGibbsMassP = maxP;
-    }
-
-    void setFixedMatrix(char which, const RowMatrix &mat)
-    {
-        mFixedMatrix = which;
-        mRunners[0]->setFixedMatrix(which, mat);
-    }
+    void setMaxIterations(unsigned n);
+    void printMessages(bool print);
+    void setOutputFrequency(unsigned n);
+    void setSparsity(float alphaA, float alphaP, bool singleCell);
+    void setMaxGibbsMass(float maxA, float maxP);
+    void setFixedMatrix(char which, const RowMatrix &mat);
     
-    void loadCheckpointFile(const std::string &pathToCptFile);
-
-    void setUncertainty(const RowMatrix &S);
-    void setUncertainty(const std::string &pathToMatrix);
-
-    void loadData(const RowMatrix &D);
-    void loadData(const std::string &pathToData);
+    void setNumCoresPerSet(unsigned n);
+    void setCheckpointInterval(unsigned n);
+    void setCheckpointOutFile(const std::string &path);
     
     GapsResult run();
 };
+
+template <class DataType>
+void GapsDispatcher::initialize(const DataType &data, unsigned nPatterns,
+uint32_t seed)
+{
+    mSeed = seed;
+    mNumPatterns = nPatterns;
+    gaps::random::setSeed(mSeed);
+    
+    loadData(data);
+    mInitialized = true;
+}
+
+template <class DataType>
+void GapsDispatcher::initialize(const DataType &data, const std::string &cptFile)
+{
+    Archive ar(cptFile, ARCHIVE_READ);
+    gaps::random::load(ar);
+
+    ar >> mSeed >> mNumPatterns >> mMaxIterations >> mPrintMessages >>
+        mCheckpointsCreated >> mPhase;
+
+    loadData(data);
+    ar >> *mRunners[0];
+    mInitialized = true;
+}
+
+template <class DataType>
+void GapsDispatcher::setUncertainty(const DataType &unc)
+{
+    GAPS_ASSERT(mInitialized);
+    mRunners[0]->setUncertainty(unc);
+}
+
+template <class DataType>
+void GapsDispatcher::loadData(const DataType &data)
+{
+    gaps_printf("Loading Data...");
+    gaps_flush();
+    mRunners.push_back(new GapsRunner(data, mNumPatterns));
+    gaps_printf("Done!\n");
+}
 
 #endif // __COGAPS_GAPS_DISPATCHER_H__

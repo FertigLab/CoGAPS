@@ -32,73 +32,91 @@ static Rcpp::NumericMatrix createRMatrix(const Matrix &mat)
     return rmat;
 }
 
-static bool nonNullUncertainty(const RowMatrix &mat)
+static bool isNull(const RowMatrix &mat)
 {
-    return mat.nRow() > 1 || mat.nCol() > 1;
+    return mat.nRow() == 1 && mat.nCol() == 1;
 }
 
-static bool nonNullUncertainty(const std::string &path)
+static bool isNull(const std::string &path)
 {
-    return !path.empty();
+    return path.empty();
 }
 
 template <class T>
-static Rcpp::List cogapsRun(const T &data, const T &unc, unsigned nPatterns,
-unsigned maxIter, unsigned outputFrequency, unsigned seed, float alphaA,
-float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool messages,
-bool singleCell, unsigned nCores)
+static Rcpp::List cogapsRun(const T &data, const Rcpp::S4 &params, const T &unc,
+const RowMatrix &fixedMatrix, const std::string &checkpointInFile)
 {
-    GapsDispatcher dispatcher(seed);
+    GapsDispatcher dispatcher;
 
-    dispatcher.setNumPatterns(nPatterns);
-    dispatcher.setMaxIterations(maxIter);
-    dispatcher.setOutputFrequency(outputFrequency);
-    
-    dispatcher.setAlpha(alphaA, alphaP);
-    dispatcher.setMaxGibbsMass(maxGibbsMassA, maxGibbsMassP);
+    // check if we're initializing with a checkpoint or not
+    if (!isNull(checkpointInFile))
+    {
+        dispatcher.initialize(data, checkpointInFile);
+    }
+    else
+    {
+        dispatcher.initialize(data, params.slot("nPatterns"), params.slot("seed"));
 
-    dispatcher.printMessages(messages);
-    dispatcher.singleCell(singleCell);
-    dispatcher.setNumCoresPerSet(nCores);
-    
-    dispatcher.loadData(data);
+        // set optional parameters
+        dispatcher.setMaxIterations(params.slot("nIterations"));
+        dispatcher.setOutputFrequency(params.slot("outputFrequency"));
 
-    if (nonNullUncertainty(unc))
+        dispatcher.setSparsity(params.slot("alphaA"), params.slot("alphaP"),
+            params.slot("singleCell"));
+        
+        dispatcher.setMaxGibbsMass(params.slot("maxGibbsMassA"),
+            params.slot("maxGibbsMassP"));
+
+        dispatcher.printMessages(params.slot("messages"));
+
+        // check if running with a fixed matrix
+        if (!isNull(fixedMatrix))
+        {
+            dispatcher.setFixedMatrix(params.slot("whichMatrixFixed"), fixedMatrix);
+        }
+    }
+
+    // set the uncertainty matrix
+    if (!isNull(unc))
     {
         dispatcher.setUncertainty(unc);
     }
+    
+    // set parameters that aren't saved in the checkpoint
+    dispatcher.setNumCoresPerSet(params.slot("nCores"));
+    dispatcher.setCheckpointInterval(params.slot("checkpointInterval"));
+    dispatcher.setCheckpointOutFile(params.slot("checkpointOutFile"));
 
+    // run the dispatcher and return the GapsResult in an R list
     GapsResult result(dispatcher.run());
+    GAPS_ASSERT(result.meanChiSq > 0.f);
     return Rcpp::List::create(
         Rcpp::Named("Amean") = createRMatrix(result.Amean),
         Rcpp::Named("Pmean") = createRMatrix(result.Pmean),
         Rcpp::Named("Asd") = createRMatrix(result.Asd),
-        Rcpp::Named("Psd") = createRMatrix(result.Psd)
+        Rcpp::Named("Psd") = createRMatrix(result.Psd),
+        Rcpp::Named("seed") = result.seed,
+        Rcpp::Named("meanChiSq") = result.meanChiSq,
+        Rcpp::Named("diagnostics") = Rcpp::List::create()
     );
 }
 
 // [[Rcpp::export]]
-Rcpp::List cogaps_cpp_from_file(const std::string &data, const std::string &unc,
-unsigned nPatterns, unsigned maxIterations, unsigned outputFrequency,
-uint32_t seed, float alphaA, float alphaP, float maxGibbsMassA,
-float maxGibbsMassP, bool messages, bool singleCell,
-const std::string &checkpointOutFile, unsigned nCores)
+Rcpp::List cogaps_cpp_from_file(const std::string &data, const Rcpp::S4 &params,
+const std::string &unc, const Rcpp::NumericMatrix &fixedMatrix,
+const std::string &checkpointInFile)
 {
-    return cogapsRun(data, unc, nPatterns, maxIterations, outputFrequency, seed,
-        alphaA, alphaP, maxGibbsMassA, maxGibbsMassP, messages, singleCell,
-        nCores);
+    return cogapsRun(data, params, unc, convertRMatrix(fixedMatrix),
+        checkpointInFile);
 }
 
 // [[Rcpp::export]]
-Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data,
-const Rcpp::NumericMatrix &unc, unsigned nPatterns, unsigned maxIterations,
-unsigned outputFrequency, uint32_t seed, float alphaA, float alphaP,
-float maxGibbsMassA, float maxGibbsMassP, bool messages, bool singleCell,
-const std::string &checkpointOutFile, unsigned nCores)
+Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data, const Rcpp::S4 &params,
+const Rcpp::NumericMatrix &unc, const Rcpp::NumericMatrix &fixedMatrix,
+const std::string &checkpointInFile)
 {
-    return cogapsRun(convertRMatrix(data), convertRMatrix(unc), nPatterns,
-        maxIterations, outputFrequency, seed, alphaA, alphaP, maxGibbsMassA,
-        maxGibbsMassP, messages, singleCell, nCores);
+    return cogapsRun(convertRMatrix(data), params, convertRMatrix(unc),
+        convertRMatrix(fixedMatrix), checkpointInFile);
 }
 
 // [[Rcpp::export]]

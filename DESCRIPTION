@@ -51,7 +51,6 @@ Collate:
     'CoGAPS.R'
     'GWCoGAPS.R'
     'RcppExports.R'
-    'SMatrix.R'
     'binaryA.R'
     'calcCoGAPSStat.R'
     'calcGeneGSStat.R'

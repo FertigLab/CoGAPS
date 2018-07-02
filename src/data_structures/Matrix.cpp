@@ -1,10 +1,13 @@
 #include "Matrix.h"
 #include "../file_parser/CsvParser.h"
 #include "../file_parser/MatrixElement.h"
+#include "../GapsAssert.h"
 
 template<class MatA, class MatB>
 static void copyMatrix(MatA &dest, const MatB &source)
 {
+    GAPS_ASSERT(dest.nRow() == source.nRow());
+    GAPS_ASSERT(dest.nCol() == source.nCol());
     for (unsigned i = 0; i < source.nRow(); ++i)
     {
         for (unsigned j = 0; j < source.nCol(); ++j)
@@ -17,6 +20,7 @@ static void copyMatrix(MatA &dest, const MatB &source)
 // if partitionRows is false, partition columns instead
 // rows of matrix should be partition dimension, i.e. need to transpose
 // is partitionRows is false
+/*
 template <class Matrix>
 static void fill(Matrix &mat, FileParser &p, bool partitionRows, std::vector<unsigned> whichIndices)
 {
@@ -34,6 +38,7 @@ static void fill(Matrix &mat, FileParser &p, bool partitionRows, std::vector<uns
         }
     }
 }
+*/
 
 /****************************** ROW MATRIX *****************************/
 
@@ -122,14 +127,14 @@ RowMatrix RowMatrix::operator/(float val) const
     return mat;
 }
 
-RowMatrix RowMatrix::pmax(float scale) const
+RowMatrix RowMatrix::pmax(float scale, float max) const
 {
     RowMatrix mat(mNumRows, mNumCols);
     for (unsigned i = 0; i < mNumRows; ++i)
     {
         for (unsigned j = 0; j < mNumCols; ++j)
         {
-            mat(i,j) = std::max(this->operator()(i,j) * scale, scale);
+            mat(i,j) = std::max(this->operator()(i,j) * scale, max);
         }
     }
     return mat;
@@ -240,14 +245,14 @@ ColMatrix& ColMatrix::operator=(const RowMatrix &mat)
     return *this;
 }
 
-ColMatrix ColMatrix::pmax(float scale) const
+ColMatrix ColMatrix::pmax(float scale, float max) const
 {
     ColMatrix mat(mNumRows, mNumCols);
     for (unsigned i = 0; i < mNumRows; ++i)
     {
         for (unsigned j = 0; j < mNumCols; ++j)
         {
-            mat(i,j) = std::max(this->operator()(i,j) * scale, scale);
+            mat(i,j) = std::max(this->operator()(i,j) * scale, max);
         }
     }
     return mat;
