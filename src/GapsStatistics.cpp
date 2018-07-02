@@ -1,11 +1,13 @@
 #include "GapsStatistics.h"
 #include "math/Algorithms.h"
 
-GapsStatistics::GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor, PumpThreshold t)
-    : mAMeanMatrix(nRow, nFactor), mAStdMatrix(nRow, nFactor),
-        mPMeanMatrix(nFactor, nCol), mPStdMatrix(nFactor, nCol),
-        mStatUpdates(0), mNumPatterns(nFactor), mPumpMatrix(nRow, nCol),
-        mPumpThreshold(t), mPumpStatUpdates(0)
+GapsStatistics::GapsStatistics(unsigned nRow, unsigned nCol, unsigned nPatterns,
+PumpThreshold t)
+    :
+mAMeanMatrix(nRow, nPatterns), mAStdMatrix(nRow, nPatterns),
+mPMeanMatrix(nPatterns, nCol), mPStdMatrix(nPatterns, nCol),
+mStatUpdates(0), mNumPatterns(nPatterns), mPumpMatrix(nRow, nCol),
+mPumpThreshold(t), mPumpStatUpdates(0)
 {}
 
 void GapsStatistics::update(const AmplitudeGibbsSampler &ASampler,
@@ -27,6 +29,37 @@ const PatternGibbsSampler &PSampler)
         mAMeanMatrix.getCol(j) += prod;
         mAStdMatrix.getCol(j) += gaps::algo::elementSq(prod); 
     }
+}
+
+ColMatrix GapsStatistics::Amean() const
+{
+    return mAMeanMatrix / mStatUpdates;
+}
+
+ColMatrix GapsStatistics::Asd() const
+{
+    return gaps::algo::computeStdDev(mAStdMatrix, mAMeanMatrix,
+        mStatUpdates);
+}
+
+RowMatrix GapsStatistics::Pmean() const
+{
+    return mPMeanMatrix / mStatUpdates;
+}
+
+RowMatrix GapsStatistics::Psd() const
+{
+    return gaps::algo::computeStdDev(mPStdMatrix, mPMeanMatrix,
+        mStatUpdates);
+}
+
+float GapsStatistics::meanChiSq(const AmplitudeGibbsSampler &ASampler) const
+{
+    ColMatrix A = mAMeanMatrix / mStatUpdates;
+    RowMatrix P = mPMeanMatrix / mStatUpdates;
+    RowMatrix M(gaps::algo::matrixMultiplication(A, P));
+    return 2.f * gaps::algo::loglikelihood(ASampler.mDMatrix, ASampler.mSMatrix,
+        M);
 }
 
 static unsigned geneThreshold(const ColMatrix &rankMatrix, unsigned pat)
@@ -125,37 +158,6 @@ const PatternGibbsSampler &PSampler)
 {
     mPumpStatUpdates++;
     patternMarkers(ASampler.mMatrix, PSampler.mMatrix, mPumpMatrix);
-}
-
-ColMatrix GapsStatistics::AMean() const
-{
-    return mAMeanMatrix / mStatUpdates;
-}
-
-ColMatrix GapsStatistics::AStd() const
-{
-    return gaps::algo::computeStdDev(mAStdMatrix, mAMeanMatrix,
-        mStatUpdates);
-}
-
-RowMatrix GapsStatistics::PMean() const
-{
-    return mPMeanMatrix / mStatUpdates;
-}
-
-RowMatrix GapsStatistics::PStd() const
-{
-    return gaps::algo::computeStdDev(mPStdMatrix, mPMeanMatrix,
-        mStatUpdates);
-}
-
-float GapsStatistics::meanChiSq(const AmplitudeGibbsSampler &ASampler) const
-{
-    ColMatrix A = mAMeanMatrix / mStatUpdates;
-    RowMatrix P = mPMeanMatrix / mStatUpdates;
-    RowMatrix M(gaps::algo::matrixMultiplication(A, P));
-    return 2.f * gaps::algo::loglikelihood(ASampler.mDMatrix, ASampler.mSMatrix,
-        M);
 }
 
 RowMatrix GapsStatistics::pumpMatrix() const

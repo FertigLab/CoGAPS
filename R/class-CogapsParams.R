@@ -12,7 +12,7 @@ setClass("CogapsParams", slots = c(
     maxGibbsMassP = "numeric",
     seed = "numeric",
     messages = "logical",
-    singleCellRNASeq = "logical",
+    singleCell = "logical",
     whichMatrixFixed = "character",
     checkpointInterval = "numeric",
     checkpointOutFile = "character", 
@@ -36,7 +36,7 @@ setMethod("initialize", "CogapsParams",
         .Object@maxGibbsMassP <- 100
         .Object@seed <- getMilliseconds(as.POSIXlt(Sys.time()))
         .Object@messages <- TRUE
-        .Object@singleCellRNASeq <- FALSE
+        .Object@singleCell <- FALSE
         .Object@whichMatrixFixed <- "N"
         .Object@checkpointInterval <- 0
         .Object@checkpointOutFile <- "gaps_checkpoint.out"
@@ -125,9 +125,9 @@ setGeneric("parseDirectParams", function(object, args)
 setMethod("setParam", signature(object="CogapsParams"),
     function(object, whichParam, value)
     {
-        slot(params, whichParam) <- value
-        validObject(params)
-        return(params)
+        slot(object, whichParam) <- value
+        validObject(object)
+        return(object)
     }
 )
 
@@ -136,7 +136,7 @@ setMethod("setParam", signature(object="CogapsParams"),
 setMethod("getParam", signature(object="CogapsParams"),
     function(object, whichParam)
     {
-        slot(params, whichParam)
+        slot(object, whichParam)
     }
 )
 
@@ -145,25 +145,40 @@ setMethod("getParam", signature(object="CogapsParams"),
 setMethod("parseOldParams", signature(object="CogapsParams"),
     function(object, oldArgs)
     {
-        if (!is.null(oldArgs$nFactor))
-            params@nPatterns <- oldArgs$nFactor
-        if (!is.null(oldArgs$nEquil))
-            params@nIterations <- oldArgs$nEquil
-        if (!is.null(oldArgs$nSample))
-            params@nIterations <- oldArgs$nSample
-        if (!is.null(oldArgs$nOutputs))
-            params@outputFrequency <- nOutputs
-        if (!is.null(oldArgs$maxGibbmassA))
-            params@maxGibbsMassA <- oldArgs$maxGibbmassA
-        if (!is.null(oldArgs$maxGibbmassP))
-            params@maxGibbsMassA <- oldArgs$maxGibbmassP
+        helper <- function(arg, params, newArg)
+        {
+            if (!is.null(oldArgs[[arg]]))
+            {
+                warning(paste("parameter", arg, "is deprecated, it will still",
+                    "work, but setting", newArg, "in the params object is the",
+                    "preferred method"))
+                params <- setParam(params, newArg, oldArgs[[arg]])
+                oldArgs[[arg]] <- NULL
+            }            
+            return(params)
+        }
 
-        if (!is.null(oldArgs$nSnapshots))
+        object <- helper("nFactor", object, "nPatterns")
+        object <- helper("nIter", object, "nIterations")
+        object <- helper("nEquil", object, "nIterations")
+        object <- helper("nSample", object, "nIterations")
+        object <- helper("nOutR", object, "outputFrequency")
+        object <- helper("nOutput", object, "outputFrequency")
+        object <- helper("maxGibbmassA", object, "maxGibbsMassA")
+        object <- helper("max_gibbmass_paraA", object, "maxGibbsMassA")
+        object <- helper("maxGibbmassP", object, "maxGibbsMassP")
+        object <- helper("max_gibbmass_paraP", object, "maxGibbsMassP")
+        object <- helper("checkpointFile", object, "checkpointOutFile")
+        object <- helper("singleCellRNASeq", object, "singleCell")
+
+        if (!is.null(oldArgs$nSnapshots) | !is.null(oldArgs$sampleSnapshots) | !is.null(oldArgs$numSnapshots))
             warning("snapshots not currently supported in release build")
         if (!is.null(oldArgs$fixedPatterns))
             stop("pass fixed matrix in with 'fixedMatrix' argument")
-        
-        return(params)
+        if (!is.null(oldArgs$S))
+            stop("pass uncertainty matrix in with 'uncertainty', not 'S'")
+
+        return(object)
     }
 )
 
@@ -174,11 +189,11 @@ setMethod("parseDirectParams", signature(object="CogapsParams"),
     {
         for (s in slotNames(object))
         {
-            if (!is.null(args[s]))
+            if (!is.null(args[[s]]))
             {
-                params <- setParam(object, s, args[s])
+                object <- setParam(object, s, args[[s]])
             }
         }
-        return(params)
+        return(object)
     }
 )

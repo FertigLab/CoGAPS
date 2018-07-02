@@ -3,21 +3,15 @@
 
 /******************** AmplitudeGibbsSampler Implementation ********************/
 
-AmplitudeGibbsSampler::AmplitudeGibbsSampler(const RowMatrix &D, 
-unsigned nFactor, float alpha, float maxGibbsMass, bool singleCell)
-    :
-GibbsSampler(D, D.nRow(), nFactor, nFactor, alpha, maxGibbsMass, singleCell)
+void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
 {
-    mQueue.setDimensionSize(mBinSize, mNumCols);
+    mOtherMatrix = &(sampler.mMatrix);
+    mAPMatrix = sampler.mAPMatrix;
 }
 
-AmplitudeGibbsSampler::AmplitudeGibbsSampler(const std::string &pathToData,
-unsigned nFactor, float alpha, float maxGibbsMass, bool singleCell)
-    :
-GibbsSampler(pathToData, FileParser(pathToData).nRow(), nFactor, nFactor, alpha, 
-maxGibbsMass, singleCell)
+void AmplitudeGibbsSampler::recalculateAPMatrix()
 {
-    mQueue.setDimensionSize(mBinSize, mNumCols);
+    mAPMatrix = gaps::algo::matrixMultiplication(mMatrix, *mOtherMatrix);
 }
 
 unsigned AmplitudeGibbsSampler::getRow(uint64_t pos) const
@@ -39,12 +33,6 @@ bool AmplitudeGibbsSampler::canUseGibbs(unsigned row, unsigned col) const // NOL
 bool AmplitudeGibbsSampler::canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const
 {
     return canUseGibbs(r1, c1) || canUseGibbs(r2, c2);
-}
-
-void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
-{
-    mOtherMatrix = &(sampler.mMatrix);
-    mAPMatrix = sampler.mAPMatrix;
 }
 
 void AmplitudeGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
@@ -79,8 +67,9 @@ AlphaParameters AmplitudeGibbsSampler::alphaParameters(unsigned row, unsigned co
 AlphaParameters AmplitudeGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
-    if (r1 == r2)
+    if (r1 == r2) // TODO should this ever happen
     {
+        GAPS_ASSERT(false);
         return gaps::algo::alphaParameters(mDMatrix.nCol(), mDMatrix.rowPtr(r1),
             mSMatrix.rowPtr(r1), mAPMatrix.rowPtr(r1), mOtherMatrix->rowPtr(c1),
             mOtherMatrix->rowPtr(c2));
@@ -98,8 +87,9 @@ float AmplitudeGibbsSampler::computeDeltaLL(unsigned row, unsigned col, float ma
 float AmplitudeGibbsSampler::computeDeltaLL(unsigned r1, unsigned c1, float m1,
 unsigned r2, unsigned c2, float m2)
 {
-    if (r1 == r2)
+    if (r1 == r2) // TODO should this ever happen
     {
+        GAPS_ASSERT(false);
         return gaps::algo::deltaLL(mDMatrix.nCol(), mDMatrix.rowPtr(r1),
             mSMatrix.rowPtr(r1), mAPMatrix.rowPtr(r1), mOtherMatrix->rowPtr(c1),
             m1, mOtherMatrix->rowPtr(c2), m2);
@@ -109,21 +99,15 @@ unsigned r2, unsigned c2, float m2)
 
 /********************* PatternGibbsSampler Implementation *********************/
 
-PatternGibbsSampler::PatternGibbsSampler(const RowMatrix &D,
-unsigned nFactor, float alpha, float maxGibbsMass, bool singleCell)
-    :
-GibbsSampler(D, nFactor, D.nCol(), nFactor, alpha, maxGibbsMass, singleCell)
+void PatternGibbsSampler::recalculateAPMatrix()
 {
-    mQueue.setDimensionSize(mBinSize, mNumRows);
+    mAPMatrix = gaps::algo::matrixMultiplication(*mOtherMatrix, mMatrix);
 }
 
-PatternGibbsSampler::PatternGibbsSampler(const std::string &pathToData,
-unsigned nFactor, float alpha, float maxGibbsMass, bool singleCell)
-    :
-GibbsSampler(pathToData, nFactor, FileParser(pathToData).nCol(), nFactor, alpha,
-maxGibbsMass, singleCell)
+void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)
 {
-    mQueue.setDimensionSize(mBinSize , mNumRows);
+    mOtherMatrix = &(sampler.mMatrix);
+    mAPMatrix = sampler.mAPMatrix;
 }
 
 unsigned PatternGibbsSampler::getRow(uint64_t pos) const
@@ -145,12 +129,6 @@ bool PatternGibbsSampler::canUseGibbs(unsigned row, unsigned col) const // NOLIN
 bool PatternGibbsSampler::canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const
 {
     return canUseGibbs(r1, c1) || canUseGibbs(r2, c2);
-}
-
-void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)
-{
-    mOtherMatrix = &(sampler.mMatrix);
-    mAPMatrix = sampler.mAPMatrix;
 }
 
 void PatternGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
@@ -185,8 +163,9 @@ AlphaParameters PatternGibbsSampler::alphaParameters(unsigned row, unsigned col)
 AlphaParameters PatternGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
-    if (c1 == c2)
+    if (c1 == c2) // TODO should this ever happen
     {
+        GAPS_ASSERT(false);
         return gaps::algo::alphaParameters(mDMatrix.nRow(), mDMatrix.colPtr(c1),
             mSMatrix.colPtr(c1), mAPMatrix.colPtr(c1), mOtherMatrix->colPtr(r1),
             mOtherMatrix->colPtr(r2));
@@ -204,8 +183,9 @@ float PatternGibbsSampler::computeDeltaLL(unsigned row, unsigned col, float mass
 float PatternGibbsSampler::computeDeltaLL(unsigned r1, unsigned c1, float m1,
 unsigned r2, unsigned c2, float m2)
 {
-    if (c1 == c2)
+    if (c1 == c2) // TODO should this ever happen
     {
+        GAPS_ASSERT(false);
         return gaps::algo::deltaLL(mDMatrix.nRow(), mDMatrix.colPtr(c1),
             mSMatrix.colPtr(c1), mAPMatrix.colPtr(c1), mOtherMatrix->colPtr(r1),
             m1, mOtherMatrix->colPtr(r2), m2);
