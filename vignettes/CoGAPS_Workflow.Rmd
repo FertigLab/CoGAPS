@@ -65,8 +65,7 @@ Read in sample data into an R object. `CoGAPS` allows data in the form of raw co
 The user may read in the data matrix along with an uncertainty matrix. However, the default uncertainty matrix is set to 10% of the data matrix if an uncertainty matrix is not read in. 
 Here we read in an example dataset: the `GIST` dataset from Ochs et al. (2009). contains gene expression data from gastrointestinal stromal tumor cell lines treated with Gleevec. The matrix contains 1363 genes by 9 samples of mean gene expression data. 
 ```{r}
-data("GIST.D")
-data("GIST.S")
+data("GIST")
 ```
 
 ## Running CoGAPS
@@ -74,7 +73,7 @@ Here we run CoGAPS on the data set `GIST.D` with default parameters in the class
 Calling CoGAPS will return four matrices of Amean, Asd, Pmean, and Psd, along with plots of each, where the A matrices are the amplitude matrices and P matrices are the pattern matrices. 
 
 ```{r}
-CoGAPSResult <- CoGAPS(GIST.D, CoGAPSParams)
+CoGAPSResult <- CoGAPS(GIST.D, CogapsParams)
 
 nIterations <- 2500
 patternRange <- 2:4
@@ -85,6 +84,16 @@ for (nPatterns in patternRange)
         as.matrix(GIST.S), nFactor=nPatterns, nSample=nIterations,
         nEquil=nIterations, seed=123, messages=FALSE)
 }
+```
+
+## Setting Parameters
+Although default parameters are set, the user may change and set the parameters. 
+For example, if we wanted to change the number of patterns from the default to 5,
+```{r}
+params <- new(CogapsParams)
+params <- setParam(params, "nPatterns", 5)
+cogapsResult <- CoGAPS(GIST.D, params)
+
 ```
 
 ## Selecting Number of Patterns
@@ -122,3 +131,11 @@ stat <- calcCoGAPSStat(SimpSim.result$Amean, SimpSim.result$Asd, GStoGenes=GSets
 Now using the `computeGeneGSProb` function, we can use the gene set statistic (returned from calcCoGAPSStat) to compute a statistic to quantify the likely membership of each gene annotated to a set based on its inferred activity. 
 $$ computeGeneGSProb(Amean, Asd, GStoGenes, numPerm=500) $$
 The statistic used to infer membership compares the expression pattern of a gene annotated as a member of a gene set to the common expression pattern of all annotated members of that gene set. The function outputs the p-value of a set membership for each gene specified in GStoGenes. 
+
+
+# Session Information and Package Compilation
+The following will detail the session information and information about how the package was compiled, the version used, and compile time options.
+```{r}
+sessionInfo()
+buildReport()
+```
