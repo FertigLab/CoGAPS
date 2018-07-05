@@ -104,6 +104,7 @@ public:
 
     #ifdef GAPS_DEBUG
     float getAvgQueue() const;
+    bool internallyConsistent() const;
     #endif
 
     // serialization
@@ -309,6 +310,45 @@ float GibbsSampler<T, MatA, MatB>::getAvgQueue() const
 {
     return mAvgQueue;
 }
+
+template <class T, class MatA, class MatB>
+bool GibbsSampler<T, MatA, MatB>::internallyConsistent() const
+{
+    uint64_t nPatterns = mDMatrix.nRow() == mMatrix.nRow() ? mMatrix.nCol() :
+        mMatrix.nRow();
+
+    Atom a = mDomain.front();
+    float current = a.mass;
+    gaps_printf("atom mass: %f", a.mass);
+    uint64_t index = a.pos / (mBinSize * nPatterns);
+    uint64_t pattern = (a.pos / mBinSize) % nPatterns;
+
+    while (mDomain.hasRight(a))
+    {
+        a = mDomain.right(a);
+        if ((a.pos / mBinSize) % nPatterns != pattern)
+        {
+            float matVal = mDMatrix.nRow() == mMatrix.nRow() ?
+                mMatrix(index, pattern) : mMatrix(pattern, index);
+            gaps_printf("mass difference detected at index %lu, pattern %lu: %f %f\n", index, pattern, current, matVal); 
+            if (std::abs(current - matVal) > 1.f)
+            {
+            gaps_printf("mass difference detected at index %lu, pattern %lu: %f %f\n", index, pattern, current, matVal); 
+                return false;
+            }
+            
+            index = a.pos / (mBinSize * nPatterns);
+            pattern = (a.pos / mBinSize) % nPatterns;
+            current = a.mass;
+        }
+        else
+        {
+            gaps_printf("atom mass: %f", a.mass);
+            current += a.mass;
+        }
+    }
+    return true;    
+}
 #endif
 
 template <class T, class MatA, class MatB>
@@ -372,8 +412,7 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::removeMass(uint64_t pos, float mass, unsigned row, unsigned col)
 {
     mDomain.cacheErase(pos);
-    mMatrix(row, col) += -mass;
-    GAPS_ASSERT(mMatrix(row, col) >= 0.f);
+    mMatrix(row, col) = std::max(mMatrix(row, col) - mass, 0.f);
     impl()->updateAPMatrix(row, col, -mass);
 }
 
@@ -403,8 +442,7 @@ void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass, unsigned row,
 unsigned col)
 {
     //removeMass(pos, mass, row, col);
-    mMatrix(row, col) += -mass;
-    GAPS_ASSERT(mMatrix(row, col) >= 0);
+    mMatrix(row, col) = std::max(mMatrix(row, col) - mass, 0.f);
     impl()->updateAPMatrix(row, col, -mass);
 
     float newMass = impl()->canUseGibbs(row, col) ? gibbsMass(row, col, -mass) : 0.f;
@@ -568,7 +606,7 @@ unsigned r2, unsigned c2, float m2)
 
     if (alpha.s > gaps::algo::epsilon)
     {
-        float mean = alpha.su / alpha.s; // TODO why not subtract lambda
+        float mean = alpha.su / alpha.s; // lambda cancels out
         float sd = 1.f / std::sqrt(alpha.s);
         float pLower = gaps::random::p_norm(-m1, mean, sd);
         float pUpper = gaps::random::p_norm(m2, mean, sd);
