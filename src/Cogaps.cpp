@@ -62,6 +62,7 @@ static void updateSampler(GapsInternalState &state)
     {
         state.sampler.update('P');
     }
+    GAPS_ASSERT(state.sampler.internallyConsistent());
 }
 
 static void makeCheckpointIfNeeded(GapsInternalState &state)

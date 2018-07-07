@@ -535,3 +535,17 @@ Archive& operator>>(Archive &ar, GibbsSampler &sampler)
     
     return ar;
 }
+
+#ifdef GAPS_DEBUG
+bool GibbsSampler::internallyConsistent() const
+{
+    Atom first = mADomain.front();
+    mADomain.getNeighbors(first.pos).right;
+
+    mAMatrix
+    mPMatrix
+    
+    mADomain
+    mPDomain
+}
+#endif

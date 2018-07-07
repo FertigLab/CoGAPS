@@ -21,8 +21,8 @@
             }                                                           \
         } while(0)
 #else
-    #define GAPS_ASSERT(cond) ((void)sizeof(cond))
-    #define GAPS_ASSERT_MSG(cond, msg) ((void)sizeof(cond))
+    #define GAPS_ASSERT(cond) do {} while(0)
+    #define GAPS_ASSERT_MSG(cond, msg) do {} while(0)
 #endif 
 
 #define GAPS_ERROR(msg)                             \
