@@ -240,3 +240,9 @@ Archive& operator>>(Archive &ar, AtomicSupport &domain)
     }
     return ar;
 }
+
+Atom AtomicSupport::front() const
+{
+    uint64_t front_it = mAtomPositions.lower_bound(0);
+    return mAtoms[front_it->second];
+}

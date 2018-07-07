@@ -80,7 +80,6 @@ public:
     // functions for dealing with atomic data structure
     void addAtom(Atom atom); // O(logN)
     void removeAtom(uint64_t pos); // O(logN)
-    AtomNeighbors getNeighbors(uint64_t pos) const; // O(logN)
 
     // get atomic positions at random
     uint64_t randomFreePosition() const;
@@ -118,6 +117,9 @@ public:
     // setters
     void setAlpha(float alpha) {mAlpha = alpha;}
     void setLambda(float lambda) {mLambda = lambda;}
+
+    Atom front() const;
+    AtomNeighbors getNeighbors(uint64_t pos) const; // O(logN)
 
     friend Archive& operator<<(Archive &ar, AtomicSupport &sampler);
     friend Archive& operator>>(Archive &ar, AtomicSupport &sampler);

@@ -96,6 +96,10 @@ public:
     void patternMarkers(RowMatrix normedA, RowMatrix normedP, ColMatrix &statMatrix);
     float meanChiSq() const;
 
+    #ifdef GAPS_DEBUG
+    bool internallyConsistent() const;
+    #endif
+
     // serialization
     friend Archive& operator<<(Archive &ar, GibbsSampler &sampler);
     friend Archive& operator>>(Archive &ar, GibbsSampler &sampler);
