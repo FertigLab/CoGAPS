@@ -20,7 +20,8 @@
 #' createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
 #' result <- GWCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
 #' @export
-GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manualMatch=FALSE, consensusPatterns=NULL, ...)
+GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA,
+manualMatch=FALSE, consensusPatterns=NULL, saveUnmatchedPatterns=FALSE, ...)
 {
     if (!is.null(list(...)$checkpointFile))
     {
@@ -30,13 +31,17 @@ GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manua
     if (is.null(consensusPatterns))
     {
         allDataSets <- preInitialPhase(simulationName, nCores)
-        initialResult <- runInitialPhase(simulationName, allDataSets, nFactor, ...)
+        unmatchedPatterns <- runInitialPhase(simulationName, allDataSets, nFactor, ...)
+        if (saveUnmatchedPatterns)
+        {
+            save(unmatchedPatterns, file=paste(simulationName, "_unmatched_patterns.RData"))
+        }
         if (manualMatch)
         {
-            saveRDS(initialResult,file=paste(simulationName,"_initial.rds", sep=""))
+            saveRDS(unmatchedPatterns,file=paste(simulationName,"_initial.rds", sep=""))
             stop("Please provide consensus patterns upon restarting.")
         }
-        matchedPatternSets <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
+        matchedPatternSets <- postInitialPhase(unmatchedPatterns, length(allDataSets), cut, minNS)
         save(matchedPatternSets, file=paste(simulationName, "_matched_ps.RData", sep=""))
         consensusPatterns <- matchedPatternSets[[1]]
     } 
@@ -150,7 +155,7 @@ runInitialPhase <- function(simulationName, allDataSets, nFactor, ...)
         # run CoGAPS without any fixed patterns
         cptFileName <- paste(simulationName, "_initial_cpt_", i, ".out", sep="")
         CoGAPS(sampleD, uncertainty=sampleS, nFactor=nFactor, seed=nut[i],
-            checkpointFile=cptFileName, ...)
+            checkpointFile=cptFileName)
     }
     return(initialResult)
 }
@@ -204,7 +209,7 @@ runFinalPhase <- function(simulationName, allDataSets, consensusPatterns, nCores
         cptFileName <- paste(simulationName, "_final_cpt_", i, ".out", sep="")
         CoGAPS(sampleD, uncertainty=sampleS, fixedMatrix=consensusPatterns,
             nFactor=nFactorFinal, seed=nut[i], checkpointFile=cptFileName,
-            whichMatrixFixed='P', ...)
+            whichMatrixFixed='P')
 
     }
     return(finalResult)
