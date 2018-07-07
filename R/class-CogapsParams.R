@@ -125,6 +125,7 @@ setGeneric("parseDirectParams", function(object, args)
 setMethod("setParam", signature(object="CogapsParams"),
     function(object, whichParam, value)
     {
+        message(paste("setting param - ", whichParam))
         slot(object, whichParam) <- value
         validObject(object)
         return(object)
@@ -172,11 +173,17 @@ setMethod("parseOldParams", signature(object="CogapsParams"),
         object <- helper("singleCellRNASeq", object, "singleCell")
 
         if (!is.null(oldArgs$nSnapshots) | !is.null(oldArgs$sampleSnapshots) | !is.null(oldArgs$numSnapshots))
+        {
             warning("snapshots not currently supported in release build")
+            oldArgs$nSnapshots <- NULL
+            oldArgs$sampleSnapshots <- NULL
+            oldArgs$numSnapshots <- NULL
+        }
         if (!is.null(oldArgs$fixedPatterns))
             stop("pass fixed matrix in with 'fixedMatrix' argument")
         if (!is.null(oldArgs$S))
             stop("pass uncertainty matrix in with 'uncertainty', not 'S'")
+        if (!is.null(
 
         return(object)
     }
