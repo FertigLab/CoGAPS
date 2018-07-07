@@ -11,6 +11,8 @@
 #' @param minNS minimum of individual set contributions a cluster must contain
 #' @param manualMatch logical indicating whether or not to stop after initial phase for manual pattern matching
 #' @param consensusPatterns fixed pattern matrix to be used to ensure reciprocity of A weights accross sets 
+#' @param saveUnmatchedPatterns option to save intermediate results for each
+#' set, before the pattern matching happens
 #' @param ... additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}
 #' @return list of A and P estimates
 #' @seealso \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
@@ -20,7 +22,8 @@
 #' createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
 #' result <- GWCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
 #' @export
-GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manualMatch=FALSE, consensusPatterns=NULL, ...)
+GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA,
+manualMatch=FALSE, consensusPatterns=NULL, saveUnmatchedPatterns=FALSE, ...)
 {
     if (!is.null(list(...)$checkpointFile))
     {
@@ -30,13 +33,16 @@ GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manua
     if (is.null(consensusPatterns))
     {
         allDataSets <- preInitialPhase(simulationName, nCores)
-        initialResult <- runInitialPhase(simulationName, allDataSets, nFactor, ...)
-        if (manualMatch)
+        unmatchedPatterns <- runInitialPhase(simulationName, allDataSets, nFactor, ...)
+        if (saveUnmatchedPatterns | manualMatch)
         {
-            saveRDS(initialResult,file=paste(simulationName,"_initial.rds", sep=""))
-            stop("Please provide consensus patterns upon restarting.")
+            save(unmatchedPatterns, file=paste(simulationName, "_unmatched_patterns.RData", sep=""))
+            if (manualMatch)
+            {
+                stop("Please provide consensus patterns upon restarting.")
+            }
         }
-        matchedPatternSets <- postInitialPhase(initialResult, length(allDataSets), cut, minNS)
+        matchedPatternSets <- postInitialPhase(unmatchedPatterns, length(allDataSets), cut, minNS)
         save(matchedPatternSets, file=paste(simulationName, "_matched_ps.RData", sep=""))
         consensusPatterns <- matchedPatternSets[[1]]
     } 

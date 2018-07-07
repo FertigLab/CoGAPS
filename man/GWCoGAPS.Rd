@@ -5,7 +5,8 @@
 \title{GWCoGAPS}
 \usage{
 GWCoGAPS(simulationName, nFactor, nCores = NA, cut = NA, minNS = NA,
-  manualMatch = FALSE, consensusPatterns = NULL, ...)
+  manualMatch = FALSE, consensusPatterns = NULL,
+  saveUnmatchedPatterns = FALSE, ...)
 }
 \arguments{
 \item{simulationName}{name of this simulation}
@@ -22,6 +23,9 @@ greater than or equal to the number of rows of FP}
 \item{manualMatch}{logical indicating whether or not to stop after initial phase for manual pattern matching}
 
 \item{consensusPatterns}{fixed pattern matrix to be used to ensure reciprocity of A weights accross sets}
+
+\item{saveUnmatchedPatterns}{option to save intermediate results for each
+set, before the pattern matching happens}
 
 \item{...}{additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}}
 }
