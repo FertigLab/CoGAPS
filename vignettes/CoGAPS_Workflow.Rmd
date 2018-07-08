@@ -1,6 +1,6 @@
 ---
 title: "CoGAPS Workflow Vignette"
-author: "Genevieve L. Stein-O'Brien"
+author: "Elana J. Fertig, Thomas Sherman, Genevieve L. Stein-O'Brien"
 date: "21 June 2018"
 package: "`r pkg_ver('CoGAPS')`"
 bibliography: AppNote.bib

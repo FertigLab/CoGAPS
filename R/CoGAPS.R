@@ -41,7 +41,7 @@ uncertainty=NULL, fixedMatrix=matrix(0), checkpointInFile="", ...)
     params <- parseDirectParams(params, list(...))
 
     # check if fixed matrix is set so is whichMatrixFixed
-    if (!all(fixedMatrix == matrix(0)) & (!params@whichMatrixFixed %in% c('A', 'P')))
+    if (sum(dim(fixedMatrix)) != 2 & (!params@whichMatrixFixed %in% c('A', 'P')))
         stop("fixedMatrix passed, but whichMatrixFixed not set") 
 
     # check if uncertainty is null

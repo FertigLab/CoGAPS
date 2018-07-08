@@ -5,15 +5,15 @@
 #' @return plot
 plotDiag <-function(gapsRes)
 {
-    AMean <- gapsRes$Amean
-    PMean <- gapsRes$Pmean
-    ASD <- gapsRes$Asd
-    PSD <- gapsRes$Psd
-    ChiSq <- gapsRes$chiSqValues
-    AtomsAEquil <- gapsRes$atomsAEquil
-    AtomsASamp <- gapsRes$atomsASamp
-    AtomsPEquil <- gapsRes$atomsPEquil
-    AtomsPSamp <- gapsRes$atomsPSamp
+    AMean <- gapsRes@Amean
+    PMean <- gapsRes@Pmean
+    ASD <- gapsRes@Asd
+    PSD <- gapsRes@Psd
+#    ChiSq <- gapsRes$chiSqValues
+#    AtomsAEquil <- gapsRes$atomsAEquil
+#    AtomsASamp <- gapsRes$atomsASamp
+#    AtomsPEquil <- gapsRes$atomsPEquil
+#    AtomsPSamp <- gapsRes$atomsPSamp
 
     par(ask=TRUE)
 
@@ -37,11 +37,11 @@ plotDiag <-function(gapsRes)
     heatmap.2(PSD, Rowv = FALSE, breaks=jbreak, Colv = FALSE,dendrogram="none",
         trace="none", density.info="none",main="P Standard Deviation Matrix")
 
-    plot(ChiSq, main="Chi Squared Values")
+#    plot(ChiSq, main="Chi Squared Values")
 
-    par(mfrow=c(2, 2))
-    plot(AtomsAEquil, main="Atoms A Equilibrium")
-    plot(AtomsASamp, main="Atoms A Sample")
-    plot(AtomsPEquil, main="Atoms P Equilibrium")
-    plot(AtomsPSamp, main="Atoms P Sample")
+#    par(mfrow=c(2, 2))
+#    plot(AtomsAEquil, main="Atoms A Equilibrium")
+#    plot(AtomsASamp, main="Atoms A Sample")
+#    plot(AtomsPEquil, main="Atoms P Equilibrium")
+#    plot(AtomsPSamp, main="Atoms P Sample")
 }

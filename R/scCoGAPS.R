@@ -143,7 +143,7 @@ sc_runInitialPhase <- function(simulationName, allDataSets, nFactor, ...)
 
 sc_postInitialPhase <- function(initialResult, nSets, cut, minNS)
 {
-    nFactor <- ncol(initialResult[[1]]$Amean)
+    nFactor <- ncol(initialResult[[1]]@Amean)
     BySet <- reOrderBySet(AP=initialResult, nFactor=nFactor, nSets=nSets,match="A")
 
     #run postpattern match function
