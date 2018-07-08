@@ -88,7 +88,7 @@ GapsResult GapsDispatcher::run()
         case 'C':
             if (mPrintMessages)
             {
-                gaps_printf("Calibration Phase\n");
+                gaps_printf("-- Calibration Phase --\n");
             }
             runOneCycle(mMaxIterations);
             mPhase = 'S';
@@ -96,7 +96,7 @@ GapsResult GapsDispatcher::run()
         case 'S':
             if (mPrintMessages)
             {
-                gaps_printf("Sampling Phase\n");
+                gaps_printf("-- Sampling Phase --\n");
             }
             mRunners[0]->startSampling();
             runOneCycle(mMaxIterations);

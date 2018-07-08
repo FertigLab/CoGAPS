@@ -125,7 +125,6 @@ setGeneric("parseDirectParams", function(object, args)
 setMethod("setParam", signature(object="CogapsParams"),
     function(object, whichParam, value)
     {
-        message(paste("setting param - ", whichParam))
         slot(object, whichParam) <- value
         validObject(object)
         return(object)
@@ -183,7 +182,6 @@ setMethod("parseOldParams", signature(object="CogapsParams"),
             stop("pass fixed matrix in with 'fixedMatrix' argument")
         if (!is.null(oldArgs$S))
             stop("pass uncertainty matrix in with 'uncertainty', not 'S'")
-        if (!is.null(
 
         return(object)
     }

@@ -10,10 +10,10 @@ postFixed4Parallel <- function(AP.fixed, setValues, setMatrix="P")
 {
     if (setMatrix=="P")
     {
-        ASummary <- do.call(rbind,lapply(AP.fixed, function(x) x$Amean))
-        Asd <- do.call(rbind,lapply(AP.fixed, function(x) x$Asd))
+        ASummary <- do.call(rbind,lapply(AP.fixed, function(x) x@Amean))
+        Asd <- do.call(rbind,lapply(AP.fixed, function(x) x@Asd))
         #PSummary <- do.call(rbind,lapply(AP.fixed, function(x) x$Pmean))
-        PSummary <- AP.fixed[[1]]$Pmean
+        PSummary <- AP.fixed[[1]]@Pmean
 
         Pmax <- apply(PSummary,1,max)
         Pneu <- sweep(PSummary,1,Pmax,FUN="/")
@@ -32,10 +32,10 @@ postFixed4Parallel <- function(AP.fixed, setValues, setMatrix="P")
     }
     else if (setMatrix=="A")
     {
-        PSummary <- do.call(cbind, lapply(AP.fixed, function(x) x$Pmean))
-        Psd <- do.call(cbind, lapply(AP.fixed, function(x) x$Psd))
+        PSummary <- do.call(cbind, lapply(AP.fixed, function(x) x@Pmean))
+        Psd <- do.call(cbind, lapply(AP.fixed, function(x) x@Psd))
         #PSummary <- do.call(rbind,lapply(AP.fixed, function(x) x$Pmean))
-        ASummary <- AP.fixed[[1]]$Amean
+        ASummary <- AP.fixed[[1]]@Amean
 
         Amax <- apply(ASummary,2,max)
         Aneu <- sweep(ASummary,2,Amax,FUN="/")
