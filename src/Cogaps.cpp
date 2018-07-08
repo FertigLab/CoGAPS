@@ -1,3 +1,4 @@
+#include "GapsAssert.h"
 #include "GibbsSampler.h"
 #include "Matrix.h"
 #include "Archive.h"
@@ -56,13 +57,14 @@ static void updateSampler(GapsInternalState &state)
     {
         state.sampler.update('A');
     }
+    GAPS_ASSERT(state.sampler.internallyConsistent('A'));
 
     state.nUpdatesP += state.nIterP;
     for (unsigned j = 0; j < state.nIterP; ++j)
     {
         state.sampler.update('P');
     }
-    GAPS_ASSERT(state.sampler.internallyConsistent());
+    GAPS_ASSERT(state.sampler.internallyConsistent('P'));
 }
 
 static void makeCheckpointIfNeeded(GapsInternalState &state)

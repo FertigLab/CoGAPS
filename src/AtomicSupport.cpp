@@ -243,6 +243,6 @@ Archive& operator>>(Archive &ar, AtomicSupport &domain)
 
 Atom AtomicSupport::front() const
 {
-    uint64_t front_it = mAtomPositions.lower_bound(0);
+    std::map<uint64_t, uint64_t>::const_iterator front_it = mAtomPositions.lower_bound(0);
     return mAtoms[front_it->second];
 }

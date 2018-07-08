@@ -97,7 +97,7 @@ public:
     float meanChiSq() const;
 
     #ifdef GAPS_DEBUG
-    bool internallyConsistent() const;
+    bool internallyConsistent(char matrixLabel);
     #endif
 
     // serialization

@@ -537,15 +537,39 @@ Archive& operator>>(Archive &ar, GibbsSampler &sampler)
 }
 
 #ifdef GAPS_DEBUG
-bool GibbsSampler::internallyConsistent() const
+bool GibbsSampler::internallyConsistent(char matrixLabel)
 {
-    Atom first = mADomain.front();
-    mADomain.getNeighbors(first.pos).right;
-
-    mAMatrix
-    mPMatrix
+    AtomicSupport &domain(matrixLabel == 'A' ? mADomain : mPDomain);
     
-    mADomain
-    mPDomain
+    uint64_t nPatterns = nFactor();
+
+    Atom a = domain.front();
+    float current = a.mass;
+    uint64_t row = domain.getRow(a.pos);
+    uint64_t col = domain.getCol(a.pos);
+
+    while (domain.getNeighbors(a.pos).right.pos != a.pos)
+    {
+        a = domain.getNeighbors(a.pos).right;
+        if (domain.getRow(a.pos) != row || domain.getCol(a.pos) != col)
+        {
+            float matVal = matrixLabel == 'A' ? mAMatrix(row, col) : mPMatrix(row, col);
+            if (std::abs(current - matVal) > 0.1f)
+            {
+                Rprintf("mass difference in %c matrix detected at row %lu, column %lu: %f %f\n",
+                    matrixLabel, row, col, current, matVal); 
+                return false;
+            }
+            
+            row = domain.getRow(a.pos);
+            col = domain.getCol(a.pos);
+            current = a.mass;
+        }
+        else
+        {
+            current += a.mass;
+        }
+    }
+    return true;  
 }
 #endif
