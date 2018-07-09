@@ -8,64 +8,51 @@
 #include <Rcpp.h>
 #endif
 
-#include <algorithm>
-
-GapsRunner::GapsRunner(const RowMatrix &data, unsigned nPatterns, float alphaA,
-float alphaP, float maxGibbsMassA, float maxGibbsMassP, bool singleCell)
-    :
-mNumRows(data.nRow()), mNumCols(data.nCol()),
-mASampler(data, nPatterns, alphaA, maxGibbsMassA, singleCell),
-mPSampler(data, nPatterns, alphaP, maxGibbsMassP, singleCell),
-mStatistics(data.nRow(), data.nCol(), nPatterns),
-mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0)
+void GapsRunner::printMessages(bool print)
 {
-    mASampler.sync(mPSampler);
-    mPSampler.sync(mASampler);
+    mPrintMessages = print;
 }
 
-GapsRunner::GapsRunner(const std::string &pathToData, unsigned nPatterns,
-float alphaA, float alphaP, float maxGibbsMassA, float maxGibbsMassP,
-bool singleCell)
-    :
-mNumRows(FileParser(pathToData).nRow()), mNumCols(FileParser(pathToData).nCol()),
-mASampler(pathToData, nPatterns, alphaA, maxGibbsMassA, singleCell),
-mPSampler(pathToData, nPatterns, alphaP, maxGibbsMassP, singleCell),
-mStatistics(mNumRows, mNumCols, nPatterns),
-mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0)
+void GapsRunner::setOutputFrequency(unsigned n)
 {
-    mASampler.sync(mPSampler);
-    mPSampler.sync(mASampler);
+    mOutputFrequency = n;
+}
+
+void GapsRunner::setSparsity(float alphaA, float alphaP, bool singleCell)
+{
+    mASampler.setSparsity(alphaA, singleCell);
+    mPSampler.setSparsity(alphaP, singleCell);
+}
+
+void GapsRunner::setMaxGibbsMass(float maxA, float maxP)
+{
+    mASampler.setMaxGibbsMass(maxA);
+    mPSampler.setMaxGibbsMass(maxP);
 }
 
 void GapsRunner::setFixedMatrix(char which, const RowMatrix &mat)
 {
+    mFixedMatrix = which;
     if (which == 'A')
     {
         mASampler.setMatrix(ColMatrix(mat));
+        mASampler.recalculateAPMatrix();
+        mPSampler.sync(mASampler);
     }
     else if (which == 'P')
     {
         mPSampler.setMatrix(mat);
+        mPSampler.recalculateAPMatrix();
+        mASampler.sync(mPSampler);
     }
 }
 
-void GapsRunner::setUncertainty(const std::string &pathToMatrix)
+void GapsRunner::startSampling()
 {
-    mASampler.setUncertainty(pathToMatrix);
-    mPSampler.setUncertainty(pathToMatrix);
+    mSamplePhase = true;
 }
 
-void GapsRunner::displayStatus(unsigned outFreq, unsigned current, unsigned total)
-{
-    if (outFreq > 0 && ((current + 1) % outFreq) == 0)
-    {
-        gaps_printf("%d of %d, Atoms:%lu(%lu) Chi2 = %.2f\n", current + 1,
-            total, mASampler.nAtoms(), mPSampler.nAtoms(), mASampler.chi2());
-    }
-}
-
-void GapsRunner::run(unsigned nIter, unsigned outputFreq, bool printMessages,
-unsigned nCores)
+void GapsRunner::run(unsigned nIter, unsigned nCores)
 {
     for (unsigned i = 0; i < nIter; ++i)
     {
@@ -85,9 +72,9 @@ unsigned nCores)
         unsigned nP = gaps::random::poisson(std::max(mPSampler.nAtoms(), 10ul));
         updateSampler(nA, nP, nCores);
 
-        if (printMessages)
+        if (mPrintMessages)
         {
-            displayStatus(outputFreq, i, nIter);
+            displayStatus(i, nIter);
         }
 
         if (mSamplePhase)
@@ -97,19 +84,87 @@ unsigned nCores)
     }
 }
 
-void GapsRunner::updateSampler(unsigned nA, unsigned nP, unsigned nCores)
+unsigned GapsRunner::nRow() const
 {
-    mNumUpdatesA += nA;
-    mASampler.update(nA, nCores);
-    mPSampler.sync(mASampler);
-
-    mNumUpdatesP += nP;
-    mPSampler.update(nP, nCores);
-    mASampler.sync(mPSampler);
+    return mASampler.dataRows();
 }
 
-void GapsRunner::setUncertainty(const RowMatrix &S)
+unsigned GapsRunner::nCol() const
 {
-    mASampler.setUncertainty(S);
-    mPSampler.setUncertainty(S);
+    return mASampler.dataCols();
+}
+
+ColMatrix GapsRunner::Amean() const
+{
+    return mStatistics.Amean();
+}
+
+RowMatrix GapsRunner::Pmean() const
+{
+    return mStatistics.Pmean();
+}
+
+ColMatrix GapsRunner::Asd() const
+{
+    return mStatistics.Asd();
+}
+
+RowMatrix GapsRunner::Psd() const
+{
+    return mStatistics.Psd();
+}
+
+float GapsRunner::meanChiSq() const
+{
+    return mStatistics.meanChiSq(mASampler);
+}
+
+Archive& operator<<(Archive &ar, GapsRunner &runner)
+{
+    ar << runner.mASampler << runner.mPSampler << runner.mStatistics <<
+        runner.mPrintMessages << runner.mOutputFrequency <<
+        runner.mFixedMatrix << runner.mSamplePhase << runner.mNumUpdatesA <<
+        runner.mNumUpdatesP;
+    return ar;
+}
+
+Archive& operator>>(Archive &ar, GapsRunner &runner)
+{
+    ar >> runner.mASampler >> runner.mPSampler >> runner.mStatistics >>
+        runner.mPrintMessages >> runner.mOutputFrequency >>
+        runner.mFixedMatrix >> runner.mSamplePhase >> runner.mNumUpdatesA >>
+        runner.mNumUpdatesP;
+    return ar;
+}
+
+void GapsRunner::updateSampler(unsigned nA, unsigned nP, unsigned nCores)
+{
+    if (mFixedMatrix != 'A')
+    {
+        mNumUpdatesA += nA;
+        mASampler.update(nA, nCores);
+        if (mFixedMatrix != 'P')
+        {
+            mPSampler.sync(mASampler);
+        }
+    }
+
+    if (mFixedMatrix != 'P')
+    {
+        mNumUpdatesP += nP;
+        mPSampler.update(nP, nCores);
+        if (mFixedMatrix != 'A')
+        {
+            mASampler.sync(mPSampler);
+        }
+    }
+}
+
+void GapsRunner::displayStatus(unsigned current, unsigned total)
+{
+    if (mOutputFrequency > 0 && ((current + 1) % mOutputFrequency) == 0)
+    {
+        gaps_printf("%d of %d, Atoms:%lu(%lu) Chi2 = %.2f\n", current + 1,
+            total, mASampler.nAtoms(), mPSampler.nAtoms(), mASampler.chi2());
+    }
 }

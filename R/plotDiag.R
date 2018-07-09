@@ -3,10 +3,6 @@
 #' @details plots a series of diagnostic plots
 #' @param gapsRes list returned by CoGAPS
 #' @return plot
-#' @examples
-#' data(SimpSim)
-#' plotDiag(SimpSim.result)
-#' @export
 plotDiag <-function(gapsRes)
 {
     AMean <- gapsRes$Amean

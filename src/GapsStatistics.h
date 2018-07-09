@@ -28,24 +28,25 @@ private:
 
 public:
 
-    GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor, PumpThreshold t=PUMP_CUT);
-
-    ColMatrix AMean() const;
-    RowMatrix PMean() const;
-    ColMatrix AStd() const;
-    RowMatrix PStd() const;
-
-    float meanChiSq(const AmplitudeGibbsSampler &ASampler) const;
+    GapsStatistics(unsigned nRow, unsigned nCol, unsigned nPatterns,
+        PumpThreshold t=PUMP_CUT);
 
     void update(const AmplitudeGibbsSampler &ASampler,
         const PatternGibbsSampler &PSampler);
 
+    ColMatrix Amean() const;
+    RowMatrix Pmean() const;
+    ColMatrix Asd() const;
+    RowMatrix Psd() const;
+
+    float meanChiSq(const AmplitudeGibbsSampler &ASampler) const;
+
+    // PUMP statistics
     void updatePump(const AmplitudeGibbsSampler &ASampler,
         const PatternGibbsSampler &PSampler);
 
     RowMatrix pumpMatrix() const;
     RowMatrix meanPattern();
-
     void patternMarkers(ColMatrix normedA, RowMatrix normedP, ColMatrix &statMatrix);
 
     // serialization

@@ -21,7 +21,7 @@ AC_ARG_ENABLE(warnings, [AC_HELP_STRING([--enable-warnings],
 # Check if specific version of SIMD instructions requested
 AC_ARG_ENABLE(simd, [AC_HELP_STRING([--enable-simd],
     [specify simd instruction set (sse, avx)])],
-    [simd_version=$enableval], [simd_version=sse])
+    [simd_version=$enableval], [simd_version=avx])
 
 # default CoGAPS specific flags
 GAPS_CPP_FLAGS=" -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__ "
@@ -36,6 +36,9 @@ AX_COMPILER_VERSION
 AX_OPENMP
 GAPS_CXX_FLAGS+=" $OPENMP_CXXFLAGS "
 GAPS_LIBS+=" $OPENMP_CXXFLAGS "
+
+# detect SIMD support
+AX_EXT
 
 echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compiler_version"
 
@@ -53,7 +56,6 @@ if test "x$warnings" = "xyes" ; then
 fi
 
 # set compile flags for SIMD
-AX_EXT
 echo "Supported SIMD flags: " $SIMD_FLAGS
 
 if test "x$simd_version" != "xavx" && test "x$simd_version" != "xsse" && test "x$simd_version" != "xno" && test "x$simd_version" != "xyes" ; then

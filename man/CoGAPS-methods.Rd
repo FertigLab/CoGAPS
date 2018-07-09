@@ -3,18 +3,32 @@
 \docType{methods}
 \name{CoGAPS}
 \alias{CoGAPS}
+\alias{CoGAPS,SingleCellExperiment,CogapsParams-method}
+\alias{CoGAPS,SummarizedExperiment,CogapsParams-method}
 \alias{CoGAPS,character,CogapsParams-method}
+\alias{CoGAPS,data.frame,CogapsParams-method}
 \alias{CoGAPS,matrix,CogapsParams-method}
 \title{CoGAPS Matrix Factorization Algorithm}
 \usage{
 CoGAPS(data, params = new("CogapsParams"), uncertainty = NULL,
-  fixedMatrix = NULL, checkpointFile = NULL, ...)
-
-\S4method{CoGAPS}{matrix,CogapsParams}(data, params = new("CogapsParams"),
-  uncertainty = NULL, fixedMatrix = NULL, checkpointFile = NULL, ...)
+  fixedMatrix = matrix(0), checkpointInFile = "", ...)
 
 \S4method{CoGAPS}{character,CogapsParams}(data, params = new("CogapsParams"),
-  uncertainty = NULL, fixedMatrix = NULL, checkpointFile = NULL, ...)
+  uncertainty = NULL, fixedMatrix = matrix(0), checkpointInFile = "", ...)
+
+\S4method{CoGAPS}{matrix,CogapsParams}(data, params = new("CogapsParams"),
+  uncertainty = NULL, fixedMatrix = matrix(0), checkpointInFile = "", ...)
+
+\S4method{CoGAPS}{data.frame,CogapsParams}(data, params = new("CogapsParams"),
+  uncertainty = NULL, fixedMatrix = matrix(0), checkpointInFile = "", ...)
+
+\S4method{CoGAPS}{SummarizedExperiment,CogapsParams}(data,
+  params = new("CogapsParams"), uncertainty = NULL,
+  fixedMatrix = matrix(0), checkpointInFile = "", ...)
+
+\S4method{CoGAPS}{SingleCellExperiment,CogapsParams}(data,
+  params = new("CogapsParams"), uncertainty = NULL,
+  fixedMatrix = matrix(0), checkpointInFile = "", ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
@@ -26,7 +40,7 @@ CoGAPS(data, params = new("CogapsParams"), uncertainty = NULL,
 \item{fixedMatrix}{data for fixing the values of either the A or P matrix;
 used in conjuction with whichMatrixFixed (see CogapsParams)}
 
-\item{checkpointFile}{name of the checkpoint file}
+\item{checkpointInFile}{name of the checkpoint file}
 
 \item{...}{keeps backwards compatibility with arguments from older versions}
 }
@@ -43,8 +57,17 @@ Currently, raw count matrices are the only supported R object. For
  file types CoGAPS supports csv, tsv, and mtx
 }
 \examples{
-data(SimpSim)
+# Running from R object
+data(GIST)
+resultA <- CoGAPS(GIST.D)
+
+# Running from file name
+gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
+resultB <- CoGAPS(gist_path)
+
+Setting Parameters
 params <- new("CogapsParams")
-result <- CoGAPS(SimpSim.D, params)
+params <- setParam(params, "nPatterns", 5)
+resultC <- CoGAPS(GIST.D, params)
 }
 

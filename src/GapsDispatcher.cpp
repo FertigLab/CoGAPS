@@ -6,6 +6,137 @@
     #include <omp.h>
 #endif
 
+GapsDispatcher::GapsDispatcher() : mSeed(0), mNumPatterns(3),
+    mMaxIterations(1000), mNumCoresPerSet(1), mPrintMessages(true),
+    mCheckpointsCreated(0), mPhase('C'), mCheckpointInterval(0),
+    mCheckpointOutFile("gaps_checkpoint.out"), mInitialized(false)
+{}
+
+GapsDispatcher::~GapsDispatcher()
+{
+    for (unsigned i = 0; i < mRunners.size(); ++i)
+    {
+        delete mRunners[i];
+    }
+}
+
+void GapsDispatcher::setMaxIterations(unsigned n)
+{
+    mMaxIterations = n;
+}
+
+void GapsDispatcher::printMessages(bool print)
+{
+    mPrintMessages = print;
+    mRunners[0]->printMessages(print);
+}
+
+void GapsDispatcher::setOutputFrequency(unsigned n)
+{
+    mRunners[0]->setOutputFrequency(n);
+}
+
+void GapsDispatcher::setSparsity(float alphaA, float alphaP, bool singleCell)
+{
+    mRunners[0]->setSparsity(alphaA, alphaP, singleCell);
+}
+
+void GapsDispatcher::setMaxGibbsMass(float maxA, float maxP)
+{
+    mRunners[0]->setMaxGibbsMass(maxA, maxP);
+}
+
+void GapsDispatcher::setFixedMatrix(char which, const RowMatrix &mat)
+{
+    mRunners[0]->setFixedMatrix(which, mat);
+}
+
+void GapsDispatcher::setNumCoresPerSet(unsigned n)
+{
+    mNumCoresPerSet = n;
+}
+
+void GapsDispatcher::setCheckpointInterval(unsigned n)
+{
+    mCheckpointInterval = n;
+}
+
+void GapsDispatcher::setCheckpointOutFile(const std::string &path)
+{
+    mCheckpointOutFile = path;
+}
+
+GapsResult GapsDispatcher::run()
+{
+    GAPS_ASSERT(mInitialized);
+    GAPS_ASSERT(mPhase == 'C' || mPhase == 'S');
+
+    // calculate appropiate number of cores if compiled with openmp
+    #ifdef __GAPS_OPENMP__
+    if (mPrintMessages)
+    {
+        unsigned availableCores = omp_get_max_threads();
+        mNumCoresPerSet = std::min(availableCores, mNumCoresPerSet);
+        gaps_printf("Running on %d out of %d available cores\n",
+            mNumCoresPerSet, availableCores);
+    }
+    #endif
+
+    // this switch allows for the algorithm to be interruptable
+    switch (mPhase)
+    {
+        case 'C':
+            if (mPrintMessages)
+            {
+                gaps_printf("Calibration Phase\n");
+            }
+            runOneCycle(mMaxIterations);
+            mPhase = 'S';
+
+        case 'S':
+            if (mPrintMessages)
+            {
+                gaps_printf("Sampling Phase\n");
+            }
+            mRunners[0]->startSampling();
+            runOneCycle(mMaxIterations);
+            break;
+    }
+
+    // extract useful information from runners
+    GapsResult result(mRunners[0]->nRow(), mRunners[0]->nCol(), mSeed);
+    result.Amean = mRunners[0]->Amean();
+    result.Pmean = mRunners[0]->Pmean();
+    result.Asd = mRunners[0]->Asd();
+    result.Psd = mRunners[0]->Psd();
+    result.meanChiSq = mRunners[0]->meanChiSq();
+    return result;
+}
+
+void GapsDispatcher::createCheckpoint() const
+{
+    Archive ar(mCheckpointOutFile, ARCHIVE_WRITE);
+
+    gaps::random::save(ar);
+    ar << mSeed << mNumPatterns << mMaxIterations << mPrintMessages <<
+        mCheckpointsCreated << mPhase;
+
+    ar << *mRunners[0];
+}
+
+void GapsDispatcher::runOneCycle(unsigned k)
+{
+    unsigned nCheckpoints = mCheckpointInterval > 0 ? k / mCheckpointInterval : 0;
+    while (mCheckpointsCreated < nCheckpoints)
+    {
+        mRunners[0]->run(mCheckpointInterval, mNumCoresPerSet);
+        createCheckpoint();
+        ++mCheckpointsCreated;
+    }
+    mRunners[0]->run(k - mCheckpointInterval * mCheckpointsCreated, mNumCoresPerSet);
+    mCheckpointsCreated = 0; // reset checkpoint count for next cycle
+}
+
 /*
 static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
 {
@@ -29,73 +160,3 @@ static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned n
 }
 */
 
-void GapsDispatcher::runOneCycle(unsigned k)
-{
-    GAPS_ASSERT(mDataIsLoaded);
-    mRunners[0]->run(k, mOutputFrequency, mPrintMessages, mNumCoresPerSet);
-}
-
-GapsResult GapsDispatcher::run()
-{
-    #ifdef __GAPS_OPENMP__
-    if (mPrintMessages)
-    {
-        unsigned availableCores = omp_get_max_threads();
-        mNumCoresPerSet = std::min(availableCores, mNumCoresPerSet);
-        gaps_printf("Running on %d out of %d available cores\n",
-            mNumCoresPerSet, availableCores);
-    }
-    #endif
-
-    GapsResult result(mRunners[0]->nRow(), mRunners[0]->nCol());
-    GAPS_ASSERT(mDataIsLoaded);
-
-    if (mPrintMessages)
-    {
-        gaps_printf("Calibration Phase\n");
-    }
-    runOneCycle(mMaxIterations);
-
-    if (mPrintMessages)
-    {
-        gaps_printf("Sampling Phase\n");
-    }
-    mRunners[0]->startSampling();
-    runOneCycle(mMaxIterations);
-
-    result.Amean = mRunners[0]->AMean();
-    result.Pmean = mRunners[0]->PMean();
-    result.Asd = mRunners[0]->AStd();
-    result.Psd = mRunners[0]->PStd();
-    result.seed = mSeed;
-    return result;
-}
-
-void GapsDispatcher::loadData(const RowMatrix &D)
-{
-    mRunners.push_back(new GapsRunner(D, mNumPatterns, mAlphaA,
-        mAlphaP, mMaxGibbsMassA, mMaxGibbsMassP, mSingleCell));
-    mDataIsLoaded = true;
-}
-
-void GapsDispatcher::setUncertainty(const RowMatrix &S)
-{
-    GAPS_ASSERT(mDataIsLoaded);
-    mRunners[0]->setUncertainty(S);
-}
-
-void GapsDispatcher::loadData(const std::string &pathToData)
-{
-    gaps_printf("Loading Data...");
-    gaps_flush();
-    mRunners.push_back(new GapsRunner(pathToData, mNumPatterns, mAlphaA,
-        mAlphaP, mMaxGibbsMassA, mMaxGibbsMassP, mSingleCell));
-    mDataIsLoaded = true;
-    gaps_printf("Done!\n");
-}
-
-void GapsDispatcher::setUncertainty(const std::string &pathToMatrix)
-{
-    GAPS_ASSERT(mDataIsLoaded);
-    mRunners[0]->setUncertainty(pathToMatrix);
-}
