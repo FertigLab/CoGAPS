@@ -158,6 +158,8 @@ void GapsRunner::updateSampler(unsigned nA, unsigned nP, unsigned nCores)
             mASampler.sync(mPSampler);
         }
     }
+    GAPS_ASSERT(mASampler.internallyConsistent());
+    GAPS_ASSERT(mPSampler.internallyConsistent());
 }
 
 void GapsRunner::displayStatus(unsigned current, unsigned total)

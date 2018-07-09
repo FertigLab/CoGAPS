@@ -67,9 +67,8 @@ AlphaParameters AmplitudeGibbsSampler::alphaParameters(unsigned row, unsigned co
 AlphaParameters AmplitudeGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
-    if (r1 == r2) // TODO should this ever happen
+    if (r1 == r2)
     {
-        GAPS_ASSERT(false);
         return gaps::algo::alphaParameters(mDMatrix.nCol(), mDMatrix.rowPtr(r1),
             mSMatrix.rowPtr(r1), mAPMatrix.rowPtr(r1), mOtherMatrix->rowPtr(c1),
             mOtherMatrix->rowPtr(c2));
@@ -87,9 +86,8 @@ float AmplitudeGibbsSampler::computeDeltaLL(unsigned row, unsigned col, float ma
 float AmplitudeGibbsSampler::computeDeltaLL(unsigned r1, unsigned c1, float m1,
 unsigned r2, unsigned c2, float m2)
 {
-    if (r1 == r2) // TODO should this ever happen
+    if (r1 == r2)
     {
-        GAPS_ASSERT(false);
         return gaps::algo::deltaLL(mDMatrix.nCol(), mDMatrix.rowPtr(r1),
             mSMatrix.rowPtr(r1), mAPMatrix.rowPtr(r1), mOtherMatrix->rowPtr(c1),
             m1, mOtherMatrix->rowPtr(c2), m2);
@@ -163,9 +161,8 @@ AlphaParameters PatternGibbsSampler::alphaParameters(unsigned row, unsigned col)
 AlphaParameters PatternGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
-    if (c1 == c2) // TODO should this ever happen
+    if (c1 == c2)
     {
-        GAPS_ASSERT(false);
         return gaps::algo::alphaParameters(mDMatrix.nRow(), mDMatrix.colPtr(c1),
             mSMatrix.colPtr(c1), mAPMatrix.colPtr(c1), mOtherMatrix->colPtr(r1),
             mOtherMatrix->colPtr(r2));
@@ -183,9 +180,8 @@ float PatternGibbsSampler::computeDeltaLL(unsigned row, unsigned col, float mass
 float PatternGibbsSampler::computeDeltaLL(unsigned r1, unsigned c1, float m1,
 unsigned r2, unsigned c2, float m2)
 {
-    if (c1 == c2) // TODO should this ever happen
+    if (c1 == c2)
     {
-        GAPS_ASSERT(false);
         return gaps::algo::deltaLL(mDMatrix.nRow(), mDMatrix.colPtr(c1),
             mSMatrix.colPtr(c1), mAPMatrix.colPtr(c1), mOtherMatrix->colPtr(r1),
             m1, mOtherMatrix->colPtr(r2), m2);
