@@ -2,10 +2,10 @@
 NULL
 
 #' CoGAPS Matrix Factorization Algorithm
-#' @export
+#' @export 
 #' @docType methods
 #' @rdname CoGAPS-methods
-#' 
+#'
 #' @description calls the C++ MCMC code and performs Bayesian
 #' matrix factorization returning the two matrices that reconstruct
 #' the data matrix
@@ -16,15 +16,14 @@ NULL
 #' @param uncertainty uncertainty matrix (same supported types as data)
 #' @param fixedMatrix data for fixing the values of either the A or P matrix;
 #'  used in conjuction with whichMatrixFixed (see CogapsParams)
-#' @param checkpointFile name of the checkpoint file
+#' @param checkpointInFile name of the checkpoint file
 #' @param ... keeps backwards compatibility with arguments from older versions
 #' @return CogapsResult object
-#' @importFrom methods new
 #' @examples
 #' # Running from R object
 #' data(GIST)
 #' resultA <- CoGAPS(GIST.D)
-#' 
+#'
 #' # Running from file name
 #' gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
 #' resultB <- CoGAPS(gist_path)
@@ -33,18 +32,36 @@ NULL
 #' params <- new("CogapsParams")
 #' params <- setParam(params, "nPatterns", 5)
 #' resultC <- CoGAPS(GIST.D, params)
+#' @importFrom methods new
 setGeneric("CoGAPS", function(data, params=new("CogapsParams"),
-uncertainty=NULL, fixedMatrix=NULL, checkpointFile=NULL, ...)
+uncertainty=NULL, fixedMatrix=matrix(0), checkpointInFile="", ...)
 {
     # parse parameters from ...
     params <- parseOldParams(params, list(...))
     params <- parseDirectParams(params, list(...))
 
+    # check if fixed matrix is set so is whichMatrixFixed
+    if (!all(fixedMatrix == matrix(0)) & (!params@whichMatrixFixed %in% c('A', 'P')))
+        stop("fixedMatrix passed, but whichMatrixFixed not set") 
+
+    # check if uncertainty is null
+    if (is.null(uncertainty) & class(data) == "character")
+        uncertainty <- ""
+    else if (is.null(uncertainty))
+        uncertainty <- matrix(0)
+
+    # check if we're running from a checkpoint
+    if (nchar(checkpointInFile) > 0)
+    {
+        message(paste("Running CoGAPS from a checkpoint, all parameters",
+            "besides data and uncertainty will be ignored"))
+    }
+
     # call method
     gapsReturnList <- standardGeneric("CoGAPS")
 
     # convert list to CogapsResult object
-    return(CogapsResult(
+    return(new("CogapsResult",
         Amean       = gapsReturnList$Amean,
         Asd         = gapsReturnList$Asd,
         Pmean       = gapsReturnList$Pmean,
@@ -52,108 +69,92 @@ uncertainty=NULL, fixedMatrix=NULL, checkpointFile=NULL, ...)
         seed        = gapsReturnList$seed,
         meanChiSq   = gapsReturnList$meanChiSq,
         diagnostics = gapsReturnList$diagnostics
-    )) 
+    ))
 })
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
 #' @importFrom tools file_ext
 setMethod("CoGAPS", signature(data="character", params="CogapsParams"),
-function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
+function(data, params, uncertainty, fixedMatrix, checkpointInFile, ...)
 {
     # check file extension
     if (!(file_ext(data) %in% c("tsv", "csv", "mtx")))
         stop("unsupported file extension for data")
 
     # check uncertainty matrix
-    if (!is.null(uncertainty))
-    {
-        if (class(uncertainty) != "character")
-            stop("uncertainty must be same data type as data (file name)")
-        if (!(file_ext(uncertainty) %in% c("tsv", "csv", "mtx")))
-            stop("unsupported file extension for uncertainty")
-    }
+    if (class(uncertainty) != "character")
+        stop("uncertainty must be same data type as data (file name)")
+    if (nchar(uncertainty) > 0 & !(file_ext(uncertainty) %in% c("tsv", "csv", "mtx")))
+        stop("unsupported file extension for uncertainty")
 
     # call C++ function
-    cogaps_cpp_from_file(data, uncertainty, params@nPatterns,
-        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
-        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
-        params@messages, params@singleCell, params@checkpointOutFile)
+    cogaps_cpp_from_file(data, params, uncertainty, fixedMatrix, checkpointInFile)
 })
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
 setMethod("CoGAPS", signature(data="matrix", params="CogapsParams"),
-function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
+function(data, params, uncertainty, fixedMatrix, checkpointInFile, ...)
 {
     # check matrix
-    if (!is.null(uncertainty) & class(uncertainty) != "matrix")
+    if (class(uncertainty) != "matrix")
         stop("uncertainty must be same data type as data (matrix)")
-    checkDataMatrix(data, uncertainty)
+    checkDataMatrix(data, uncertainty, params)
 
     # call C++ function
-    cogaps_cpp(data, uncertainty, params@nPatterns,
-        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
-        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
-        params@messages, params@singleCell, params@checkpointOutFile)})
-}
+    cogaps_cpp(data, params, uncertainty, fixedMatrix, checkpointInFile)
+})
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
 setMethod("CoGAPS", signature(data="data.frame", params="CogapsParams"),
-function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
+function(data, params, uncertainty, fixedMatrix, checkpointInFile, ...)
 {
     # check matrix
-    if (!is.null(uncertainty) & class(uncertainty) != "matrix")
+    if (class(uncertainty) != "matrix")
         stop("uncertainty must be matrix when data is a data.frame")
-    checkDataMatrix(data.matrix(data), uncertainty)
+    checkDataMatrix(data.matrix(data), uncertainty, params)
 
     # call C++ function
-    cogaps_cpp(data.matrix(data), uncertainty, params@nPatterns,
-        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
-        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
-        params@messages, params@singleCell, params@checkpointOutFile)
+    cogaps_cpp(data.matrix(data), params, uncertainty, fixedMatrix, checkpointInFile)
 })
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
+#' @importClassesFrom SummarizedExperiment SummarizedExperiment
 setMethod("CoGAPS", signature(data="SummarizedExperiment", params="CogapsParams"),
-function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
+function(data, params, uncertainty, fixedMatrix, checkpointInFile, ...)
 {
     # extract count matrix
     countMatrix = assay(data, "counts")
 
     # check matrix
-    if (!is.null(uncertainty) & class(uncertainty) != "matrix")
+    if (class(uncertainty) != "matrix")
         stop("uncertainty must be matrix when data is a SummarizedExperiment")
-    checkDataMatrix(countMatrix, uncertainty)
+    checkDataMatrix(countMatrix, uncertainty, params)
 
     # call C++ function
-    cogaps_cpp(countMatrix, uncertainty, params@nPatterns,
-        params@nIterations, params@outputFrequency, params@seed, params@alphaA,
-        params@alphaP, params@maxGibbsMassA, params@maxGibbsMassP,
-        params@messages, params@singleCell, params@checkpointOutFile)
+    cogaps_cpp(countMatrix, params, uncertainty, fixedMatrix, checkpointInFile)
 })
 
 #' @rdname CoGAPS-methods
 #' @aliases CoGAPS
+#' @importClassesFrom SingleCellExperiment SingleCellExperiment
 setMethod("CoGAPS", signature(data="SingleCellExperiment", params="CogapsParams"),
-function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
+function(data, params, uncertainty, fixedMatrix, checkpointInFile, ...)
 {
     # extract count matrix
     countMatrix = assay(data, "counts")
 
     # check matrix
-    if (!is.null(uncertainty) & class(uncertainty) != "matrix")
-        stop("uncertainty must be matrix when data is a SummarizedExperiment")
-    checkDataMatrix(countMatrix, uncertainty)
+    if (class(uncertainty) != "matrix")
+        stop("uncertainty must be matrix when data is a SingleCellExperiment")
+    checkDataMatrix(countMatrix, uncertainty, params)
 
-    # check matrix
-    if (!is.null(uncertainty) & class(uncertainty) != "data.frame")
-        stop("Uncertainty must be same data type as data (data.frame)")
-    uncertainty <- ifelse(is.null(uncertainty), matrix(), data.matrix(uncertainty))
-    checkDataMatrix(as.matrix(data), uncertainty)
-}
+    # call C++ function
+    cogaps_cpp(countMatrix, params, uncertainty, fixedMatrix, checkpointInFile)
+})
 
 #' Information About Package Compilation
 #' @export
@@ -166,4 +167,17 @@ function(data, params, uncertainty, fixedMatrix, checkpointFile, ...)
 buildReport <- function()
 {
     getBuildReport_cpp()
+}
+
+#' Check that provided data is valid
+#'
+#' @param data data matrix
+#' @param uncertainty uncertainty matrix
+#' @return throws an error if data has problems
+checkDataMatrix <- function(data, uncertainty, params)
+{
+    if (sum(data < 0) > 0 | sum(uncertainty < 0) > 0)
+        stop("negative values in data and/or uncertainty matrix")
+    if (nrow(data) == params@nPatterns || ncol(data) == params@nPatterns)
+        stop("nPatterns must be less than dimensions of data")
 }

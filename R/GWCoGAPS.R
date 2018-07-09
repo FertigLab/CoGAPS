@@ -149,7 +149,7 @@ runInitialPhase <- function(simulationName, allDataSets, nFactor, ...)
 
         # run CoGAPS without any fixed patterns
         cptFileName <- paste(simulationName, "_initial_cpt_", i, ".out", sep="")
-        CoGAPS(sampleD, sampleS, nFactor=nFactor, seed=nut[i],
+        CoGAPS(sampleD, uncertainty=sampleS, nFactor=nFactor, seed=nut[i],
             checkpointFile=cptFileName, ...)
     }
     return(initialResult)
@@ -202,7 +202,7 @@ runFinalPhase <- function(simulationName, allDataSets, consensusPatterns, nCores
 
         # run CoGAPS with fixed patterns
         cptFileName <- paste(simulationName, "_final_cpt_", i, ".out", sep="")
-        CoGAPS(sampleD, sampleS, fixedPatterns=consensusPatterns,
+        CoGAPS(sampleD, uncertainty=sampleS, fixedMatrix=consensusPatterns,
             nFactor=nFactorFinal, seed=nut[i], checkpointFile=cptFileName,
             whichMatrixFixed='P', ...)
 

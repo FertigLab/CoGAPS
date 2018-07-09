@@ -188,7 +188,7 @@ sc_runFinalPhase <- function(simulationName, allDataSets, consensusAs, nCores, .
 
         # run CoGAPS with fixed patterns
         cptFileName <- paste(simulationName, "_final_cpt_", i, ".out", sep="")
-        CoGAPS(sampleD, sampleS, fixedPatterns=consensusAs,
+        CoGAPS(sampleD, uncertainty=sampleS, fixedMatrix=consensusAs,
             nFactor=nFactorFinal, seed=nut[i], checkpointFile=cptFileName,
             whichMatrixFixed='A', singleCellRNASeq=TRUE, ...)
 

@@ -18,8 +18,4 @@ Diagnostic Plots
 \details{
 plots a series of diagnostic plots
 }
-\examples{
-data(SimpSim)
-plotDiag(SimpSim.result)
-}
 

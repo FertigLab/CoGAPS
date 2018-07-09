@@ -9,50 +9,71 @@
 class GapsRunner
 {
 private:
-
-    unsigned mNumRows;
-    unsigned mNumCols;
-
+    
     AmplitudeGibbsSampler mASampler;
     PatternGibbsSampler mPSampler;
     GapsStatistics mStatistics;
 
+    bool mPrintMessages;
+    unsigned mOutputFrequency;
+    char mFixedMatrix;
     bool mSamplePhase;
 
     unsigned mNumUpdatesA;
     unsigned mNumUpdatesP;
 
     void updateSampler(unsigned nA, unsigned nP, unsigned nCores);
+    void displayStatus(unsigned current, unsigned total);
 
 public:
 
-    GapsRunner(const RowMatrix &data, unsigned nPatterns, float alphaA,
-        float alphaP, float maxGibbsMassA, float maxGibbsMassP,
-        bool singleCell);
+    template <class DataType>
+    GapsRunner(const DataType &data, unsigned nPatterns);
 
-    GapsRunner(const std::string &pathToData, unsigned nPatterns, float alphaA,
-        float alphaP, float maxGibbsMassA, float maxGibbsMassP,
-        bool singleCell);
-    
-    void run(unsigned nIter, unsigned outputFreq, bool printMessages,
-        unsigned nCores);
+    template <class DataType>
+    void setUncertainty(const DataType &unc);
 
-    unsigned nRow() const { return mNumRows; }
-    unsigned nCol() const { return mNumCols; }
-
-    void setUncertainty(const RowMatrix &S);
-    void setUncertainty(const std::string &pathToMatrix);
-
-    void startSampling() { mSamplePhase = true; }
-
-    void displayStatus(unsigned outFreq, unsigned current, unsigned total);
+    void printMessages(bool print);
+    void setOutputFrequency(unsigned n);
+    void setSparsity(float alphaA, float alphaP, bool singleCell);
+    void setMaxGibbsMass(float maxA, float maxP);
 
     void setFixedMatrix(char which, const RowMatrix &mat);
 
-    ColMatrix AMean() const { return mStatistics.AMean(); }
-    RowMatrix PMean() const { return mStatistics.PMean(); }
-    ColMatrix AStd() const { return mStatistics.AStd(); }
-    RowMatrix PStd() const { return mStatistics.PStd(); }
+    void startSampling();
+
+    void run(unsigned nIter, unsigned nCores);
+
+    unsigned nRow() const;
+    unsigned nCol() const;
+
+    ColMatrix Amean() const;
+    RowMatrix Pmean() const;
+    ColMatrix Asd() const;
+    RowMatrix Psd() const;
+    float meanChiSq() const;
+
+    // serialization
+    friend Archive& operator<<(Archive &ar, GapsRunner &runner);
+    friend Archive& operator>>(Archive &ar, GapsRunner &runner);
 };
+
+template <class DataType>
+GapsRunner::GapsRunner(const DataType &data, unsigned nPatterns)
+    :
+mASampler(data, nPatterns), mPSampler(data, nPatterns),
+mStatistics(mASampler.dataRows(), mPSampler.dataCols(), nPatterns),
+mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0), mFixedMatrix('N')
+{
+    mASampler.sync(mPSampler);
+    mPSampler.sync(mASampler);
+}
+
+template <class DataType>
+void GapsRunner::setUncertainty(const DataType &unc)
+{
+    mASampler.setUncertainty(unc);
+    mPSampler.setUncertainty(unc);
+}
 
 #endif // __COGAPS_GAPS_RUNNER_H__

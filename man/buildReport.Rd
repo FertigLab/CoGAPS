@@ -17,6 +17,6 @@ returns information about how the package was compiled, i.e. which
  compiler/version was used, which compile time options were enabled, etc...
 }
 \examples{
- CoGAPS::buildReport()
+CoGAPS::buildReport()
 }
 
