@@ -8,8 +8,8 @@
 postFixed4SC <- function(AP.fixed, setAs)
 {
     ASummary <- AP.fixed[[1]]$Amean
-    PSummary <- do.call(cbind,lapply(AP.fixed, function(x) x@Pmean))
-    Psd <- do.call(cbind,lapply(AP.fixed, function(x) x@Psd))
+    PSummary <- do.call(cbind,lapply(AP.fixed, function(x) t(x@sampleFactors)))
+    Psd <- do.call(cbind,lapply(AP.fixed, function(x) t(x@sampleStdDev)))
 
     Amax <- apply(ASummary,2,max)
     Aneu <- sweep(ASummary,2,Amax,FUN="/")

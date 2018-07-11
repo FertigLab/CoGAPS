@@ -8,7 +8,7 @@
 #else
     #define gaps_printf printf
     #define gaps_cout std::cout
-    #define gaps_flush fflush(stdout)
+    #define gaps_flush(x) fflush(stdout)
 #endif
 
 #endif // __COGAPS_GAPS_PRINT_H__

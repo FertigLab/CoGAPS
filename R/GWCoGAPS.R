@@ -20,9 +20,14 @@
 #' createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
 #' result <- GWCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
 #' @export
-GWCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA,
+GWCoGAPS <- function(simulationName, nFactor=3, nCores=NA, cut=NA, minNS=NA,
 manualMatch=FALSE, consensusPatterns=NULL, saveUnmatchedPatterns=FALSE, ...)
 {
+    if (!is.null(list(...)$nPatterns))
+    {
+        nFactor <- list(...)$nPatterns
+    }
+
     if (!is.null(list(...)$checkpointFile))
     {
         stop("checkpoint file name automatically set in GWCoGAPS - don't pass this parameter")
@@ -162,7 +167,7 @@ runInitialPhase <- function(simulationName, allDataSets, nFactor, ...)
 
 postInitialPhase <- function(initialResult, nSets, cut, minNS)
 {
-    nFactor <- ncol(initialResult[[1]]@Amean)
+    nFactor <- ncol(initialResult[[1]]@featureLoadings)
     BySet <- reOrderBySet(AP=initialResult, nFactor=nFactor, nSets=nSets)
 
     #run postpattern match function
@@ -177,7 +182,7 @@ postInitialPhase <- function(initialResult, nSets, cut, minNS)
 
 runFinalPhase <- function(simulationName, allDataSets, consensusPatterns, nCores, ...)
 {    
-    if (length(dim(consensusPatterns)) != 2)
+    if (class(consensusPatterns) != "matrix")
     {
         stop("consensusPatterns must be a matrix")
     }
@@ -197,6 +202,7 @@ runFinalPhase <- function(simulationName, allDataSets, consensusPatterns, nCores
 
     # final number of factors
     nFactorFinal <- nrow(consensusPatterns)
+    message(paste("final number of patterns:", nFactorFinal))
 
     # run fixed CoGAPS
     finalResult <- foreach(i=1:length(allDataSets)) %dopar%
@@ -219,6 +225,14 @@ postFinalPhase <- function(finalResult, consensusPatterns)
 {
     Aresult <- postFixed4Parallel(finalResult, consensusPatterns)
     finalResult <- list("Amean"=Aresult$A, "Asd"=Aresult$Asd,"Pmean"=consensusPatterns)
-    class(finalResult) <- append(class(finalResult), "CoGAPS")
-    return(finalResult)
+    
+    return(new("CogapsResult",
+        Amean       = Aresult$A,
+        Asd         = Aresult$Asd,
+        Pmean       = consensusPatterns,
+        Psd         = NULL,
+        seed        = 0,
+        meanChiSq   = 0,
+        diagnostics = list()
+    ))
 }

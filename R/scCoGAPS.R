@@ -14,8 +14,14 @@
 #' @param consensusAs fixed pattern matrix to be used to ensure reciprocity of A weights accross sets 
 #' @param ... additional parameters to be fed into \code{gapsRun} and \code{gapsMapRun}
 #' @return list of A and P estimates
-scCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manualMatch=FALSE, consensusAs=NULL, ...)
+scCoGAPS <- function(simulationName, nFactor=3, nCores=NA, cut=NA, minNS=NA,
+manualMatch=FALSE, consensusAs=NULL, saveUnmatchedPatterns=FALSE, ...)
 {
+    if (!is.null(list(...)$nPatterns))
+    {
+        nFactor <- list(...)$nPatterns
+    }
+
     if (!is.null(list(...)$checkpointFile))
     {
         stop("checkpoint file name automatically set in GWCoGAPS - don't pass this parameter")
@@ -24,15 +30,19 @@ scCoGAPS <- function(simulationName, nFactor, nCores=NA, cut=NA, minNS=NA, manua
     if (is.null(consensusAs))
     {
         allDataSets <- sc_preInitialPhase(simulationName, nCores)
-        initialResult <- sc_runInitialPhase(simulationName, allDataSets, nFactor, ...)
+        unmatchedPatterns <- sc_runInitialPhase(simulationName, allDataSets, nFactor, ...)
+        if (saveUnmatchedPatterns)
+        {
+            save(unmatchedPatterns, file=paste(simulationName, "_unmatched_patterns.RData"))
+        }
         if (manualMatch)
         {
-            saveRDS(initialResult,file=paste(simulationName,"_initial.rds", sep=""))
+            saveRDS(unmatchedPatterns,file=paste(simulationName,"_initial.rds", sep=""))
             stop("Please provide concensus gene weights upon restarting.")
         }
-        matchedAmplitudes <- sc_postInitialPhase(initialResult, length(allDataSets), cut, minNS)
+        matchedAmplitudes <- sc_postInitialPhase(unmatchedPatterns, length(allDataSets), cut, minNS)
+        save(matchedAmplitudes, file=paste(simulationName, "_matched_As.RData", sep=""))
         consensusAs <- matchedAmplitudes[[1]]
-        save(consensusAs, file=paste(simulationName, "_matched_As.RData", sep=""))
     } 
     finalResult <- sc_runFinalPhase(simulationName, allDataSets, consensusAs, nCores, ...)
     return(sc_postFinalPhase(finalResult, consensusAs))
@@ -135,15 +145,15 @@ sc_runInitialPhase <- function(simulationName, allDataSets, nFactor, ...)
 
         # run CoGAPS without any fixed patterns
         cptFileName <- paste(simulationName, "_initial_cpt_", i, ".out", sep="")
-        CoGAPS(sampleD, sampleS, nFactor=nFactor, seed=nut[i],
-            checkpointFile=cptFileName, singleCellRNASeq=TRUE, ...)
+        CoGAPS(sampleD, nFactor=nFactor, seed=nut[i],
+            checkpointOutFile=cptFileName, singleCell=TRUE, ...)
     }
     return(initialResult)
 }
 
 sc_postInitialPhase <- function(initialResult, nSets, cut, minNS)
 {
-    nFactor <- ncol(initialResult[[1]]@Amean)
+    nFactor <- ncol(initialResult[[1]]@featureLoadings)
     BySet <- reOrderBySet(AP=initialResult, nFactor=nFactor, nSets=nSets,match="A")
 
     #run postpattern match function
@@ -158,7 +168,7 @@ sc_postInitialPhase <- function(initialResult, nSets, cut, minNS)
 
 sc_runFinalPhase <- function(simulationName, allDataSets, consensusAs, nCores, ...)
 {    
-    if (length(dim(consensusAs)) != 2)
+    if (class(consensusAs) != "matrix")
     {
         stop("consensusAs must be a matrix")
     }
@@ -178,6 +188,7 @@ sc_runFinalPhase <- function(simulationName, allDataSets, consensusAs, nCores, .
 
     # final number of factors
     nFactorFinal <- ncol(consensusAs)
+    message(paste("final number of patterns:", nFactorFinal))
 
     # run fixed CoGAPS
     finalResult <- foreach(i=1:length(allDataSets)) %dopar%
@@ -186,11 +197,13 @@ sc_runFinalPhase <- function(simulationName, allDataSets, consensusAs, nCores, .
         load(allDataSets[[i]])
         sampleD <- sweep(sampleD, 1, apply(sampleD, 1, function(x) pmin(0,min(x))))
 
+        print(consensusAs)
+
         # run CoGAPS with fixed patterns
         cptFileName <- paste(simulationName, "_final_cpt_", i, ".out", sep="")
-        CoGAPS(sampleD, uncertainty=sampleS, fixedMatrix=consensusAs,
-            nFactor=nFactorFinal, seed=nut[i], checkpointFile=cptFileName,
-            whichMatrixFixed='A', singleCellRNASeq=TRUE, ...)
+        CoGAPS(sampleD, fixedMatrix=consensusAs, nFactor=nFactorFinal,
+            seed=nut[i], checkpointOutFile=cptFileName, whichMatrixFixed='A',
+            singleCell=TRUE, ...)
 
     }
     return(finalResult)
@@ -200,6 +213,17 @@ sc_postFinalPhase <- function(finalResult, consensusAs)
 {
     Aresult <- postFixed4Parallel(finalResult, consensusAs, setMatrix="A")
     finalResult <- list("Pmean"=Aresult$P, "Psd"=Aresult$Psd,"Amean"=consensusAs)
+
+    return(new("CogapsResult",
+        Amean       = consensusAs,
+        Asd         = NULL,
+        Pmean       = Aresult$P,
+        Psd         = Aresult$Psd,
+        seed        = 0,
+        meanChiSq   = 0,
+        diagnostics = list()
+    ))
+
     class(finalResult) <- append(class(finalResult), "CoGAPS")
     return(finalResult)
 }
