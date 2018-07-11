@@ -1,5 +1,6 @@
 #include "Algorithms.h"
 #include "../data_structures/Matrix.h"
+#include "../GapsAssert.h"
 #include "SIMD.h"
 
 #include <algorithm>
@@ -205,6 +206,7 @@ float delta2)
 // horribly slow, don't call often
 RowMatrix gaps::algo::matrixMultiplication(const ColMatrix &A, const RowMatrix &B)
 {
+    GAPS_ASSERT_MSG(A.nCol() == B.nRow(), A.nCol() << " " << B.nRow());
     RowMatrix temp(A.nRow(), B.nCol());
     for (unsigned i = 0; i < A.nRow(); ++i)
     {
@@ -215,7 +217,7 @@ RowMatrix gaps::algo::matrixMultiplication(const ColMatrix &A, const RowMatrix &
             {
                 sum += A(i,k) * B(k,j);
             }
-            temp(i, j) = sum;
+            temp(i,j) = sum;
         }
     }
     return temp;

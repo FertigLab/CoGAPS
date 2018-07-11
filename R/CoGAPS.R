@@ -178,6 +178,8 @@ checkDataMatrix <- function(data, uncertainty, params)
 {
     if (sum(data < 0) > 0 | sum(uncertainty < 0) > 0)
         stop("negative values in data and/or uncertainty matrix")
-    if (nrow(data) == params@nPatterns || ncol(data) == params@nPatterns)
+    if (nrow(data) <= params@nPatterns | ncol(data) <= params@nPatterns)
         stop("nPatterns must be less than dimensions of data")
+    if (sum(dim(uncertainty)) != 2 & sum(uncertainty < 1e-5) > 0)
+        warning("small values in uncertainty matrix detected")
 }

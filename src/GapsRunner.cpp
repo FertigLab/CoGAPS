@@ -35,12 +35,16 @@ void GapsRunner::setFixedMatrix(char which, const RowMatrix &mat)
     mFixedMatrix = which;
     if (which == 'A')
     {
+        gaps_printf("setting fixed A\n");
         mASampler.setMatrix(ColMatrix(mat));
+        gaps_printf("updating AP\n");
         mASampler.recalculateAPMatrix();
+        gaps_printf("syncing\n");
         mPSampler.sync(mASampler);
     }
     else if (which == 'P')
     {
+        gaps_printf("setting fixed P\n");
         mPSampler.setMatrix(mat);
         mPSampler.recalculateAPMatrix();
         mASampler.sync(mPSampler);
@@ -50,6 +54,11 @@ void GapsRunner::setFixedMatrix(char which, const RowMatrix &mat)
 void GapsRunner::startSampling()
 {
     mSamplePhase = true;
+}
+
+void GapsRunner::startClock()
+{
+    mStartTime = bpt_now();
 }
 
 void GapsRunner::run(unsigned nIter, unsigned nCores)
@@ -166,7 +175,18 @@ void GapsRunner::displayStatus(unsigned current, unsigned total)
 {
     if (mOutputFrequency > 0 && ((current + 1) % mOutputFrequency) == 0)
     {
-        gaps_printf("%d of %d, Atoms:%lu(%lu) Chi2 = %.2f\n", current + 1,
-            total, mASampler.nAtoms(), mPSampler.nAtoms(), mASampler.chi2());
+        bpt::time_duration diff = bpt_now() - mStartTime;
+        unsigned elapsedSeconds = static_cast<unsigned>(diff.total_seconds());
+
+        unsigned hours = elapsedSeconds / 3600;
+        elapsedSeconds -= hours * 3600;
+        unsigned minutes = elapsedSeconds / 60;
+        elapsedSeconds -= minutes * 60;
+        unsigned seconds = elapsedSeconds;
+
+        gaps_printf("%d of %d, Atoms: %lu(%lu), ChiSq: %.0f, elapsed time: %02d:%02d:%02d\n",
+            current + 1, total, mASampler.nAtoms(), mPSampler.nAtoms(),
+            mASampler.chi2(), hours, minutes, seconds);
     }
 }
+

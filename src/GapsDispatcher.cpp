@@ -48,6 +48,7 @@ void GapsDispatcher::setMaxGibbsMass(float maxA, float maxP)
 
 void GapsDispatcher::setFixedMatrix(char which, const RowMatrix &mat)
 {
+    GAPS_ASSERT(mInitialized);
     mRunners[0]->setFixedMatrix(which, mat);
 }
 
@@ -83,6 +84,7 @@ GapsResult GapsDispatcher::run()
     #endif
 
     // this switch allows for the algorithm to be interruptable
+    mRunners[0]->startClock();
     switch (mPhase)
     {
         case 'C':

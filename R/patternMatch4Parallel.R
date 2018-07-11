@@ -74,8 +74,8 @@ cluster.method="complete", ignore.NA=FALSE, bySet=FALSE, ...)
             }
         }
 
-        PByClust[sapply(PByClust,is.null)] <- NULL
-        RtoMeanPattern[sapply(RtoMeanPattern,is.null)] <- NULL
+        #PByClust[sapply(PByClust,is.null)] <- NULL
+        #RtoMeanPattern[sapply(RtoMeanPattern,is.null)] <- NULL
         return(list("RtoMeanPattern"=RtoMeanPattern, "PByClust"=PByClust))
     }    
 

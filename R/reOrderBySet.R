@@ -6,24 +6,24 @@
 #' @param nSets number of sets
 #' @param match which matrix to use for downstream matching. default is P
 #' @return a list containing the \code{nSets} sets solution for Amean under "A", Pmean under "P", and Asd under "Asd"
-reOrderBySet<-function(AP, nFactor, nSets, match="P")
+reOrderBySet <- function(AP, nFactor, nSets, match="P")
 {
 	if(match=="P")
 	{
-		P<-do.call(rbind,lapply(AP, function(x) x@Pmean))
+		P<-do.call(rbind,lapply(AP, function(x) t(x@sampleFactors)))
 		rownames(P)<-paste(rep(1:nSets,each=nFactor),rep(1:nFactor,nSets),sep=".")
-		A<-lapply(AP, function(x) x@Amean)
-		Asd<-lapply(AP, function(x) x@Asd)
+		A<-lapply(AP, function(x) x@featureLoadings)
+		Asd<-lapply(AP, function(x) x@featureStdDev)
 		names(A)=names(Asd)<-paste(rep("Set",nSets),rep(1:nSets),sep="")
 		return(list("A"=A,"Asd"=Asd,"P"=P))
 	}
 
 	if(match=="A")
 	{
-		A<-do.call(cbind,lapply(AP, function(x) x@Amean))
+		A<-do.call(cbind,lapply(AP, function(x) x@featureLoadings))
 		colnames(A)<-paste(rep(1:nSets,each=nFactor),rep(1:nFactor,nSets),sep=".")
-		P<-lapply(AP, function(x) x@Pmean)
-		Asd<-lapply(AP, function(x) x@Asd)
+		P<-lapply(AP, function(x) t(x@sampleFactors))
+		Asd<-lapply(AP, function(x) x@featureStdDev)
 		names(P)=names(Asd)<-paste(rep("Set",nSets),rep(1:nSets),sep="")
 		return(list("A"=A,"Asd"=Asd,"P"=P))
 	} 

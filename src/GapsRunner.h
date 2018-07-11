@@ -6,6 +6,11 @@
 
 #include "data_structures/Matrix.h"
 
+// boost time helpers
+#include <boost/date_time/posix_time/posix_time.hpp>
+namespace bpt = boost::posix_time;
+#define bpt_now() bpt::microsec_clock::local_time()
+
 class GapsRunner
 {
 private:
@@ -21,9 +26,13 @@ private:
 
     unsigned mNumUpdatesA;
     unsigned mNumUpdatesP;
+        
+    bpt::ptime mStartTime;
 
     void updateSampler(unsigned nA, unsigned nP, unsigned nCores);
     void displayStatus(unsigned current, unsigned total);
+
+    double estimatePercentComplete();
 
 public:
 
@@ -52,6 +61,8 @@ public:
     ColMatrix Asd() const;
     RowMatrix Psd() const;
     float meanChiSq() const;
+
+    void startClock();
 
     // serialization
     friend Archive& operator<<(Archive &ar, GapsRunner &runner);

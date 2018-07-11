@@ -43,7 +43,7 @@ static bool isNull(const std::string &path)
 }
 
 template <class T>
-static Rcpp::List cogapsRun(const T &data, const Rcpp::S4 &params, const T &unc,
+static Rcpp::List cogapsRun(const T &data, Rcpp::S4 params, const T &unc,
 const RowMatrix &fixedMatrix, const std::string &checkpointInFile)
 {
     GapsDispatcher dispatcher;

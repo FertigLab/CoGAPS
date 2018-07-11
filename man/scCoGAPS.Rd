@@ -4,8 +4,9 @@
 \alias{scCoGAPS}
 \title{scCoGAPS}
 \usage{
-scCoGAPS(simulationName, nFactor, nCores = NA, cut = NA, minNS = NA,
-  manualMatch = FALSE, consensusAs = NULL, ...)
+scCoGAPS(simulationName, nFactor = 3, nCores = NA, cut = NA, minNS = NA,
+  manualMatch = FALSE, consensusAs = NULL, saveUnmatchedPatterns = FALSE,
+  ...)
 }
 \arguments{
 \item{simulationName}{name of this simulation}

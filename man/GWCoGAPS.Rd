@@ -4,8 +4,9 @@
 \alias{GWCoGAPS}
 \title{GWCoGAPS}
 \usage{
-GWCoGAPS(simulationName, nFactor, nCores = NA, cut = NA, minNS = NA,
-  manualMatch = FALSE, consensusPatterns = NULL, ...)
+GWCoGAPS(simulationName, nFactor = 3, nCores = NA, cut = NA, minNS = NA,
+  manualMatch = FALSE, consensusPatterns = NULL,
+  saveUnmatchedPatterns = FALSE, ...)
 }
 \arguments{
 \item{simulationName}{name of this simulation}
