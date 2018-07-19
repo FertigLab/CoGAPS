@@ -9,8 +9,7 @@ NULL
 #' @description calls the C++ MCMC code and performs Bayesian
 #' matrix factorization returning the two matrices that reconstruct
 #' the data matrix
-#' @details Currently, raw count matrices are the only supported R object. For
-#'  file types CoGAPS supports csv, tsv, and mtx
+#' @details For file types CoGAPS supports csv, tsv, and mtx
 #' @param data File name or R object (see details for supported types)
 #' @param params CogapsParams object
 #' @param uncertainty uncertainty matrix (same supported types as data)
@@ -33,16 +32,40 @@ NULL
 #' params <- setParam(params, "nPatterns", 5)
 #' resultC <- CoGAPS(GIST.D, params)
 #' @importFrom methods new
-setGeneric("CoGAPS", function(data, params=new("CogapsParams"),
-uncertainty=NULL, fixedMatrix=matrix(0), checkpointInFile="", ...)
+CoGAPS <- function(data, params=new("CogapsParams"), nCores=NULL,
+messages=TRUE, outputFrequency=1000, uncertainty=NULL,
+checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
+checkpointInFile=NULL, transposeData=FALSE, ...)
 {
     # parse parameters from ...
-    params <- parseOldParams(params, list(...))
-    params <- parseDirectParams(params, list(...))
+    # TODO remove args from ... as they're processed, check if null
+    fullParams <- list("gaps"=params,
+        "nCores"=nCores,
+        "messages"=messages,
+        "outputFrequency"=outputFrequency,
+        "checkpointOutFile"=checkpointOutFile,
+        "checkpointInterval"=checkpointInterval,
+        "checkpointInFile"=checkpointInFile,
+        "transposeData"=transposeData,
+        "whichMatrixFixed"="N" # internal parameter
+    )
+    fullParams <- parseOldParams(fullParams, list(...))
+    fullParams <- parseDirectParams(fullParams, list(...))
 
-    # check if fixed matrix is set so is whichMatrixFixed
-    if (sum(dim(fixedMatrix)) != 2 & (!params@whichMatrixFixed %in% c('A', 'P')))
-        stop("fixedMatrix passed, but whichMatrixFixed not set") 
+    # check file extension
+    if (class(data) == "character" & !(file_ext(data) %in% c("tsv", "csv", "mtx")))
+        stop("unsupported file extension for data")
+
+    # check uncertainty matrix
+    if (class(data) == "character" & class(uncertainty) != "character")
+        stop("uncertainty must be same data type as data (file name)")
+    if (nchar(uncertainty) > 0 & !(file_ext(uncertainty) %in% c("tsv", "csv", "mtx")))
+        stop("unsupported file extension for uncertainty")
+
+    # check matrix
+    if (class(uncertainty) != "matrix")
+        stop("uncertainty must be same data type as data (matrix)")
+    checkDataMatrix(data, uncertainty, params)
 
     # check if uncertainty is null
     if (is.null(uncertainty) & class(data) == "character")
@@ -50,15 +73,33 @@ uncertainty=NULL, fixedMatrix=matrix(0), checkpointInFile="", ...)
     else if (is.null(uncertainty))
         uncertainty <- matrix(0)
 
+    # convert data to matrix
+    if (class(data) == "data.frame")
+        data <- data.matrix(data)
+    else if (class(data) == "SummarizedExperiment")
+        data <- assay(data, "counts")
+    else if (class(data) == "SingleCellExperiment")
+        data <- assay(data, "counts")
+
+    # determine which function to call cogaps algorithm
+    if (!is.null(callParams$gapsParams@distributed))
+        dispatchFunc <- distributedCogaps # genome-wide or single-cell cogaps
+    else if (class(data) == "character")
+        dispatchFunc <- cogaps_cpp_from_file # data is a file name
+    else
+        dispatchFunc <- cogaps_cpp # default
+
     # check if we're running from a checkpoint
-    if (nchar(checkpointInFile) > 0)
+    if (!is.null(allParams$checkpointInFile))
     {
-        message(paste("Running CoGAPS from a checkpoint, all parameters",
-            "besides data and uncertainty will be ignored"))
+        if (!is.null(callParams$gapsParams@distributed))
+            stop("checkpoints not supported for distributed cogaps")
+        else
+            message("Running CoGAPS from a checkpoint")
     }
 
-    # call method
-    gapsReturnList <- standardGeneric("CoGAPS")
+    # run cogaps
+    gapsReturnList <- dispatchFunc(data, allParams, uncertainty)
 
     # convert list to CogapsResult object
     return(new("CogapsResult",
@@ -71,103 +112,6 @@ uncertainty=NULL, fixedMatrix=matrix(0), checkpointInFile="", ...)
         diagnostics = gapsReturnList$diagnostics
     ))
 })
-
-#' @rdname CoGAPS-methods
-#' @aliases CoGAPS
-#' @importFrom tools file_ext
-setMethod("CoGAPS", signature(data="character", params="CogapsParams"),
-function(data, params, uncertainty, fixedMatrix, checkpointInFile, ...)
-{
-    # check file extension
-    if (!(file_ext(data) %in% c("tsv", "csv", "mtx")))
-        stop("unsupported file extension for data")
-
-    # check uncertainty matrix
-    if (class(uncertainty) != "character")
-        stop("uncertainty must be same data type as data (file name)")
-    if (nchar(uncertainty) > 0 & !(file_ext(uncertainty) %in% c("tsv", "csv", "mtx")))
-        stop("unsupported file extension for uncertainty")
-
-    # call C++ function
-    cogaps_cpp_from_file(data, params, uncertainty, fixedMatrix, checkpointInFile)
-})
-
-#' @rdname CoGAPS-methods
-#' @aliases CoGAPS
-setMethod("CoGAPS", signature(data="matrix", params="CogapsParams"),
-function(data, params, uncertainty, fixedMatrix, checkpointInFile, ...)
-{
-    # check matrix
-    if (class(uncertainty) != "matrix")
-        stop("uncertainty must be same data type as data (matrix)")
-    checkDataMatrix(data, uncertainty, params)
-
-    # call C++ function
-    cogaps_cpp(data, params, uncertainty, fixedMatrix, checkpointInFile)
-})
-
-#' @rdname CoGAPS-methods
-#' @aliases CoGAPS
-setMethod("CoGAPS", signature(data="data.frame", params="CogapsParams"),
-function(data, params, uncertainty, fixedMatrix, checkpointInFile, ...)
-{
-    # check matrix
-    if (class(uncertainty) != "matrix")
-        stop("uncertainty must be matrix when data is a data.frame")
-    checkDataMatrix(data.matrix(data), uncertainty, params)
-
-    # call C++ function
-    cogaps_cpp(data.matrix(data), params, uncertainty, fixedMatrix, checkpointInFile)
-})
-
-#' @rdname CoGAPS-methods
-#' @aliases CoGAPS
-#' @importClassesFrom SummarizedExperiment SummarizedExperiment
-setMethod("CoGAPS", signature(data="SummarizedExperiment", params="CogapsParams"),
-function(data, params, uncertainty, fixedMatrix, checkpointInFile, ...)
-{
-    # extract count matrix
-    countMatrix = assay(data, "counts")
-
-    # check matrix
-    if (class(uncertainty) != "matrix")
-        stop("uncertainty must be matrix when data is a SummarizedExperiment")
-    checkDataMatrix(countMatrix, uncertainty, params)
-
-    # call C++ function
-    cogaps_cpp(countMatrix, params, uncertainty, fixedMatrix, checkpointInFile)
-})
-
-#' @rdname CoGAPS-methods
-#' @aliases CoGAPS
-#' @importClassesFrom SingleCellExperiment SingleCellExperiment
-setMethod("CoGAPS", signature(data="SingleCellExperiment", params="CogapsParams"),
-function(data, params, uncertainty, fixedMatrix, checkpointInFile, ...)
-{
-    # extract count matrix
-    countMatrix = assay(data, "counts")
-
-    # check matrix
-    if (class(uncertainty) != "matrix")
-        stop("uncertainty must be matrix when data is a SingleCellExperiment")
-    checkDataMatrix(countMatrix, uncertainty, params)
-
-    # call C++ function
-    cogaps_cpp(countMatrix, params, uncertainty, fixedMatrix, checkpointInFile)
-})
-
-#' Information About Package Compilation
-#' @export
-#'
-#' @details returns information about how the package was compiled, i.e. which
-#'  compiler/version was used, which compile time options were enabled, etc...
-#' @return string containing build report
-#' @examples
-#' CoGAPS::buildReport()
-buildReport <- function()
-{
-    getBuildReport_cpp()
-}
 
 #' Check that provided data is valid
 #'
@@ -182,4 +126,17 @@ checkDataMatrix <- function(data, uncertainty, params)
         stop("nPatterns must be less than dimensions of data")
     if (sum(dim(uncertainty)) != 2 & sum(uncertainty < 1e-5) > 0)
         warning("small values in uncertainty matrix detected")
+}
+
+#' Information About Package Compilation
+#' @export
+#'
+#' @details returns information about how the package was compiled, i.e. which
+#'  compiler/version was used, which compile time options were enabled, etc...
+#' @return string containing build report
+#' @examples
+#' CoGAPS::buildReport()
+buildReport <- function()
+{
+    getBuildReport_cpp()
 }
