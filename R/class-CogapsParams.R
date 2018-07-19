@@ -28,14 +28,17 @@ setMethod("initialize", "CogapsParams",
 
         .Object@nPatterns <- 7
         .Object@nIterations <- 1000
-        .Object@outputFrequency <- 500
         .Object@alphaA <- 0.01
         .Object@alphaP <- 0.01
         .Object@maxGibbsMassA <- 100
         .Object@maxGibbsMassP <- 100
         .Object@seed <- getMilliseconds(as.POSIXlt(Sys.time()))
         .Object@singleCell <- FALSE
-        .Object@distributed <- NULL
+        .Object@distributed <- "A"
+        .Object@nSets <- 3
+        .Object@cut <- .Object@nPatterns
+        .Object@minNS <- ceiling(.Object@nSets / 2)
+        .Object@maxNS <- .Object@minNS + .Object@nSets
 
         .Object <- callNextMethod(.Object, ...)
         .Object
@@ -45,24 +48,26 @@ setMethod("initialize", "CogapsParams",
 setValidity("CogapsParams",
     function(object)
     {
-        if (object@nPatterns <= 0 || object@nPatterns %% 1 != 0)
+        if (object@nPatterns <= 0 | object@nPatterns %% 1 != 0)
             "number of patterns must be an integer greater than zero"
-        if (object@nIterations <= 0 || object@nIterations %% 1 != 0)
+        if (object@nIterations <= 0 | object@nIterations %% 1 != 0)
             "number of iterations must be an integer greater than zero"
-        if (object@outputFrequency <= 0 || object@outputFrequency %% 1 != 0)
+        if (object@outputFrequency <= 0 | object@outputFrequency %% 1 != 0)
             "the output frequency must be an integer greater than zero"
-        if (object@alphaA  <= 0 || object@alphaP <= 0)
+        if (object@alphaA  <= 0 | object@alphaP <= 0)
             "alpha parameter must be greater than zero"
-        if (object@maxGibbsMassA  <= 0 || object@maxGibbsMassP <= 0)
+        if (object@maxGibbsMassA  <= 0 | object@maxGibbsMassP <= 0)
             "maxGibbsMass must be greater than zero"
-        if (object@seed <= 0 || object@seed %% 1 != 0)
+        if (object@seed <= 0 | object@seed %% 1 != 0)
             "random seed must be an integer greater than zero"
         if (!(object@whichMatrixFixed %in% c("N", "A", "P")))
             "whichMatrixFixed must be either A or P (N in the case of neither)"
-        if (object@checkpointInterval <= 0 || object@checkpointInterval %% 1 != 0)
+        if (object@checkpointInterval <= 0 | object@checkpointInterval %% 1 != 0)
             "checkpointInterval must be an integer greater than zero"
-        if (object@nCores <= 0 || object@nCores %% 1 != 0)
+        if (object@nCores <= 0 | object@nCores %% 1 != 0)
             "number of cores must be an integer greater than zero"
+        if (object@minNS <= 1 | object@minNS %% 1 != 0)
+            "minNS must be an integer greater than one"
     }
 )
 

@@ -34,7 +34,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
         initialA <- consensusMatrix
     }
 
-    # run with a fixed matrix
+    # run all subsets with the same fixed matrix
     finalResult <- foreach(i=1:nSets) %dopar%
     {
         cogaps_cpp(data, allParams, uncertainty, sets[[i]], initialA, initialP)
@@ -48,62 +48,63 @@ distributedCogaps <- function(data, allParams, uncertainty)
     return(resultList)
 }
 
-nrow_helper <- function(matrix)
+nrow_helper <- function(data)
 {
-    if (class(matrix) == "character")
+    if (class(data) == "character")
     {
-        switch(file_ext(matrix),
-            "csv" = nrow(data.table::fread(matrix, select=1)),
-            "tsv" = nrow(data.table::fread(matrix, select=1)),
-            "mtx" = as.numeric(data.table::fread(matrix, nrows=1, fill=TRUE)[1,1])
+        switch(file_ext(data),
+            "csv" = nrow(data.table::fread(data, select=1)),
+            "tsv" = nrow(data.table::fread(data, select=1)),
+            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,1])
         )
     }
-    return(nrow(matrix))
+    return(nrow(data))
 }
 
-ncol_helper <- function(matrix)
+ncol_helper <- function(data)
 {
-    if (class(matrix) == "character")
+    if (class(data) == "character")
     {
-        switch(file_ext(matrix),
-            "csv" = ncol(data.table::fread(matrix, nrows=1)) - 1,
-            "tsv" = ncol(data.table::fread(matrix, nrows=1)) - 1,
-            "mtx" = as.numeric(data.table::fread(matrix, nrows=1, fill=TRUE)[1,2])
+        switch(file_ext(data),
+            "csv" = ncol(data.table::fread(data, nrows=1)) - 1,
+            "tsv" = ncol(data.table::fread(data, nrows=1)) - 1,
+            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,2])
         )
     }
-    return(ncol(matrix))
+    return(ncol(data))
 }        
 
 createSets <- function(data, allParams)
 {
-    total <- ifelse(allParams$modelParams@distributed == "genome-wide",
+    total <- ifelse(allParams$gaps@distributed == "genome-wide",
         nrow_helper(data), ncol_helper(data))
-    all_indices <- 1:total
-    setSize <- floor(total / nSets)
+    setSize <- floor(total / allParams$gaps@nSets)
+
     sets <- list()
+    remaining <- 1:total
     for (n in 1:(allParams$gaps@nSets - 1))
     {
-        selected <- sample(all_indices, setSize, replace=FALSE)
+        selected <- sample(remaining, setSize, replace=FALSE)
         sets[[n]] <- selected
-        all_indices <- setdiff(all_indices, selected)
+        remaining <- setdiff(remaining, selected)
     }
-    sets[[allParams$gaps@nSets]] <- all_indices
+    sets[[allParams$gaps@nSets]] <- remaining
     return(sets)
 }
 
 findConsensusMatrix <- function(result, allParams)
 {
-    if (allParams$modelParams@distributed == "genome-wide")
-        allPatterns <- do.call(cbind, lapply(initialResult, function(x) x@sampleFactors))
+    if (allParams$gaps@distributed == "genome-wide")
+        patterns <- do.call(cbind, lapply(result, function(x) x@sampleFactors))
     else
-        allPatterns <- do.call(cbind, lapply(initialResult, function(x) x@featureLoadings))
+        patterns <- do.call(cbind, lapply(result, function(x) x@featureLoadings))
 
     comb <- expand.grid(1:allParams$gaps@nSets, 1:allParams$gaps@nPatterns)
-    rownames(allPatterns) <- paste(comb[,1], comb[,2], sep=".")
-    matched <- patternMatch(allPatterns, allParams)
+    rownames(patterns) <- paste(comb[,1], comb[,2], sep=".")
+    return(patternMatch(patterns, allParams))
 }
 
-#' cellMatchR
+#' Match Patterns Across Multiple Runs
 #' @export
 #'
 #' @param Atot a matrix containing the total by set estimates of Pmean output from \code{reOrderBySet}
@@ -114,23 +115,14 @@ findConsensusMatrix <- function(result, allParams)
 #' @param ignore.NA logical indicating whether or not to ignore NAs from potential over dimensionalization. Default is FALSE.
 #' @param bySet logical indicating whether to return list of matched set solutions from \code{Atot}
 #' @param ... additional parameters for \code{agnes}
-#' @return a matrix of concensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
-#' concensus pattern is also returned.
-patternMatch <- function(matrix, allParams)
+#' @return a matrix of consensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
+#' consensus pattern is also returned.
+patternMatch <- function(allPatterns, allParams)
 {
-    if (is.na(minNS))
-    {
-        minNS <- nSets / 2
-    }
-    if (is.na(maxNS))
-    {
-        maxNS <- nSets + minNS
-    }
-
-    cc <- corcut(Atot, minNS, cnt, cluster.method)
+    cc <- corcut(allPatterns, allParams)
 
     ### split by maxNS
-    indx <- which(unlist(lapply(cc$AByClust, function(x) dim(x)[1] > maxNS)))
+    indx <- which(unlist(lapply(cc$PatsByClust, function(x) nrow(x) > maxNS)))
     i <- 1
     while (length(indx) > 0)
     { 
@@ -149,7 +141,7 @@ patternMatch <- function(matrix, allParams)
                 cc$AByClust<-append(cc$AByClust,icc[[2]][2])
                 cc$RtoMeanPattern<-append(cc$RtoMeanPattern,icc[[1]][2])
             } 
-            indx <- which(unlist(lapply(cc$AByClust,function(x) dim(x)[1]>maxNS)))
+            indx <- which(unlist(lapply(cc$AByClust,function(x) nrow(x) > maxNS)))
         }
     }
 
@@ -168,56 +160,50 @@ patternMatch <- function(matrix, allParams)
     return(AByCDSWavgScaled)
 }
 
-corcut <- function(matrix, allParams)
+corcut <- function(allPatterns, allParams)
 {
-    corr.dist <- cor(Atot)
-    corr.dist <- 1-corr.dist
+    corr.dist <- cor(allPatterns)
+    corr.dist <- 1 - corr.dist
 
     clust <- agnes(x=corr.dist, diss=TRUE, "complete")
-    cut <- cutree(as.hclust(clust), k=cnt)
-
-    cls <- sort(unique(cut))
-    cMNs <- matrix(ncol=cnt,nrow=dim(Atot)[1])
-    colnames(cMNs) <- cls
-    rownames(cMNs) <- rownames(Atot)
+    patternIds <- cutree(as.hclust(clust), k=allParams$gaps@cut)
 
     RtoMeanPattern <- list()
-    AByClust <- list()
-    for (i in cls)
+    PatsByClust <- list()
+    for (cluster in unique(patternIds))
     {
-        if (!is.null(dim(Atot[,cut == i])))
+        if (sum(patternIds==cluster) >= allParams$gaps@minNS)
         {
-            if (dim(Atot[,cut == i])[2] >= minNS)
-            {
-                cMNs[,i] <- rowMeans(Atot[,cut==i])
-                AByClust[[i]] <- Atot[,cut==i]
-                nIN <- sum(cut==i)
-                RtoMeanPattern[[i]] <- sapply(1:nIN, function(j) 
-                    round(cor(x=Atot[,cut==i][,j], y=cMNs[,i]),3))
-            }
+            clusterPats <- allPatterns[,patternIds==cluster]
+            meanPat <- rowMeans(clusterPats)
+            RtoMeanPattern[[as.character(cluster)]] <- sapply(1:ncol(clusterPats),
+                function(j) round(cor(x=clusterPats[,j], y=meanPat), 3))
+            PatsByClust[[as.character(cluster)]] <- clusterPats
         }
     }
-    return(list("RtoMeanPattern"=RtoMeanPattern, "AByClust"=AByClust))
-}   
+    return(list("RtoMeanPattern"=RtoMeanPattern, "PatsByClust"=PatsByClust))
+}
 
 stitchTogether <- function(result, allParams)
 {
     if (allParams$modelParams@distributed == "genome-wide")
     {
+        consensus <- result[[1]]@Pmean
         return(list(
-            "Amean" = do.call(rbind, lapply(AP.fixed, function(x) x@featureLoadings)),
-            "Asd"   = do.call(rbind, lapply(AP.fixed, function(x) x@featureStdDev)),
-            "Pmean" = consensusPatterns,
-            "Psd"   = matrix(0, nrow=nrow(P), ncol=ncol(P))
+            "Amean" = do.call(rbind, lapply(result, function(x) x@featureLoadings)),
+            "Asd"   = do.call(rbind, lapply(result, function(x) x@featureStdDev)),
+            "Pmean" = consensus,
+            "Psd"   = matrix(0, nrow=nrow(consensus), ncol=ncol(consensus))
         ))
     }
     else
     {
+        consensus <- result[[1]]@Amean
         return(list(
-            "Amean" = consensusPatterns,
-            "Asd"   = matrix(0, nrow=nrow(A), ncol=ncol(A)),
-            "Pmean" = do.call(rbind, lapply(AP.fixed, function(x) x@sampleFactors)),
-            "Psd"   = do.call(rbind, lapply(AP.fixed, function(x) x@sampleStdDev))
+            "Amean" = consensus,
+            "Asd"   = matrix(0, nrow=nrow(consensus), ncol=ncol(consensus)),
+            "Pmean" = do.call(rbind, lapply(result, function(x) x@sampleFactors)),
+            "Psd"   = do.call(rbind, lapply(result, function(x) x@sampleStdDev))
         ))
     }
 }
