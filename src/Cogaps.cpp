@@ -102,18 +102,24 @@ const RowMatrix &fixedMatrix, const std::string &checkpointInFile)
 }
 
 // [[Rcpp::export]]
-Rcpp::List cogaps_cpp_from_file(const std::string &data, const Rcpp::S4 &params,
-const std::string &unc, const Rcpp::NumericMatrix &fixedMatrix,
-const std::string &checkpointInFile)
+Rcpp::List cogaps_cpp_from_file(const std::string &data,
+const Rcpp::List &allParams,
+const std::string &uncertainty,
+const Rcpp::NumericVector &indices=Rcpp::NumericVector(),
+const Rcpp::NumericMatrix &initialA=Rcpp::NumericMatrix(),
+const Rcpp::NumericMatrix &initialP=Rcpp::NumericMatrix())
 {
     return cogapsRun(data, params, unc, convertRMatrix(fixedMatrix),
         checkpointInFile);
 }
 
 // [[Rcpp::export]]
-Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data, const Rcpp::S4 &params,
-const Rcpp::NumericMatrix &unc, const Rcpp::NumericMatrix &fixedMatrix,
-const std::string &checkpointInFile)
+Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data,
+const Rcpp::List &allParams,
+const Rcpp::NumericMatrix &uncertainty,
+const Rcpp::NumericVector &indices=Rcpp::NumericVector(),
+const Rcpp::NumericMatrix &initialA=Rcpp::NumericMatrix(),
+const Rcpp::NumericMatrix &initialP=Rcpp::NumericMatrix())
 {
     return cogapsRun(convertRMatrix(data), params, convertRMatrix(unc),
         convertRMatrix(fixedMatrix), checkpointInFile);

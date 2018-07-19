@@ -5,18 +5,17 @@
 setClass("CogapsParams", slots = c(
     nPatterns = "numeric",
     nIterations = "numeric",
-    outputFrequency = "numeric",
     alphaA = "numeric",
     alphaP = "numeric",
     maxGibbsMassA = "numeric",
     maxGibbsMassP = "numeric",
     seed = "numeric",
-    messages = "logical",
     singleCell = "logical",
-    whichMatrixFixed = "character",
-    checkpointInterval = "numeric",
-    checkpointOutFile = "character", 
-    nCores = "numeric"
+    distributed = "character",
+    nSets = "numeric",
+    cut = "numeric",
+    minNS = "numeric",
+    maxNS = "numeric"
 ))
 
 #' Constructor for CogapsParams
@@ -35,12 +34,8 @@ setMethod("initialize", "CogapsParams",
         .Object@maxGibbsMassA <- 100
         .Object@maxGibbsMassP <- 100
         .Object@seed <- getMilliseconds(as.POSIXlt(Sys.time()))
-        .Object@messages <- TRUE
         .Object@singleCell <- FALSE
-        .Object@whichMatrixFixed <- "N"
-        .Object@checkpointInterval <- 0
-        .Object@checkpointOutFile <- "gaps_checkpoint.out"
-        .Object@nCores <- 1
+        .Object@distributed <- NULL
 
         .Object <- callNextMethod(.Object, ...)
         .Object
