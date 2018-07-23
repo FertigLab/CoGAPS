@@ -174,27 +174,75 @@ public:
 /******************** IMPLEMENTATION OF TEMPLATED FUNCTIONS *******************/
 
 template <class DataType>
-AmplitudeGibbsSampler::AmplitudeGibbsSampler(const DataType &data, unsigned nPatterns)
+AmplitudeGibbsSampler::AmplitudeGibbsSampler(const DataType &data,
+bool transposeData, unsigned nPatterns)
     :
-GibbsSampler(data, true, nPatterns)
+GibbsSampler(data, transposeData, true, nPatterns)
 {
     mQueue.setDimensionSize(mBinSize, mNumCols);
 }
 
 template <class DataType>
-PatternGibbsSampler::PatternGibbsSampler(const DataType &data, unsigned nPatterns)
+AmplitudeGibbsSampler::AmplitudeGibbsSampler(const DataType &data,
+bool transposeData, bool partitionRows, const std::vector<unsigned> &indices,
+unsigned nPatterns)
     :
-GibbsSampler(data, false, nPatterns)
+GibbsSampler(data, transposeData, partitionRows, indices, true, nPatterns)
+{
+    mQueue.setDimensionSize(mBinSize, mNumCols);
+}
+
+template <class DataType>
+PatternGibbsSampler::PatternGibbsSampler(const DataType &data,
+bool transposeData, unsigned nPatterns)
+    :
+GibbsSampler(data, transposeData, false, nPatterns)
 {
     mQueue.setDimensionSize(mBinSize, mNumRows);
 }
 
+template <class DataType>
+PatternGibbsSampler::PatternGibbsSampler(const DataType &data,
+bool transposeData, bool partitionRows, const std::vector<unsigned> &indices,
+unsigned nPatterns)
+    :
+GibbsSampler(data, transposeData, partitionRows, indices, false, nPatterns)
+{
+    mQueue.setDimensionSize(mBinSize, mNumRows);
+}
+
+// normal constructor
 template <class T, class MatA, class MatB>
 template <class DataType>
 GibbsSampler<T, MatA, MatB>::GibbsSampler(const DataType &data,
+bool transposeData, bool amp, unsigned nPatterns)
+    :
+mDMatrix(data, transposeData), mSMatrix(mDMatrix.pmax(0.1f, 0.1f)), 
+mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
+mMatrix(amp ? mDMatrix.nRow() : nPatterns, amp ? nPatterns : mDMatrix.nCol()),
+mOtherMatrix(NULL), mQueue(mMatrix.nRow() * mMatrix.nCol()), mLambda(0.f),
+mMaxGibbsMass(100.f), mAnnealingTemp(1.f), mNumRows(mMatrix.nRow()),
+mNumCols(mMatrix.nCol()), mAvgQueue(0.f), mNumQueues(0.f)
+{
+    // calculate atomic domain size
+    mBinSize = std::numeric_limits<uint64_t>::max()
+        / static_cast<uint64_t>(mNumRows * mNumCols);
+    mQueue.setDomainSize(mBinSize * mNumRows * mNumCols);
+    mDomain.setDomainSize(mBinSize * mNumRows * mNumCols);
+
+    // default sparsity parameters
+    setSparsity(0.01, false);
+}
+
+// constructor that allows for subsetting the data
+template <class T, class MatA, class MatB>
+template <class DataType>
+GibbsSampler<T, MatA, MatB>::GibbsSampler(const DataType &data,
+bool transposeData, bool partitionRows, const std::vector<unsigned> &indices,
 bool amp, unsigned nPatterns)
     :
-mDMatrix(data), mSMatrix(mDMatrix.pmax(0.1f, 0.1f)), 
+mDMatrix(data, transposeData, partitionRows, indices),
+mSMatrix(mDMatrix.pmax(0.1f, 0.1f)),
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
 mMatrix(amp ? mDMatrix.nRow() : nPatterns, amp ? nPatterns : mDMatrix.nCol()),
 mOtherMatrix(NULL), mQueue(mMatrix.nRow() * mMatrix.nCol()), mLambda(0.f),

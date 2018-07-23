@@ -38,8 +38,7 @@ checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
 checkpointInFile=NULL, transposeData=FALSE, ...)
 {
     # parse parameters from ...
-    # TODO remove args from ... as they're processed, check if null
-    fullParams <- list("gaps"=params,
+    allParams <- list("gaps"=params,
         "nCores"=nCores,
         "messages"=messages,
         "outputFrequency"=outputFrequency,
@@ -47,10 +46,9 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
         "checkpointInterval"=checkpointInterval,
         "checkpointInFile"=checkpointInFile,
         "transposeData"=transposeData,
-        "whichMatrixFixed"="N" # internal parameter
+        "whichMatrixFixed"="" # internal parameter
     )
-    fullParams <- parseOldParams(fullParams, list(...))
-    fullParams <- parseDirectParams(fullParams, list(...))
+    allParams <- parseExtraParams(allParams, list(...))
 
     # check file extension
     if (class(data) == "character" & !(file_ext(data) %in% c("tsv", "csv", "mtx")))
@@ -96,6 +94,10 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
             stop("checkpoints not supported for distributed cogaps")
         else
             message("Running CoGAPS from a checkpoint")
+    }
+    else
+    {
+        allParams$checkpointInFile <- ""
     }
 
     # run cogaps

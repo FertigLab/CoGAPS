@@ -5,6 +5,16 @@
 
 #include <string>
 
+static std::vector<unsigned> convertRVec(const Rcpp::NumericVector &rvec)
+{
+    std::vector<unsigned> vec;
+    for (unsigned i = 0; i < rvec.size(); ++i)
+    {
+        vec.push_back(rvec[i]);
+    }
+    return vec;
+}
+
 static RowMatrix convertRMatrix(const Rcpp::NumericMatrix &rmat)
 {
     RowMatrix mat(rmat.nrow(), rmat.ncol());
@@ -37,55 +47,86 @@ static bool isNull(const RowMatrix &mat)
     return mat.nRow() == 1 && mat.nCol() == 1;
 }
 
+static bool isNull(const Rcpp::NumericMatrix &mat)
+{
+    return mat.nrow() == 1 && mat.ncol();
+}
+
+static bool isNull(const Rcpp::NumericVector &vec)
+{
+    return vec.size() == 1;
+}
+
 static bool isNull(const std::string &path)
 {
     return path.empty();
 }
 
 template <class T>
-static Rcpp::List cogapsRun(const T &data, Rcpp::S4 params, const T &unc,
-const RowMatrix &fixedMatrix, const std::string &checkpointInFile)
+static Rcpp::List cogapsRun(const T &data, const Rcpp::List &allParams,
+const T &uncertainty, const Rcpp::NumericVector &indices,
+const Rcpp::NumericMatrix &initialA, const Rcpp::NumericMatrix &initialP)
 {
     GapsDispatcher dispatcher;
 
     // check if we're initializing with a checkpoint or not
-    if (!isNull(checkpointInFile))
+    if (!isNull(allParams["checkpointInFile"]))
     {
-        dispatcher.initialize(data, checkpointInFile);
+        dispatcher.initialize(data, allParams["transposeData"],
+            allParams["checkpointInFile"]);
     }
     else
     {
-        dispatcher.initialize(data, params.slot("nPatterns"), params.slot("seed"));
+        // check to see if we're subsetting the data
+        if (!isNull(allParams["gaps"].slot("distributed")))
+        {
+            dispatcher.initialize(data, allParams["transposeData"],
+                allParams["gaps"].slot("distributed") == "genome-wide",
+                convertRVec(indices), allParams["gaps"].slot("nPatterns"),
+                allParams["gaps"].slot("seed"));
+        }
+        else
+        {
+            dispatcher.initialize(data, allParams["transposeData"],
+                allParams["gaps"].slot("nPatterns"), allParams["gaps"].slot("seed"));
+        }
 
         // set optional parameters
-        dispatcher.setMaxIterations(params.slot("nIterations"));
-        dispatcher.setOutputFrequency(params.slot("outputFrequency"));
+        dispatcher.setMaxIterations(allParams["gaps"].slot("nIterations"));
+        dispatcher.setSparsity(allParams["gaps"].slot("alphaA"),
+            allParams["gaps"].slot("alphaP"), allParams["gaps"].slot("singleCell"));
+        dispatcher.setMaxGibbsMass(allParams["gaps"].slot("maxGibbsMassA"),
+            allParams["gaps"].slot("maxGibbsMassP"));
 
-        dispatcher.setSparsity(params.slot("alphaA"), params.slot("alphaP"),
-            params.slot("singleCell"));
-        
-        dispatcher.setMaxGibbsMass(params.slot("maxGibbsMassA"),
-            params.slot("maxGibbsMassP"));
-
-        dispatcher.printMessages(params.slot("messages"));
+        // set initial values for A and P matrix
+        if (!isNull(initialA))
+        {
+            dispatcher.setAMatrix(convertRMatrix(initialA));
+        }
+        if (!isNull(initialP))
+        {
+            dispatcher.setPMatrix(convertRMatrix(initialP));
+        }
 
         // check if running with a fixed matrix
-        if (!isNull(fixedMatrix))
+        if (!isNull(allParams["whichMatrixFixed"]))
         {
-            dispatcher.setFixedMatrix(params.slot("whichMatrixFixed"), fixedMatrix);
+            dispatcher.setFixedMatrix(allParams["whichMatrixFixed"]);
         }
     }
 
     // set the uncertainty matrix
-    if (!isNull(unc))
+    if (!isNull(uncertainty))
     {
-        dispatcher.setUncertainty(unc);
+        dispatcher.setUncertainty(uncertainty);
     }
     
     // set parameters that aren't saved in the checkpoint
     dispatcher.setNumCoresPerSet(params.slot("nCores"));
-    dispatcher.setCheckpointInterval(params.slot("checkpointInterval"));
+    dispatcher.printMessages(params.slot("messages"));
+    dispatcher.setOutputFrequency(params.slot("outputFrequency"));
     dispatcher.setCheckpointOutFile(params.slot("checkpointOutFile"));
+    dispatcher.setCheckpointInterval(params.slot("checkpointInterval"));
 
     // run the dispatcher and return the GapsResult in an R list
     GapsResult result(dispatcher.run());
@@ -105,24 +146,23 @@ const RowMatrix &fixedMatrix, const std::string &checkpointInFile)
 Rcpp::List cogaps_cpp_from_file(const std::string &data,
 const Rcpp::List &allParams,
 const std::string &uncertainty,
-const Rcpp::NumericVector &indices=Rcpp::NumericVector(),
-const Rcpp::NumericMatrix &initialA=Rcpp::NumericMatrix(),
-const Rcpp::NumericMatrix &initialP=Rcpp::NumericMatrix())
+const Rcpp::NumericVector &indices=Rcpp::NumericVector(1),
+const Rcpp::NumericMatrix &initialA=Rcpp::NumericMatrix(1,1),
+const Rcpp::NumericMatrix &initialP=Rcpp::NumericMatrix(1,1))
 {
-    return cogapsRun(data, params, unc, convertRMatrix(fixedMatrix),
-        checkpointInFile);
+    return cogapsRun(data, allParams, uncertainty, indices, initialA, initialP);
 }
 
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data,
 const Rcpp::List &allParams,
 const Rcpp::NumericMatrix &uncertainty,
-const Rcpp::NumericVector &indices=Rcpp::NumericVector(),
-const Rcpp::NumericMatrix &initialA=Rcpp::NumericMatrix(),
-const Rcpp::NumericMatrix &initialP=Rcpp::NumericMatrix())
+const Rcpp::NumericVector &indices=Rcpp::NumericVector(1),
+const Rcpp::NumericMatrix &initialA=Rcpp::NumericMatrix(1,1),
+const Rcpp::NumericMatrix &initialP=Rcpp::NumericMatrix(1,1))
 {
-    return cogapsRun(convertRMatrix(data), params, convertRMatrix(unc),
-        convertRMatrix(fixedMatrix), checkpointInFile);
+    return cogapsRun(convertRMatrix(data), allParams,
+        convertRMatrix(uncertainty), indices, initialA, initialP);
 }
 
 // [[Rcpp::export]]
