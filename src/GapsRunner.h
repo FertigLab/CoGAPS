@@ -37,7 +37,11 @@ private:
 public:
 
     template <class DataType>
-    GapsRunner(const DataType &data, unsigned nPatterns);
+    GapsRunner(const DataType &data, bool transposeData, unsigned nPatterns);
+
+    template <class DataType>
+    GapsRunner(const DataType &data, bool transposeData, bool partitionRows,
+        const std::vector<unsigned> &indices, unsigned nPatterns);
 
     template <class DataType>
     void setUncertainty(const DataType &unc);
@@ -70,9 +74,10 @@ public:
 };
 
 template <class DataType>
-GapsRunner::GapsRunner(const DataType &data, unsigned nPatterns)
+GapsRunner::GapsRunner(const DataType &data, bool transposeData, unsigned nPatterns)
     :
-mASampler(data, nPatterns), mPSampler(data, nPatterns),
+mASampler(data, transposeData, nPatterns),
+mPSampler(data, transposeData, nPatterns),
 mStatistics(mASampler.dataRows(), mPSampler.dataCols(), nPatterns),
 mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0), mFixedMatrix('N')
 {
@@ -81,10 +86,31 @@ mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0), mFixedMatrix('N')
 }
 
 template <class DataType>
-void GapsRunner::setUncertainty(const DataType &unc)
+GapsRunner::GapsRunner(const DataType &data, bool transposeData,
+bool partitionRows, const std::vector<unsigned> &indices, unsigned nPatterns)
+    :
+mASampler(data, transposeData, partitionRows, indices, nPatterns),
+mPSampler(data, transposeData, partitionRows, indices, nPatterns),
+mStatistics(mASampler.dataRows(), mPSampler.dataCols(), nPatterns),
+mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0), mFixedMatrix('N')
 {
-    mASampler.setUncertainty(unc);
-    mPSampler.setUncertainty(unc);
+    mASampler.sync(mPSampler);
+    mPSampler.sync(mASampler);
+}
+
+template <class DataType>
+void GapsRunner::setUncertainty(const DataType &unc, bool transposeData)
+{
+    mASampler.setUncertainty(unc, transposeData);
+    mPSampler.setUncertainty(unc, transposeData);
+}
+
+template <class DataType>
+void GapsRunner::setUncertainty(const DataType &unc, bool transposeData,
+bool partitionRows, const std::vector<unsigned> &indices)
+{
+    mASampler.setUncertainty(unc, transposeData, partitionRows, indices);
+    mPSampler.setUncertainty(unc, transposeData, partitionRows, indices);
 }
 
 #endif // __COGAPS_GAPS_RUNNER_H__

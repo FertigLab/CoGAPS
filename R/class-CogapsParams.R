@@ -34,7 +34,7 @@ setMethod("initialize", "CogapsParams",
         .Object@maxGibbsMassP <- 100
         .Object@seed <- getMilliseconds(as.POSIXlt(Sys.time()))
         .Object@singleCell <- FALSE
-        .Object@distributed <- "A"
+        .Object@distributed <- ""
         .Object@nSets <- 3
         .Object@cut <- .Object@nPatterns
         .Object@minNS <- ceiling(.Object@nSets / 2)

@@ -23,7 +23,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
 
     # set fixed matrix
     initialA <- initialP <- matrix(0)
-    if (allParams$modelParams@distributed == "genome-wide")
+    if (allParams$gaps@distributed == "genome-wide")
     {
         allParams$whichMatrixFixed <- "P"
         initialP <- consensusMatrix
@@ -122,42 +122,28 @@ patternMatch <- function(allPatterns, allParams)
     cc <- corcut(allPatterns, allParams)
 
     ### split by maxNS
-    indx <- which(unlist(lapply(cc$PatsByClust, function(x) nrow(x) > maxNS)))
-    i <- 1
+    indx <- which(sapply(cc$PatsByClust, function(x) ncol(x) > allParams$gaps@maxNS))
     while (length(indx) > 0)
     { 
-        icc <- corcut(cc$AByClust[[indx[1]]], minNS, 2, cluster.method)
-        if (length(icc[[2]]) == 0)
-        {
-            indx <- indx[-1]
-            next
-        }
-        else
-        {
-            cc$AByClust[[indx[1]]] <- icc[[2]][[1]]
-            cc$RtoMeanPattern[[indx[1]]] <- icc[[1]][[1]]
-            if (length(icc[[2]]) > 1)
-            {
-                cc$AByClust<-append(cc$AByClust,icc[[2]][2])
-                cc$RtoMeanPattern<-append(cc$RtoMeanPattern,icc[[1]][2])
-            } 
-            indx <- which(unlist(lapply(cc$AByClust,function(x) nrow(x) > maxNS)))
-        }
+        allParams$gaps@cut <- 2
+        icc <- corcut(cc$PatsByClust[[indx[1]]], allParams)
+
+        cc$PatsByClust[[indx[1]]] <- icc$PatsByClust[[1]]
+        cc$RtoMeanPattern[[indx[1]]] <- icc$RtoMeanPattern[[1]]
+        cc$PatsByClust <- append(cc$PatsByClust, icc$PatsByClust[2])
+        cc$RtoMeanPattern <- append(cc$RtoMeanPattern, icc$RtoMeanPattern[2])
+
+        indx <- which(sapply(cc$PatsByClust, function(x) ncol(x) > allParams$gaps@maxNS))
     }
 
-    #weighted.mean(AByClustDrop[[1]],RtoMPDrop[[1]])
-    AByCDSWavg <- t(sapply(1:length(cc$AByClust), function(z)
-        apply(cc$AByClust[[z]], 1, function(x)
-            weighted.mean(x, (cc$RtoMeanPattern[[z]])^3))))
-    rownames(AByCDSWavg) <- lapply(1:length(cc$AByClust), function(x)
-        paste("Pattern",x))
-    #scale As
-    Amax <- apply(AByCDSWavg, 1, max)
-    AByCDSWavgScaled <- t(sapply(1:dim(AByCDSWavg)[1], function(x)
-        AByCDSWavg[x,] / Amax[x]))
-    rownames(AByCDSWavgScaled) <- rownames(AByCDSWavg)
+    # created matrix of mean patterns - weighted by R closeness of fit
+    PatsByCDSWavg <- t(sapply(1:length(cc$PatsByClust), function(z)
+        apply(cc$PatsByClust[[z]], 1, function(x) weighted.mean(x, (cc$RtoMeanPattern[[z]])^3))))
+    rownames(PatsByCDSWavg) <- lapply(1:length(cc$PatsByClust), function(x) paste("Pattern", x))
+    return(PatsByCDSWavg)
 
-    return(AByCDSWavgScaled)
+    # scale
+    return(apply(PatsByCDSWavg, 1, function(row) row / max(row)))
 }
 
 corcut <- function(allPatterns, allParams)
