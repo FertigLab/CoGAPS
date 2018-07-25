@@ -49,7 +49,7 @@ static bool isNull(const RowMatrix &mat)
 
 static bool isNull(const Rcpp::NumericMatrix &mat)
 {
-    return mat.nrow() == 1 && mat.ncol();
+    return mat.nrow() == 1 && mat.ncol() == 1;
 }
 
 static bool isNull(const Rcpp::NumericVector &vec)
@@ -70,33 +70,47 @@ const Rcpp::NumericMatrix &initialA, const Rcpp::NumericMatrix &initialP)
     GapsDispatcher dispatcher;
 
     // check if we're initializing with a checkpoint or not
-    if (!isNull(allParams["checkpointInFile"]))
+    if (!isNull(Rcpp::as<std::string>(allParams["checkpointInFile"])))
     {
         dispatcher.initialize(data, allParams["transposeData"],
             allParams["checkpointInFile"]);
     }
     else
     {
-        // check to see if we're subsetting the data
-        if (!isNull(allParams["gaps"].slot("distributed")))
+        Rcpp::S4 gapsParams = allParams["gaps"];
+
+        if (!isNull(Rcpp::as<std::string>(gapsParams.slot("distributed"))))
         {
             dispatcher.initialize(data, allParams["transposeData"],
-                allParams["gaps"].slot("distributed") == "genome-wide",
-                convertRVec(indices), allParams["gaps"].slot("nPatterns"),
-                allParams["gaps"].slot("seed"));
+                gapsParams.slot("nPatterns"), gapsParams.slot("seed"),
+                gapsParams.slot("distributed") == "genome-wide",
+                convertRVec(indices));
+
+            if (!isNull(uncertainty))
+            {
+                dispatcher.setUncertainty(uncertainty,
+                    allParams["transposeData"],
+                    gapsParams.slot("distributed") == "genome-wide",
+                    convertRVec(indices));
+            }
         }
         else
         {
             dispatcher.initialize(data, allParams["transposeData"],
-                allParams["gaps"].slot("nPatterns"), allParams["gaps"].slot("seed"));
+                gapsParams.slot("nPatterns"), gapsParams.slot("seed"));
+
+            if (!isNull(uncertainty))
+            {
+                dispatcher.setUncertainty(uncertainty, allParams["transposeData"]);
+            }
         }
 
         // set optional parameters
-        dispatcher.setMaxIterations(allParams["gaps"].slot("nIterations"));
-        dispatcher.setSparsity(allParams["gaps"].slot("alphaA"),
-            allParams["gaps"].slot("alphaP"), allParams["gaps"].slot("singleCell"));
-        dispatcher.setMaxGibbsMass(allParams["gaps"].slot("maxGibbsMassA"),
-            allParams["gaps"].slot("maxGibbsMassP"));
+        dispatcher.setMaxIterations(gapsParams.slot("nIterations"));
+        dispatcher.setSparsity(gapsParams.slot("alphaA"),
+            gapsParams.slot("alphaP"), gapsParams.slot("singleCell"));
+        dispatcher.setMaxGibbsMass(gapsParams.slot("maxGibbsMassA"),
+            gapsParams.slot("maxGibbsMassP"));
 
         // set initial values for A and P matrix
         if (!isNull(initialA))
@@ -109,24 +123,20 @@ const Rcpp::NumericMatrix &initialA, const Rcpp::NumericMatrix &initialP)
         }
 
         // check if running with a fixed matrix
-        if (!isNull(allParams["whichMatrixFixed"]))
+        if (!isNull(Rcpp::as<std::string>(allParams["whichMatrixFixed"])))
         {
             dispatcher.setFixedMatrix(allParams["whichMatrixFixed"]);
         }
     }
 
     // set the uncertainty matrix
-    if (!isNull(uncertainty))
-    {
-        dispatcher.setUncertainty(uncertainty);
-    }
     
     // set parameters that aren't saved in the checkpoint
-    dispatcher.setNumCoresPerSet(params.slot("nCores"));
-    dispatcher.printMessages(params.slot("messages"));
-    dispatcher.setOutputFrequency(params.slot("outputFrequency"));
-    dispatcher.setCheckpointOutFile(params.slot("checkpointOutFile"));
-    dispatcher.setCheckpointInterval(params.slot("checkpointInterval"));
+    dispatcher.setNumCoresPerSet(allParams["nCores"]);
+    dispatcher.printMessages(allParams["messages"]);
+    dispatcher.setOutputFrequency(allParams["outputFrequency"]);
+    dispatcher.setCheckpointOutFile(allParams["checkpointOutFile"]);
+    dispatcher.setCheckpointInterval(allParams["checkpointInterval"]);
 
     // run the dispatcher and return the GapsResult in an R list
     GapsResult result(dispatcher.run());

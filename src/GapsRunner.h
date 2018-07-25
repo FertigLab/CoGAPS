@@ -44,7 +44,11 @@ public:
         const std::vector<unsigned> &indices, unsigned nPatterns);
 
     template <class DataType>
-    void setUncertainty(const DataType &unc);
+    void setUncertainty(const DataType &unc, bool transposeData);
+
+    template <class DataType>
+    void setUncertainty(const DataType &unc, bool transposeData,
+        bool partitionRows, const std::vector<unsigned> &indices);
 
     void printMessages(bool print);
     void setOutputFrequency(unsigned n);
@@ -89,8 +93,8 @@ template <class DataType>
 GapsRunner::GapsRunner(const DataType &data, bool transposeData,
 bool partitionRows, const std::vector<unsigned> &indices, unsigned nPatterns)
     :
-mASampler(data, transposeData, partitionRows, indices, nPatterns),
-mPSampler(data, transposeData, partitionRows, indices, nPatterns),
+mASampler(data, transposeData, nPatterns, partitionRows, indices),
+mPSampler(data, transposeData, nPatterns, partitionRows, indices),
 mStatistics(mASampler.dataRows(), mPSampler.dataCols(), nPatterns),
 mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0), mFixedMatrix('N')
 {
