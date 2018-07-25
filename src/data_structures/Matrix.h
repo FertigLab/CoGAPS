@@ -12,7 +12,17 @@
 
 class RowMatrix;
 class ColMatrix;
-typedef Matrix RowMatrix; // when we don't care about row/col major order
+typedef RowMatrix Matrix; // when we don't care about row/col major order
+
+template <class T>
+class GenericMatrix;
+
+template <class T>
+Archive& operator<<(Archive &ar, GenericMatrix<T> &samp);
+
+template <class T>
+Archive& operator>>(Archive &ar, GenericMatrix<T> &samp);
+
 
 template <class T>
 class GenericMatrix
@@ -23,6 +33,7 @@ protected:
     unsigned mNumRows, mNumCols;
 
     T* impl();
+    const T* impl() const;
 
 public:
 
@@ -43,11 +54,11 @@ public:
     T operator/(float val) const;
     T pmax(float scale, float max) const;
 
-    friend Archive& operator<< <T>(Archive &ar, GenericMatrix &mat);
-    friend Archive& operator>> <T>(Archive &ar, GenericMatrix &mat);
+    friend Archive& operator<< <T> (Archive &ar, GenericMatrix &mat);
+    friend Archive& operator>> <T> (Archive &ar, GenericMatrix &mat);
 };
 
-class RowMatrix : public Matrix<RowMatrix>
+class RowMatrix : public GenericMatrix<RowMatrix>
 {
 private:
 
@@ -70,19 +81,19 @@ public:
     RowMatrix& operator=(const ColMatrix &mat);
 
     // for single element access - do not loop over elements with this
-    float& operator()(unsigned r, unsigned c) {return mData[r][c];}
-    float operator()(unsigned r, unsigned c) const {return mData[r][c];}
+    float& operator()(unsigned r, unsigned c);
+    float operator()(unsigned r, unsigned c) const;
 
     // for convenience when doing non-performance critical math
-    Vector& getRow(unsigned row) {return mData[row];}
-    const Vector& getRow(unsigned row) const {return mData[row];}
+    Vector& getRow(unsigned row);
+    const Vector& getRow(unsigned row) const;
 
     // raw pointer allows for high performance looping over rows with SIMD
-    float* rowPtr(unsigned row) {return mData[row].ptr();}
-    const float* rowPtr(unsigned row) const {return mData[row].ptr();}
+    float* rowPtr(unsigned row);
+    const float* rowPtr(unsigned row) const;
 };
 
-class ColMatrix : public Matrix<ColMatrix>
+class ColMatrix : public GenericMatrix<ColMatrix>
 {
 private:
 
@@ -105,34 +116,47 @@ public:
     ColMatrix& operator=(const RowMatrix &mat);
 
     // for single element access - do not loop over elements with this
-    float& operator()(unsigned r, unsigned c) {return mData[c][r];}
-    float operator()(unsigned r, unsigned c) const {return mData[c][r];}
+    float& operator()(unsigned r, unsigned c);
+    float operator()(unsigned r, unsigned c) const;
 
     // for convenience when doing non-performance critical math
-    Vector& getCol(unsigned col) {return mData[col];}
-    const Vector& getCol(unsigned col) const {return mData[col];}
+    Vector& getCol(unsigned col);
+    const Vector& getCol(unsigned col) const;
 
     // raw pointer allows for high performance looping over rows with SIMD
-    float* colPtr(unsigned col) {return mData[col].ptr();}
-    const float* colPtr(unsigned col) const {return mData[col].ptr();}
+    float* colPtr(unsigned col);
+    const float* colPtr(unsigned col) const;
 };
 
 /******************** IMPLEMENTATION OF TEMPLATED FUNCTIONS *******************/
 
 template <class T>
-GenericMatrix::GenericMatrix(unsigned nrow, unsigned ncol)
-    :
-mNumRows(nrow), mNumCols(ncol)
+T* GenericMatrix<T>::impl()
 {
+    return static_cast<T*>(this);
+}
+
+template <class T>
+const T* GenericMatrix<T>::impl() const
+{
+    return static_cast<const T*>(this);
+}
+
+template <class T>
+GenericMatrix<T>::GenericMatrix(unsigned nrow, unsigned ncol)
+{
+    mNumRows = nrow;
+    mNumCols = ncol;
     impl()->allocate();
 }
 
-GenericMatrix::GenericMatrix(const Matrix &mat, bool transpose)
-    :
-mNumRows(transpose ? mat.nCol() : mat.nRow()),
-mNumCols(transpose ? mat.nRow() : mat.nCol())
+template <class T>
+GenericMatrix<T>::GenericMatrix(const Matrix &mat, bool transpose)
 {
+    mNumRows = transpose ? mat.nCol() : mat.nRow();
+    mNumCols = transpose ? mat.nRow() : mat.nCol();
     impl()->allocate();
+
     for (unsigned i = 0; i < mNumRows; ++i)
     {
         for (unsigned j = 0; j < mNumCols; ++j)
@@ -142,12 +166,13 @@ mNumCols(transpose ? mat.nRow() : mat.nCol())
     }
 }
 
-GenericMatrix::GenericMatrix(const std::string &path, bool transpose)
+template <class T>
+GenericMatrix<T>::GenericMatrix(const std::string &path, bool transpose)
 {
     FileParser p(path);
     mNumRows = transpose ? p.nCol() : p.nRow();
     mNumCols = transpose ? p.nRow() : p.nCol();
-    allocate();
+    impl()->allocate();
 
     while (p.hasNext())
     {
@@ -158,88 +183,127 @@ GenericMatrix::GenericMatrix(const std::string &path, bool transpose)
     }
 }
 
-    GenericMatrix(const Matrix &mat, bool transpose, bool partitionRows,
-        const std::vector<unsigned> &indices);
-    GenericMatrix(const std::string &path, bool transpose, bool partitionRows,
-        const std::vector<unsigned> &indices);
-
-    unsigned nRow() const;
-    unsigned nCol() const;
-
-    T operator*(float val) const;
-    T operator/(float val) const;
-    T& operator=(const ColMatrix &mat);
-    T pmax(float scale, float max) const;
-
-    friend Archive& operator<<(Archive &ar, T &mat);
-    friend Archive& operator>>(Archive &ar, T &mat);
-
-
-#if 0
-// forward declarations
-class RowMatrix;
-class ColMatrix;
-
-class RowMatrix
+// apply transpose first, then partition either rows or columns
+template <class T>
+GenericMatrix<T>::GenericMatrix(const Matrix &mat, bool transpose,
+bool partitionRows, const std::vector<unsigned> &indices)
 {
-private:
+    // create matrix
+    mNumRows = partitionRows ? indices.size() : (transpose ? mat.nCol() : mat.nRow());
+    mNumCols = partitionRows ? (transpose ? mat.nRow() : mat.nCol()) : indices.size();
+    impl()->allocate();
 
-    std::vector<Vector> mRows;
-
-
-    void allocate();
-
-public:
-
-    RowMatrix(unsigned nrow, unsigned ncol);
-    explicit RowMatrix(const ColMatrix &mat);
-
-    RowMatrix(const RowMatrix &mat, bool transpose=false);
-    RowMatrix(const std::string &path, bool transpose=false);
-
-    RowMatrix(const RowMatrix &mat, bool transpose, bool partitionRows,
-        const std::vector<unsigned> &indices);
-    RowMatrix(const std::string &p, bool transpose, bool partitionRows,
-        const std::vector<unsigned> &indices);
-
-    RowMatrix operator*(float val) const;
-    RowMatrix operator/(float val) const;
-    RowMatrix& operator=(const ColMatrix &mat);
-    RowMatrix pmax(float scale, float max) const;
-
-    friend Archive& operator<<(Archive &ar, RowMatrix &mat);
-    friend Archive& operator>>(Archive &ar, RowMatrix &mat);
-};
-
-class ColMatrix
+    // fill matrix
+    for (unsigned i = 0; i < mat.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < mat.nCol(); ++j)
+        {
+            unsigned dataIndex = transpose ? (partitionRows ? j : i) : (partitionRows ? i : j);
+            std::vector<unsigned>::const_iterator pos = std::find(indices.begin(), indices.end(), dataIndex);
+            if (pos != indices.end())
+            {
+                unsigned index = std::distance(indices.begin(), pos);
+                unsigned row = partitionRows ? index : (transpose ? j : i);
+                unsigned col = partitionRows ? (transpose ? i : j) : index;
+                impl()->operator()(row,col) = mat(i,j);
+            }
+        }
+    }
+}
+    
+// apply transpose first, then partition either rows or columns
+template <class T>
+GenericMatrix<T>::GenericMatrix(const std::string &path, bool transpose,
+bool partitionRows, const std::vector<unsigned> &indices)
 {
-private:
+    // create matrix
+    FileParser p(path);
+    mNumRows = partitionRows ? indices.size() : (transpose ? p.nCol() : p.nRow());
+    mNumCols = partitionRows ? (transpose ? p.nRow() : p.nCol()) : indices.size();
+    impl()->allocate();
 
-    std::vector<Vector> mCols;
-    unsigned mNumRows, mNumCols;
+    // fill matrix
+    while (p.hasNext())
+    {
+        MatrixElement e(p.getNext());
+        unsigned dataIndex = transpose ? (partitionRows ? e.col : e.row) : (partitionRows ? e.row : e.col);
+        std::vector<unsigned>::const_iterator pos = std::find(indices.begin(), indices.end(), dataIndex);
+        if (pos != indices.end())
+        {
+            unsigned index = std::distance(indices.begin(), pos);
+            unsigned row = partitionRows ? index : (transpose ? e.col : e.row);
+            unsigned col = partitionRows ? (transpose ? e.row : e.col) : index;
+            impl()->operator()(row, col) = e.value;
+        }
+    }
+}
 
-public:
+template <class T>
+unsigned GenericMatrix<T>::nRow() const
+{
+    return mNumRows;
+}
 
-    ColMatrix(unsigned nrow, unsigned ncol);
-    explicit ColMatrix(const RowMatrix &mat);
+template <class T>
+unsigned GenericMatrix<T>::nCol() const
+{
+    return mNumCols;
+}
 
-    ColMatrix(ColMatrix mat, bool transpose=false);
-    ColMatrix(const std::string &path, bool transpose=false);
+template <class T>
+T GenericMatrix<T>::operator*(float val) const
+{
+    T mat(*this);
+    for (unsigned i = 0; i < mData.size(); ++i)
+    {
+        mat.mData *= val;
+    }
+    return mat;
+}
 
-    ColMatrix(ColMatrix mat, bool transpose, bool partitionRows,
-        const std::vector<unsigned> &indices);
-    ColMatrix(const std::string &p, bool transpose, bool partitionRows,
-        const std::vector<unsigned> &indices);
+template <class T>
+T GenericMatrix<T>::operator/(float val) const
+{
+    T mat(*this);
+    for (unsigned i = 0; i < mData.size(); ++i)
+    {
+        mat.mData /= val;
+    }
+    return mat;
+}
 
-    ColMatrix operator*(float val) const;
-    ColMatrix operator/(float val) const;
-    ColMatrix& operator=(const RowMatrix &mat);
-    ColMatrix pmax(float scale, float max) const;
+template <class T>
+T GenericMatrix<T>::pmax(float scale, float max) const
+{
+    T mat(mNumRows, mNumCols);
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            mat(i,j) = std::max(impl()->operator()(i,j) * scale, max);
+        }
+    }
+    return mat;
+}
 
-    friend Archive& operator<<(Archive &ar, ColMatrix &mat);
-    friend Archive& operator>>(Archive &ar, ColMatrix &mat);
-};
+template <class T>
+Archive& operator<<(Archive &ar, GenericMatrix<T> &mat)
+{
+    for (unsigned i = 0; i < mat.mData.size(); ++i)
+    {
+        ar << mat.mData[i];
+    }
+    return ar;
+}
 
-#endif
+template <class T>
+Archive& operator>>(Archive &ar, GenericMatrix<T> &mat)
+{
+    for (unsigned i = 0; i < mat.mData.size(); ++i)
+    {
+        ar >> mat.mData[i];
+    }
+    return ar;
+}
 
 #endif // __COGAPS_MATRIX_H__

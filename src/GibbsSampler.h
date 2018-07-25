@@ -82,10 +82,19 @@ protected:
 public:
 
     template <class DataType>
-    GibbsSampler(const DataType &data, bool amp, unsigned nPatterns);
+    GibbsSampler(const DataType &data, bool transpose, unsigned nPatterns,
+        bool amp);
 
     template <class DataType>
-    void setUncertainty(const DataType &unc);
+    GibbsSampler(const DataType &data, bool transpose, unsigned nPatterns,
+        bool amp, bool partitionRows, const std::vector<unsigned> &indices);
+
+    template <class DataType>
+    void setUncertainty(const DataType &unc, bool transposeData);
+
+    template <class DataType>
+    void setUncertainty(const DataType &unc, bool transposeData,
+        bool partitionRows, const std::vector<unsigned> &indices);
     
     void setSparsity(float alpha, bool singleCell);
     void setMaxGibbsMass(float max);
@@ -135,7 +144,13 @@ private:
 public:
 
     template <class DataType>
-    AmplitudeGibbsSampler(const DataType &data, unsigned nPatterns);
+    AmplitudeGibbsSampler(const DataType &data, bool transposeData,
+        unsigned nPatterns);
+
+    template <class DataType>
+    AmplitudeGibbsSampler(const DataType &data, bool transposeData,
+        unsigned nPatterns, bool partitionRows,
+        const std::vector<unsigned> &indices);
 
     void sync(PatternGibbsSampler &sampler);
     void recalculateAPMatrix();
@@ -165,7 +180,13 @@ private:
 public:
 
     template <class DataType>
-    PatternGibbsSampler(const DataType &data, unsigned nPatterns);
+    PatternGibbsSampler(const DataType &data, bool transposeData,
+        unsigned nPatterns);
+
+    template <class DataType>
+    PatternGibbsSampler(const DataType &data, bool transposeData,
+        unsigned nPatterns, bool partitionRows,
+        const std::vector<unsigned> &indices);
 
     void sync(AmplitudeGibbsSampler &sampler);
     void recalculateAPMatrix();
@@ -177,17 +198,17 @@ template <class DataType>
 AmplitudeGibbsSampler::AmplitudeGibbsSampler(const DataType &data,
 bool transposeData, unsigned nPatterns)
     :
-GibbsSampler(data, transposeData, true, nPatterns)
+GibbsSampler(data, transposeData, nPatterns, true)
 {
     mQueue.setDimensionSize(mBinSize, mNumCols);
 }
 
 template <class DataType>
 AmplitudeGibbsSampler::AmplitudeGibbsSampler(const DataType &data,
-bool transposeData, bool partitionRows, const std::vector<unsigned> &indices,
-unsigned nPatterns)
+bool transposeData, unsigned nPatterns, bool partitionRows,
+const std::vector<unsigned> &indices)
     :
-GibbsSampler(data, transposeData, partitionRows, indices, true, nPatterns)
+GibbsSampler(data, transposeData, nPatterns, true, partitionRows, indices)
 {
     mQueue.setDimensionSize(mBinSize, mNumCols);
 }
@@ -196,17 +217,17 @@ template <class DataType>
 PatternGibbsSampler::PatternGibbsSampler(const DataType &data,
 bool transposeData, unsigned nPatterns)
     :
-GibbsSampler(data, transposeData, false, nPatterns)
+GibbsSampler(data, transposeData, nPatterns, false)
 {
     mQueue.setDimensionSize(mBinSize, mNumRows);
 }
 
 template <class DataType>
 PatternGibbsSampler::PatternGibbsSampler(const DataType &data,
-bool transposeData, bool partitionRows, const std::vector<unsigned> &indices,
-unsigned nPatterns)
+bool transposeData, unsigned nPatterns, bool partitionRows,
+const std::vector<unsigned> &indices)
     :
-GibbsSampler(data, transposeData, partitionRows, indices, false, nPatterns)
+GibbsSampler(data, transposeData, nPatterns, false, partitionRows, indices)
 {
     mQueue.setDimensionSize(mBinSize, mNumRows);
 }
@@ -215,7 +236,7 @@ GibbsSampler(data, transposeData, partitionRows, indices, false, nPatterns)
 template <class T, class MatA, class MatB>
 template <class DataType>
 GibbsSampler<T, MatA, MatB>::GibbsSampler(const DataType &data,
-bool transposeData, bool amp, unsigned nPatterns)
+bool transposeData, unsigned nPatterns, bool amp)
     :
 mDMatrix(data, transposeData), mSMatrix(mDMatrix.pmax(0.1f, 0.1f)), 
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
@@ -238,8 +259,8 @@ mNumCols(mMatrix.nCol()), mAvgQueue(0.f), mNumQueues(0.f)
 template <class T, class MatA, class MatB>
 template <class DataType>
 GibbsSampler<T, MatA, MatB>::GibbsSampler(const DataType &data,
-bool transposeData, bool partitionRows, const std::vector<unsigned> &indices,
-bool amp, unsigned nPatterns)
+bool transposeData, unsigned nPatterns, bool amp, bool partitionRows,
+const std::vector<unsigned> &indices)
     :
 mDMatrix(data, transposeData, partitionRows, indices),
 mSMatrix(mDMatrix.pmax(0.1f, 0.1f)),
@@ -261,9 +282,18 @@ mNumCols(mMatrix.nCol()), mAvgQueue(0.f), mNumQueues(0.f)
 
 template <class T, class MatA, class MatB>
 template <class DataType>
-void GibbsSampler<T, MatA, MatB>::setUncertainty(const DataType &unc)
+void GibbsSampler<T, MatA, MatB>::setUncertainty(const DataType &unc,
+bool transpose)
 {
-    mSMatrix = MatB(unc);
+    mSMatrix = MatB(unc, transpose);
+}
+
+template <class T, class MatA, class MatB>
+template <class DataType>
+void GibbsSampler<T, MatA, MatB>::setUncertainty(const DataType &unc,
+bool transpose, bool partitionRows, const std::vector<unsigned> &indices)
+{
+    mSMatrix = MatB(unc, transpose, partitionRows, indices);
 }
 
 template <class T, class MatA, class MatB>

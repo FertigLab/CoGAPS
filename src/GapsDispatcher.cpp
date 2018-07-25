@@ -27,26 +27,41 @@ void GapsDispatcher::setMaxIterations(unsigned n)
 
 void GapsDispatcher::printMessages(bool print)
 {
+    GAPS_ASSERT(mInitialized);
     mPrintMessages = print;
     mRunners[0]->printMessages(print);
 }
 
 void GapsDispatcher::setOutputFrequency(unsigned n)
 {
+    GAPS_ASSERT(mInitialized);
     mRunners[0]->setOutputFrequency(n);
 }
 
 void GapsDispatcher::setSparsity(float alphaA, float alphaP, bool singleCell)
 {
+    GAPS_ASSERT(mInitialized);
     mRunners[0]->setSparsity(alphaA, alphaP, singleCell);
 }
 
 void GapsDispatcher::setMaxGibbsMass(float maxA, float maxP)
 {
+    GAPS_ASSERT(mInitialized);
     mRunners[0]->setMaxGibbsMass(maxA, maxP);
 }
 
-void GapsDispatcher::setFixedMatrix(char which, const RowMatrix &mat)
+void GapsDispatcher::setAMatrix()
+{
+    GAPS_ASSERT(mInitialized);
+}
+
+void GapsDispatcher::setPMatrix()
+{
+    GAPS_ASSERT(mInitialized);
+    mRunners[0]->
+}
+
+void GapsDispatcher::setFixedMatrix(char which)
 {
     GAPS_ASSERT(mInitialized);
     mRunners[0]->setFixedMatrix(which, mat);
@@ -138,27 +153,3 @@ void GapsDispatcher::runOneCycle(unsigned k)
     mRunners[0]->run(k - mCheckpointInterval * mCheckpointsCreated, mNumCoresPerSet);
     mCheckpointsCreated = 0; // reset checkpoint count for next cycle
 }
-
-/*
-static std::vector< std::vector<unsigned> > sampleIndices(unsigned n, unsigned nSets)
-{
-    unsigned setSize = n / nSets;
-    std::vector< std::vector<unsigned> > sampleIndices;
-    std::vector<unsigned> toBeSampled;
-    for (unsigned i = 0; i < n; ++i)
-    {
-        toBeSampled.push_back(i);
-    }
-
-    for (unsigned i = 0; i < (nSets - 1); ++i)
-    {
-        sampleIndices.push_back(gaps::random::sample(toBeSampled, setSize));
-    }
-
-    GAPS_ASSERT(!toBeSampled.empty());
-
-    sampleIndices.push_back(toBeSampled);
-    return sampleIndices;
-}
-*/
-

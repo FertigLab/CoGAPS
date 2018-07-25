@@ -58,7 +58,7 @@ private:
 
     template <class DataType>
     void loadData(const DataType &data, bool transposeData, bool partitionRows,
-        const std:vector<unsigned> &indices);
+        const std::vector<unsigned> &indices);
 
 public:
 
@@ -67,15 +67,23 @@ public:
 
     template <class DataType>
     void initialize(const DataType &data, bool transposeData,
-        bool partitionRows, const std::vector<unsigned> &indices,
         unsigned nPatterns, uint32_t seed);
+
+    template <class DataType>
+    void initialize(const DataType &data, bool transposeData,
+        unsigned nPatterns, uint32_t seed, bool partitionRows,
+        const std::vector<unsigned> &indices);
 
     template <class DataType>
     void initialize(const DataType &data, bool transposeData,
         const std::string &cptFile);
 
     template <class DataType>
-    void setUncertainty(const DataType &unc);
+    void setUncertainty(const DataType &unc, bool transposeData);
+
+    template <class DataType>
+    void setUncertainty(const DataType &unc, bool transposeData,
+        bool partitionRows, const std::vector<unsigned> &indices);
 
     void setMaxIterations(unsigned n);
     void printMessages(bool print);
@@ -96,8 +104,20 @@ public:
 
 template <class DataType>
 void GapsDispatcher::initialize(const DataType &data, bool transposeData,
-bool partitionRows, const std::vector<unsigned> &indices, unsigned nPatterns,
-uint32_t seed)
+unsigned nPatterns, uint32_t seed)
+{
+    mSeed = seed;
+    mNumPatterns = nPatterns;
+    gaps::random::setSeed(mSeed);
+    
+    loadData(data, transposeData);
+    mInitialized = true;
+}
+
+template <class DataType>
+void GapsDispatcher::initialize(const DataType &data, bool transposeData,
+unsigned nPatterns, uint32_t seed, bool partitionRows,
+const std::vector<unsigned> &indices)
 {
     mSeed = seed;
     mNumPatterns = nPatterns;
@@ -108,7 +128,8 @@ uint32_t seed)
 }
 
 template <class DataType>
-void GapsDispatcher::initialize(const DataType &data, const std::string &cptFile)
+void GapsDispatcher::initialize(const DataType &data, bool transposeData,
+const std::string &cptFile)
 {
     Archive ar(cptFile, ARCHIVE_READ);
     gaps::random::load(ar);
@@ -122,10 +143,18 @@ void GapsDispatcher::initialize(const DataType &data, const std::string &cptFile
 }
 
 template <class DataType>
-void GapsDispatcher::setUncertainty(const DataType &unc)
+void GapsDispatcher::setUncertainty(const DataType &unc, bool transposeData)
 {
     GAPS_ASSERT(mInitialized);
-    mRunners[0]->setUncertainty(unc);
+    mRunners[0]->setUncertainty(unc, transposeData);
+}
+
+template <class DataType>
+void GapsDispatcher::setUncertainty(const DataType &unc, bool transposeData,
+bool partitionRows, const std::vector<unsigned> &indices)
+{
+    GAPS_ASSERT(mInitialized);
+    mRunners[0]->setUncertainty(unc, transposeData, partitionRows, indices);
 }
 
 template <class DataType>
@@ -139,7 +168,7 @@ void GapsDispatcher::loadData(const DataType &data, bool transposeData)
 
 template <class DataType>
 void GapsDispatcher::loadData(const DataType &data, bool transposeData,
-bool partitionRows, const std:vector<unsigned> &indices)
+bool partitionRows, const std::vector<unsigned> &indices)
 {
     gaps_printf("Loading Data...");
     gaps_flush();
