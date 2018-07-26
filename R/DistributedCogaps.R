@@ -127,7 +127,7 @@ patternMatch <- function(allPatterns, allParams)
         indx <- which(sapply(cc$PatsByClust, function(x) ncol(x) > allParams$gaps@maxNS))
     }
 
-    # created matrix of mean patterns - weighted by R closeness of fit
+    # create matrix of mean patterns - weighted by coefficient of determination
     PatsByCDSWavg <- t(sapply(1:length(cc$PatsByClust), function(z)
         apply(cc$PatsByClust[[z]], 1, function(x) weighted.mean(x, (cc$RtoMeanPattern[[z]])^3))))
     rownames(PatsByCDSWavg) <- lapply(1:length(cc$PatsByClust), function(x) paste("Pattern", x))
@@ -137,13 +137,15 @@ patternMatch <- function(allPatterns, allParams)
     return(apply(PatsByCDSWavg, 1, function(row) row / max(row)))
 }
 
+#' @importFrom cluster agnes
+#' @importFrom stats cutree as.hclust
 corcut <- function(allPatterns, allParams)
 {
     corr.dist <- cor(allPatterns)
     corr.dist <- 1 - corr.dist
 
-    clust <- agnes(x=corr.dist, diss=TRUE, "complete")
-    patternIds <- cutree(as.hclust(clust), k=allParams$gaps@cut)
+    clust <- cluster::agnes(x=corr.dist, diss=TRUE, "complete")
+    patternIds <- stats::cutree(stats::as.hclust(clust), k=allParams$gaps@cut)
 
     RtoMeanPattern <- list()
     PatsByClust <- list()

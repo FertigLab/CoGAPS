@@ -21,21 +21,6 @@
 #' Bioinformatics. 2010 Nov 1;26(21):2792-3
 #' @docType package
 #' @name CoGAPS-package
-#' @importFrom Rcpp evalCpp
-#' @importFrom gplots heatmap.2 plotCI
-#' @importFrom stats variable.names sd update heatmap runif
-#' @importFrom graphics matplot title abline close.screen hist legend lines mtext par plot points screen split.screen
-#' @importFrom grDevices dev.new dev.off pdf colorRampPalette rainbow
-#' @importFrom methods is
-#' @importFrom utils read.table write.table str
-#' @importFrom RColorBrewer brewer.pal
-#' @importFrom stats cor loess as.dist cutree as.hclust complete.cases D hclust weighted.mean
-#' @import foreach
-#' @importFrom cluster agnes 
-#' @import doParallel
-#' @import shiny
-#' @importFrom reshape2 melt
-#' @import ggplot2
 #' @useDynLib CoGAPS
 NULL
 
