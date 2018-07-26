@@ -306,20 +306,73 @@ function(object, data, uncertainty)
         lwid=c(1,10), lhei=c(1, 4, 1.2 ), main="Heatmap of Residuals")
 })
 
-#' patternMarkers
-#'
-#' @param threshold # the type of threshold to be used. The default "all" will distribute genes into pattern with the lowest ranking. The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern.
-#' @param lp a vector of weights for each pattern to be used for finding markers. If NA markers for each pattern of the A matrix will be used.
-#' @param full logical indicating whether to return the ranks of each gene for each pattern
-#' @return By default a non-overlapping list of genes associated with each \code{lp}. If \code{full=TRUE} a data.frame of
-#' genes rankings with a column for each \code{lp} will also be returned.
-#' @export
-
-patternMarkers <- function(Amatrix=NA, scaledPmatrix=FALSE, Pmatrix=NA,
-threshold="all", lp=NA, full=FALSE)
-
 setMethod("patternMarkers", signature(object="CogapsResult"),
 function(object, threshold="all", lp=NA, full=FALSE)
+{
+    nGenes <- nrow(object@featureLoadings)
+    nPatterns <- ncol(object@featureLoadings)
+
+    # find the A with the highest magnitude
+    Arowmax <- t(apply(object@featureLoadings, 1, function(x) x/max(x)))
+
+    if (!is.na(lp))
+    {
+        if (length(lp) != nPatterns)
+        {
+            warning("lp length must equal the number of columns of the Amatrix")
+        }
+        sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
+        ssranks <-rank(sstat)
+        ssgenes.th <- names(sort(sstat,decreasing=FALSE,na.last=TRUE))
+    }
+    else
+    {
+        # determine which genes are most associated with each pattern
+
+        sstat <- matrix(NA, nrow=nGenes, ncol=nPatterns,
+            dimnames=dimnames(object@featureLoadings))
+        ssranks <- matrix(NA, nrow=nGenes, ncol=nPatterns,
+            dimnames=dimnames(object@featureLoadings))
+        ssgenes <- matrix(NA, nrow=nGenes, ncol=nPatterns, dimnames=NULL)
+        for (i in 1:nP)
+        {
+            lp <- rep(0,dim(Amatrix)[2])
+            lp[i] <- 1
+            sstat[,i] <- unlist(apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp))))
+            ssranks[,i]<-rank(sstat[,i])
+            ssgenes[,i]<-names(sort(sstat[,i],decreasing=FALSE,na.last=TRUE))
+        }
+        if (threshold=="cut")
+        {
+            geneThresh <- sapply(1:nP,function(x) min(which(ssranks[ssgenes[,x],x] > apply(ssranks[ssgenes[,x],],1,min))))
+            ssgenes.th <- sapply(1:nP,function(x) ssgenes[1:geneThresh[x],x])
+        }
+        else if (threshold=="all")
+        {
+            pIndx<-unlist(apply(sstat,1,which.min))
+            gBYp <- list()
+            for(i in sort(unique(pIndx)))
+            {
+                gBYp[[i]]<-sapply(strsplit(names(pIndx[pIndx==i]),"[.]"),function(x) x[[1]][1])
+            }
+            ssgenes.th <- lapply(1:max(sort(unique(pIndx))), function(x)
+                ssgenes[which(ssgenes[,x] %in% gBYp[[x]]),x])
+        }
+        else
+        {
+            stop("Threshold arguement not viable option")
+        }
+    }
+    if (full)
+    {
+        return(list("PatternMarkers"=ssgenes.th, "PatternRanks"=ssranks,
+            "PatternMarkerScores"=sstat))
+    }
+    else
+    {
+        return("PatternMarkers"=ssgenes.th)
+    }
+})
 
 plotPatternMarkers
 
