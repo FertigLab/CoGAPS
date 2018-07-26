@@ -26,8 +26,8 @@ TEST_CASE("Test Parsers")
         while (p.hasNext())
         {
             MatrixElement e(p.getNext());
-            REQUIRE(e.row() == row);
-            REQUIRE(e.col() == col);
+            REQUIRE(e.row == row);
+            REQUIRE(e.col == col);
 
             ++count;
             ++col;
@@ -51,8 +51,8 @@ TEST_CASE("Test Parsers")
         while (p.hasNext())
         {
             MatrixElement e(p.getNext());
-            REQUIRE(e.row() == row);
-            REQUIRE(e.col() == col);
+            REQUIRE(e.row == row);
+            REQUIRE(e.col == col);
 
             ++count;
             ++col;
@@ -75,8 +75,8 @@ TEST_CASE("Test Parsers")
         {
             MatrixElement e(p.getNext());
 
-            REQUIRE(e.row() < 1363);
-            REQUIRE(e.col() < 9);
+            REQUIRE(e.row < 1363);
+            REQUIRE(e.col < 9);
             ++count;
         }
         REQUIRE(count == 12267);

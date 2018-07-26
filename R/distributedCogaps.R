@@ -22,22 +22,13 @@ distributedCogaps <- function(data, allParams, uncertainty)
     consensusMatrix <- findConsensusMatrix(initialResult, allParams)
 
     # set fixed matrix
-    initialA <- initialP <- matrix(0)
-    if (allParams$gaps@distributed == "genome-wide")
-    {
-        allParams$whichMatrixFixed <- "P"
-        initialP <- consensusMatrix
-    }
-    else
-    {
-        allParams$whichMatrixFixed <- "A"
-        initialA <- consensusMatrix
-    }
+    allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
+        == "genome-wide", "P", "A")
 
     # run all subsets with the same fixed matrix
     finalResult <- foreach(i=1:nSets) %dopar%
     {
-        cogaps_cpp(data, allParams, uncertainty, sets[[i]], initialA, initialP)
+        cogaps_cpp(data, allParams, uncertainty, sets[[i]], consensusMatrix)
     }
 
     # get result 

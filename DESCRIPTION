@@ -55,6 +55,7 @@ Collate:
     'class-CogapsResult.R'
     'createGWCoGAPSSets.R'
     'createscCoGAPSSets.R'
+    'distributedCogaps.R'
     'generateSeeds.R'
     'package.R'
     'patternMarkers.R'

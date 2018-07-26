@@ -8,14 +8,26 @@
 #include <Rcpp.h>
 #endif
 
-void GapsRunner::printMessages(bool print)
+#ifdef __GAPS_OPENMP__
+#include <omp.h>
+#endif
+
+void GapsRunner::setFixedMatrix(char which, const Matrix &mat)
 {
-    mPrintMessages = print;
+    mFixedMatrix = which;
+    if (which == 'A')
+    {
+        mASampler.setMatrix(mat);
+    }
+    else if (which == 'P')
+    {
+        mPSampler.setMatrix(mat);
+    }
 }
 
-void GapsRunner::setOutputFrequency(unsigned n)
+void GapsRunner::setMaxIterations(unsigned nIterations)
 {
-    mOutputFrequency = n;
+    mMaxIterations = nIterations;
 }
 
 void GapsRunner::setSparsity(float alphaA, float alphaP, bool singleCell)
@@ -30,48 +42,85 @@ void GapsRunner::setMaxGibbsMass(float maxA, float maxP)
     mPSampler.setMaxGibbsMass(maxP);
 }
 
-void GapsRunner::setFixedMatrix(char which, const RowMatrix &mat)
+void GapsRunner::setMaxThreads(unsigned nThreads)
 {
-    mFixedMatrix = which;
-    if (which == 'A')
-    {
-        gaps_printf("setting fixed A\n");
-        mASampler.setMatrix(ColMatrix(mat));
-        gaps_printf("updating AP\n");
-        mASampler.recalculateAPMatrix();
-        gaps_printf("syncing\n");
-        mPSampler.sync(mASampler);
-    }
-    else if (which == 'P')
-    {
-        gaps_printf("setting fixed P\n");
-        mPSampler.setMatrix(mat);
-        mPSampler.recalculateAPMatrix();
-        mASampler.sync(mPSampler);
-    }
+    mMaxThreads = nThreads;
 }
 
-void GapsRunner::startSampling()
+void GapsRunner::setPrintMessages(bool print)
 {
-    mSamplePhase = true;
+    mPrintMessages = print;
 }
 
-void GapsRunner::startClock()
+void GapsRunner::setOutputFrequency(unsigned n)
+{
+    mOutputFrequency = n;
+}
+
+void GapsRunner::setCheckpointOutFile(const std::string &file)
+{
+    mCheckpointOutFile = file;
+}
+
+void GapsRunner::setCheckpointInterval(unsigned interval)
+{
+    mCheckpointInterval = interval;
+}
+
+GapsResult GapsRunner::run()
 {
     mStartTime = bpt_now();
+
+    // calculate appropiate number of threads if compiled with openmp
+    #ifdef __GAPS_OPENMP__
+    if (mPrintMessages)
+    {
+        unsigned availableThreads = omp_get_max_threads();
+        mMaxThreads = std::min(availableThreads, mMaxThreads);
+        gaps_printf("Running on %d out of %d available threads\n",
+            mMaxThreads, availableThreads);
+    }
+    #endif
+
+    // cascade through phases, allows algorithm to be resumed in either phase
+    GAPS_ASSERT(mPhase == 'C' || mPhase == 'S');
+    switch (mPhase)
+    {
+        case 'C':
+            if (mPrintMessages)
+            {
+                gaps_printf("-- Calibration Phase --\n");
+            }
+            runOnePhase();
+            mPhase = 'S';
+            mCurrentIteration = 0;
+
+        case 'S':
+            if (mPrintMessages)
+            {
+                gaps_printf("-- Sampling Phase --\n");
+            }
+            runOnePhase();
+            break;
+    }
+
+    GapsResult result(mStatistics);
+    result.meanChiSq = mStatistics.meanChiSq(mASampler);
+    return result;    
 }
 
-void GapsRunner::run(unsigned nIter, unsigned nCores)
+void GapsRunner::runOnePhase()
 {
-    for (unsigned i = 0; i < nIter; ++i)
+    for (; mCurrentIteration < mMaxIterations; ++mCurrentIteration)
     {
         #ifdef __GAPS_R_BUILD__
         Rcpp::checkUserInterrupt();
         #endif
         
-        if (!mSamplePhase)
+        if (mPhase == 'C')
         {        
-            float temp = static_cast<float>(2 * i) / static_cast<float>(nIter);
+            float temp = static_cast<float>(2 * mCurrentIteration)
+                / static_cast<float>(mMaxIterations);
             mASampler.setAnnealingTemp(std::min(1.f, temp));
             mPSampler.setAnnealingTemp(std::min(1.f, temp));
         }
@@ -79,79 +128,24 @@ void GapsRunner::run(unsigned nIter, unsigned nCores)
         // number of updates per iteration is poisson 
         unsigned nA = gaps::random::poisson(std::max(mASampler.nAtoms(), 10ul));
         unsigned nP = gaps::random::poisson(std::max(mPSampler.nAtoms(), 10ul));
-        updateSampler(nA, nP, nCores);
+        updateSampler(nA, nP);
 
-        if (mPrintMessages)
-        {
-            displayStatus(i, nIter);
-        }
-
-        if (mSamplePhase)
+        if (mPhase == 'S')
         {
             mStatistics.update(mASampler, mPSampler);
         }
+
+        displayStatus();
+        createCheckpoint();
     }
 }
 
-unsigned GapsRunner::nRow() const
-{
-    return mASampler.dataRows();
-}
-
-unsigned GapsRunner::nCol() const
-{
-    return mASampler.dataCols();
-}
-
-ColMatrix GapsRunner::Amean() const
-{
-    return mStatistics.Amean();
-}
-
-RowMatrix GapsRunner::Pmean() const
-{
-    return mStatistics.Pmean();
-}
-
-ColMatrix GapsRunner::Asd() const
-{
-    return mStatistics.Asd();
-}
-
-RowMatrix GapsRunner::Psd() const
-{
-    return mStatistics.Psd();
-}
-
-float GapsRunner::meanChiSq() const
-{
-    return mStatistics.meanChiSq(mASampler);
-}
-
-Archive& operator<<(Archive &ar, GapsRunner &runner)
-{
-    ar << runner.mASampler << runner.mPSampler << runner.mStatistics <<
-        runner.mPrintMessages << runner.mOutputFrequency <<
-        runner.mFixedMatrix << runner.mSamplePhase << runner.mNumUpdatesA <<
-        runner.mNumUpdatesP;
-    return ar;
-}
-
-Archive& operator>>(Archive &ar, GapsRunner &runner)
-{
-    ar >> runner.mASampler >> runner.mPSampler >> runner.mStatistics >>
-        runner.mPrintMessages >> runner.mOutputFrequency >>
-        runner.mFixedMatrix >> runner.mSamplePhase >> runner.mNumUpdatesA >>
-        runner.mNumUpdatesP;
-    return ar;
-}
-
-void GapsRunner::updateSampler(unsigned nA, unsigned nP, unsigned nCores)
+void GapsRunner::updateSampler(unsigned nA, unsigned nP)
 {
     if (mFixedMatrix != 'A')
     {
         mNumUpdatesA += nA;
-        mASampler.update(nA, nCores);
+        mASampler.update(nA, mMaxThreads);
         if (mFixedMatrix != 'P')
         {
             mPSampler.sync(mASampler);
@@ -161,19 +155,20 @@ void GapsRunner::updateSampler(unsigned nA, unsigned nP, unsigned nCores)
     if (mFixedMatrix != 'P')
     {
         mNumUpdatesP += nP;
-        mPSampler.update(nP, nCores);
+        mPSampler.update(nP, mMaxThreads);
         if (mFixedMatrix != 'A')
         {
             mASampler.sync(mPSampler);
         }
     }
+
     GAPS_ASSERT(mASampler.internallyConsistent());
     GAPS_ASSERT(mPSampler.internallyConsistent());
 }
 
-void GapsRunner::displayStatus(unsigned current, unsigned total)
+void GapsRunner::displayStatus()
 {
-    if (mOutputFrequency > 0 && ((current + 1) % mOutputFrequency) == 0)
+    if (mPrintMessages && mOutputFrequency > 0 && ((mCurrentIteration + 1) % mOutputFrequency) == 0)
     {
         bpt::time_duration diff = bpt_now() - mStartTime;
         unsigned elapsedSeconds = static_cast<unsigned>(diff.total_seconds());
@@ -185,8 +180,38 @@ void GapsRunner::displayStatus(unsigned current, unsigned total)
         unsigned seconds = elapsedSeconds;
 
         gaps_printf("%d of %d, Atoms: %lu(%lu), ChiSq: %.0f, elapsed time: %02d:%02d:%02d\n",
-            current + 1, total, mASampler.nAtoms(), mPSampler.nAtoms(),
-            mASampler.chi2(), hours, minutes, seconds);
+            mCurrentIteration + 1, mMaxIterations, mASampler.nAtoms(),
+            mPSampler.nAtoms(), mASampler.chi2(), hours, minutes, seconds);
     }
 }
 
+void GapsRunner::createCheckpoint()
+{
+    if (mCheckpointInterval > 0 && ((mCurrentIteration + 1) % mCheckpointInterval) == 0)
+    {
+        // create backup file
+        std::rename(mCheckpointOutFile.c_str(), (mCheckpointOutFile + ".backup").c_str());
+    
+        // create checkpoint file
+        Archive ar(mCheckpointOutFile, ARCHIVE_WRITE);
+        
+        gaps::random::save(ar);
+        ar << mNumPatterns << mSeed << mASampler << mPSampler << mStatistics
+            << mFixedMatrix << mMaxIterations << mPhase << mCurrentIteration
+            << mNumUpdatesA << mNumUpdatesP;
+
+        ar.close();
+
+        // delete backup file
+        std::remove((mCheckpointOutFile + ".backup").c_str());
+    }
+}
+
+// assume random state has been loaded and nPatterns and seed have been read
+Archive& operator>>(Archive &ar, GapsRunner &gr)
+{
+    ar >> gr.mASampler >> gr.mPSampler >> gr.mStatistics >> gr.mFixedMatrix
+        >> gr.mMaxIterations >> gr.mPhase >> gr.mCurrentIteration
+        >> gr.mNumUpdatesA >> gr.mNumUpdatesP;
+    return ar;
+}

@@ -3,32 +3,12 @@
 \docType{methods}
 \name{CoGAPS}
 \alias{CoGAPS}
-\alias{CoGAPS,SingleCellExperiment,CogapsParams-method}
-\alias{CoGAPS,SummarizedExperiment,CogapsParams-method}
-\alias{CoGAPS,character,CogapsParams-method}
-\alias{CoGAPS,data.frame,CogapsParams-method}
-\alias{CoGAPS,matrix,CogapsParams-method}
 \title{CoGAPS Matrix Factorization Algorithm}
 \usage{
-CoGAPS(data, params = new("CogapsParams"), uncertainty = NULL,
-  fixedMatrix = matrix(0), checkpointInFile = "", ...)
-
-\S4method{CoGAPS}{character,CogapsParams}(data, params = new("CogapsParams"),
-  uncertainty = NULL, fixedMatrix = matrix(0), checkpointInFile = "", ...)
-
-\S4method{CoGAPS}{matrix,CogapsParams}(data, params = new("CogapsParams"),
-  uncertainty = NULL, fixedMatrix = matrix(0), checkpointInFile = "", ...)
-
-\S4method{CoGAPS}{data.frame,CogapsParams}(data, params = new("CogapsParams"),
-  uncertainty = NULL, fixedMatrix = matrix(0), checkpointInFile = "", ...)
-
-\S4method{CoGAPS}{SummarizedExperiment,CogapsParams}(data,
-  params = new("CogapsParams"), uncertainty = NULL,
-  fixedMatrix = matrix(0), checkpointInFile = "", ...)
-
-\S4method{CoGAPS}{SingleCellExperiment,CogapsParams}(data,
-  params = new("CogapsParams"), uncertainty = NULL,
-  fixedMatrix = matrix(0), checkpointInFile = "", ...)
+CoGAPS(data, params = new("CogapsParams"), nThreads = NULL,
+  messages = TRUE, outputFrequency = 1000, uncertainty = NULL,
+  checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 1000,
+  checkpointInFile = NULL, transposeData = FALSE, ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
@@ -37,12 +17,12 @@ CoGAPS(data, params = new("CogapsParams"), uncertainty = NULL,
 
 \item{uncertainty}{uncertainty matrix (same supported types as data)}
 
-\item{fixedMatrix}{data for fixing the values of either the A or P matrix;
-used in conjuction with whichMatrixFixed (see CogapsParams)}
-
 \item{checkpointInFile}{name of the checkpoint file}
 
 \item{...}{keeps backwards compatibility with arguments from older versions}
+
+\item{fixedMatrix}{data for fixing the values of either the A or P matrix;
+used in conjuction with whichMatrixFixed (see CogapsParams)}
 }
 \value{
 CogapsResult object
@@ -53,8 +33,7 @@ matrix factorization returning the two matrices that reconstruct
 the data matrix
 }
 \details{
-Currently, raw count matrices are the only supported R object. For
- file types CoGAPS supports csv, tsv, and mtx
+For file types CoGAPS supports csv, tsv, and mtx
 }
 \examples{
 # Running from R object

@@ -33,21 +33,31 @@ Vector Vector::operator-(Vector v) const
 Vector Vector::operator*(float val) const
 {
     Vector vec(*this);
-    for (unsigned i = 0; i < size(); ++i)
-    {
-        vec[i] *= val;
-    }
+    vec *= val;
     return vec;
 }
 
 Vector Vector::operator/(float val) const
 {
     Vector vec(*this);
+    vec /= val;
+    return vec;
+}
+
+void Vector::operator*=(float val)
+{
+    for (unsigned i = 0; i < mValues.size(); ++i)
+    {
+        mValues[i] *= val;
+    }
+}
+
+void Vector::operator/=(float val)
+{
     for (unsigned i = 0; i < size(); ++i)
     {
-        vec[i] /= val;
+        mValues[i] /= val;
     }
-    return vec;
 }
 
 Archive& operator<<(Archive &ar, Vector &vec)

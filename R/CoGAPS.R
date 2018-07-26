@@ -32,14 +32,14 @@ NULL
 #' params <- setParam(params, "nPatterns", 5)
 #' resultC <- CoGAPS(GIST.D, params)
 #' @importFrom methods new
-CoGAPS <- function(data, params=new("CogapsParams"), nCores=NULL,
+CoGAPS <- function(data, params=new("CogapsParams"), nThreads=NULL,
 messages=TRUE, outputFrequency=1000, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
 checkpointInFile=NULL, transposeData=FALSE, ...)
 {
     # parse parameters from ...
     allParams <- list("gaps"=params,
-        "nCores"=nCores,
+        "nThreads"=nThreads,
         "messages"=messages,
         "outputFrequency"=outputFrequency,
         "checkpointOutFile"=checkpointOutFile,
@@ -113,7 +113,7 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
         meanChiSq   = gapsReturnList$meanChiSq,
         diagnostics = gapsReturnList$diagnostics
     ))
-})
+}
 
 #' Check that provided data is valid
 #'
