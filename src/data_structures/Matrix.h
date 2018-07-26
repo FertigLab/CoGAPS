@@ -2,6 +2,7 @@
 #define __COGAPS_MATRIX_H__
 
 #include "../Archive.h"
+#include "../GapsAssert.h"
 #include "../file_parser/FileParser.h"
 #include "Vector.h"
 
@@ -18,11 +19,10 @@ template <class T>
 class GenericMatrix;
 
 template <class T>
-Archive& operator<<(Archive &ar, GenericMatrix<T> &samp);
+inline Archive& operator<<(Archive &ar, GenericMatrix<T> &samp);
 
 template <class T>
-Archive& operator>>(Archive &ar, GenericMatrix<T> &samp);
-
+inline Archive& operator>>(Archive &ar, GenericMatrix<T> &samp);
 
 template <class T>
 class GenericMatrix
@@ -38,10 +38,6 @@ protected:
 public:
 
     GenericMatrix(unsigned nrow, unsigned ncol);
-
-    GenericMatrix(const Matrix &mat, bool transpose=false);
-    GenericMatrix(const std::string &path, bool transpose=false);
-
     GenericMatrix(const Matrix &mat, bool transpose, bool partitionRows,
         const std::vector<unsigned> &indices);
     GenericMatrix(const std::string &path, bool transpose, bool partitionRows,
@@ -68,16 +64,14 @@ private:
 public:
 
     RowMatrix(unsigned nrow, unsigned ncol);
-
-    RowMatrix(const Matrix &mat, bool transpose=false);
-    RowMatrix(const std::string &path, bool transpose=false);
+    explicit RowMatrix(const ColMatrix &mat);
 
     RowMatrix(const Matrix &mat, bool transpose, bool partitionRows,
         const std::vector<unsigned> &indices);
     RowMatrix(const std::string &path, bool transpose, bool partitionRows,
         const std::vector<unsigned> &indices);
 
-    // simplifies assigning to/from standard Matrix (RowMatrix)
+    RowMatrix& operator=(const RowMatrix &mat);
     RowMatrix& operator=(const ColMatrix &mat);
 
     // for single element access - do not loop over elements with this
@@ -103,16 +97,14 @@ private:
 public:
 
     ColMatrix(unsigned nrow, unsigned ncol);
-
-    ColMatrix(const Matrix &mat, bool transpose=false);
-    ColMatrix(const std::string &path, bool transpose=false);
+    explicit ColMatrix(const RowMatrix &mat);
 
     ColMatrix(const Matrix &mat, bool transpose, bool partitionRows,
         const std::vector<unsigned> &indices);
     ColMatrix(const std::string &path, bool transpose, bool partitionRows,
         const std::vector<unsigned> &indices);
 
-    // simplifies assigning to/from standard Matrix (RowMatrix)
+    ColMatrix& operator=(const ColMatrix &mat);
     ColMatrix& operator=(const RowMatrix &mat);
 
     // for single element access - do not loop over elements with this
@@ -150,62 +142,46 @@ GenericMatrix<T>::GenericMatrix(unsigned nrow, unsigned ncol)
     impl()->allocate();
 }
 
-template <class T>
-GenericMatrix<T>::GenericMatrix(const Matrix &mat, bool transpose)
-{
-    mNumRows = transpose ? mat.nCol() : mat.nRow();
-    mNumCols = transpose ? mat.nRow() : mat.nCol();
-    impl()->allocate();
-
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            impl()->operator()(i,j) = transpose ? mat(j,i) : mat(i,j);
-        }
-    }
-}
-
-template <class T>
-GenericMatrix<T>::GenericMatrix(const std::string &path, bool transpose)
-{
-    FileParser p(path);
-    mNumRows = transpose ? p.nCol() : p.nRow();
-    mNumCols = transpose ? p.nRow() : p.nCol();
-    impl()->allocate();
-
-    while (p.hasNext())
-    {
-        MatrixElement e(p.getNext());
-        unsigned row = transpose ? e.col() : e.row();
-        unsigned col = transpose ? e.row() : e.col();
-        impl()->operator()(row,col) = e.value();
-    }
-}
-
 // apply transpose first, then partition either rows or columns
 template <class T>
 GenericMatrix<T>::GenericMatrix(const Matrix &mat, bool transpose,
 bool partitionRows, const std::vector<unsigned> &indices)
 {
-    // create matrix
-    mNumRows = partitionRows ? indices.size() : (transpose ? mat.nCol() : mat.nRow());
-    mNumCols = partitionRows ? (transpose ? mat.nRow() : mat.nCol()) : indices.size();
-    impl()->allocate();
-
-    // fill matrix
-    for (unsigned i = 0; i < mat.nRow(); ++i)
+    if (indices.size() <= 1)
     {
-        for (unsigned j = 0; j < mat.nCol(); ++j)
+        mNumRows = transpose ? mat.nCol() : mat.nRow();
+        mNumCols = transpose ? mat.nRow() : mat.nCol();
+        impl()->allocate();
+
+        for (unsigned i = 0; i < mNumRows; ++i)
         {
-            unsigned dataIndex = transpose ? (partitionRows ? j : i) : (partitionRows ? i : j);
-            std::vector<unsigned>::const_iterator pos = std::find(indices.begin(), indices.end(), dataIndex);
-            if (pos != indices.end())
+            for (unsigned j = 0; j < mNumCols; ++j)
             {
-                unsigned index = std::distance(indices.begin(), pos);
-                unsigned row = partitionRows ? index : (transpose ? j : i);
-                unsigned col = partitionRows ? (transpose ? i : j) : index;
-                impl()->operator()(row,col) = mat(i,j);
+                impl()->operator()(i,j) = transpose ? mat(j,i) : mat(i,j);
+            }
+        }
+    }
+    else
+    {
+        // create matrix
+        mNumRows = partitionRows ? indices.size() : (transpose ? mat.nCol() : mat.nRow());
+        mNumCols = partitionRows ? (transpose ? mat.nRow() : mat.nCol()) : indices.size();
+        impl()->allocate();
+
+        // fill matrix
+        for (unsigned i = 0; i < mat.nRow(); ++i)
+        {
+            for (unsigned j = 0; j < mat.nCol(); ++j)
+            {
+                unsigned dataIndex = transpose ? (partitionRows ? j : i) : (partitionRows ? i : j);
+                std::vector<unsigned>::const_iterator pos = std::find(indices.begin(), indices.end(), dataIndex);
+                if (pos != indices.end())
+                {
+                    unsigned index = std::distance(indices.begin(), pos);
+                    unsigned row = partitionRows ? index : (transpose ? j : i);
+                    unsigned col = partitionRows ? (transpose ? i : j) : index;
+                    impl()->operator()(row,col) = mat(i,j);
+                }
             }
         }
     }
@@ -216,24 +192,41 @@ template <class T>
 GenericMatrix<T>::GenericMatrix(const std::string &path, bool transpose,
 bool partitionRows, const std::vector<unsigned> &indices)
 {
-    // create matrix
-    FileParser p(path);
-    mNumRows = partitionRows ? indices.size() : (transpose ? p.nCol() : p.nRow());
-    mNumCols = partitionRows ? (transpose ? p.nRow() : p.nCol()) : indices.size();
-    impl()->allocate();
-
-    // fill matrix
-    while (p.hasNext())
+    FileParser parser(path);
+    if (indices.size() <= 1)
     {
-        MatrixElement e(p.getNext());
-        unsigned dataIndex = transpose ? (partitionRows ? e.col : e.row) : (partitionRows ? e.row : e.col);
-        std::vector<unsigned>::const_iterator pos = std::find(indices.begin(), indices.end(), dataIndex);
-        if (pos != indices.end())
+        mNumRows = transpose ? parser.nCol() : parser.nRow();
+        mNumCols = transpose ? parser.nRow() : parser.nCol();
+        impl()->allocate();
+
+        while (parser.hasNext())
         {
-            unsigned index = std::distance(indices.begin(), pos);
-            unsigned row = partitionRows ? index : (transpose ? e.col : e.row);
-            unsigned col = partitionRows ? (transpose ? e.row : e.col) : index;
-            impl()->operator()(row, col) = e.value;
+            MatrixElement e(parser.getNext());
+            unsigned row = transpose ? e.col : e.row;
+            unsigned col = transpose ? e.row : e.col;
+            impl()->operator()(row,col) = e.value;
+        }
+    }
+    else
+    {
+        // create matrix
+        mNumRows = partitionRows ? indices.size() : (transpose ? parser.nCol() : parser.nRow());
+        mNumCols = partitionRows ? (transpose ? parser.nRow() : parser.nCol()) : indices.size();
+        impl()->allocate();
+
+        // fill matrix
+        while (parser.hasNext())
+        {
+            MatrixElement e(parser.getNext());
+            unsigned dataIndex = transpose ? (partitionRows ? e.col : e.row) : (partitionRows ? e.row : e.col);
+            std::vector<unsigned>::const_iterator pos = std::find(indices.begin(), indices.end(), dataIndex);
+            if (pos != indices.end())
+            {
+                unsigned index = std::distance(indices.begin(), pos);
+                unsigned row = partitionRows ? index : (transpose ? e.col : e.row);
+                unsigned col = partitionRows ? (transpose ? e.row : e.col) : index;
+                impl()->operator()(row, col) = e.value;
+            }
         }
     }
 }
@@ -253,10 +246,10 @@ unsigned GenericMatrix<T>::nCol() const
 template <class T>
 T GenericMatrix<T>::operator*(float val) const
 {
-    T mat(*this);
+    T mat(*impl());
     for (unsigned i = 0; i < mData.size(); ++i)
     {
-        mat.mData *= val;
+        mat.mData[i] *= val;
     }
     return mat;
 }
@@ -264,10 +257,10 @@ T GenericMatrix<T>::operator*(float val) const
 template <class T>
 T GenericMatrix<T>::operator/(float val) const
 {
-    T mat(*this);
+    T mat(*impl());
     for (unsigned i = 0; i < mData.size(); ++i)
     {
-        mat.mData /= val;
+        mat.mData[i] /= val;
     }
     return mat;
 }

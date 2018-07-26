@@ -11,6 +11,26 @@
 namespace bpt = boost::posix_time;
 #define bpt_now() bpt::microsec_clock::local_time()
 
+struct GapsResult
+{
+    ColMatrix Amean;
+    ColMatrix Asd;
+    RowMatrix Pmean;
+    RowMatrix Psd;
+    
+    float meanChiSq;
+    uint32_t seed;
+
+    GapsResult(const GapsStatistics &stat) :
+        Amean(stat.Amean()), Asd(stat.Asd()), Pmean(stat.Pmean()),
+        Psd(stat.Psd()), meanChiSq(0.f), seed(0)
+    {}
+
+    void writeCsv(const std::string &path);
+    void writeTsv(const std::string &path);
+    void writeGct(const std::string &path);
+};
+
 class GapsRunner
 {
 private:
@@ -19,94 +39,75 @@ private:
     PatternGibbsSampler mPSampler;
     GapsStatistics mStatistics;
 
+    char mFixedMatrix;
+    unsigned mMaxIterations;
+    
+    unsigned mMaxThreads;
     bool mPrintMessages;
     unsigned mOutputFrequency;
-    char mFixedMatrix;
-    bool mSamplePhase;
+    std::string mCheckpointOutFile;
+    unsigned mCheckpointInterval;
+
+    bpt::ptime mStartTime;
+    char mPhase;
+    unsigned mCurrentIteration;
+
+    // only kept since they need to be written to the start of every checkpoint
+    unsigned mNumPatterns;
+    uint32_t mSeed;
 
     unsigned mNumUpdatesA;
     unsigned mNumUpdatesP;
         
-    bpt::ptime mStartTime;
-
-    void updateSampler(unsigned nA, unsigned nP, unsigned nCores);
-    void displayStatus(unsigned current, unsigned total);
-
-    double estimatePercentComplete();
+    void runOnePhase();
+    void updateSampler(unsigned nA, unsigned nP);
+    void displayStatus();
+    void createCheckpoint();
 
 public:
 
     template <class DataType>
-    GapsRunner(const DataType &data, bool transposeData, unsigned nPatterns);
-
-    template <class DataType>
-    GapsRunner(const DataType &data, bool transposeData, bool partitionRows,
-        const std::vector<unsigned> &indices, unsigned nPatterns);
-
-    template <class DataType>
-    void setUncertainty(const DataType &unc, bool transposeData);
+    GapsRunner(const DataType &data, bool transposeData, unsigned nPatterns,
+        uint32_t seed, bool partitionRows,
+        const std::vector<unsigned> &indices);
 
     template <class DataType>
     void setUncertainty(const DataType &unc, bool transposeData,
         bool partitionRows, const std::vector<unsigned> &indices);
 
-    void printMessages(bool print);
-    void setOutputFrequency(unsigned n);
+    void setFixedMatrix(char which, const Matrix &mat);
+
+    void setMaxIterations(unsigned nIterations);
     void setSparsity(float alphaA, float alphaP, bool singleCell);
     void setMaxGibbsMass(float maxA, float maxP);
+    
+    void setMaxThreads(unsigned nThreads);
+    void setPrintMessages(bool print);
+    void setOutputFrequency(unsigned n);
+    void setCheckpointOutFile(const std::string &outFile);
+    void setCheckpointInterval(unsigned interval);
 
-    void setFixedMatrix(char which, const RowMatrix &mat);
-
-    void startSampling();
-
-    void run(unsigned nIter, unsigned nCores);
-
-    unsigned nRow() const;
-    unsigned nCol() const;
-
-    ColMatrix Amean() const;
-    RowMatrix Pmean() const;
-    ColMatrix Asd() const;
-    RowMatrix Psd() const;
-    float meanChiSq() const;
-
-    void startClock();
+    GapsResult run();
 
     // serialization
-    friend Archive& operator<<(Archive &ar, GapsRunner &runner);
     friend Archive& operator>>(Archive &ar, GapsRunner &runner);
 };
 
+// problem with passing file parser - need to read it twice
 template <class DataType>
-GapsRunner::GapsRunner(const DataType &data, bool transposeData, unsigned nPatterns)
-    :
-mASampler(data, transposeData, nPatterns),
-mPSampler(data, transposeData, nPatterns),
-mStatistics(mASampler.dataRows(), mPSampler.dataCols(), nPatterns),
-mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0), mFixedMatrix('N')
-{
-    mASampler.sync(mPSampler);
-    mPSampler.sync(mASampler);
-}
-
-template <class DataType>
-GapsRunner::GapsRunner(const DataType &data, bool transposeData,
-bool partitionRows, const std::vector<unsigned> &indices, unsigned nPatterns)
+GapsRunner::GapsRunner(const DataType &data, bool transposeData, uint32_t seed,
+unsigned nPatterns, bool partitionRows, const std::vector<unsigned> &indices)
     :
 mASampler(data, transposeData, nPatterns, partitionRows, indices),
 mPSampler(data, transposeData, nPatterns, partitionRows, indices),
-mStatistics(mASampler.dataRows(), mPSampler.dataCols(), nPatterns),
-mSamplePhase(false), mNumUpdatesA(0), mNumUpdatesP(0), mFixedMatrix('N')
+mStatistics(mASampler.dataRows(), mASampler.dataCols(), nPatterns),
+mFixedMatrix('N'), mMaxIterations(1000), mMaxThreads(1), mPrintMessages(true),
+mOutputFrequency(500), mCheckpointOutFile("gaps_checkpoint.out"),
+mCheckpointInterval(0), mPhase('C'), mCurrentIteration(0),
+mNumPatterns(nPatterns), mSeed(seed), mNumUpdatesA(0), mNumUpdatesP(0)
 {
     mASampler.sync(mPSampler);
     mPSampler.sync(mASampler);
-}
-
-template <class DataType>
-void GapsRunner::setUncertainty(const DataType &unc, bool transposeData)
-{
-    mASampler.setUncertainty(unc, transposeData);
-    mPSampler.setUncertainty(unc, transposeData);
 }
 
 template <class DataType>

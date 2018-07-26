@@ -34,6 +34,9 @@ public:
     Vector operator*(float val) const;
     Vector operator/(float val) const;
 
+    void operator*=(float val);
+    void operator/=(float val);
+
     void concat(const Vector& vec);
 
     friend Archive& operator<<(Archive &ar, Vector &vec);
