@@ -10,4 +10,3 @@ SimpSim.result
 \description{
 CoGAPS result from running on simulated data
 }
-

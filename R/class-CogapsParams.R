@@ -1,7 +1,25 @@
 #' CogapsParams
 #' @export 
+#' @rdname CogapsParams-class
 #'
 #' @description Encapsulates all parameters for the CoGAPS algorithm
+#' @slot nPatterns number of patterns CoGAPS will learn
+#' @slot nIterations number of iterations for each phase of the algorithm
+#' @slot alphaA sparsity parameter for feature matrix
+#' @slot alphaP sparsity parameter for sample matrix
+#' @slot maxGibbsMassA atomic mass restriction for feature matrix
+#' @slot maxGibbsMassP atomic mass restriction for sample matrix
+#' @slot seed random number generator seed
+#' @slot singleCell is the data single cell?
+#' @slot distributed either "genome-wide" or "single-cell" indicating which
+#' distributed algorithm should be used
+#' @slot nSets [distributed parameter] number of sets to break data into
+#' @slot cut [distributed parameter] number of branches at which to cut
+#' dendrogram used in pattern matching
+#' @slot minNS [distributed parameter] minimum of individual set contributions
+#' a cluster must contain
+#' @slot maxNS [distributed parameter] maximum of individual set contributions
+#' a cluster can contain
 setClass("CogapsParams", slots = c(
     nPatterns = "numeric",
     nIterations = "numeric",
@@ -12,8 +30,8 @@ setClass("CogapsParams", slots = c(
     seed = "numeric",
     singleCell = "logical",
     distributed = "character",
-    nSets = "numeric",
     cut = "numeric",
+    nSets = "numeric",
     minNS = "numeric",
     maxNS = "numeric"
 ))
@@ -35,8 +53,8 @@ setMethod("initialize", "CogapsParams",
         .Object@seed <- getMilliseconds(as.POSIXlt(Sys.time()))
         .Object@singleCell <- FALSE
         .Object@distributed <- ""
-        .Object@nSets <- 3
         .Object@cut <- .Object@nPatterns
+        .Object@nSets <- 3
         .Object@minNS <- ceiling(.Object@nSets / 2)
         .Object@maxNS <- .Object@minNS + .Object@nSets
 

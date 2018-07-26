@@ -10,4 +10,3 @@ GIST.result
 \description{
 CoGAPS result from running on GIST dataset
 }
-

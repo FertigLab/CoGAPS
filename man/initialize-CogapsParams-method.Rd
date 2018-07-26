@@ -13,4 +13,3 @@ initialized CogapsParams object
 \description{
 Constructor for CogapsParams
 }
-

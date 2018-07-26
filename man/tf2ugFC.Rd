@@ -10,4 +10,3 @@ tf2ugFC
 \description{
 Gene sets defined by transcription factors defined from TRANSFAC.
 }
-

@@ -14,13 +14,15 @@ Description: Coordinated Gene Activity in Pattern Sets (CoGAPS)
 Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>,
     Thomas D. Sherman <tomsherman159@gmail.com>
 Depends:
-    R (>= 3.4.0),
-    Rcpp (>= 0.11.0)
+    R (>= 3.5.0),
+    Rcpp
 Imports:
+    cluster,
     methods,
     gplots,
     graphics,
-    S4Vectors
+    S4Vectors,
+    SingleCellExperiment
 Suggests:
     testthat,
     knitr,
@@ -33,7 +35,7 @@ biocViews: GeneExpression, Transcription, GeneSetEnrichment,
     DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray,
     MultipleComparison, DimensionReduction
 NeedsCompilation: yes
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 Collate:
     'class-CogapsParams.R'
     'CoGAPS.R'
