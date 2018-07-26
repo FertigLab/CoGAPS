@@ -17,24 +17,12 @@ Depends:
     R (>= 3.4.0),
     Rcpp (>= 0.11.0)
 Imports:
-    RColorBrewer (>= 1.0.5),
-    gplots (>= 2.8.0),
-    graphics,
-    grDevices,
     methods,
-    cluster,
-    shiny,
-    stats,
-    utils,
-    doParallel,
-    foreach,
-    ggplot2,
-    reshape2,
-    SingleCellExperiment,
-    SummarizedExperiment
+    gplots,
+    graphics,
+    S4Vectors
 Suggests:
     testthat,
-    lintr,
     knitr,
     rmarkdown,
     BiocStyle
@@ -49,21 +37,9 @@ RoxygenNote: 5.0.1
 Collate:
     'class-CogapsParams.R'
     'CoGAPS.R'
-    'GWCoGAPS.R'
+    'DistributedCogaps.R'
+    'Package.R'
     'RcppExports.R'
-    'cellMatchR.R'
     'class-CogapsResult.R'
-    'createGWCoGAPSSets.R'
-    'createscCoGAPSSets.R'
-    'distributedCogaps.R'
-    'generateSeeds.R'
-    'package.R'
-    'patternMarkers.R'
-    'patternMatch4Parallel.R'
-    'patternMatcher.R'
-    'plotPatternMarkers.R'
-    'postFixed4Parallel.R'
-    'postFixed4SC.R'
-    'reOrderBySet.R'
-    'reorderByPatternMatch.R'
-    'scCoGAPS.R'
+    'methods-CogapsParams.R'
+    'methods-CogapsResult.R'
