@@ -7,4 +7,3 @@
 \description{
 Contains all output from Cogaps run
 }
-

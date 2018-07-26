@@ -10,4 +10,3 @@ GIST.GeneSets
 \description{
 Simulated dataset to quantify gene set membership in the GIST dataset
 }
-

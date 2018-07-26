@@ -14,4 +14,3 @@ initialized CogapsResult object
 \description{
 Constructor for CogapsResult
 }
-

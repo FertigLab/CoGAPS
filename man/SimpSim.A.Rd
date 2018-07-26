@@ -10,4 +10,3 @@ SimpSim.A
 \description{
 Simulated data
 }
-

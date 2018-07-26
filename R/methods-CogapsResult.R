@@ -225,7 +225,7 @@ samplePalette=NULL, heatmapCol=bluered, colDenogram=TRUE, scale="row", ...)
         ColSideColors=as.character(samplePalette),
         rowsep=cumsum(sapply(patternMarkers,length))
     )
-})
+}
 
 #' @rdname calcCoGAPSStat-methods
 #' @aliases calcCoGAPSStat

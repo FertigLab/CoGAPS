@@ -17,4 +17,3 @@ throws an error if data has problems
 \description{
 Check that provided data is valid
 }
-

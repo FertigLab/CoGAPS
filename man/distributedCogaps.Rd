@@ -23,4 +23,3 @@ back together
 \details{
 For file types CoGAPS supports csv, tsv, and mtx
 }
-

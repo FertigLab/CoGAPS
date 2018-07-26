@@ -10,4 +10,3 @@ GIST.D
 \description{
 Sample GIST gene expression data from Ochs et al. (2009)
 }
-

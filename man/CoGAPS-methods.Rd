@@ -49,4 +49,3 @@ params <- new("CogapsParams")
 params <- setParam(params, "nPatterns", 5)
 resultC <- CoGAPS(GIST.D, params)
 }
-

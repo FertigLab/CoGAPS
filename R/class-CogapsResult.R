@@ -2,10 +2,10 @@
 #' @export
 #'
 #' @description Contains all output from Cogaps run
-#' @importClassesFrom S4Vectors DataFrame Annotated character_OR_NULL
+#' @importClassesFrom SingleCellExperiment LinearEmbeddingMatrix
 setClass("CogapsResult", contains="LinearEmbeddingMatrix", slots=c(
     sampleStdDev = "ANY",   # Psd transpose
-    featureStdDev = "ANY",  # Asd
+    featureStdDev = "ANY"   # Asd
 ))
 
 #' Constructor for CogapsResult

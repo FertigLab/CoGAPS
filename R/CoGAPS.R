@@ -137,6 +137,12 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
         ...)
 }   
 
+parseExtraParams <- function(allParams, extraParams)
+{
+
+
+}
+
 #' Check that provided data is valid
 #'
 #' @param data data matrix

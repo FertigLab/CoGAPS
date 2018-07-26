@@ -30,4 +30,3 @@ consensus pattern is also returned.
 \description{
 Match Patterns Across Multiple Runs
 }
-
