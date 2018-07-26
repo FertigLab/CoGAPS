@@ -36,8 +36,7 @@ setClass("CogapsParams", slots = c(
     maxNS = "numeric"
 ))
 
-#' Constructor for CogapsParams
-#' @return initialized CogapsParams object
+#' constructor for CogapsParams
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsParams",
     function(.Object, ...)
@@ -63,6 +62,7 @@ setMethod("initialize", "CogapsParams",
     }
 )
 
+#' defines a valid parameters object
 setValidity("CogapsParams",
     function(object)
     {
@@ -117,24 +117,3 @@ setGeneric("setParam", function(object, whichParam, value)
 #'  getParam(params, "seed")
 setGeneric("getParam", function(object, whichParam)
     {standardGeneric("getParam")})
-
-#' parse list of old-style parameters, store relevant values
-#' @docType methods
-#' @rdname parseOldParams-methods
-#'
-#' @param object an object of type CogapsParams
-#' @param oldArgs named list of deprecated arguments
-#' @return an object of type CogapsParams
-setGeneric("parseOldParams", function(object, oldArgs)
-    {standardGeneric("parseOldParams")})
-
-#' parse list of parameters passed directly to CoGAPS
-#' @docType methods
-#' @rdname parseDirectParams-methods
-#'
-#' @param object an object of type CogapsParams
-#' @param oldArgs named list of arguments
-#' @return an object of type CogapsParams
-setGeneric("parseDirectParams", function(object, args)
-    {standardGeneric("parseDirectParams")})
-
