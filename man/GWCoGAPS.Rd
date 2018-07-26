@@ -49,4 +49,3 @@ result <- GWCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
 \seealso{
 \code{\link{gapsRun}}, \code{\link{patternMatch4Parallel}}, and \code{\link{gapsMapRun}}
 }
-

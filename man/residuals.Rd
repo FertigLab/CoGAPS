@@ -28,4 +28,3 @@ calculate residuals and produce heatmap
 data(SimpSim)
 residuals(SimpSim.result$Amean, SimpSim.result$Pmean, SimpSim.D, SimpSim.S)
 }
-

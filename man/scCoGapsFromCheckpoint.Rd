@@ -23,4 +23,3 @@ list of A and P estimates
 \description{
 Restart a scCoGAPS run from a Checkpoint
 }
-

@@ -29,4 +29,3 @@ threshold * Asd and 0 otherwise
 data(SimpSim)
 binaryA(SimpSim.result$Amean, SimpSim.result$Asd, threshold=3)
 }
-

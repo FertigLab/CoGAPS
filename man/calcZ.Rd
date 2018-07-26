@@ -25,4 +25,3 @@ and standard deviation matrices
 data(SimpSim)
 calcZ(SimpSim.result$Amean, SimpSim.result$Asd)
 }
-

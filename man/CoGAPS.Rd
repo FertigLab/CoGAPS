@@ -68,4 +68,3 @@ the data matrix
 data(SimpSim)
 result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
 }
-

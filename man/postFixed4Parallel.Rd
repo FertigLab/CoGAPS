@@ -21,4 +21,3 @@ corresponding standard deviations from output of parallel CoGAPS
 \description{
 Post Processing of Parallel Output
 }
-

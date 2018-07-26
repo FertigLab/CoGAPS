@@ -30,4 +30,3 @@ createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, sim_name)
 trash <- GWCoGAPS(sim_name, nFactor=3, nEquil=200, nSample=200)
 result <- GWCoGapsFromCheckpoint(sim_name, 2)
 }
-

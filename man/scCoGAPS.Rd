@@ -36,4 +36,3 @@ calls the C++ MCMC code and performs Bayesian
 matrix factorization returning the two matrices that reconstruct
 the data matrix for whole genome data;
 }
-

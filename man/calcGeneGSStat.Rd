@@ -36,4 +36,3 @@ data('SimpSim')
 calcGeneGSStat(SimpSim.result$Amean, SimpSim.result$Asd, GSGenes=GSets[[1]],
 numPerm=500)
 }
-

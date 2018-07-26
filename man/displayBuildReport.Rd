@@ -19,4 +19,3 @@ displays information about how the package was compiled, i.e. which
 \examples{
  CoGAPS::displayBuildReport()
 }
-

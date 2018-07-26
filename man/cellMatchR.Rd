@@ -33,4 +33,3 @@ concensus pattern is also returned.
 \description{
 cellMatchR
 }
-

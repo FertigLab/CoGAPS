@@ -28,4 +28,3 @@ factors whole genome data into randomly generated sets for indexing
 data(SimpSim)
 createGWCoGAPSSets(SimpSim.D, SimpSim.S, nSets=2, "example")
 }
-

@@ -30,4 +30,3 @@ factors whole genome data into randomly generated sets for indexing
 data(SimpSim)
 createscCoGAPSSets(SimpSim.D, nSets=2, simulationName="example")
 }
-
