@@ -33,7 +33,7 @@ NULL
 #' resultC <- CoGAPS(GIST.D, params)
 #' @importFrom methods new
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=NULL,
-messages=TRUE, outputFrequency=1000, uncertainty=NULL,
+messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
 checkpointInFile=NULL, transposeData=FALSE, ...)
 {
@@ -111,9 +111,31 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
         Psd         = gapsReturnList$Psd,
         seed        = gapsReturnList$seed,
         meanChiSq   = gapsReturnList$meanChiSq,
-        diagnostics = gapsReturnList$diagnostics
+        diagnostics = list("diag"=gapsReturnList$diagnostics, "params"=params)
     ))
 }
+
+scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=NULL,
+messages=TRUE, outputFrequency=500, uncertainty=NULL,
+checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
+checkpointInFile=NULL, transposeData=FALSE, ...)
+{
+    params@distributed <- "single-cell"
+    CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
+        checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
+        ...)
+}
+
+GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=NULL,
+messages=TRUE, outputFrequency=500, uncertainty=NULL,
+checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
+checkpointInFile=NULL, transposeData=FALSE, ...)
+{
+    params@distributed <- "genome-wide"
+    CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
+        checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
+        ...)
+}   
 
 #' Check that provided data is valid
 #'
