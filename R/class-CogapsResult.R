@@ -306,6 +306,23 @@ function(object, data, uncertainty)
         lwid=c(1,10), lhei=c(1, 4, 1.2 ), main="Heatmap of Residuals")
 })
 
+#' patternMarkers
+#'
+#' @param threshold # the type of threshold to be used. The default "all" will distribute genes into pattern with the lowest ranking. The "cut" thresholding by the first gene to have a lower ranking, i.e. better fit to, a pattern.
+#' @param lp a vector of weights for each pattern to be used for finding markers. If NA markers for each pattern of the A matrix will be used.
+#' @param full logical indicating whether to return the ranks of each gene for each pattern
+#' @return By default a non-overlapping list of genes associated with each \code{lp}. If \code{full=TRUE} a data.frame of
+#' genes rankings with a column for each \code{lp} will also be returned.
+#' @export
+
+patternMarkers <- function(Amatrix=NA, scaledPmatrix=FALSE, Pmatrix=NA,
+threshold="all", lp=NA, full=FALSE)
+
+setMethod("patternMarkers", signature(object="CogapsResult"),
+function(object, threshold="all", lp=NA, full=FALSE)
+
+plotPatternMarkers
+
 #' @rdname calcCoGAPSStat-methods
 #' @aliases calcCoGAPSStat
 setMethod("calcCoGAPSStat", signature(object="CogapsResult"),
