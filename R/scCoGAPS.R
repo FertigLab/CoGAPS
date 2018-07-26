@@ -141,9 +141,7 @@ sc_runInitialPhase <- function(simulationName, allDataSets, nFactor, ...)
 
     # list.files sort alphabetically, not numerically, so this makes sure
     # each result is associated with its data set
-    pos <- regexpr("\\_[^\\_]*$", allDataSets) # find last underscore
-    ids <- sapply(1:length(allDataSets), function(i) substr(allDataSets[i],
-        pos[i] + 1, nchar(allDataSets[i]) - 6)) # subset between _ and .
+    ids <- as.numeric(sort(as.character(1:length(allDataSets))))
     names(initialResult) <- paste("partition_", ids, sep="")
     return(initialResult)
 }
