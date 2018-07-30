@@ -2,21 +2,20 @@
 % Please edit documentation in R/CoGAPS.R
 \name{buildReport}
 \alias{buildReport}
-\title{Display Information About Package Compilation}
+\title{Information About Package Compilation}
 \usage{
 buildReport()
 }
 \value{
-display builds information
+string containing build report
 }
 \description{
-Display Information About Package Compilation
+Information About Package Compilation
 }
 \details{
-displays information about how the package was compiled, i.e. which
+returns information about how the package was compiled, i.e. which
  compiler/version was used, which compile time options were enabled, etc...
 }
 \examples{
- CoGAPS::buildReport()
+CoGAPS::buildReport()
 }
-

@@ -79,6 +79,9 @@ private:
     Atom& _left(const Atom &atom);
     Atom& _right(const Atom &atom);
 
+    void erase(uint64_t pos);
+    Atom insert(uint64_t pos, float mass);
+
 public:
 
     void setDomainSize(uint64_t size) { mDomainSize = size; }
@@ -95,8 +98,6 @@ public:
     bool hasRight(const Atom &atom) const;
 
     // modify domain
-    Atom insert(uint64_t pos, float mass);
-    void erase(uint64_t pos);
     void cacheInsert(uint64_t pos, float mass) const;
     void cacheErase(uint64_t pos) const;
     void updateMass(uint64_t pos, float newMass);

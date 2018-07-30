@@ -1,12 +1,17 @@
 #include "GibbsSampler.h"
 #include "math/SIMD.h"
 
-AmplitudeGibbsSampler::AmplitudeGibbsSampler(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass,
-bool singleCell)
-    : GibbsSampler(D, S, D.nrow(), nFactor, alpha, maxGibbsMass, singleCell, nFactor)
+/******************** AmplitudeGibbsSampler Implementation ********************/
+
+void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
 {
-    mQueue.setDimensionSize(mBinSize, mNumCols);
+    mOtherMatrix = &(sampler.mMatrix);
+    mAPMatrix = sampler.mAPMatrix;
+}
+
+void AmplitudeGibbsSampler::recalculateAPMatrix()
+{
+    mAPMatrix = gaps::algo::matrixMultiplication(mMatrix, *mOtherMatrix);
 }
 
 unsigned AmplitudeGibbsSampler::getRow(uint64_t pos) const
@@ -28,12 +33,6 @@ bool AmplitudeGibbsSampler::canUseGibbs(unsigned row, unsigned col) const // NOL
 bool AmplitudeGibbsSampler::canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const
 {
     return canUseGibbs(r1, c1) || canUseGibbs(r2, c2);
-}
-
-void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
-{
-    mOtherMatrix = &(sampler.mMatrix);
-    mAPMatrix = sampler.mAPMatrix;
 }
 
 void AmplitudeGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
@@ -96,12 +95,17 @@ unsigned r2, unsigned c2, float m2)
     return computeDeltaLL(r1, c1, m1) + computeDeltaLL(r2, c2, m2);
 }
 
-PatternGibbsSampler::PatternGibbsSampler(const Rcpp::NumericMatrix &D,
-const Rcpp::NumericMatrix &S, unsigned nFactor, float alpha, float maxGibbsMass,
-bool singleCell)
-    : GibbsSampler(D, S, nFactor, D.ncol(), alpha, maxGibbsMass, singleCell, nFactor)
+/********************* PatternGibbsSampler Implementation *********************/
+
+void PatternGibbsSampler::recalculateAPMatrix()
 {
-    mQueue.setDimensionSize(mBinSize , mNumRows);
+    mAPMatrix = gaps::algo::matrixMultiplication(*mOtherMatrix, mMatrix);
+}
+
+void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)
+{
+    mOtherMatrix = &(sampler.mMatrix);
+    mAPMatrix = sampler.mAPMatrix;
 }
 
 unsigned PatternGibbsSampler::getRow(uint64_t pos) const
@@ -123,12 +127,6 @@ bool PatternGibbsSampler::canUseGibbs(unsigned row, unsigned col) const // NOLIN
 bool PatternGibbsSampler::canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const
 {
     return canUseGibbs(r1, c1) || canUseGibbs(r2, c2);
-}
-
-void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)
-{
-    mOtherMatrix = &(sampler.mMatrix);
-    mAPMatrix = sampler.mAPMatrix;
 }
 
 void PatternGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)

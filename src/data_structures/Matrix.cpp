@@ -1,273 +1,157 @@
 #include "Matrix.h"
 #include "../file_parser/CsvParser.h"
 #include "../file_parser/MatrixElement.h"
+#include "../GapsAssert.h"
 
-template<class Matrix>
-static Rcpp::NumericMatrix convertToRMatrix(const Matrix &mat)
+template <class MatA, class MatB>
+inline void copyMatrix(MatA &dest, const MatB &source)
 {
-    Rcpp::NumericMatrix rmat(mat.nRow(), mat.nCol());
-    for (unsigned i = 0; i < mat.nRow(); ++i)
-    {
-        for (unsigned j = 0; j < mat.nCol(); ++j)
-        {
-            rmat(i,j) = mat(i,j);
-        }
-    }
-    return rmat;
-}
+    GAPS_ASSERT(dest.nRow() == source.nRow());
+    GAPS_ASSERT(dest.nCol() == source.nCol());
 
-template<class MatA, class MatB>
-static void copyMatrix(MatA &dest, const MatB &source)
-{
-    for (unsigned i = 0; i < source.nRow(); ++i)
+    for (unsigned i = 0; i < dest.nRow(); ++i)
     {
-        for (unsigned j = 0; j < source.nCol(); ++j)
+        for (unsigned j = 0; j < dest.nCol(); ++j)
         {
             dest(i,j) = source(i,j);
         }
     }
 }
 
-/****************************** ROW MATRIX *****************************/
+/********************************** ROW MATRIX ********************************/
 
-RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
-: mNumRows(nrow), mNumCols(ncol)
+void RowMatrix::allocate()
 {
     for (unsigned i = 0; i < mNumRows; ++i)
     {
-        mRows.push_back(Vector(mNumCols));
+        mData.push_back(Vector(mNumCols));
     }
 }
 
-RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
-: mNumRows(rmat.nrow()), mNumCols(rmat.ncol())
+RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
+    : GenericMatrix(nrow, ncol)
+{}
+
+RowMatrix::RowMatrix(const Matrix &mat, bool transpose,
+bool partitionRows, const std::vector<unsigned> &indices)
+    : GenericMatrix(mat, transpose, partitionRows, indices)
+{}
+
+RowMatrix::RowMatrix(const std::string &path, bool transpose,
+bool partitionRows, const std::vector<unsigned> &indices)
+    : GenericMatrix(path, transpose, partitionRows, indices)
+{}
+
+float& RowMatrix::operator()(unsigned r, unsigned c)
 {
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        mRows.push_back(Vector(mNumCols));
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            this->operator()(i,j) = rmat(i,j);
-        }
-    }
+    return mData[r][c];
+}
+
+float RowMatrix::operator()(unsigned r, unsigned c) const
+{
+    return mData[r][c];
+}
+
+Vector& RowMatrix::getRow(unsigned row)
+{
+    return mData[row];
+}
+
+const Vector& RowMatrix::getRow(unsigned row) const
+{
+    return mData[row];
+}
+
+float* RowMatrix::rowPtr(unsigned row)
+{
+    return mData[row].ptr();
+}
+
+const float* RowMatrix::rowPtr(unsigned row) const
+{
+    return mData[row].ptr();
+}
+
+RowMatrix::RowMatrix(const ColMatrix &mat) : GenericMatrix(mat.nRow(), mat.nCol())
+{
+    copyMatrix(*this, mat);
+}
+
+RowMatrix& RowMatrix::operator=(const RowMatrix &mat)
+{
+    copyMatrix(*this, mat);
 }
 
 RowMatrix& RowMatrix::operator=(const ColMatrix &mat)
 {
     copyMatrix(*this, mat);
-    return *this;
 }
 
-Rcpp::NumericMatrix RowMatrix::rMatrix() const
-{
-    return convertToRMatrix(*this);
-}
+/******************************** COLUMN MATRIX *******************************/
 
-RowMatrix RowMatrix::operator/(float val) const
+void ColMatrix::allocate()
 {
-    RowMatrix mat(mNumRows, mNumCols);
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        mat.getRow(i) = mRows[i] / val;
-    }
-    return mat;
-}
-
-Archive& operator<<(Archive &ar, RowMatrix &mat)
-{
-    for (unsigned i = 0; i < mat.nRow(); ++i)
-    {
-        ar << mat.mRows[i];
-    }
-    return ar;
-}
-
-Archive& operator>>(Archive &ar, RowMatrix &mat)
-{
-    for (unsigned i = 0; i < mat.nRow(); ++i)
-    {
-        ar >> mat.mRows[i];
-    }
-    return ar;
-}
-
-void RowMatrix::writeToCsv(const std::string &path)
-{
-    std::ofstream outputFile;
-    outputFile.open(path.c_str());
-    outputFile << "\"\"";
     for (unsigned i = 0; i < mNumCols; ++i)
     {
-        outputFile << ",\"Col" << i << "\"";
+        mData.push_back(Vector(mNumRows));
     }
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        outputFile << "\"Row" << i << "\"";
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            outputFile << "," << mRows[i][j];
-        }
-        outputFile << "\n";
-    }
-    outputFile.close();
 }
-
-void RowMatrix::writeToTsv(const std::string &path)
-{
-    std::ofstream outputFile;
-    outputFile.open(path.c_str());
-    outputFile << "\"\"";
-    for (unsigned i = 0; i < mNumCols; ++i)
-    {
-        outputFile << "\t\"Col" << i << "\"";
-    }
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        outputFile << "\"Row" << i << "\"";
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            outputFile << "\t" << mRows[i][j];
-        }
-        outputFile << "\n";
-    }
-    outputFile.close();
-}
-
-void RowMatrix::writeToMtx(const std::string &path)
-{
-    std::ofstream outputFile;
-    outputFile.open(path.c_str());
-    outputFile << "%%\n";
-    outputFile << mNumRows << " " << mNumCols << " " << (mNumRows * mNumCols);
-    outputFile << "\n";
-    for (unsigned j = 1; j <= mNumCols; ++j)
-    {
-        for (unsigned i = 1; i <= mNumRows; ++i)
-        {
-            outputFile << i << " " << j << " " << mRows[i][j] << "\n";
-        }
-    }
-    outputFile.close();
-}
-
-/**************************** COLUMN MATRIX ****************************/
 
 ColMatrix::ColMatrix(unsigned nrow, unsigned ncol)
-: mNumRows(nrow), mNumCols(ncol)
+    : GenericMatrix(nrow, ncol)
+{}
+
+ColMatrix::ColMatrix(const Matrix &mat, bool transpose,
+bool partitionRows, const std::vector<unsigned> &indices)
+    : GenericMatrix(mat, transpose, partitionRows, indices)
+{}
+
+ColMatrix::ColMatrix(const std::string &path, bool transpose,
+bool partitionRows, const std::vector<unsigned> &indices)
+    : GenericMatrix(path, transpose, partitionRows, indices)
+{}
+
+float& ColMatrix::operator()(unsigned r, unsigned c)
 {
-    for (unsigned i = 0; i < mNumCols; ++i)
-    {
-        mCols.push_back(Vector(mNumRows));
-    }
+    return mData[c][r];
 }
 
-ColMatrix::ColMatrix(const Rcpp::NumericMatrix &rmat)
-: mNumRows(rmat.nrow()), mNumCols(rmat.ncol())
+float ColMatrix::operator()(unsigned r, unsigned c) const
 {
-    for (unsigned j = 0; j < mNumCols; ++j)
-    {
-        mCols.push_back(Vector(mNumRows));
-        for (unsigned i = 0; i < mNumRows; ++i)
-        {
-            this->operator()(i,j) = rmat(i,j);
-        }
-    }
+    return mData[c][r];
 }
 
-ColMatrix ColMatrix::operator/(float val) const
+Vector& ColMatrix::getCol(unsigned col)
 {
-    ColMatrix mat(mNumRows, mNumCols);
-    for (unsigned j = 0; j < mNumCols; ++j)
-    {
-        mat.getCol(j) = mCols[j] / val;
-    }
-    return mat;
+    return mData[col];
+}
+
+const Vector& ColMatrix::getCol(unsigned col) const
+{
+    return mData[col];
+}
+
+float* ColMatrix::colPtr(unsigned col)
+{
+    return mData[col].ptr();
+}
+
+const float* ColMatrix::colPtr(unsigned col) const
+{
+    return mData[col].ptr();
+}
+
+ColMatrix::ColMatrix(const RowMatrix &mat) : GenericMatrix(mat.nRow(), mat.nCol())
+{
+    copyMatrix(*this, mat);
+}
+
+ColMatrix& ColMatrix::operator=(const ColMatrix &mat)
+{
+    copyMatrix(*this, mat);
 }
 
 ColMatrix& ColMatrix::operator=(const RowMatrix &mat)
 {
     copyMatrix(*this, mat);
-    return *this;
-}
-
-Rcpp::NumericMatrix ColMatrix::rMatrix() const
-{
-    return convertToRMatrix(*this);
-}
-
-Archive& operator<<(Archive &ar, ColMatrix &mat)
-{
-    for (unsigned j = 0; j < mat.nCol(); ++j)
-    {
-        ar << mat.mCols[j];
-    }
-    return ar;
-}
-
-Archive& operator>>(Archive &ar, ColMatrix &mat)
-{
-    for (unsigned j = 0; j < mat.nCol(); ++j)
-    {
-        ar >> mat.mCols[j];
-    }
-    return ar;
-}
-
-void ColMatrix::writeToCsv(const std::string &path)
-{
-    std::ofstream outputFile;
-    outputFile.open(path.c_str());
-    outputFile << "\"\"";
-    for (unsigned i = 0; i < mNumCols; ++i)
-    {
-        outputFile << ",\"Col" << i << "\"";
-    }
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        outputFile << "\"Row" << i << "\"";
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            outputFile << "," << mCols[j][i];
-        }
-        outputFile << "\n";
-    }
-    outputFile.close();
-}
-
-void ColMatrix::writeToTsv(const std::string &path)
-{
-    std::ofstream outputFile;
-    outputFile.open(path.c_str());
-    outputFile << "\"\"";
-    for (unsigned i = 0; i < mNumCols; ++i)
-    {
-        outputFile << "\t\"Col" << i << "\"";
-    }
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        outputFile << "\"Row" << i << "\"";
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            outputFile << "\t" << mCols[j][i];
-        }
-        outputFile << "\n";
-    }
-    outputFile.close();
-}
-
-void ColMatrix::writeToMtx(const std::string &path)
-{
-    std::ofstream outputFile;
-    outputFile.open(path.c_str());
-    outputFile << "%%\n";
-    outputFile << mNumRows << " " << mNumCols << " " << (mNumRows * mNumCols);
-    outputFile << "\n";
-    for (unsigned j = 1; j <= mNumCols; ++j)
-    {
-        for (unsigned i = 1; i <= mNumRows; ++i)
-        {
-            outputFile << i << " " << j << " " << mCols[j][i] << "\n";
-        }
-    }
-    outputFile.close();
 }

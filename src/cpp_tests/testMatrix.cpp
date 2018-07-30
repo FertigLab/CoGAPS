@@ -4,6 +4,8 @@
 #include "../file_parser/TsvParser.h"
 #include "../file_parser/MtxParser.h"
 
+#if 0
+
 TEST_CASE("Test Matrix.h")
 {
     SECTION("Matrix/Vector Initialization")
@@ -18,39 +20,6 @@ TEST_CASE("Test Matrix.h")
         REQUIRE(cm.nRow() == 10);
         REQUIRE(cm.nCol() == 25);
     }
-
-    SECTION("Matrix Initialization from R Matrix")
-    {
-        Rcpp::Function asMatrix("as.matrix");
-        Rcpp::Environment pkgEnv;
-        pkgEnv = Rcpp::Environment::namespace_env("CoGAPS");
-        Rcpp::NumericMatrix rD = asMatrix(pkgEnv.find("GIST.D"));
-        Rcpp::NumericMatrix rS = asMatrix(pkgEnv.find("GIST.D"));
-
-        REQUIRE(rD.nrow() == 1363);
-        REQUIRE(rD.ncol() == 9);
-
-        REQUIRE(rS.nrow() == 1363);
-        REQUIRE(rS.ncol() == 9);
-
-        RowMatrix rmD(rD);
-        RowMatrix rmS(rS);
-
-        ColMatrix cmD(rD);
-        ColMatrix cmS(rS);
-
-        REQUIRE(rmD.nRow() == 1363);
-        REQUIRE(rmD.nCol() == 9);
-
-        REQUIRE(rmS.nRow() == 1363);
-        REQUIRE(rmS.nCol() == 9);
-
-        REQUIRE(cmD.nRow() == 1363);
-        REQUIRE(cmD.nCol() == 9);
-
-        REQUIRE(cmS.nRow() == 1363);
-        REQUIRE(cmS.nCol() == 9);
-    }
 }
 
 static void populateSequential(std::vector<unsigned> &vec, unsigned n)
@@ -61,7 +30,6 @@ static void populateSequential(std::vector<unsigned> &vec, unsigned n)
     }
 }
 
-template <class Parser>
 static void testMatrixConstruction(const std::string &path)
 {
     std::vector<unsigned> allRows, allCols;
@@ -72,22 +40,22 @@ static void testMatrixConstruction(const std::string &path)
     populateSequential(someRows, 363);
     populateSequential(someCols, 2);
 
-    Parser p1(path);
+    FileParser p1(path);
     RowMatrix allRowMat(p1, true, allRows);
     REQUIRE(allRowMat.nRow() == 1363);
     REQUIRE(allRowMat.nCol() == 9);
 
-    Parser p2(path);
+    FileParser p2(path);
     ColMatrix allColMat(p2, true, allRows);
     REQUIRE(allColMat.nRow() == 1363);
     REQUIRE(allColMat.nCol() == 9);
 
-    Parser p3(path);
+    FileParser p3(path);
     RowMatrix allRowMatT(p3, false, allCols);
     REQUIRE(allRowMatT.nRow() == 9);
     REQUIRE(allRowMatT.nCol() == 1363);
 
-    Parser p4(path);
+    FileParser p4(path);
     ColMatrix allColMatT(p4, false, allCols);
     REQUIRE(allColMatT.nRow() == 9);
     REQUIRE(allColMatT.nCol() == 1363);
@@ -99,22 +67,23 @@ static void testMatrixConstruction(const std::string &path)
         REQUIRE(allRowMat(i, 3) == allColMatT(3, i));
     }
 
-    Parser p5(path);
+/*
+    FileParser p5(path);
     RowMatrix someRowMat(p1, true, someRows);
     REQUIRE(someRowMat.nRow() == 363);
     REQUIRE(someRowMat.nCol() == 9);
 
-    Parser p6(path);
+    FileParser p6(path);
     ColMatrix someColMat(p2, true, someRows);
     REQUIRE(someColMat.nRow() == 363);
     REQUIRE(someColMat.nCol() == 9);
 
-    Parser p7(path);
+    FileParser p7(path);
     RowMatrix someRowMatT(p3, false, someCols);
     REQUIRE(someRowMatT.nRow() == 2);
     REQUIRE(someRowMatT.nCol() == 1363);
 
-    Parser p8(path);
+    FileParser p8(path);
     ColMatrix someColMatT(p4, false, someCols);
     REQUIRE(someColMatT.nRow() == 2);
     REQUIRE(someColMatT.nCol() == 1363);
@@ -125,8 +94,10 @@ static void testMatrixConstruction(const std::string &path)
         REQUIRE(someRowMat(i, 1) == someRowMatT(1, i));
         REQUIRE(someRowMat(i, 1) == someColMatT(1, i));
     }
+*/
 }
 
+#ifdef __GAPS_R_BUILD__
 TEST_CASE("Test Matrix Construction from file")
 {
     Rcpp::Environment env = Rcpp::Environment::global_env();
@@ -134,7 +105,11 @@ TEST_CASE("Test Matrix Construction from file")
     std::string tsvPath = Rcpp::as<std::string>(env["gistTsvPath"]);
     std::string mtxPath = Rcpp::as<std::string>(env["gistMtxPath"]);
 
-    testMatrixConstruction<CsvParser>(csvPath);
-    testMatrixConstruction<TsvParser>(tsvPath);
-    testMatrixConstruction<MtxParser>(mtxPath);
+    testMatrixConstruction(csvPath);
+    testMatrixConstruction(tsvPath);
+    testMatrixConstruction(mtxPath);
 }
+
+#endif
+
+#endif
