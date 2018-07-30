@@ -7,22 +7,22 @@
 \alias{calcGeneGSStat}
 \title{probability gene belongs in gene set}
 \usage{
-calcGeneGSStat(object, GStoGenes, numPerm, Pw = rep(1, ncol(Amean)),
-  nullGenes = FALSE)
+calcGeneGSStat(object, GStoGenes, numPerm, Pw = rep(1,
+  ncol(object@featureLoadings)), nullGenes = FALSE)
 
 \S4method{calcGeneGSStat}{CogapsResult}(object, GStoGenes, numPerm,
-  Pw = rep(1, ncol(Amean)), nullGenes = FALSE)
+  Pw = rep(1, ncol(object@featureLoadings)), nullGenes = FALSE)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}
+
+\item{GStoGenes}{data.frame or list with gene sets}
 
 \item{numPerm}{number of permutations for null}
 
 \item{Pw}{weight on genes}
 
 \item{nullGenes}{logical indicating gene adjustment}
-
-\item{GSGenes}{data.frame or list with gene sets}
 }
 \value{
 gene similiarity statistic

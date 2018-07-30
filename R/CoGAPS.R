@@ -1,22 +1,42 @@
 #' @include class-CogapsParams.R
 NULL
 
+#' Checks if file is supported
+#' @param file path to file
+#' @return TRUE if file is supported, FALSE if not
+#' @importFrom tools file_ext
+supported <- function(file)
+{
+    if (!is(file, "character"))
+        return(FALSE)
+    return(tools::file_ext(file) %in% c("tsv", "csv", "mtx"))
+}
+
 #' CoGAPS Matrix Factorization Algorithm
 #' @export 
-#' @docType methods
-#' @rdname CoGAPS-methods
 #'
 #' @description calls the C++ MCMC code and performs Bayesian
 #' matrix factorization returning the two matrices that reconstruct
 #' the data matrix
-#' @details For file types CoGAPS supports csv, tsv, and mtx
+#' @details The supported R types are: matrix, data.frame, SummarizedExperiment,
+#' SingleCellExperiment. The supported file types are csv, tsv, and mtx.
 #' @param data File name or R object (see details for supported types)
 #' @param params CogapsParams object
-#' @param uncertainty uncertainty matrix (same supported types as data)
-#' @param fixedMatrix data for fixing the values of either the A or P matrix;
-#'  used in conjuction with whichMatrixFixed (see CogapsParams)
-#' @param checkpointInFile name of the checkpoint file
-#' @param ... keeps backwards compatibility with arguments from older versions
+#' @param nThreads maximum number of threads to run on
+#' @param messages T/F for displaying output
+#' @param outputFrequency number of iterations between each output (set to 0 to
+#' disable status updates, other output is controlled by @code messages)
+#' @param uncertainty uncertainty matrix - either a matrix or a supported
+#' file type
+#' @param checkpointOutFile name of the checkpoint file to create
+#' @param checkpointInterval number of iterations between each checkpoint (set
+#' to 0 to disable checkpoints)
+#' @param checkpointInFile if this is provided, CoGAPS runs from the checkpoint
+#' contained in this file
+#' @param transposeData T/F for transposing data while reading it in - useful
+#' for data that is stored as samples x genes since CoGAPS requires data to be
+#' genes x samples
+#' @param ... allows for overwriting parameters in params
 #' @return CogapsResult object
 #' @examples
 #' # Running from R object
@@ -31,13 +51,14 @@ NULL
 #' params <- new("CogapsParams")
 #' params <- setParam(params, "nPatterns", 5)
 #' resultC <- CoGAPS(GIST.D, params)
-#' @importFrom methods new
+#' @importFrom methods new is
+#' @importFrom SummarizedExperiment assay
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=NULL,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
 checkpointInFile=NULL, transposeData=FALSE, ...)
 {
-    # parse parameters from ...
+    # store all parameters in a list and parse parameters from ...
     allParams <- list("gaps"=params,
         "nThreads"=nThreads,
         "messages"=messages,
@@ -51,53 +72,41 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
     allParams <- parseExtraParams(allParams, list(...))
 
     # check file extension
-    if (class(data) == "character" & !(file_ext(data) %in% c("tsv", "csv", "mtx")))
+    if (is(data, "character") & !supported(data))
         stop("unsupported file extension for data")
 
     # check uncertainty matrix
-    if (class(data) == "character" & class(uncertainty) != "character")
+    if (is(data, "character") & !is(uncertainty, "character"))
         stop("uncertainty must be same data type as data (file name)")
-    if (nchar(uncertainty) > 0 & !(file_ext(uncertainty) %in% c("tsv", "csv", "mtx")))
+    if (is(uncertainty, "character") & !supported(uncertainty))
         stop("unsupported file extension for uncertainty")
-
-    # check matrix
-    if (class(uncertainty) != "matrix")
-        stop("uncertainty must be same data type as data (matrix)")
+    if (!is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "matrix"))
+        stop("uncertainty must be a matrix unless data is a file path")
     checkDataMatrix(data, uncertainty, params)
 
-    # check if uncertainty is null
-    if (is.null(uncertainty) & class(data) == "character")
-        uncertainty <- ""
-    else if (is.null(uncertainty))
-        uncertainty <- matrix(0)
-
     # convert data to matrix
-    if (class(data) == "data.frame")
+    if (is(data, "data.frame"))
         data <- data.matrix(data)
-    else if (class(data) == "SummarizedExperiment")
-        data <- assay(data, "counts")
-    else if (class(data) == "SingleCellExperiment")
-        data <- assay(data, "counts")
+    else if (is(data, "SummarizedExperiment"))
+        data <- SummarizedExperiment::assay(data, "counts")
+    else if (is(data, "SingleCellExperiment"))
+        data <- SummarizedExperiment::assay(data, "counts")
 
     # determine which function to call cogaps algorithm
-    if (!is.null(callParams$gapsParams@distributed))
+    if (!is.null(allParams$gaps@distributed))
         dispatchFunc <- distributedCogaps # genome-wide or single-cell cogaps
-    else if (class(data) == "character")
-        dispatchFunc <- cogaps_cpp_from_file # data is a file name
+    else if (is(data, "character"))
+        dispatchFunc <- cogaps_cpp_from_file # data is a file path
     else
         dispatchFunc <- cogaps_cpp # default
 
     # check if we're running from a checkpoint
     if (!is.null(allParams$checkpointInFile))
     {
-        if (!is.null(callParams$gapsParams@distributed))
+        if (!is.null(allParams$gaps@distributed))
             stop("checkpoints not supported for distributed cogaps")
         else
             message("Running CoGAPS from a checkpoint")
-    }
-    else
-    {
-        allParams$checkpointInFile <- ""
     }
 
     # run cogaps
@@ -115,6 +124,13 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
     ))
 }
 
+#' Single Cell CoGAPS
+#' @export
+#'
+#' @description wrapper around single-cell distributed algorithm for CoGAPS
+#' @inheritParams CoGAPS
+#' @return CogapsResult object
+#' @importFrom methods new
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=NULL,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
@@ -126,6 +142,13 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
         ...)
 }
 
+#' Genome Wide CoGAPS
+#' @export
+#'
+#' @description wrapper around genome-wide distributed algorithm for CoGAPS
+#' @inheritParams CoGAPS
+#' @return CogapsResult object
+#' @importFrom methods new
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=NULL,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
@@ -137,77 +160,37 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
         ...)
 }   
 
+#' parse parameters passed through the ... variable
+#'
+#' @param allParams list of all parameters
+#' @param extraParams list of parameters in ...
+#' @return allParams with any valid parameters in extraParams added
+#' @note will halt with an error if any parameters in extraParams are invalid
+#' @importFrom methods slotNames
 parseExtraParams <- function(allParams, extraParams)
 {
-
-
-}
-
-#' @rdname parseOldParams-methods
-#' @aliases parseOldParams
-setMethod("parseOldParams", signature(object="CogapsParams"),
-function(object, oldArgs)
-{
-    helper <- function(arg, params, newArg)
+    # parse direct params
+    for (s in slotNames(allParams$gaps))
     {
-        if (!is.null(oldArgs[[arg]]))
+        if (!is.null(extraParams[[s]]))
         {
-            warning(paste("parameter", arg, "is deprecated, it will still",
-                "work, but setting", newArg, "in the params object is the",
-                "preferred method"))
-            params <- setParam(params, newArg, oldArgs[[arg]])
-            oldArgs[[arg]] <- NULL
-        }            
-        return(params)
-    }
-
-    object <- helper("nFactor", object, "nPatterns")
-    object <- helper("nIter", object, "nIterations")
-    object <- helper("nEquil", object, "nIterations")
-    object <- helper("nSample", object, "nIterations")
-    object <- helper("nOutR", object, "outputFrequency")
-    object <- helper("nOutput", object, "outputFrequency")
-    object <- helper("maxGibbmassA", object, "maxGibbsMassA")
-    object <- helper("max_gibbmass_paraA", object, "maxGibbsMassA")
-    object <- helper("maxGibbmassP", object, "maxGibbsMassP")
-    object <- helper("max_gibbmass_paraP", object, "maxGibbsMassP")
-    object <- helper("singleCellRNASeq", object, "singleCell")
-
-    if (!is.null(oldArgs$nSnapshots) | !is.null(oldArgs$sampleSnapshots) | !is.null(oldArgs$numSnapshots))
-    {
-        warning("snapshots not currently supported in release build")
-        oldArgs$nSnapshots <- NULL
-        oldArgs$sampleSnapshots <- NULL
-        oldArgs$numSnapshots <- NULL
-    }
-    if (!is.null(oldArgs$fixedPatterns))
-        stop("pass fixed matrix in with 'fixedMatrix' argument")
-    if (!is.null(oldArgs$S))
-        stop("pass uncertainty matrix in with 'uncertainty', not 'S'")
-
-    return(object)
-})
-
-#' @rdname parseDirectParams-methods
-#' @aliases parseDirectParams
-setMethod("parseDirectParams", signature(object="CogapsParams"),
-function(object, args)
-{
-    for (s in slotNames(object))
-    {
-        if (!is.null(args[[s]]))
-        {
-            object <- setParam(object, s, args[[s]])
+            allParams$gaps <- setParam(allParams$gaps, s, extraParams[[s]])
+            extraParams[[s]] <- NULL
         }
     }
-    return(object)
-})
 
+    # check for unrecognized options
+    if (length(extraParams) > 0)
+        stop(paste("unrecognized argument:", names(extraParams)[1]))
 
-#' Check that provided data is valid
+    return(allParams)
+}
+
+#' check that provided data is valid
 #'
 #' @param data data matrix
-#' @param uncertainty uncertainty matrix
+#' @param uncertainty uncertainty matrix, can be null
+#' @param params CogapsParams object
 #' @return throws an error if data has problems
 checkDataMatrix <- function(data, uncertainty, params)
 {
@@ -215,7 +198,7 @@ checkDataMatrix <- function(data, uncertainty, params)
         stop("negative values in data and/or uncertainty matrix")
     if (nrow(data) <= params@nPatterns | ncol(data) <= params@nPatterns)
         stop("nPatterns must be less than dimensions of data")
-    if (sum(dim(uncertainty)) != 2 & sum(uncertainty < 1e-5) > 0)
+    if (sum(uncertainty < 1e-5) > 0)
         warning("small values in uncertainty matrix detected")
 }
 

@@ -26,7 +26,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
         == "genome-wide", "P", "A")
 
     # run all subsets with the same fixed matrix
-    finalResult <- foreach(i=1:nSets) %dopar%
+    finalResult <- foreach(i=1:allParams$gaps@nSets) %dopar%
     {
         cogaps_cpp(data, allParams, uncertainty, sets[[i]], consensusMatrix)
     }
@@ -39,6 +39,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
     return(resultList)
 }
 
+#' @importFrom data.table fread
 nrow_helper <- function(data)
 {
     if (class(data) == "character")
@@ -52,6 +53,7 @@ nrow_helper <- function(data)
     return(nrow(data))
 }
 
+#' @importFrom data.table fread
 ncol_helper <- function(data)
 {
     if (class(data) == "character")
@@ -108,6 +110,7 @@ findConsensusMatrix <- function(result, allParams)
 #' @param ... additional parameters for \code{agnes}
 #' @return a matrix of consensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
 #' consensus pattern is also returned.
+#' @importFrom stats weighted.mean
 patternMatch <- function(allPatterns, allParams)
 {
     cc <- corcut(allPatterns, allParams)
@@ -138,7 +141,7 @@ patternMatch <- function(allPatterns, allParams)
 }
 
 #' @importFrom cluster agnes
-#' @importFrom stats cutree as.hclust
+#' @importFrom stats cutree as.hclust cor
 corcut <- function(allPatterns, allParams)
 {
     corr.dist <- cor(allPatterns)
