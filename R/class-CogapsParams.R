@@ -20,6 +20,7 @@
 #' a cluster must contain
 #' @slot maxNS [distributed parameter] maximum of individual set contributions
 #' a cluster can contain
+#' @importClassesFrom S4Vectors character_OR_NULL
 setClass("CogapsParams", slots = c(
     nPatterns = "numeric",
     nIterations = "numeric",
@@ -29,9 +30,9 @@ setClass("CogapsParams", slots = c(
     maxGibbsMassP = "numeric",
     seed = "numeric",
     singleCell = "logical",
-    distributed = "character",
-    cut = "numeric",
+    distributed = "character_OR_NULL",
     nSets = "numeric",
+    cut = "numeric",
     minNS = "numeric",
     maxNS = "numeric"
 ))
@@ -51,9 +52,9 @@ setMethod("initialize", "CogapsParams",
         .Object@maxGibbsMassP <- 100
         .Object@seed <- getMilliseconds(as.POSIXlt(Sys.time()))
         .Object@singleCell <- FALSE
-        .Object@distributed <- ""
+        .Object@distributed <- NULL
         .Object@cut <- .Object@nPatterns
-        .Object@nSets <- 3
+        .Object@nSets <- 4
         .Object@minNS <- ceiling(.Object@nSets / 2)
         .Object@maxNS <- .Object@minNS + .Object@nSets
 
@@ -62,7 +63,7 @@ setMethod("initialize", "CogapsParams",
     }
 )
 
-#' defines a valid parameters object
+## defines a valid parameters object
 setValidity("CogapsParams",
     function(object)
     {
@@ -70,20 +71,12 @@ setValidity("CogapsParams",
             "number of patterns must be an integer greater than zero"
         if (object@nIterations <= 0 | object@nIterations %% 1 != 0)
             "number of iterations must be an integer greater than zero"
-        if (object@outputFrequency <= 0 | object@outputFrequency %% 1 != 0)
-            "the output frequency must be an integer greater than zero"
         if (object@alphaA  <= 0 | object@alphaP <= 0)
             "alpha parameter must be greater than zero"
         if (object@maxGibbsMassA  <= 0 | object@maxGibbsMassP <= 0)
             "maxGibbsMass must be greater than zero"
         if (object@seed <= 0 | object@seed %% 1 != 0)
             "random seed must be an integer greater than zero"
-        if (!(object@whichMatrixFixed %in% c("N", "A", "P")))
-            "whichMatrixFixed must be either A or P (N in the case of neither)"
-        if (object@checkpointInterval <= 0 | object@checkpointInterval %% 1 != 0)
-            "checkpointInterval must be an integer greater than zero"
-        if (object@nCores <= 0 | object@nCores %% 1 != 0)
-            "number of cores must be an integer greater than zero"
         if (object@minNS <= 1 | object@minNS %% 1 != 0)
             "minNS must be an integer greater than one"
     }
@@ -103,6 +96,24 @@ setValidity("CogapsParams",
 #'  params <- setParam(params, "seed", 123)
 setGeneric("setParam", function(object, whichParam, value)
     {standardGeneric("setParam")})
+
+#' set the value of parameters for distributed CoGAPS
+#' @export
+#' @docType methods
+#' @rdname setDistributedParams-methods
+#'
+#' @description these parameters  are interrelated so they must be set together
+#' @param object an object of type CogapsParams
+#' @param cut a distributed CoGAPS parameter 
+#' @param minNS a distributed CoGAPS parameter 
+#' @param maxNS a distributed CoGAPS parameter 
+#' @return the modified params object
+#' @examples
+#'  params <- new("CogapsParams")
+#'  params <- setDistributedParams(3, 2, 4)
+setGeneric("setDistributedParams", function(object, cut=NULL,
+minNS=NULL, maxNS=NULL)
+    {standardGeneric("setDistributedParams")})
 
 #' get the value of a parameter
 #' @export

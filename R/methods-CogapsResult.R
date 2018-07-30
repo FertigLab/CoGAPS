@@ -11,7 +11,8 @@ function(object)
 })
 
 #' @export
-#' @importFrom graphics plot
+#' @importFrom graphics plot legend lines points
+#' @importFrom grDevices rainbow
 plot.CogapsResult <- function(x, ...)
 {
     nSamples <- nrow(object@sampleFactors)
@@ -75,6 +76,7 @@ function(object, genes)
 #' @rdname binaryA-methods
 #' @aliases binaryA
 #' @importFrom gplots heatmap.2
+#' @importFrom graphics mtext
 setMethod("binaryA", signature(object="CogapsResult"),
 function(object, threshold)
 {
@@ -92,6 +94,7 @@ function(object, threshold)
 #' @rdname plotResiduals-methods
 #' @aliases plotResiduals
 #' @importFrom gplots heatmap.2
+#' @importFrom grDevices colorRampPalette
 setMethod("plotResiduals", signature(object="CogapsResult"),
 function(object, data, uncertainty)
 {
@@ -194,7 +197,7 @@ function(object, threshold, lp)
 #' @seealso  \code{\link{heatmap.2}}
 #' @importFrom gplots bluered
 #' @importFrom gplots heatmap.2
-#' @importFrom stats hclust
+#' @importFrom stats hclust as.dist cor
 plotPatternMarkers <- function(object, data, patternPalette, sampleNames,
 samplePalette=NULL, heatmapCol=bluered, colDenogram=TRUE, scale="row", ...)
 {
@@ -229,6 +232,8 @@ samplePalette=NULL, heatmapCol=bluered, colDenogram=TRUE, scale="row", ...)
 
 #' @rdname calcCoGAPSStat-methods
 #' @aliases calcCoGAPSStat
+#' @importFrom stats runif
+#' @importFrom methods is
 setMethod("calcCoGAPSStat", signature(object="CogapsResult"),
 function(object, GStoGenes, numPerm)
 {
@@ -346,7 +351,7 @@ function(object, GStoGenes, numPerm)
 setMethod("calcGeneGSStat", signature(object="CogapsResult"),
 function(object, GStoGenes, numPerm, Pw, nullGenes)
 {
-    gsStat <- calcCoGAPSStat(object, data.frame(GSGenes), numPerm=numPerm)
+    gsStat <- calcCoGAPSStat(object, data.frame(GStoGenes), numPerm=numPerm)
     gsStat <- gsStat$GSUpreg
     gsStat <- -log(gsStat)
 
@@ -361,12 +366,12 @@ function(object, GStoGenes, numPerm, Pw, nullGenes)
 
     if (nullGenes)
     {
-        ZD <- object@featureLoadings[setdiff(row.names(object@featureLoadings), GSGenes),] /
-            object@featureStdDev[setdiff(row.names(object@featureLoadings), GSGenes),]
+        ZD <- object@featureLoadings[setdiff(row.names(object@featureLoadings), GStoGenes),] /
+            object@featureStdDev[setdiff(row.names(object@featureLoadings), GStoGenes),]
     }
     else
     {
-        ZD <- object@featureLoadings[GSGenes,]/object@featureStdDev[GSGenes,]
+        ZD <- object@featureLoadings[GStoGenes,]/object@featureStdDev[GStoGenes,]
     }
     outStats <- apply(sweep(ZD,2,gsStat,FUN="*"),1,sum) / (sum(gsStat))
     outStats <- outStats / apply(ZD,1,sum)
@@ -384,21 +389,21 @@ function(object, GStoGenes, numPerm, Pw, nullGenes)
 setMethod("computeGeneGSProb", signature(object="CogapsResult"),
 function(object, GStoGenes, numPerm, Pw, PwNull)
 {
-    geneGSStat <- calcGeneGSStat(object, Pw=Pw, GSGenes=GSGenes,
+    geneGSStat <- calcGeneGSStat(object, Pw=Pw, GStoGenes=GStoGenes,
         numPerm=numPerm)
 
     if (PwNull)
     {
-        permGSStat <- calcGeneGSStat(object, GSGenes=GSGenes, numPerm=numPerm,
+        permGSStat <- calcGeneGSStat(object, GStoGenes=GStoGenes, numPerm=numPerm,
             Pw=Pw, nullGenes=TRUE)
     }
     else
     {
-        permGSStat <- calcGeneGSStat(object, GSGenes=GSGenes, numPerm=numPerm,
+        permGSStat <- calcGeneGSStat(object, GStoGenes=GStoGenes, numPerm=numPerm,
             nullGenes=TRUE)
     }
 
-    finalStats <- sapply(GSGenes, function(x)
+    finalStats <- sapply(GStoGenes, function(x)
         length(which(permGSStat > geneGSStat[x])) / length(permGSStat))
 
     return(finalStats)

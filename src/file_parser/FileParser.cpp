@@ -6,15 +6,50 @@
 
 #include <string>
 
-enum GapsFileType
+AbstractFileParser* AbstractFileParser::create(const std::string &path)
 {
-    GAPS_MTX,
-    GAPS_CSV,
-    GAPS_TSV,
-    GAPS_INVALID_FILE_TYPE
-};
+    switch (FileParser::fileType(path))
+    {
+        case GAPS_MTX: return new MtxParser(path);
+        case GAPS_CSV: return new CsvParser(path);
+        case GAPS_TSV: return new TsvParser(path);
+        default: GAPS_ERROR("Invalid file type\n");
+    }
+}
 
-static GapsFileType fileType(const std::string &path)
+AbstractFileParser::~AbstractFileParser() {}
+
+FileParser::FileParser(const std::string &path)
+{
+    mParser = AbstractFileParser::create(path);
+}
+
+FileParser::~FileParser()
+{
+    delete mParser;
+}
+
+unsigned FileParser::nRow() const
+{
+    return mParser->nRow();
+}
+
+unsigned FileParser::nCol() const
+{
+    return mParser->nCol();
+}
+
+bool FileParser::hasNext()
+{
+    return mParser->hasNext();
+}
+
+MatrixElement FileParser::getNext()
+{
+    return mParser->getNext();
+}
+
+GapsFileType FileParser::fileType(const std::string &path)
 {
     std::size_t pos = path.find_last_of('.');
     std::string ext = path.substr(pos);
@@ -26,16 +61,3 @@ static GapsFileType fileType(const std::string &path)
 
     return GAPS_INVALID_FILE_TYPE;
 }
-
-AbstractFileParser* AbstractFileParser::create(const std::string &path)
-{
-    switch (fileType(path))
-    {
-        case GAPS_MTX: return new MtxParser(path);
-        case GAPS_CSV: return new CsvParser(path);
-        case GAPS_TSV: return new TsvParser(path);
-        default: GAPS_ERROR("Invalid file type\n");
-    }
-}
-
-AbstractFileParser::~AbstractFileParser() {}

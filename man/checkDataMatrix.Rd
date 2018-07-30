@@ -2,18 +2,20 @@
 % Please edit documentation in R/CoGAPS.R
 \name{checkDataMatrix}
 \alias{checkDataMatrix}
-\title{Check that provided data is valid}
+\title{check that provided data is valid}
 \usage{
 checkDataMatrix(data, uncertainty, params)
 }
 \arguments{
 \item{data}{data matrix}
 
-\item{uncertainty}{uncertainty matrix}
+\item{uncertainty}{uncertainty matrix, can be null}
+
+\item{params}{CogapsParams object}
 }
 \value{
 throws an error if data has problems
 }
 \description{
-Check that provided data is valid
+check that provided data is valid
 }

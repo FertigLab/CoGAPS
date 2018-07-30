@@ -14,15 +14,17 @@ Description: Coordinated Gene Activity in Pattern Sets (CoGAPS)
 Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>,
     Thomas D. Sherman <tomsherman159@gmail.com>
 Depends:
-    R (>= 3.5.0),
-    Rcpp
+    R (>= 3.5.0)
 Imports:
     cluster,
+    data.table,
     methods,
     gplots,
     graphics,
+    Rcpp,
     S4Vectors,
-    SingleCellExperiment
+    SingleCellExperiment,
+    SummarizedExperiment
 Suggests:
     testthat,
     knitr,

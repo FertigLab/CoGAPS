@@ -6,31 +6,31 @@
 using namespace Rcpp;
 
 // cogaps_cpp_from_file
-Rcpp::List cogaps_cpp_from_file(const std::string& data, const Rcpp::List& allParams, const std::string& uncertainty, const Rcpp::NumericVector& indices, const Rcpp::NumericMatrix& fixedMatrix);
+Rcpp::List cogaps_cpp_from_file(const Rcpp::CharacterVector& data, const Rcpp::List& allParams, const Rcpp::Nullable<Rcpp::CharacterVector>& uncertainty, const Rcpp::Nullable<Rcpp::IntegerVector>& indices, const Rcpp::Nullable<Rcpp::NumericMatrix>& fixedMatrix);
 RcppExport SEXP _CoGAPS_cogaps_cpp_from_file(SEXP dataSEXP, SEXP allParamsSEXP, SEXP uncertaintySEXP, SEXP indicesSEXP, SEXP fixedMatrixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::CharacterVector& >::type data(dataSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type allParams(allParamsSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type uncertainty(uncertaintySEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type fixedMatrix(fixedMatrixSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::CharacterVector>& >::type uncertainty(uncertaintySEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::IntegerVector>& >::type indices(indicesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::NumericMatrix>& >::type fixedMatrix(fixedMatrixSEXP);
     rcpp_result_gen = Rcpp::wrap(cogaps_cpp_from_file(data, allParams, uncertainty, indices, fixedMatrix));
     return rcpp_result_gen;
 END_RCPP
 }
 // cogaps_cpp
-Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix& data, const Rcpp::List& allParams, const Rcpp::NumericMatrix& uncertainty, const Rcpp::NumericVector& indices, const Rcpp::NumericMatrix& fixedMatrix);
+Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix& data, const Rcpp::List& allParams, const Rcpp::Nullable<Rcpp::NumericMatrix>& uncertainty, const Rcpp::Nullable<Rcpp::IntegerVector>& indices, const Rcpp::Nullable<Rcpp::NumericMatrix>& fixedMatrix);
 RcppExport SEXP _CoGAPS_cogaps_cpp(SEXP dataSEXP, SEXP allParamsSEXP, SEXP uncertaintySEXP, SEXP indicesSEXP, SEXP fixedMatrixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type data(dataSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type allParams(allParamsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type uncertainty(uncertaintySEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type indices(indicesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type fixedMatrix(fixedMatrixSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::NumericMatrix>& >::type uncertainty(uncertaintySEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::IntegerVector>& >::type indices(indicesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::NumericMatrix>& >::type fixedMatrix(fixedMatrixSEXP);
     rcpp_result_gen = Rcpp::wrap(cogaps_cpp(data, allParams, uncertainty, indices, fixedMatrix));
     return rcpp_result_gen;
 END_RCPP

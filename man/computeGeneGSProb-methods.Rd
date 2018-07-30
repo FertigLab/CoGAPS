@@ -8,21 +8,21 @@
 \title{compute gene probability}
 \usage{
 computeGeneGSProb(object, GStoGenes, numPerm = 500, Pw = rep(1,
-  ncol(Amean)), PwNull = FALSE)
+  ncol(object@featureLoadings)), PwNull = FALSE)
 
 \S4method{computeGeneGSProb}{CogapsResult}(object, GStoGenes, numPerm = 500,
-  Pw = rep(1, ncol(Amean)), PwNull = FALSE)
+  Pw = rep(1, ncol(object@featureLoadings)), PwNull = FALSE)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}
+
+\item{GStoGenes}{data.frame or list with gene sets}
 
 \item{numPerm}{number of permutations for null}
 
 \item{Pw}{weight on genes}
 
 \item{PwNull}{- logical indicating gene adjustment}
-
-\item{GSGenes}{data.frame or list with gene sets}
 }
 \value{
 A vector of length GSGenes containing the p-values of set membership
