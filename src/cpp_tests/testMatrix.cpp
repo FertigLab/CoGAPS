@@ -3,24 +3,127 @@
 #include "../file_parser/CsvParser.h"
 #include "../file_parser/TsvParser.h"
 #include "../file_parser/MtxParser.h"
+#include "../math/Algorithms.h"
 
-#if 0
+static std::vector<unsigned> sequentialVector(unsigned n)
+{
+    std::vector<unsigned> vec;
+    for (unsigned i = 0; i < n; ++i)
+    {
+        vec.push_back(i);
+    }
+    return vec;
+}
+
+template <class DataType>
+static void testFullConstructor(unsigned nr, unsigned nc, float expectedSum,
+const DataType &data, bool transpose=false, bool partitionRows=false,
+const std::vector<unsigned> &indices=std::vector<unsigned>(1))
+{
+    RowMatrix rm(data, transpose, partitionRows, indices);
+    ColMatrix cm(data, transpose, partitionRows, indices);
+
+    REQUIRE(rm.nRow() == nr);
+    REQUIRE(rm.nCol() == nc);
+    REQUIRE(cm.nRow() == nr);
+    REQUIRE(cm.nCol() == nc);
+
+    REQUIRE(expectedSum == gaps::algo::sum(rm));
+    REQUIRE(expectedSum == gaps::algo::sum(cm));
+}
+
+template <class DataType>
+static void testAllConstructorSituations(const DataType &data)
+{
+    // No Transpose, No Subset
+    testFullConstructor(0.f, 10, 25, data, false);
+
+    // Transpose, No Subset
+    testFullConstructor(0.f, 25, 10, data, true);
+
+    // No Transpose, Subset Rows
+    testFullConstructor(0.f, 5, 25, data, false, true, sequentialVector(5))
+
+    // Transpose, Subset Rows
+    testFullConstructor(0.f, 5, 10, data, true, true, sequentialVector(5))
+
+    // No Transpose, Subset Columns
+    testFullConstructor(0.f, 10, 5, data, false, false, sequentialVector(5))
+
+    // Transpose, Subset Columns
+    testFullConstructor(0.f, 25, 5, data, true, false, sequentialVector(5))
+}
 
 TEST_CASE("Test Matrix.h")
 {
-    SECTION("Matrix/Vector Initialization")
+    SECTION("Default Construction")
     {
-        Vector v(10);
         RowMatrix rm(10, 25);
         ColMatrix cm(10, 25);
 
-        REQUIRE(v.size() == 10);
         REQUIRE(rm.nRow() == 10);
         REQUIRE(rm.nCol() == 25);
         REQUIRE(cm.nRow() == 10);
         REQUIRE(cm.nCol() == 25);
     }
+
+    SECTION("Copy Construction")
+    {
+        RowMatrix rm1(10, 25);
+        ColMatrix cm1(rm1);
+
+        REQUIRE(cm1.nRow() == 10);
+        REQUIRE(cm1.nCol() == 25);
+
+        RowMatrix rm2(10, 25);
+        ColMatrix cm2(rm1);
+
+        REQUIRE(rm2.nRow() == 10);
+        REQUIRE(rm2.nCol() == 25);
+    }
+
+    Matrix ref(10, 25);
+    for (unsigned i = 0; i < ref.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < ref.nCol(); ++j)
+        {
+            ref(i,j) = i + j;
+        }
+    }
+
+    testAllConstructorSituations(ref);
+    testAllConstructorSituations(ref);
+    testAllConstructorSituations(ref);
+    testAllConstructorSituations(ref);    
+
+
+    SECTION("Construct from File - No Subset")
+    {
+
+    }
+
+    SECTION("Construct from File - Subset")
+    {
+
+    }
+
+    SECTION("Assignment")
+    {
+
+    }
+
+    SECTION("Get Row/Col")
+    {
+
+    }
+
+    SECTION("arithmetic")
+    {
+
+    }
 }
+
+#if 0
 
 static void populateSequential(std::vector<unsigned> &vec, unsigned n)
 {
@@ -109,7 +212,6 @@ TEST_CASE("Test Matrix Construction from file")
     testMatrixConstruction(tsvPath);
     testMatrixConstruction(mtxPath);
 }
-
 #endif
 
 #endif

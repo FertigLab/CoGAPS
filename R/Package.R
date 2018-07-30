@@ -21,6 +21,7 @@
 #' Bioinformatics. 2010 Nov 1;26(21):2792-3
 #' @docType package
 #' @name CoGAPS-package
+#' @importFrom Rcpp evalCpp
 #' @useDynLib CoGAPS
 NULL
 

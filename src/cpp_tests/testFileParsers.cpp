@@ -31,7 +31,8 @@ TEST_CASE("Test Parsers")
 
             ++count;
             ++col;
-            if (col == 9) {
+            if (col == 9)
+            {
                 ++row;
                 col = 0;
             }
@@ -56,7 +57,8 @@ TEST_CASE("Test Parsers")
 
             ++count;
             ++col;
-            if (col == 9) {
+            if (col == 9)
+            {
                 ++row;
                 col = 0;
             }

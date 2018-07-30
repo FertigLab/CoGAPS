@@ -25,6 +25,16 @@ void GapsRunner::setFixedMatrix(char which, const Matrix &mat)
     }
 }
 
+void GapsRunner::recordSeed(uint32_t seed)
+{
+    mSeed = seed;
+}
+
+uint32_t GapsRunner::getSeed() const
+{
+    return mSeed;
+}
+
 void GapsRunner::setMaxIterations(unsigned nIterations)
 {
     mMaxIterations = nIterations;
@@ -69,6 +79,7 @@ void GapsRunner::setCheckpointInterval(unsigned interval)
 
 GapsResult GapsRunner::run()
 {
+#if 0
     mStartTime = bpt_now();
 
     // calculate appropiate number of threads if compiled with openmp
@@ -103,7 +114,7 @@ GapsResult GapsRunner::run()
             runOnePhase();
             break;
     }
-
+#endif
     GapsResult result(mStatistics);
     result.meanChiSq = mStatistics.meanChiSq(mASampler);
     return result;    
@@ -210,8 +221,8 @@ void GapsRunner::createCheckpoint()
 // assume random state has been loaded and nPatterns and seed have been read
 Archive& operator>>(Archive &ar, GapsRunner &gr)
 {
-    ar >> gr.mASampler >> gr.mPSampler >> gr.mStatistics >> gr.mFixedMatrix
-        >> gr.mMaxIterations >> gr.mPhase >> gr.mCurrentIteration
-        >> gr.mNumUpdatesA >> gr.mNumUpdatesP;
+    ar >> gr.mNumPatterns >> gr.mSeed >> gr.mASampler >> gr.mPSampler
+        >> gr.mStatistics >> gr.mFixedMatrix >> gr.mMaxIterations >> gr.mPhase
+        >> gr.mCurrentIteration >> gr.mNumUpdatesA >> gr.mNumUpdatesP;
     return ar;
 }

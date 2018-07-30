@@ -2,6 +2,7 @@
 #' @export
 #'
 #' @description Contains all output from Cogaps run
+#' @importClassesFrom S4Vectors Annotated
 #' @importClassesFrom SingleCellExperiment LinearEmbeddingMatrix
 setClass("CogapsResult", contains="LinearEmbeddingMatrix", slots=c(
     sampleStdDev = "ANY",   # Psd transpose
@@ -152,7 +153,7 @@ setGeneric("calcCoGAPSStat", function(object, GStoGenes, numPerm=500)
 #' listed in a gene set behaves like other genes in the set within
 #' the given data set
 #' @param object an object of type CogapsResult
-#' @param GSGenes data.frame or list with gene sets
+#' @param GStoGenes data.frame or list with gene sets
 #' @param numPerm number of permutations for null
 #' @param Pw weight on genes
 #' @param nullGenes logical indicating gene adjustment
@@ -162,7 +163,7 @@ setGeneric("calcCoGAPSStat", function(object, GStoGenes, numPerm=500)
 #' result <- CoGAPS(SimpSim.D)
 #' calcGeneGSStat(result, GSGenes=GSets[[1]], numPerm=500)
 setGeneric("calcGeneGSStat", function(object, GStoGenes, numPerm,
-Pw=rep(1,ncol(Amean)), nullGenes=FALSE)
+Pw=rep(1,ncol(object@featureLoadings)), nullGenes=FALSE)
     {standardGeneric("calcGeneGSStat")})
 
 #' compute gene probability
@@ -176,7 +177,7 @@ Pw=rep(1,ncol(Amean)), nullGenes=FALSE)
 #' comparing the inferred activity of that gene to the average activity of the
 #' set.
 #' @param object an object of type CogapsResult
-#' @param GSGenes data.frame or list with gene sets
+#' @param GStoGenes data.frame or list with gene sets
 #' @param Pw weight on genes
 #' @param numPerm number of permutations for null
 #' @param PwNull - logical indicating gene adjustment
@@ -187,7 +188,7 @@ Pw=rep(1,ncol(Amean)), nullGenes=FALSE)
 #' result <- CoGAPS(SimpSim.D)
 #' computeGeneGSProb(result, GSGenes=GSets[[1]], numPerm=500)
 setGeneric("computeGeneGSProb", function(object, GStoGenes, numPerm=500,
-Pw=rep(1,ncol(Amean)), PwNull=FALSE)
+Pw=rep(1,ncol(object@featureLoadings)), PwNull=FALSE)
     {standardGeneric("computeGeneGSProb")})
 
 #' compute pattern markers statistic
