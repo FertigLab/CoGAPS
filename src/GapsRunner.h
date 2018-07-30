@@ -68,14 +68,16 @@ public:
 
     template <class DataType>
     GapsRunner(const DataType &data, bool transposeData, unsigned nPatterns,
-        uint32_t seed, bool partitionRows,
-        const std::vector<unsigned> &indices);
+        bool partitionRows, const std::vector<unsigned> &indices);
 
     template <class DataType>
     void setUncertainty(const DataType &unc, bool transposeData,
         bool partitionRows, const std::vector<unsigned> &indices);
 
     void setFixedMatrix(char which, const Matrix &mat);
+
+    void recordSeed(uint32_t seed);
+    uint32_t getSeed() const;
 
     void setMaxIterations(unsigned nIterations);
     void setSparsity(float alphaA, float alphaP, bool singleCell);
@@ -95,7 +97,7 @@ public:
 
 // problem with passing file parser - need to read it twice
 template <class DataType>
-GapsRunner::GapsRunner(const DataType &data, bool transposeData, uint32_t seed,
+GapsRunner::GapsRunner(const DataType &data, bool transposeData,
 unsigned nPatterns, bool partitionRows, const std::vector<unsigned> &indices)
     :
 mASampler(data, transposeData, nPatterns, partitionRows, indices),
@@ -104,7 +106,7 @@ mStatistics(mASampler.dataRows(), mASampler.dataCols(), nPatterns),
 mFixedMatrix('N'), mMaxIterations(1000), mMaxThreads(1), mPrintMessages(true),
 mOutputFrequency(500), mCheckpointOutFile("gaps_checkpoint.out"),
 mCheckpointInterval(0), mPhase('C'), mCurrentIteration(0),
-mNumPatterns(nPatterns), mSeed(seed), mNumUpdatesA(0), mNumUpdatesP(0)
+mNumPatterns(nPatterns), mSeed(0), mNumUpdatesA(0), mNumUpdatesP(0)
 {
     mASampler.sync(mPSampler);
     mPSampler.sync(mASampler);

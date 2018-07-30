@@ -2,8 +2,8 @@ context("GAPS")
 
 test_that("GAPS Simple Simulation",
 {
-    data(SimpSim)
-    nIter <- 1000
+    #data(SimpSim)
+    #nIter <- 1000
     #res <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3, messages=FALSE)
 
     #expect_true(!is.na(res$meanChi2))

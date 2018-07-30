@@ -3,13 +3,10 @@
 \docType{methods}
 \name{initialize,CogapsParams-method}
 \alias{initialize,CogapsParams-method}
-\title{Constructor for CogapsParams}
+\title{constructor for CogapsParams}
 \usage{
 \S4method{initialize}{CogapsParams}(.Object, ...)
 }
-\value{
-initialized CogapsParams object
-}
 \description{
-Constructor for CogapsParams
+constructor for CogapsParams
 }
