@@ -6,8 +6,8 @@
 template <class MatA, class MatB>
 inline void copyMatrix(MatA &dest, const MatB &source)
 {
-    GAPS_ASSERT(dest.nRow() == source.nRow());
-    GAPS_ASSERT(dest.nCol() == source.nCol());
+    GAPS_ASSERT_MSG(dest.nRow() == source.nRow(), dest.nRow() << " " << source.nRow());
+    GAPS_ASSERT_MSG(dest.nCol() == source.nCol(), dest.nCol() << " " << source.nCol());
 
     for (unsigned i = 0; i < dest.nRow(); ++i)
     {
@@ -80,11 +80,13 @@ RowMatrix::RowMatrix(const ColMatrix &mat) : GenericMatrix(mat.nRow(), mat.nCol(
 RowMatrix& RowMatrix::operator=(const RowMatrix &mat)
 {
     copyMatrix(*this, mat);
+    return *this;
 }
 
 RowMatrix& RowMatrix::operator=(const ColMatrix &mat)
 {
     copyMatrix(*this, mat);
+    return *this;
 }
 
 /******************************** COLUMN MATRIX *******************************/
@@ -149,9 +151,11 @@ ColMatrix::ColMatrix(const RowMatrix &mat) : GenericMatrix(mat.nRow(), mat.nCol(
 ColMatrix& ColMatrix::operator=(const ColMatrix &mat)
 {
     copyMatrix(*this, mat);
+    return *this;
 }
 
 ColMatrix& ColMatrix::operator=(const RowMatrix &mat)
 {
     copyMatrix(*this, mat);
+    return *this;
 }

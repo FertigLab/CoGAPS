@@ -6,7 +6,7 @@
 \title{Constructor for CogapsResult}
 \usage{
 \S4method{initialize}{CogapsResult}(.Object, Amean, Pmean, Asd, Psd, seed,
-  meanChiSq, diagnostics, ...)
+  meanChiSq, diagnostics = list(), ...)
 }
 \value{
 initialized CogapsResult object

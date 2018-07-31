@@ -5,7 +5,7 @@
 #' @importClassesFrom S4Vectors Annotated
 #' @importClassesFrom SingleCellExperiment LinearEmbeddingMatrix
 setClass("CogapsResult", contains="LinearEmbeddingMatrix", slots=c(
-    sampleStdDev = "ANY",   # Psd transpose
+    sampleStdDev = "ANY",   # Psd
     featureStdDev = "ANY"   # Asd
 ))
 
@@ -13,15 +13,16 @@ setClass("CogapsResult", contains="LinearEmbeddingMatrix", slots=c(
 #' @return initialized CogapsResult object
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsResult",
-function(.Object, Amean, Pmean, Asd, Psd, seed, meanChiSq, diagnostics, ...)
+function(.Object, Amean, Pmean, Asd, Psd, seed, meanChiSq, diagnostics=list(),
+...)
 {
     .Object@featureLoadings <- Amean
-    .Object@sampleFactors <- t(Pmean)
+    .Object@sampleFactors <- Pmean
 
     if (!is.null(Asd))
         .Object@featureStdDev <- Asd
     if (!is.null(Psd))
-        .Object@sampleStdDev <- t(Psd)
+        .Object@sampleStdDev <- Psd
 
     .Object@metadata[["seed"]] <- seed
     .Object@metadata[["meanChiSq"]] <- meanChiSq

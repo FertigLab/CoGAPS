@@ -1,7 +1,10 @@
 #ifndef __COGAPS_FILE_PARSER_H__
 #define __COGAPS_FILE_PARSER_H__
 
+#include "../GapsAssert.h"
 #include "MatrixElement.h"
+
+#include <fstream>
 
 enum GapsFileType
 {
@@ -20,6 +23,8 @@ private:
     AbstractFileParser& operator=(const AbstractFileParser &p); // don't allow copies
 
 public:
+
+    AbstractFileParser() {}
 
     static AbstractFileParser* create(const std::string &path);
 
@@ -47,8 +52,8 @@ public:
     explicit FileParser(const std::string &path);
     ~FileParser();
 
-    unsigned nRow();
-    unsigned nCol();
+    unsigned nRow() const;
+    unsigned nCol() const;
 
     bool hasNext();
     MatrixElement getNext();
@@ -71,6 +76,8 @@ public:
 template <class MatrixType>
 void FileParser::writeToTsv(const std::string &path, const MatrixType &mat)
 {
+    GAPS_ASSERT(FileParser::fileType(path) == GAPS_TSV);
+
     std::ofstream outputFile;
     outputFile.open(path.c_str());
     outputFile << "\"\"";
@@ -80,6 +87,7 @@ void FileParser::writeToTsv(const std::string &path, const MatrixType &mat)
     {
         outputFile << "\t\"Col" << i << "\"";
     }
+    outputFile << "\n";
 
     for (unsigned i = 0; i < mat.nRow(); ++i)
     {
@@ -99,6 +107,8 @@ void FileParser::writeToTsv(const std::string &path, const MatrixType &mat)
 template <class MatrixType>
 void FileParser::writeToCsv(const std::string &path, const MatrixType &mat)
 {
+    GAPS_ASSERT(FileParser::fileType(path) == GAPS_CSV);
+
     std::ofstream outputFile;
     outputFile.open(path.c_str());
     outputFile << "\"\"";
@@ -108,6 +118,7 @@ void FileParser::writeToCsv(const std::string &path, const MatrixType &mat)
     {
         outputFile << ",\"Col" << i << "\"";
     }
+    outputFile << "\n";
 
     for (unsigned i = 0; i < mat.nRow(); ++i)
     {
@@ -127,14 +138,16 @@ void FileParser::writeToCsv(const std::string &path, const MatrixType &mat)
 template <class MatrixType>
 void FileParser::writeToMtx(const std::string &path, const MatrixType &mat)
 {
+    GAPS_ASSERT(FileParser::fileType(path) == GAPS_MTX);
+
     std::ofstream outputFile;
     outputFile.open(path.c_str());
     outputFile << "%%\n";
     outputFile << mat.nRow() << " " << mat.nCol() << " " << mat.nRow() * mat.nCol();
     outputFile << "\n";
-    for (unsigned j = 0; j < mat.nRow(); ++j)
+    for (unsigned i = 0; i < mat.nRow(); ++i)
     {
-        for (unsigned i = 0; i < mat.nCol(); ++i)
+        for (unsigned j = 0; j < mat.nCol(); ++j)
         {
             if (mat(i,j) > 0.f)
             {

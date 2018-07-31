@@ -40,9 +40,12 @@
                 gaps_stop();                                            \
             }                                                           \
         } while(0)
+
+    #define DEBUG_PING gaps_printf("here %s %d\n", __FILE__, __LINE__);
 #else
     #define GAPS_ASSERT(cond) do {} while(0)
     #define GAPS_ASSERT_MSG(cond, msg) do {} while(0)
+    #define DEBUG_PING   
 #endif
 
 #endif

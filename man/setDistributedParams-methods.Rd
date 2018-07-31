@@ -4,7 +4,6 @@
 \name{setDistributedParams}
 \alias{setDistributedParams}
 \alias{setDistributedParams,CogapsParams-method}
-\alias{setDistributedParams}
 \title{set the value of parameters for distributed CoGAPS}
 \usage{
 setDistributedParams(object, cut = NULL, minNS = NULL, maxNS = NULL)

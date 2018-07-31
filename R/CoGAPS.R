@@ -53,7 +53,7 @@ supported <- function(file)
 #' resultC <- CoGAPS(GIST.D, params)
 #' @importFrom methods new is
 #' @importFrom SummarizedExperiment assay
-CoGAPS <- function(data, params=new("CogapsParams"), nThreads=NULL,
+CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
 checkpointInFile=NULL, transposeData=FALSE, ...)
@@ -67,7 +67,7 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
         "checkpointInterval"=checkpointInterval,
         "checkpointInFile"=checkpointInFile,
         "transposeData"=transposeData,
-        "whichMatrixFixed"="" # internal parameter
+        "whichMatrixFixed"=NULL # internal parameter
     )
     allParams <- parseExtraParams(allParams, list(...))
 
@@ -76,13 +76,14 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
         stop("unsupported file extension for data")
 
     # check uncertainty matrix
-    if (is(data, "character") & !is(uncertainty, "character"))
+    if (is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "character"))
         stop("uncertainty must be same data type as data (file name)")
     if (is(uncertainty, "character") & !supported(uncertainty))
         stop("unsupported file extension for uncertainty")
     if (!is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "matrix"))
         stop("uncertainty must be a matrix unless data is a file path")
-    checkDataMatrix(data, uncertainty, params)
+    if (!is(data, "character"))
+        checkDataMatrix(data, uncertainty, params)
 
     # convert data to matrix
     if (is(data, "data.frame"))
@@ -137,6 +138,7 @@ checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
 checkpointInFile=NULL, transposeData=FALSE, ...)
 {
     params@distributed <- "single-cell"
+    params@singleCell <- TRUE
     CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
         checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
         ...)

@@ -79,7 +79,6 @@ void GapsRunner::setCheckpointInterval(unsigned interval)
 
 GapsResult GapsRunner::run()
 {
-#if 0
     mStartTime = bpt_now();
 
     // calculate appropiate number of threads if compiled with openmp
@@ -114,7 +113,6 @@ GapsResult GapsRunner::run()
             runOnePhase();
             break;
     }
-#endif
     GapsResult result(mStatistics);
     result.meanChiSq = mStatistics.meanChiSq(mASampler);
     return result;    
@@ -161,6 +159,7 @@ void GapsRunner::updateSampler(unsigned nA, unsigned nP)
         {
             mPSampler.sync(mASampler);
         }
+        GAPS_ASSERT(mASampler.internallyConsistent());
     }
 
     if (mFixedMatrix != 'P')
@@ -171,10 +170,8 @@ void GapsRunner::updateSampler(unsigned nA, unsigned nP)
         {
             mASampler.sync(mPSampler);
         }
+        GAPS_ASSERT(mPSampler.internallyConsistent());
     }
-
-    GAPS_ASSERT(mASampler.internallyConsistent());
-    GAPS_ASSERT(mPSampler.internallyConsistent());
 }
 
 void GapsRunner::displayStatus()
@@ -193,6 +190,7 @@ void GapsRunner::displayStatus()
         gaps_printf("%d of %d, Atoms: %lu(%lu), ChiSq: %.0f, elapsed time: %02d:%02d:%02d\n",
             mCurrentIteration + 1, mMaxIterations, mASampler.nAtoms(),
             mPSampler.nAtoms(), mASampler.chi2(), hours, minutes, seconds);
+        gaps_flush();
     }
 }
 

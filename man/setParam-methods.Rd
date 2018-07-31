@@ -4,7 +4,6 @@
 \name{setParam}
 \alias{setParam}
 \alias{setParam,CogapsParams-method}
-\alias{setParam}
 \title{set the value of a parameter}
 \usage{
 setParam(object, whichParam, value)

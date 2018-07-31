@@ -168,7 +168,7 @@ bool partitionRows, const std::vector<unsigned> &indices)
         mNumCols = partitionRows ? (transpose ? mat.nRow() : mat.nCol()) : indices.size();
         impl()->allocate();
 
-        // fill matrix
+        // fill matrix, TODO use binary search on indices
         for (unsigned i = 0; i < mat.nRow(); ++i)
         {
             for (unsigned j = 0; j < mat.nCol(); ++j)

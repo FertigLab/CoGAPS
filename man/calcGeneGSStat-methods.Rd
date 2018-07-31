@@ -4,7 +4,6 @@
 \name{calcGeneGSStat}
 \alias{calcGeneGSStat}
 \alias{calcGeneGSStat,CogapsResult-method}
-\alias{calcGeneGSStat}
 \title{probability gene belongs in gene set}
 \usage{
 calcGeneGSStat(object, GStoGenes, numPerm, Pw = rep(1,

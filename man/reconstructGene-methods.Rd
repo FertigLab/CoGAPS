@@ -4,7 +4,6 @@
 \name{reconstructGene}
 \alias{reconstructGene}
 \alias{reconstructGene,CogapsResult-method}
-\alias{reconstructGene}
 \title{reconstruct gene}
 \usage{
 reconstructGene(object, genes = NULL)

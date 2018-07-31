@@ -326,34 +326,41 @@ float GibbsSampler<T, MatA, MatB>::getAvgQueue() const
 template <class T, class MatA, class MatB>
 bool GibbsSampler<T, MatA, MatB>::internallyConsistent()
 {
-    Atom a = mDomain.front();
-    float current = a.mass;
-    uint64_t row = impl()->getRow(a.pos);
-    uint64_t col = impl()->getCol(a.pos);
-
-    while (mDomain.hasRight(a))
+    if (mDomain.size() > 0)
     {
-        a = mDomain.right(a);
-        if (row != impl()->getRow(a.pos) || col != impl()->getCol(a.pos))
+        Atom a = mDomain.front();
+        float current = a.mass;
+        uint64_t row = impl()->getRow(a.pos);
+        uint64_t col = impl()->getCol(a.pos);
+
+        while (mDomain.hasRight(a))
         {
-            float matVal = mMatrix(row, col);
-            if (std::abs(current - matVal) > 0.1f)
+            a = mDomain.right(a);
+            if (row != impl()->getRow(a.pos) || col != impl()->getCol(a.pos))
             {
-                gaps_printf("mass difference detected at row %lu, column %lu: %f %f\n",
-                    row, col, current, matVal); 
-                return false;
+                float matVal = mMatrix(row, col);
+                if (std::abs(current - matVal) > 0.1f)
+                {
+                    gaps_printf("mass difference detected at row %lu, column %lu: %f %f\n",
+                        row, col, current, matVal); 
+                    return false;
+                }
+                
+                row = impl()->getRow(a.pos);
+                col = impl()->getCol(a.pos);
+                current = a.mass;
             }
-            
-            row = impl()->getRow(a.pos);
-            col = impl()->getCol(a.pos);
-            current = a.mass;
+            else
+            {
+                current += a.mass;
+            }
         }
-        else
-        {
-            current += a.mass;
-        }
+        return true;
     }
-    return true;    
+    else
+    {
+        return gaps::algo::sum(mMatrix) == 0.f;
+    }
 }
 #endif
 

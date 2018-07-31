@@ -4,7 +4,6 @@
 \name{getMeanChiSq}
 \alias{getMeanChiSq}
 \alias{getMeanChiSq,CogapsResult-method}
-\alias{getMeanChiSq}
 \title{return chi-sq of final matrices}
 \usage{
 getMeanChiSq(object)

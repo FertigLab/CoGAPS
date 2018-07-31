@@ -16,6 +16,7 @@ Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>,
 Depends:
     R (>= 3.5.0)
 Imports:
+    BiocParallel,
     cluster,
     data.table,
     methods,
@@ -37,7 +38,8 @@ biocViews: GeneExpression, Transcription, GeneSetEnrichment,
     DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray,
     MultipleComparison, DimensionReduction
 NeedsCompilation: yes
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
+Encoding: UTF-8
 Collate:
     'class-CogapsParams.R'
     'CoGAPS.R'

@@ -185,18 +185,3 @@ float gaps::random::inverseGammaSample(float a, float b, float mean, float sd)
     }
     return gaps::random::q_gamma(u, mean, sd);
 }
-
-std::vector<unsigned> sample(std::vector<unsigned> &elements, unsigned n)
-{
-    GAPS_ASSERT(elements.size() >= n);
-    std::vector<unsigned> sampleVect;
-    for (unsigned i = 0; i < n; ++i)
-    {
-        unsigned sampleIndex = gaps::random::uniform64(0, elements.size());
-        sampleVect.push_back(elements.at(sampleIndex));
-
-        elements[sampleIndex] = elements.back();
-        elements.pop_back();
-    }
-    return sampleVect;
-}

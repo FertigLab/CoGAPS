@@ -4,7 +4,6 @@
 \name{calcCoGAPSStat}
 \alias{calcCoGAPSStat}
 \alias{calcCoGAPSStat,CogapsResult-method}
-\alias{calcCoGAPSStat}
 \title{calculate gene set statistics}
 \usage{
 calcCoGAPSStat(object, GStoGenes, numPerm = 500)
