@@ -23,21 +23,7 @@ public:
 
     Archive(const std::string &path, std::ios_base::openmode flags)
         : mStream(path.c_str(), std::ios::binary | flags)
-    {
-        /*if (flags == ARCHIVE_WRITE)
-        {
-            *this << ARCHIVE_MAGIC_NUM;
-        }
-        else if (flags == ARCHIVE_READ)
-        {
-            uint32_t magicNum = 0;
-            *this >> magicNum;
-            if (magicNum != ARCHIVE_MAGIC_NUM)
-            {
-                Rcpp::Rcout << "warning: invalid checkpoint file" << std::endl;
-            }
-        }*/
-    }
+    {}
 
     void close() {mStream.close();}
 
@@ -80,4 +66,4 @@ public:
     friend Archive& operator>>(Archive &ar, boost::random::mt11213b &val) { return readFromArchive(ar, val); }
 };
 
-#endif
+#endif // __COGAPS_ARCHIVE_H__

@@ -4,7 +4,6 @@
 \name{binaryA}
 \alias{binaryA}
 \alias{binaryA,CogapsResult-method}
-\alias{binaryA}
 \title{binary heatmap for standardized feature matrix}
 \usage{
 binaryA(object, threshold = 3)

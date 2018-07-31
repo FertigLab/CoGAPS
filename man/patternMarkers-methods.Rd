@@ -4,7 +4,6 @@
 \name{patternMarkers}
 \alias{patternMarkers}
 \alias{patternMarkers,CogapsResult-method}
-\alias{patternMarkers}
 \title{compute pattern markers statistic}
 \usage{
 patternMarkers(object, threshold = "all", lp = NA, full = FALSE)

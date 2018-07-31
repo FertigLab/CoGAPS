@@ -7,28 +7,32 @@
 // these are helper functions for converting matrix/vector types
 // to and from R objects
 
-static Matrix convertRMatrix(const Rcpp::NumericMatrix &rmat)
+static Matrix convertRMatrix(const Rcpp::NumericMatrix &rmat, bool transpose=false)
 {
-    Matrix mat(rmat.nrow(), rmat.ncol());
-    for (unsigned i = 0; i < mat.nRow(); ++i)
+    unsigned nr = transpose ? rmat.ncol() : rmat.nrow();
+    unsigned nc = transpose ? rmat.nrow() : rmat.ncol();
+    Matrix mat(nr, nc);
+    for (unsigned i = 0; i < nr; ++i)
     {
-        for (unsigned j = 0; j < mat.nCol(); ++j)
+        for (unsigned j = 0; j < nc; ++j)
         {
-            mat(i,j) = rmat(i,j);
+            mat(i,j) = transpose ? rmat(j,i) : rmat(i,j);
         }
     }
     return mat;
 }
 
 template <class Matrix>
-static Rcpp::NumericMatrix createRMatrix(const Matrix &mat)
+static Rcpp::NumericMatrix createRMatrix(const Matrix &mat, bool transpose=false)
 {
-    Rcpp::NumericMatrix rmat(mat.nRow(), mat.nCol());
-    for (unsigned i = 0; i < mat.nRow(); ++i)
+    unsigned nr = transpose ? mat.nCol() : mat.nRow();
+    unsigned nc = transpose ? mat.nRow() : mat.nCol();
+    Rcpp::NumericMatrix rmat(nr, nc);
+    for (unsigned i = 0; i < nr; ++i)
     {
-        for (unsigned j = 0; j < mat.nCol(); ++j)
+        for (unsigned j = 0; j < nc; ++j)
         {
-            rmat(i,j) = mat(i,j);
+            rmat(i,j) = transpose ? mat(j,i) : mat(i,j);
         }
     }
     return rmat;
@@ -60,6 +64,7 @@ unsigned getNumPatterns(const Rcpp::List &allParams)
         ar >> nPatterns;
         ar.close();
     }
+    return nPatterns;
 }
 
 std::vector<unsigned> getSubsetIndices(const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
@@ -80,7 +85,7 @@ bool processDistributedParameters(const Rcpp::List &allParams)
         GAPS_ASSERT(d == "genome-wide" || d == "single-cell");
         return d == "genome-wide";
     }
-    return true;
+    return false; // will be ignored anyways
 }
 
 // this is the main function that creates a GapsRunner and runs CoGAPS
@@ -118,11 +123,12 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix)
     else // no checkpoint, populate from given parameters
     {
         // set fixed matrix
-        if (fixedMatrix.isNotNull());
+        if (fixedMatrix.isNotNull())
         {
             GAPS_ASSERT(!Rf_isNull(allParams["whichMatrixFixed"]));
             std::string which = Rcpp::as<std::string>(allParams["whichMatrixFixed"]);
-            runner.setFixedMatrix(which[0], convertRMatrix(Rcpp::NumericMatrix(fixedMatrix)));
+            gaps_printf("%s %c\n", which.c_str(), which[0]);
+            runner.setFixedMatrix(which[0], convertRMatrix(Rcpp::NumericMatrix(fixedMatrix), which[0]=='P'));
         }
 
         // set parameters that would be saved in the checkpoint
@@ -147,9 +153,9 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix)
     GapsResult result(runner.run());
     return Rcpp::List::create(
         Rcpp::Named("Amean") = createRMatrix(result.Amean),
-        Rcpp::Named("Pmean") = createRMatrix(result.Pmean),
+        Rcpp::Named("Pmean") = createRMatrix(result.Pmean, true),
         Rcpp::Named("Asd") = createRMatrix(result.Asd),
-        Rcpp::Named("Psd") = createRMatrix(result.Psd),
+        Rcpp::Named("Psd") = createRMatrix(result.Psd, true),
         Rcpp::Named("seed") = runner.getSeed(),
         Rcpp::Named("meanChiSq") = result.meanChiSq,
         Rcpp::Named("diagnostics") = Rcpp::List::create()
@@ -161,7 +167,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix)
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp_from_file(const Rcpp::CharacterVector &data,
 const Rcpp::List &allParams,
-const Rcpp::Nullable<Rcpp::CharacterVector> &uncertainty,
+const Rcpp::Nullable<Rcpp::CharacterVector> &uncertainty=R_NilValue,
 const Rcpp::Nullable<Rcpp::IntegerVector> &indices=R_NilValue,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue)
 {
@@ -170,14 +176,13 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue)
     {
         unc = Rcpp::as<std::string>(Rcpp::CharacterVector(uncertainty));
     }
-
     return cogapsRun(Rcpp::as<std::string>(data), allParams, unc, indices, fixedMatrix);
 }
 
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data,
 const Rcpp::List &allParams,
-const Rcpp::Nullable<Rcpp::NumericMatrix> &uncertainty,
+const Rcpp::Nullable<Rcpp::NumericMatrix> &uncertainty=R_NilValue,
 const Rcpp::Nullable<Rcpp::IntegerVector> &indices=R_NilValue,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue)
 {
@@ -186,7 +191,6 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue)
     {
         unc = convertRMatrix(Rcpp::NumericMatrix(uncertainty));
     }
-
     return cogapsRun(convertRMatrix(data), allParams, unc, indices, fixedMatrix);
 }
 

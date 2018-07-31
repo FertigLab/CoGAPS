@@ -34,9 +34,7 @@ namespace gaps
 
         void save(Archive &ar);
         void load(Archive &ar);
-
-        std::vector<unsigned> sample(const std::vector<unsigned> &elements, unsigned n);
     } // namespace random
 } // namespace gaps
 
-#endif
+#endif // __COGAPS_RANDOM_H__

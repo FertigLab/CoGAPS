@@ -4,7 +4,6 @@
 \name{getParam}
 \alias{getParam}
 \alias{getParam,CogapsParams-method}
-\alias{getParam}
 \title{get the value of a parameter}
 \usage{
 getParam(object, whichParam)

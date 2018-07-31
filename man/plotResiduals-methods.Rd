@@ -4,7 +4,6 @@
 \name{plotResiduals}
 \alias{plotResiduals}
 \alias{plotResiduals,CogapsResult-method}
-\alias{plotResiduals}
 \title{plot of residuals}
 \usage{
 plotResiduals(object, data, uncertainty = NULL)

@@ -4,7 +4,6 @@
 \name{calcZ}
 \alias{calcZ}
 \alias{calcZ,CogapsResult-method}
-\alias{calcZ}
 \title{compute z-score matrix}
 \usage{
 calcZ(object, which = "feature")
