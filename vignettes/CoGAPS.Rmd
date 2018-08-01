@@ -200,13 +200,13 @@ For large datasets (greater than a few thousand genes or samples) the
 multi-threaded parallelization isn't enough. It is more efficient to break up
 the data into subsets and perform CoGAPS on each subset in parallel, stitching 
 the results back together at the end. The CoGAPS extensions, GWCOGAPS and 
-scCoGAPS, each implement a version of this method (CITE).
+scCoGAPS, each implement a version of this method (@OBRIEN_2017).
 
 In order to use these extensions, some additional parameters are required.
 `nSets` specifies the number of subsets to break the data set into. `cut`,
 `minNS`, and `maxNS` control the process of matching patterns across subsets
 and in general should not be changed from defaults. More information about
-these parameters are available in the original papers (CITE). These parameters
+these parameters can be found in the original papers. These parameters
 need to be set with a different function than `setParam` since they depend
 on each other. Here we only set `nSets` (always required), but we have the
 option to pass the other parameters as well.
