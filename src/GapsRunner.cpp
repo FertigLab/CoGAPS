@@ -135,8 +135,8 @@ void GapsRunner::runOnePhase()
         }
     
         // number of updates per iteration is poisson 
-        unsigned nA = gaps::random::poisson(std::max(mASampler.nAtoms(), 10ul));
-        unsigned nP = gaps::random::poisson(std::max(mPSampler.nAtoms(), 10ul));
+        unsigned nA = gaps::random::poisson(std::max(mASampler.nAtoms(), 10ull));
+        unsigned nP = gaps::random::poisson(std::max(mPSampler.nAtoms(), 10ull));
         updateSampler(nA, nP);
 
         if (mPhase == 'S')
