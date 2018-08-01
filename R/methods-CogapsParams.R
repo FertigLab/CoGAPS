@@ -57,7 +57,7 @@ function(object, whichParam, value)
         object@maxGibbsMassA <- value
         object@maxGibbsMassP <- value
     }
-    else if (whichParam %in% c("cut", "minNS", "maxNS"))
+    else if (whichParam %in% c("nSets", "cut", "minNS", "maxNS"))
     {
         stop("please set this parameter with setDistributedParams")
     }
@@ -73,19 +73,15 @@ function(object, whichParam, value)
 #' @aliases setDistributedParams
 #' @importFrom methods slot
 setMethod("setDistributedParams", signature(object="CogapsParams"),
-function(object, cut, minNS, maxNS)
+function(object, nSets, cut, minNS, maxNS)
 {
-    object@cut <- cut
-    object@minNS <- minNS
-    object@maxNS <- maxNS
+    object@nSets <- nSets
 
-    if (is.null(object@cut))
-        object@cut <- object@nPatterns
-    if (is.null(object@minNS))
-        object@minNS <- ceiling(object@nSets / 2)
-    if (is.null(object@maxNS))
-        object@maxNS <- object@minNS + object@nSets
+    object@cut <- ifelse(is.null(cut), object@nPatterns, cut)
+    object@minNS <- ifelse(is.null(minNS), ceiling(object@nSets / 2), minNS)
+    object@maxNS <- ifelse(is.null(maxNS), object@minNS + object@nSets, maxNS)
 
+    validObject(object)
     return(object)
 })
 

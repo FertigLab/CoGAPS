@@ -15,18 +15,18 @@ function(object)
 #' @importFrom grDevices rainbow
 plot.CogapsResult <- function(x, ...)
 {
-    nSamples <- nrow(object@sampleFactors)
-    nFactors <- ncol(object@sampleFactors)
+    nSamples <- nrow(x@sampleFactors)
+    nFactors <- ncol(x@sampleFactors)
     colors <- rainbow(nFactors)
     xlimits <- c(0, nSamples + 1)
-    ylimits <- c(0, max(object@sampleFactors) * 1.1)
+    ylimits <- c(0, max(x@sampleFactors) * 1.1)
 
     plot(NULL, xlim=xlimits, ylim=ylimits, ylab="Relative Amplitude")
 
     for (i in 1:nFactors)
     {
-        lines(x=1:nSamples, y=object@sampleFactors[,i], col=colors[i])
-        points(x=1:nSamples, y=object@sampleFactors[,i], col=colors[i], pch=i)
+        lines(x=1:nSamples, y=x@sampleFactors[,i], col=colors[i])
+        points(x=1:nSamples, y=x@sampleFactors[,i], col=colors[i], pch=i)
     }
 
     legend("top", paste("Pattern", 1:nFactors, sep = ""), pch = 1:nFactors,

@@ -1,0 +1,71 @@
+## Pattern Markers
+
+## Selecting Appropiate Number of Patterns
+
+Selecting the best value for *nPatterns* is the most difficult part of the
+analysis. For starters, there is not one "best" value for the number of
+patterns - various numbers of patterns can capture various levels of
+granularity in the data. To further complicate the problem, there's not a
+clear way to compare runs for different numbers of patterns.
+
+Here we show the simplest approach of selecting dimensionality by plotting the
+error and selecting the least number of patterns that sufficiently reduce the
+error. We also introduce another way to pass parameters - any parameter in the 
+*CogapsParams* class can be passed by name directly to the *CoGAPS* function,
+overwriting the value contained in `params`.
+
+```{r eval=FALSE}
+# define the range of patterns we are searching over
+pattern_range <- c(3,5,8)
+
+# run CoGAPS with each value in range
+resultList <- lapply(pattern_range, function(p) CoGAPS(GIST.D, params, nPatterns=p, nIterations=3000, outputFrequency=2500))
+
+# plot chi-sq values for each run
+chisq <- sapply(resultList, function(result) getMeanChiSq(result))
+plot(pattern_range, chisq)
+```
+
+## CoGAPS-based statistics
+
+### CoGAPSStat
+
+The function *calcCoGAPSStat* is used to infer gene set activity in each
+pattern from the CoGAPS matrix factorization. *calcCoGAPSStat* calculates the
+gene set statistics for each column of the feature matrix using a Z-score, the
+input gene set and permutation tests. The function outputs a list containing:
+
+* *GSUpreg* lists p-values for upregulation of each gene set in each pattern
+* *GSDownreg* lists p-values for downregulation of each gene set in each pattern
+* *GSActEst* provides gene set activity through conversion of p-values to
+activity estimates of each gene set in each pattern
+
+### computeGeneGSProb
+
+Now using the *computeGeneGSProb* function, we can use the gene set statistic
+(returned from calcCoGAPSStat) to compute a statistic to quantify the
+likelihood of membership for each gene annotated to a set based on its
+inferred activity. The statistic used to infer membership compares the 
+expression pattern of a gene annotated as a member of a gene set to the common
+expression pattern of all annotated members of that gene set. The function
+outputs the p-value of a set membership for each gene specified in GStoGenes. 
+
+
+
+Notice that we pass the transpose of the *GIST* data to *scCoGAPS* since
+the normal dataset is 1363 x 9 and we want a data set with a large number of
+samples.
+
+It is neccesary to name the simulation so that the computation portion knows
+what the subset files are called. For convenience the name provided to the
+subset function is returned back so that it can be saved.
+
+Running the computation is just as easy as running normal *CoGAPS*. The results
+will be in the exact same format as *CoGAPS*, only the intermediate computation
+is different. Notice here that no *params* object is accepted - all parameters
+must be passed by name.
+
+```{r eval=FALSE}
+GWCoGAPS(gw_sim_name, nPatterns=3, nIterations=1000)
+scCoGAPS(sc_sim_name, nPatterns=3, nIterations=1000)
+```

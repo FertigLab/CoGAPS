@@ -79,6 +79,8 @@ setValidity("CogapsParams",
             "random seed must be an integer greater than zero"
         if (object@minNS <= 1 | object@minNS %% 1 != 0)
             "minNS must be an integer greater than one"
+        if (object@nSets <= 1 | object@nSets %% 1 != 0)
+            "minNS must be an integer greater than one"
     }
 )
 
@@ -104,14 +106,16 @@ setGeneric("setParam", function(object, whichParam, value)
 #'
 #' @description these parameters  are interrelated so they must be set together
 #' @param object an object of type CogapsParams
-#' @param cut a distributed CoGAPS parameter 
-#' @param minNS a distributed CoGAPS parameter 
-#' @param maxNS a distributed CoGAPS parameter 
+#' @param nSets number of sets to break data into
+#' @param cut number of branches at which to cut dendrogram used in
+#' pattern matching
+#' @param minNS minimum of individual set contributions a cluster must contain
+#' @param maxNS maximum of individual set contributions a cluster can contain
 #' @return the modified params object
 #' @examples
 #'  params <- new("CogapsParams")
 #'  params <- setDistributedParams(3, 2, 4)
-setGeneric("setDistributedParams", function(object, cut=NULL,
+setGeneric("setDistributedParams", function(object, nSets, cut=NULL,
 minNS=NULL, maxNS=NULL)
     {standardGeneric("setDistributedParams")})
 

@@ -7,8 +7,8 @@
 #' @param allParams list of all parameters used in computation
 #' @param uncertainty uncertainty matrix (same supported types as data)
 #' @return list
-#' @importFrom BiocParallel bplapply SnowParam
-distributedCogaps <- function(data, allParams, uncertainty)
+#' @importFrom BiocParallel bplapply MulticoreParam
+distributedCogaps <- function(data, allParams, uncertainty, BPPARAM=NULL)
 {
     FUN <- function(set, data, allParams, uncertainty, fixedMatrix=NULL)
     {
@@ -21,10 +21,11 @@ distributedCogaps <- function(data, allParams, uncertainty)
     # randomly sample either rows or columns into subsets to break the data up
     set.seed(allParams$gaps@seed)
     sets <- createSets(data, allParams)
-    snow <- SnowParam(workers=length(sets), type="SOCK")
-
+    if (is.null(BPPARAM))
+        BPPARAM <- BiocParallel::MulticoreParam(workers=length(sets))
+    
     # run Cogaps normally on each subset of the data
-    initialResult <- bplapply(sets, FUN, BPPARAM=snow, data=data,
+    initialResult <- bplapply(sets, FUN, BPPARAM=BPPARAM, data=data,
         allParams=allParams, uncertainty=uncertainty)
 
     # match patterns in either A or P matrix
@@ -36,7 +37,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
         == "genome-wide", "P", "A")
 
     # ru final phase with fixed matrix
-    finalResult <- bplapply(sets, FUN, data=data, BPPARAM=snow,
+    finalResult <- bplapply(sets, FUN, BPPARAM=BPPARAM, data=data, 
         allParams=allParams, uncertainty=uncertainty, fixedMatrix=consensusMatrix)
 
     # get result 
