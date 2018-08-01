@@ -6,19 +6,23 @@
 \alias{setDistributedParams,CogapsParams-method}
 \title{set the value of parameters for distributed CoGAPS}
 \usage{
-setDistributedParams(object, cut = NULL, minNS = NULL, maxNS = NULL)
+setDistributedParams(object, nSets, cut = NULL, minNS = NULL,
+  maxNS = NULL)
 
-\S4method{setDistributedParams}{CogapsParams}(object, cut = NULL,
+\S4method{setDistributedParams}{CogapsParams}(object, nSets, cut = NULL,
   minNS = NULL, maxNS = NULL)
 }
 \arguments{
 \item{object}{an object of type CogapsParams}
 
-\item{cut}{a distributed CoGAPS parameter}
+\item{nSets}{number of sets to break data into}
 
-\item{minNS}{a distributed CoGAPS parameter}
+\item{cut}{number of branches at which to cut dendrogram used in
+pattern matching}
 
-\item{maxNS}{a distributed CoGAPS parameter}
+\item{minNS}{minimum of individual set contributions a cluster must contain}
+
+\item{maxNS}{maximum of individual set contributions a cluster can contain}
 }
 \value{
 the modified params object

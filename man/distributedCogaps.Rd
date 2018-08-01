@@ -4,7 +4,7 @@
 \alias{distributedCogaps}
 \title{CoGAPS Distributed Matrix Factorization Algorithm}
 \usage{
-distributedCogaps(data, allParams, uncertainty)
+distributedCogaps(data, allParams, uncertainty, BPPARAM = NULL)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}

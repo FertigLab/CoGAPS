@@ -27,26 +27,8 @@ NULL
 
 #' Simulated data
 #' @docType data
-#' @name SimpSim.D
-#' @usage SimpSim.D
-NULL
-
-#' Simulated data
-#' @docType data
-#' @name SimpSim.S
-#' @usage SimpSim.S
-NULL
-
-#' Simulated data
-#' @docType data
-#' @name SimpSim.A
-#' @usage SimpSim.A
-NULL
-
-#' Simulated data
-#' @docType data
-#' @name SimpSim.P
-#' @usage SimpSim.P
+#' @name SimpSim.data
+#' @usage SimpSim.data
 NULL
 
 #' CoGAPS result from running on simulated data
@@ -57,32 +39,20 @@ NULL
 
 #' Sample GIST gene expression data from Ochs et al. (2009)
 #' @docType data
-#' @name GIST.D
-#' @usage GIST.D
+#' @name GIST.data_frame
+#' @usage GIST.data_frame
 NULL
 
 #' Sample GIST gene expression data from Ochs et al. (2009)
 #' @docType data
-#' @name GIST.S
-#' @usage GIST.S
-NULL
-
-#' Simulated dataset to quantify gene set membership in the GIST dataset 
-#' @docType data
-#' @name GIST.GeneSets
-#' @usage GIST.GeneSets
+#' @name GIST.matrix
+#' @usage GIST.matrix
 NULL
 
 #' CoGAPS result from running on GIST dataset
 #' @docType data
 #' @name GIST.result
 #' @usage GIST.result
-NULL
-
-#' Simulated dataset to quantify gene set membership.
-#' @docType data
-#' @name GSets
-#' @usage GSets
 NULL
 
 #' Gene sets defined by transcription factors defined from TRANSFAC.

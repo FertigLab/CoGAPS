@@ -156,9 +156,9 @@ inline std::string buildReport()
 #endif
 
 #if defined( __GAPS_AVX__ )
-    std::string simd = "AVX enabled\n";
+    std::string simd = "SIMD: AVX instructions enabled\n";
 #elif defined( __GAPS_SSE__ )
-    std::string simd = "SSE enabled\n";
+    std::string simd = "SIMD: SSE instructions enabled\n";
 #else
     std::string simd = "SIMD not enabled\n";
 #endif

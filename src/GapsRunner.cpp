@@ -174,22 +174,63 @@ void GapsRunner::updateSampler(unsigned nA, unsigned nP)
     }
 }
 
+// sum coef * log(i) for i = 1 to total, fit coef from number of atoms
+// approximates sum of number of atoms (stirling approx to factorial)
+// this should be proportional to total number of updates
+static double estimatedNumUpdates(double current, double total, float nAtoms)
+{
+    double coef = nAtoms / std::log(current);
+    return coef * std::log(std::sqrt(2 * total * gaps::algo::pi)) +
+        total * coef * std::log(total) - total * coef;
+}
+
+double GapsRunner::estimatedPercentComplete() const
+{
+    double nIter = static_cast<double>(mCurrentIteration);
+    double nAtomsA = static_cast<double>(mASampler.nAtoms());
+    double nAtomsP = static_cast<double>(mPSampler.nAtoms());
+    
+    if (mPhase == 'S')
+    {
+        nIter += mMaxIterations;
+    }
+
+    double totalIter = 2.0 * static_cast<double>(mMaxIterations);
+
+    double estimatedCompleted = estimatedNumUpdates(nIter, nIter, nAtomsA) + 
+        estimatedNumUpdates(nIter, nIter, nAtomsP);
+
+    double estimatedTotal = estimatedNumUpdates(nIter, totalIter, nAtomsA) + 
+        estimatedNumUpdates(nIter, totalIter, nAtomsP);
+
+    return estimatedCompleted / estimatedTotal;
+}
+
 void GapsRunner::displayStatus()
 {
     if (mPrintMessages && mOutputFrequency > 0 && ((mCurrentIteration + 1) % mOutputFrequency) == 0)
     {
         bpt::time_duration diff = bpt_now() - mStartTime;
-        unsigned elapsedSeconds = static_cast<unsigned>(diff.total_seconds());
+        double nSecondsCurrent = diff.total_seconds();
+        double nSecondsTotal = nSecondsCurrent / estimatedPercentComplete();
 
-        unsigned hours = elapsedSeconds / 3600;
-        elapsedSeconds -= hours * 3600;
-        unsigned minutes = elapsedSeconds / 60;
-        elapsedSeconds -= minutes * 60;
-        unsigned seconds = elapsedSeconds;
+        unsigned elapsedSeconds = static_cast<unsigned>(nSecondsCurrent);
+        unsigned totalSeconds = static_cast<unsigned>(nSecondsTotal);
 
-        gaps_printf("%d of %d, Atoms: %lu(%lu), ChiSq: %.0f, elapsed time: %02d:%02d:%02d\n",
+        unsigned elapsedHours = elapsedSeconds / 3600;
+        elapsedSeconds -= elapsedHours * 3600;
+        unsigned elapsedMinutes = elapsedSeconds / 60;
+        elapsedSeconds -= elapsedMinutes * 60;
+
+        unsigned totalHours = totalSeconds / 3600;
+        totalSeconds -= totalHours * 3600;
+        unsigned totalMinutes = totalSeconds / 60;
+        totalSeconds -= totalMinutes * 60;
+
+        gaps_printf("%d of %d, Atoms: %lu(%lu), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
             mCurrentIteration + 1, mMaxIterations, mASampler.nAtoms(),
-            mPSampler.nAtoms(), mASampler.chi2(), hours, minutes, seconds);
+            mPSampler.nAtoms(), mASampler.chi2(), elapsedHours, elapsedMinutes,
+            elapsedSeconds, totalHours, totalMinutes, totalSeconds);
         gaps_flush();
     }
 }

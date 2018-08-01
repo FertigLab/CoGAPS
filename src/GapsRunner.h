@@ -61,6 +61,7 @@ private:
         
     void runOnePhase();
     void updateSampler(unsigned nA, unsigned nP);
+    double estimatedPercentComplete() const;
     void displayStatus();
     void createCheckpoint();
 

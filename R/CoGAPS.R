@@ -85,6 +85,11 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
     if (!is(data, "character"))
         checkDataMatrix(data, uncertainty, params)
 
+    # check single cell parameter
+    if (!is.null(allParams$gaps@distributed))
+        if (allParams$gaps@distributed == "single-cell" & !allParams$gaps@singleCell)
+            warning("running single-cell CoGAPS with singleCell=FALSE")
+
     # convert data to matrix
     if (is(data, "data.frame"))
         data <- data.matrix(data)
@@ -132,7 +137,7 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
 #' @inheritParams CoGAPS
 #' @return CogapsResult object
 #' @importFrom methods new
-scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=NULL,
+scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
 checkpointInFile=NULL, transposeData=FALSE, ...)
@@ -151,7 +156,7 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
 #' @inheritParams CoGAPS
 #' @return CogapsResult object
 #' @importFrom methods new
-GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=NULL,
+GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
 checkpointInFile=NULL, transposeData=FALSE, ...)

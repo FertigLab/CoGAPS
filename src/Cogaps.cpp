@@ -127,7 +127,6 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix)
         {
             GAPS_ASSERT(!Rf_isNull(allParams["whichMatrixFixed"]));
             std::string which = Rcpp::as<std::string>(allParams["whichMatrixFixed"]);
-            gaps_printf("%s %c\n", which.c_str(), which[0]);
             runner.setFixedMatrix(which[0], convertRMatrix(Rcpp::NumericMatrix(fixedMatrix), which[0]=='P'));
         }
 
