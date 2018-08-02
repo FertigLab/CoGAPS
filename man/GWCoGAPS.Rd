@@ -49,5 +49,5 @@ wrapper around genome-wide distributed algorithm for CoGAPS
 }
 \examples{
 data(SimpSim)
-GWCoGAPS(SimpSim.data)
+GWCoGAPS(SimpSim.data, BPPARAM=BiocParallel::SerialParam())
 }

@@ -49,5 +49,5 @@ wrapper around single-cell distributed algorithm for CoGAPS
 }
 \examples{
 data(SimpSim)
-scCoGAPS(SimpSim.data)
+scCoGAPS(SimpSim.data, BPPARAM=BiocParallel::SerialParam())
 }
