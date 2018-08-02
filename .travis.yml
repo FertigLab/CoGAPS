@@ -10,7 +10,7 @@ bioc_use_devel: true
 # create executable temp directory
 env:
   global:
-    - TMPDIR=/tmp
+    - TMPDIR=/home
 
 # before installing, lint c++ code
 #before_install:
