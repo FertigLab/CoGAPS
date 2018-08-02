@@ -3,10 +3,14 @@
 \docType{data}
 \name{GIST.matrix}
 \alias{GIST.matrix}
-\title{Sample GIST gene expression data from Ochs et al. (2009)}
+\title{GIST gene expression data from Ochs et al. (2009)}
 \usage{
+GIST.matrix
+
 GIST.matrix
 }
 \description{
-Sample GIST gene expression data from Ochs et al. (2009)
+GIST gene expression data from Ochs et al. (2009)
+
+GIST gene expression uncertainty matrix from Ochs et al. (2009)
 }

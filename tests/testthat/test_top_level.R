@@ -52,8 +52,8 @@ test_that("Valid Top-Level CoGAPS Calls",
         res[[i]]@sampleFactors == res[[i+1]]@sampleFactors)))
 
     # passing uncertainty
-    #expect_error(CoGAPS(testDataFrame, uncertainty=as.matrix(GIST.S),
-    #    nIterations=100, outputFrequency=50, seed=1), NA)    
+    expect_error(CoGAPS(testDataFrame, uncertainty=as.matrix(GIST.uncertainty),
+        nIterations=100, outputFrequency=50, seed=1), NA)    
 
     # multiple threads
     expect_error(CoGAPS(testDataFrame, nIterations=100, outputFrequency=50,
@@ -63,12 +63,13 @@ test_that("Valid Top-Level CoGAPS Calls",
     expect_error(CoGAPS(testDataFrame, nIterations=100, outputFrequency=50,
         seed=1, nThreads=12), NA)
 
-    # distributed CoGAPS 
+    # genome-wide CoGAPS 
     expect_error(CoGAPS(testDataFrame, nIterations=100, outputFrequency=50,
         seed=1, distributed="genome-wide"), NA)
     expect_error(CoGAPS(gistTsvPath, nIterations=100, outputFrequency=50,
         seed=1, distributed="genome-wide"), NA)
 
+    # single-cell CoGAPS
     expect_error(CoGAPS(testDataFrame, nIterations=100, outputFrequency=50,
         seed=1, distributed="single-cell", singleCell=TRUE,
         transposeData=TRUE), NA)

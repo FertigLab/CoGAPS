@@ -22,11 +22,14 @@ Imports:
     methods,
     gplots,
     graphics,
+    grDevices,
     RColorBrewer,
     Rcpp,
     S4Vectors,
     SingleCellExperiment,
+    stats,
     SummarizedExperiment,
+    tools,
     utils
 Suggests:
     testthat,

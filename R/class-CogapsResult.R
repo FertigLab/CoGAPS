@@ -63,11 +63,40 @@ setValidity("CogapsResult",
 #'
 #' @param object an object of type CogapsResult
 #' @return chi-sq error
+#' @examples
 #' data(SimpSim)
 #' result <- CoGAPS(SimpSim.data)
-#' meanChiSq(result)
+#' getMeanChiSq(result)
 setGeneric("getMeanChiSq", function(object)
     {standardGeneric("getMeanChiSq")})
+
+#' return version number used to generate this result
+#' @export
+#' @docType methods
+#' @rdname getVersion-methods
+#'
+#' @param object an object of type CogapsResult
+#' @return version number
+#' @examples
+#' data(SimpSim)
+#' result <- CoGAPS(SimpSim.data)
+#' getVersion(result)
+setGeneric("getVersion", function(object)
+    {standardGeneric("getVersion")})
+
+#' return original parameters used to generate this result
+#' @export
+#' @docType methods
+#' @rdname getOriginalParameters-methods
+#'
+#' @param object an object of type CogapsResult
+#' @return CogapsParams object
+#' @examples
+#' data(SimpSim)
+#' result <- CoGAPS(SimpSim.data)
+#' getOriginalParameters(result)
+setGeneric("getOriginalParameters", function(object)
+    {standardGeneric("getOriginalParameters")})
 
 #' compute z-score matrix
 #' @export

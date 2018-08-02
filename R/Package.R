@@ -37,13 +37,19 @@ NULL
 #' @usage SimpSim.result
 NULL
 
-#' Sample GIST gene expression data from Ochs et al. (2009)
+#' GIST gene expression data from Ochs et al. (2009)
 #' @docType data
 #' @name GIST.data_frame
 #' @usage GIST.data_frame
 NULL
 
-#' Sample GIST gene expression data from Ochs et al. (2009)
+#' GIST gene expression data from Ochs et al. (2009)
+#' @docType data
+#' @name GIST.matrix
+#' @usage GIST.matrix
+NULL
+
+#' GIST gene expression uncertainty matrix from Ochs et al. (2009)
 #' @docType data
 #' @name GIST.matrix
 #' @usage GIST.matrix
