@@ -51,8 +51,8 @@ NULL
 
 #' GIST gene expression uncertainty matrix from Ochs et al. (2009)
 #' @docType data
-#' @name GIST.matrix
-#' @usage GIST.matrix
+#' @name GIST.uncertainty
+#' @usage GIST.uncertainty
 NULL
 
 #' CoGAPS result from running on GIST dataset

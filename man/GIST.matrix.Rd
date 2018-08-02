@@ -6,11 +6,7 @@
 \title{GIST gene expression data from Ochs et al. (2009)}
 \usage{
 GIST.matrix
-
-GIST.matrix
 }
 \description{
 GIST gene expression data from Ochs et al. (2009)
-
-GIST gene expression uncertainty matrix from Ochs et al. (2009)
 }
