@@ -55,9 +55,9 @@ private:
 
 public:
 
-    ProposalQueue(unsigned nBins, float alpha)
+    ProposalQueue(unsigned nBins)
         : mMinAtoms(0), mMaxAtoms(0), mNumBins(nBins), mDimensionSize(0),
-        mDomainSize(0), mAlpha(alpha), mUseCachedRng(false), mU1(0.f), mU2(0.f)
+        mDomainSize(0), mAlpha(0.f), mUseCachedRng(false), mU1(0.f), mU2(0.f)
     {}
 
     // set parameters

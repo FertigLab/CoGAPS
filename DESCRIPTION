@@ -1,5 +1,5 @@
 Package: CoGAPS
-Version: 3.1.2
+Version: 3.3.2
 Date: 2018-04-24
 Title: Coordinated Gene Activity in Pattern Sets
 Author: Thomas Sherman, Wai-shing Lee, Conor Kelton, Ondrej Maxian, Jacob Carey,
@@ -14,25 +14,25 @@ Description: Coordinated Gene Activity in Pattern Sets (CoGAPS)
 Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>,
     Thomas D. Sherman <tomsherman159@gmail.com>
 Depends:
-    R (>= 3.4.0),
-    Rcpp (>= 0.11.0)
+    R (>= 3.5.0)
 Imports:
-    RColorBrewer (>= 1.0.5),
-    gplots (>= 2.8.0),
+    BiocParallel,
+    cluster,
+    data.table,
+    methods,
+    gplots,
     graphics,
     grDevices,
-    methods,
-    cluster,
-    shiny,
+    RColorBrewer,
+    Rcpp,
+    S4Vectors,
+    SingleCellExperiment,
     stats,
-    utils,
-    doParallel,
-    foreach,
-    ggplot2,
-    reshape2
+    SummarizedExperiment,
+    tools,
+    utils
 Suggests:
     testthat,
-    lintr,
     knitr,
     rmarkdown,
     BiocStyle
@@ -43,4 +43,14 @@ biocViews: GeneExpression, Transcription, GeneSetEnrichment,
     DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray,
     MultipleComparison, DimensionReduction
 NeedsCompilation: yes
-RoxygenNote: 5.0.1
+RoxygenNote: 6.1.0
+Encoding: UTF-8
+Collate:
+    'class-CogapsParams.R'
+    'CoGAPS.R'
+    'DistributedCogaps.R'
+    'Package.R'
+    'RcppExports.R'
+    'class-CogapsResult.R'
+    'methods-CogapsParams.R'
+    'methods-CogapsResult.R'

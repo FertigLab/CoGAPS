@@ -1,55 +1,86 @@
 #include "Matrix.h"
 #include "../file_parser/CsvParser.h"
 #include "../file_parser/MatrixElement.h"
+#include "../GapsAssert.h"
 
-template<class Matrix>
-static Rcpp::NumericMatrix convertToRMatrix(const Matrix &mat)
+template <class MatA, class MatB>
+inline void copyMatrix(MatA &dest, const MatB &source)
 {
-    Rcpp::NumericMatrix rmat(mat.nRow(), mat.nCol());
-    for (unsigned i = 0; i < mat.nRow(); ++i)
-    {
-        for (unsigned j = 0; j < mat.nCol(); ++j)
-        {
-            rmat(i,j) = mat(i,j);
-        }
-    }
-    return rmat;
-}
+    GAPS_ASSERT_MSG(dest.nRow() == source.nRow(), dest.nRow() << " " << source.nRow());
+    GAPS_ASSERT_MSG(dest.nCol() == source.nCol(), dest.nCol() << " " << source.nCol());
 
-template<class MatA, class MatB>
-static void copyMatrix(MatA &dest, const MatB &source)
-{
-    for (unsigned i = 0; i < source.nRow(); ++i)
+    for (unsigned i = 0; i < dest.nRow(); ++i)
     {
-        for (unsigned j = 0; j < source.nCol(); ++j)
+        for (unsigned j = 0; j < dest.nCol(); ++j)
         {
             dest(i,j) = source(i,j);
         }
     }
 }
-    
-/****************************** ROW MATRIX *****************************/
 
-RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
-: mNumRows(nrow), mNumCols(ncol)
+/********************************** ROW MATRIX ********************************/
+
+void RowMatrix::allocate()
 {
     for (unsigned i = 0; i < mNumRows; ++i)
     {
-        mRows.push_back(Vector(mNumCols));
+        mData.push_back(Vector(mNumCols));
     }
 }
 
-RowMatrix::RowMatrix(const Rcpp::NumericMatrix &rmat)
-: mNumRows(rmat.nrow()), mNumCols(rmat.ncol())
+RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
+    : GenericMatrix(nrow, ncol)
+{}
+
+RowMatrix::RowMatrix(const Matrix &mat, bool transpose,
+bool partitionRows, const std::vector<unsigned> &indices)
+    : GenericMatrix(mat, transpose, partitionRows, indices)
+{}
+
+RowMatrix::RowMatrix(const std::string &path, bool transpose,
+bool partitionRows, const std::vector<unsigned> &indices)
+    : GenericMatrix(path, transpose, partitionRows, indices)
+{}
+
+float& RowMatrix::operator()(unsigned r, unsigned c)
 {
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        mRows.push_back(Vector(mNumCols));
-        for (unsigned j = 0; j < mNumCols; ++j)
-        {
-            this->operator()(i,j) = rmat(i,j);
-        }
-    }
+    return mData[r][c];
+}
+
+float RowMatrix::operator()(unsigned r, unsigned c) const
+{
+    return mData[r][c];
+}
+
+Vector& RowMatrix::getRow(unsigned row)
+{
+    return mData[row];
+}
+
+const Vector& RowMatrix::getRow(unsigned row) const
+{
+    return mData[row];
+}
+
+float* RowMatrix::rowPtr(unsigned row)
+{
+    return mData[row].ptr();
+}
+
+const float* RowMatrix::rowPtr(unsigned row) const
+{
+    return mData[row].ptr();
+}
+
+RowMatrix::RowMatrix(const ColMatrix &mat) : GenericMatrix(mat.nRow(), mat.nCol())
+{
+    copyMatrix(*this, mat);
+}
+
+RowMatrix& RowMatrix::operator=(const RowMatrix &mat)
+{
+    copyMatrix(*this, mat);
+    return *this;
 }
 
 RowMatrix& RowMatrix::operator=(const ColMatrix &mat)
@@ -58,98 +89,73 @@ RowMatrix& RowMatrix::operator=(const ColMatrix &mat)
     return *this;
 }
 
-Rcpp::NumericMatrix RowMatrix::rMatrix() const
-{
-    return convertToRMatrix(*this);
-}
+/******************************** COLUMN MATRIX *******************************/
 
-RowMatrix RowMatrix::operator/(float val) const
-{
-    RowMatrix mat(mNumRows, mNumCols);
-    for (unsigned i = 0; i < mNumRows; ++i)
-    {
-        mat.getRow(i) = mRows[i] / val;
-    }
-    return mat;
-}
-
-Archive& operator<<(Archive &ar, RowMatrix &mat)
-{
-    for (unsigned i = 0; i < mat.nRow(); ++i)
-    {
-        ar << mat.mRows[i];
-    }
-    return ar;
-}
-
-Archive& operator>>(Archive &ar, RowMatrix &mat)
-{
-    for (unsigned i = 0; i < mat.nRow(); ++i)
-    {
-        ar >> mat.mRows[i];
-    }
-    return ar;
-}
-
-/**************************** COLUMN MATRIX ****************************/
-
-ColMatrix::ColMatrix(unsigned nrow, unsigned ncol)
-: mNumRows(nrow), mNumCols(ncol)
+void ColMatrix::allocate()
 {
     for (unsigned i = 0; i < mNumCols; ++i)
     {
-        mCols.push_back(Vector(mNumRows));
+        mData.push_back(Vector(mNumRows));
     }
 }
 
-ColMatrix::ColMatrix(const Rcpp::NumericMatrix &rmat)
-: mNumRows(rmat.nrow()), mNumCols(rmat.ncol())
+ColMatrix::ColMatrix(unsigned nrow, unsigned ncol)
+    : GenericMatrix(nrow, ncol)
+{}
+
+ColMatrix::ColMatrix(const Matrix &mat, bool transpose,
+bool partitionRows, const std::vector<unsigned> &indices)
+    : GenericMatrix(mat, transpose, partitionRows, indices)
+{}
+
+ColMatrix::ColMatrix(const std::string &path, bool transpose,
+bool partitionRows, const std::vector<unsigned> &indices)
+    : GenericMatrix(path, transpose, partitionRows, indices)
+{}
+
+float& ColMatrix::operator()(unsigned r, unsigned c)
 {
-    for (unsigned j = 0; j < mNumCols; ++j)
-    {
-        mCols.push_back(Vector(mNumRows));
-        for (unsigned i = 0; i < mNumRows; ++i)
-        {
-            this->operator()(i,j) = rmat(i,j);
-        }
-    }
+    return mData[c][r];
 }
 
-ColMatrix ColMatrix::operator/(float val) const
+float ColMatrix::operator()(unsigned r, unsigned c) const
 {
-    ColMatrix mat(mNumRows, mNumCols);
-    for (unsigned j = 0; j < mNumCols; ++j)
-    {
-        mat.getCol(j) = mCols[j] / val;
-    }
-    return mat;
+    return mData[c][r];
+}
+
+Vector& ColMatrix::getCol(unsigned col)
+{
+    return mData[col];
+}
+
+const Vector& ColMatrix::getCol(unsigned col) const
+{
+    return mData[col];
+}
+
+float* ColMatrix::colPtr(unsigned col)
+{
+    return mData[col].ptr();
+}
+
+const float* ColMatrix::colPtr(unsigned col) const
+{
+    return mData[col].ptr();
+}
+
+ColMatrix::ColMatrix(const RowMatrix &mat) : GenericMatrix(mat.nRow(), mat.nCol())
+{
+    copyMatrix(*this, mat);
+}
+
+ColMatrix& ColMatrix::operator=(const ColMatrix &mat)
+{
+    copyMatrix(*this, mat);
+    return *this;
 }
 
 ColMatrix& ColMatrix::operator=(const RowMatrix &mat)
 {
     copyMatrix(*this, mat);
     return *this;
-}
-
-Rcpp::NumericMatrix ColMatrix::rMatrix() const
-{
-    return convertToRMatrix(*this);
-}
-
-Archive& operator<<(Archive &ar, ColMatrix &mat)
-{
-    for (unsigned j = 0; j < mat.nCol(); ++j)
-    {
-        ar << mat.mCols[j];
-    }
-    return ar;
-}
-
-Archive& operator>>(Archive &ar, ColMatrix &mat)
-{
-    for (unsigned j = 0; j < mat.nCol(); ++j)
-    {
-        ar >> mat.mCols[j];
-    }
-    return ar;
 }

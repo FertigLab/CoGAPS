@@ -7,6 +7,11 @@ sudo: required
 bioc_required: true
 bioc_use_devel: true
 
+# create executable temp directory
+env:
+  global:
+    - TMPDIR=/tmp
+
 # before installing, lint c++ code
 #before_install:
   #- deb http://us.archive.ubuntu.com/ubuntu precise main universe

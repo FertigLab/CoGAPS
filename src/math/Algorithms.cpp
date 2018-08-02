@@ -1,18 +1,9 @@
 #include "Algorithms.h"
 #include "../data_structures/Matrix.h"
+#include "../GapsAssert.h"
 #include "SIMD.h"
 
 #include <algorithm>
-#include <sstream>
-#include <string>
-
-float gaps::algo::stringToFloat(const std::string &s)
-{
-    std::stringstream ss(s);
-    float f;
-    ss >> f;
-    return f;
-}
 
 float gaps::algo::sum(const Vector &vec)
 {
@@ -29,7 +20,7 @@ float gaps::algo::min(const Vector &vec)
     float min = vec[0];
     for (unsigned i = 0; i < vec.size(); ++i)
     {
-        min = std::min(min, vec[i]);
+        min = gaps::min(min, vec[i]);
     }
     return min;
 }
@@ -39,7 +30,7 @@ float gaps::algo::max(const Vector &vec)
     float max = vec[0];
     for (unsigned i = 0; i < vec.size(); ++i)
     {
-        max = std::max(max, vec[i]);
+        max = gaps::max(max, vec[i]);
     }
     return max;
 }
@@ -215,6 +206,7 @@ float delta2)
 // horribly slow, don't call often
 RowMatrix gaps::algo::matrixMultiplication(const ColMatrix &A, const RowMatrix &B)
 {
+    GAPS_ASSERT_MSG(A.nCol() == B.nRow(), A.nCol() << " " << B.nRow());
     RowMatrix temp(A.nRow(), B.nCol());
     for (unsigned i = 0; i < A.nRow(); ++i)
     {
@@ -225,7 +217,7 @@ RowMatrix gaps::algo::matrixMultiplication(const ColMatrix &A, const RowMatrix &
             {
                 sum += A(i,k) * B(k,j);
             }
-            temp(i, j) = sum;
+            temp(i,j) = sum;
         }
     }
     return temp;

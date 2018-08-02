@@ -163,4 +163,7 @@ TEST_CASE("Test Archive.h")
             REQUIRE(gaps::random::exponential(5.5) == randSequence[i]);
         }
     }
+
+    // cleanup directory
+    std::remove("test_ar.temp");
 }
