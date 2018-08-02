@@ -58,7 +58,7 @@ unsigned getNumPatterns(const Rcpp::List &allParams)
     unsigned nPatterns = gapsParams.slot("nPatterns");
     if (!Rf_isNull(allParams["checkpointInFile"]))
     {
-        std::string file = Rcpp::as<std::string>(allParams["checkpointInFile"]);
+        std::string file(Rcpp::as<std::string>(allParams["checkpointInFile"]));
         Archive ar(file, ARCHIVE_READ);
         gaps::random::load(ar);
         ar >> nPatterns;
@@ -82,7 +82,7 @@ std::pair<bool, bool> processDistributedParameters(const Rcpp::List &allParams)
     const Rcpp::S4 &gapsParams(allParams["gaps"]);
     if (!Rf_isNull(gapsParams.slot("distributed")))
     {
-        std::string d = Rcpp::as<std::string>(gapsParams.slot("distributed"));
+        std::string d(Rcpp::as<std::string>(gapsParams.slot("distributed")));
         GAPS_ASSERT(d == "genome-wide" || d == "single-cell");
         return std::pair<bool, bool>(true, d == "genome-wide");
     }
@@ -116,7 +116,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
     // populate GapsRunner from checkpoint file
     if (!Rf_isNull(allParams["checkpointInFile"]))
     {
-        std::string file = Rcpp::as<std::string>(allParams["checkpointInFile"]);
+        std::string file(Rcpp::as<std::string>(allParams["checkpointInFile"]));
         Archive ar(file, ARCHIVE_READ);
         gaps::random::load(ar);
         ar >> runner;

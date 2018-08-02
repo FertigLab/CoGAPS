@@ -3,10 +3,10 @@
 \docType{data}
 \name{GIST.data_frame}
 \alias{GIST.data_frame}
-\title{Sample GIST gene expression data from Ochs et al. (2009)}
+\title{GIST gene expression data from Ochs et al. (2009)}
 \usage{
 GIST.data_frame
 }
 \description{
-Sample GIST gene expression data from Ochs et al. (2009)
+GIST gene expression data from Ochs et al. (2009)
 }

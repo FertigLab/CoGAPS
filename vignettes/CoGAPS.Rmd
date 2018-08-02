@@ -230,12 +230,16 @@ The following calls are equivalent:
 
 ```{r}
 # genome-wide CoGAPS
-CoGAPS(SimpSim.data, params, distributed="genome-wide", outputFrequency=1000)
 GWCoGAPS(SimpSim.data, params, outputFrequency=1000)
+
+# genome-wide CoGAPS
+CoGAPS(SimpSim.data, params, distributed="genome-wide", outputFrequency=1000)
+
+# single-cell CoGAPS
+scCoGAPS(SimpSim.data, params, outputFrequency=1000)
 
 # single-cell CoGAPS
 CoGAPS(SimpSim.data, params, distributed="single-cell", singleCell=TRUE, outputFrequency=1000)
-scCoGAPS(SimpSim.data, params, outputFrequency=1000)
 ```
 
 Notice that we also set the parameter `singleCell=TRUE`. This makes some 
@@ -270,7 +274,7 @@ THIS SECTION UNDER CONSTRUCTION
 ## Checkpoint System - Saving/Loading CoGAPS Runs
 
 CoGAPS allows the user to save their progress throughout the run, and restart
-from the latest saved "checkpoint". This is intended to that if the server
+from the latest saved "checkpoint". This is intended so that if the server
 crashes in the middle of a long run it doesn't need to be restarted from the
 beginning. Set the `checkpointInterval` parameter to save checkpoints and
 pass a file name as `checkpointInFile` to load from a checkpoint. 
@@ -315,9 +319,27 @@ default, `CoGAPS` assumes that the standard deviation matrix is 10% of the
 data matrix. This is a reasonable heuristic to use, but for specific types
 of data you may be able to provide better information.
 
-```{r eval=FALSE}
+```{r}
 # run CoGAPS with custom uncertainty
+data(GIST)
 result <- CoGAPS(GIST.matrix, params, uncertainty=GIST.uncertainty)
+```
+
+## Getting Information from CogapsResult
+
+The `CogapsResult` object that's returned from `CoGAPS` has more than just
+the raw matrices stored in it. Here are a few things you can query from the
+result:
+
+```{r}
+# get the mean ChiSq statistic over all samples
+getMeanChiSq(result)
+
+# get the version number used to create this result
+getVersion(result)
+
+# get the original parameters used to create this result
+getOriginalParameters(result)
 ```
 
 # Citing CoGAPS

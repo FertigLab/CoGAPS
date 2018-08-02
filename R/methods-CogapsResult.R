@@ -42,6 +42,22 @@ function(object)
     object@metadata$meanChiSq
 })
 
+#' @rdname getVersion-methods
+#' @aliases getVersion
+setMethod("getVersion", signature(object="CogapsResult"),
+function(object)
+{
+    object@metadata$diagnostics$version
+})
+
+#' @rdname getOriginalParameters-methods
+#' @aliases getOriginalParameters
+setMethod("getOriginalParameters", signature(object="CogapsResult"),
+function(object)
+{
+    object@metadata$diagnostics$params
+})
+
 #' @rdname calcZ-methods
 #' @aliases calcZ
 setMethod("calcZ", signature(object="CogapsResult"),
