@@ -58,7 +58,7 @@ class RowMatrix : public GenericMatrix<RowMatrix>
 {
 private:
 
-    friend class GenericMatrix;
+    friend class GenericMatrix<RowMatrix>;
     void allocate();
 
 public:
@@ -91,7 +91,7 @@ class ColMatrix : public GenericMatrix<ColMatrix>
 {
 private:
 
-    friend class GenericMatrix;
+    friend class GenericMatrix<ColMatrix>;
     void allocate();
 
 public:
