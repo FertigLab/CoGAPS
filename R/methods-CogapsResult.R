@@ -21,7 +21,8 @@ plot.CogapsResult <- function(x, ...)
     xlimits <- c(0, nSamples + 1)
     ylimits <- c(0, max(x@sampleFactors) * 1.1)
 
-    plot(NULL, xlim=xlimits, ylim=ylimits, ylab="Relative Amplitude")
+    plot(NULL, xlim=xlimits, ylim=ylimits, ylab="Relative Amplitude",
+        xlab="Samples")
 
     for (i in 1:nFactors)
     {
@@ -77,6 +78,7 @@ function(object, genes)
 #' @aliases binaryA
 #' @importFrom gplots heatmap.2
 #' @importFrom graphics mtext
+#' @importFrom RColorBrewer brewer.pal
 setMethod("binaryA", signature(object="CogapsResult"),
 function(object, threshold)
 {
@@ -95,6 +97,7 @@ function(object, threshold)
 #' @aliases plotResiduals
 #' @importFrom gplots heatmap.2
 #' @importFrom grDevices colorRampPalette
+#' @importFrom RColorBrewer brewer.pal
 setMethod("plotResiduals", signature(object="CogapsResult"),
 function(object, data, uncertainty)
 {
@@ -142,9 +145,9 @@ function(object, threshold, lp)
         ssranks <- matrix(NA, nrow=nGenes, ncol=nPatterns,
             dimnames=dimnames(object@featureLoadings))
         ssgenes <- matrix(NA, nrow=nGenes, ncol=nPatterns, dimnames=NULL)
-        for (i in 1:nP)
+        for (i in 1:nPatterns)
         {
-            lp <- rep(0,dim(Amatrix)[2])
+            lp <- rep(0,nPatterns)
             lp[i] <- 1
             sstat[,i] <- unlist(apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp))))
             ssranks[,i]<-rank(sstat[,i])
@@ -152,8 +155,8 @@ function(object, threshold, lp)
         }
         if (threshold=="cut")
         {
-            geneThresh <- sapply(1:nP,function(x) min(which(ssranks[ssgenes[,x],x] > apply(ssranks[ssgenes[,x],],1,min))))
-            ssgenes.th <- sapply(1:nP,function(x) ssgenes[1:geneThresh[x],x])
+            geneThresh <- sapply(1:nPatterns,function(x) min(which(ssranks[ssgenes[,x],x] > apply(ssranks[ssgenes[,x],],1,min))))
+            ssgenes.th <- sapply(1:nPatterns,function(x) ssgenes[1:geneThresh[x],x])
         }
         else if (threshold=="all")
         {

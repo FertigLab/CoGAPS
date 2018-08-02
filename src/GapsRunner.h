@@ -90,7 +90,7 @@ public:
     void setCheckpointOutFile(const std::string &outFile);
     void setCheckpointInterval(unsigned interval);
 
-    GapsResult run();
+    GapsResult run(bool printThreads=true);
 
     // serialization
     friend Archive& operator>>(Archive &ar, GapsRunner &runner);

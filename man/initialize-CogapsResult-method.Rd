@@ -6,7 +6,31 @@
 \title{Constructor for CogapsResult}
 \usage{
 \S4method{initialize}{CogapsResult}(.Object, Amean, Pmean, Asd, Psd, seed,
-  meanChiSq, diagnostics = list(), ...)
+  meanChiSq, geneNames = NULL, sampleNames = NULL,
+  diagnostics = NULL, ...)
+}
+\arguments{
+\item{.Object}{CogapsResult object}
+
+\item{Amean}{mean of sampled A matrices}
+
+\item{Pmean}{mean of sampled P matrices}
+
+\item{Asd}{std dev of sampled A matrices}
+
+\item{Psd}{std dev of sampled P matrices}
+
+\item{seed}{random seed used for the run}
+
+\item{meanChiSq}{mean value of ChiSq statistic}
+
+\item{geneNames}{names of genes in original data set}
+
+\item{sampleNames}{names of samples in original data set}
+
+\item{diagnostics}{assorted diagnostic reports from the run}
+
+\item{...}{initial values for slots}
 }
 \value{
 initialized CogapsResult object

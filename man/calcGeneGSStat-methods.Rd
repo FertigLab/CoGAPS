@@ -31,8 +31,3 @@ calculates the probability that a gene
 listed in a gene set behaves like other genes in the set within
 the given data set
 }
-\examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.D)
-calcGeneGSStat(result, GSGenes=GSets[[1]], numPerm=500)
-}

@@ -1,4 +1,5 @@
 #include "catch.h"
+#include "../math/Math.h"
 #include "../math/Random.h"
 
 #define TEST_APPROX(x) Approx(x).epsilon(0.001)
@@ -19,8 +20,8 @@ TEST_CASE("Test Random.h - Random Number Generation")
         unsigned N = 10000;
         for (unsigned i = 0; i < N; ++i)
         {
-            min = std::min(gaps::random::uniform(), min);
-            max = std::max(gaps::random::uniform(), max);
+            min = gaps::min(gaps::random::uniform(), min);
+            max = gaps::max(gaps::random::uniform(), max);
             sum += gaps::random::uniform();
         }
         REQUIRE(sum / N == Approx(0.5f).epsilon(0.01f));
@@ -39,8 +40,8 @@ TEST_CASE("Test Random.h - Random Number Generation")
         float min = 10., max = 0.;
         for (unsigned i = 0; i < 1000; ++i)
         {
-            min = std::min(gaps::random::uniform(0.f,10.f), min);
-            max = std::max(gaps::random::uniform(0.f,10.f), max);
+            min = gaps::min(gaps::random::uniform(0.f,10.f), min);
+            max = gaps::max(gaps::random::uniform(0.f,10.f), max);
         }
         REQUIRE(min < 0.1f);
         REQUIRE(max > 9.9f);

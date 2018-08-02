@@ -8,27 +8,32 @@
 #' @param uncertainty uncertainty matrix (same supported types as data)
 #' @return list
 #' @importFrom BiocParallel bplapply MulticoreParam
-distributedCogaps <- function(data, allParams, uncertainty, BPPARAM=NULL)
+distributedCogaps <- function(data, allParams, uncertainty)
 {
-    FUN <- function(set, data, allParams, uncertainty, fixedMatrix=NULL)
+    FUN <- function(index, sets, data, allParams, uncertainty, fixedMatrix=NULL)
     {
         internal <- ifelse(is(data, "character"), cogaps_cpp_from_file, cogaps_cpp)
-        raw <- internal(data, allParams, uncertainty, set, fixedMatrix)
+        raw <- internal(data, allParams, uncertainty, sets[[index]],
+            fixedMatrix, index == 1)
         new("CogapsResult", Amean=raw$Amean, Asd=raw$Asd, Pmean=raw$Pmean,
-            Psd=raw$Psd, seed=raw$seed, meanChiSq=raw$meanChiSq)    
+            Psd=raw$Psd, seed=raw$seed, meanChiSq=raw$meanChiSq)
     }
 
     # randomly sample either rows or columns into subsets to break the data up
     set.seed(allParams$gaps@seed)
     sets <- createSets(data, allParams)
-    if (is.null(BPPARAM))
-        BPPARAM <- BiocParallel::MulticoreParam(workers=length(sets))
+    if (is.null(allParams$bpBackend))
+        allParams$bpBackend <- BiocParallel::MulticoreParam(workers=length(sets))
     
     # run Cogaps normally on each subset of the data
-    initialResult <- bplapply(sets, FUN, BPPARAM=BPPARAM, data=data,
-        allParams=allParams, uncertainty=uncertainty)
+    if (allParams$messages)
+        message("Running Across Subsets...")
+    initialResult <- bplapply(1:length(sets), FUN, BPPARAM=allParams$bpBackend,
+        sets=sets, data=data, allParams=allParams, uncertainty=uncertainty)
 
     # match patterns in either A or P matrix
+    if (allParams$messages)
+        message("Matching Patterns Across Subsets...")
     consensusMatrix <- findConsensusMatrix(initialResult, allParams)
     allParams$gaps@nPatterns <- ncol(consensusMatrix)
 
@@ -36,9 +41,12 @@ distributedCogaps <- function(data, allParams, uncertainty, BPPARAM=NULL)
     allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
         == "genome-wide", "P", "A")
 
-    # ru final phase with fixed matrix
-    finalResult <- bplapply(sets, FUN, BPPARAM=BPPARAM, data=data, 
-        allParams=allParams, uncertainty=uncertainty, fixedMatrix=consensusMatrix)
+    # run final phase with fixed matrix
+    if (allParams$messages)
+        message("Running Final Stage...")
+    finalResult <- bplapply(1:length(sets), FUN, BPPARAM=allParams$bpBackend,
+        sets=sets, data=data, allParams=allParams, uncertainty=uncertainty,
+        fixedMatrix=consensusMatrix)
 
     # get result 
     return(stitchTogether(finalResult, allParams))
@@ -121,16 +129,9 @@ findConsensusMatrix <- function(result, allParams)
 }
 
 #' Match Patterns Across Multiple Runs
-#' @param Atot a matrix containing the total by set estimates of Pmean output from \code{reOrderBySet}
-#' @param nSets number of parallel sets used to generate \code{Atot}
-#' @param cnt  number of branches at which to cut dendrogram
-#' @param minNS minimum of individual set contributions a cluster must contain
-#' @param maxNS maximum of individual set contributions a cluster must contain
-#' @param ignore.NA logical indicating whether or not to ignore NAs from potential over dimensionalization. Default is FALSE.
-#' @param bySet logical indicating whether to return list of matched set solutions from \code{Atot}
-#' @param ... additional parameters for \code{agnes}
-#' @return a matrix of consensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
-#' consensus pattern is also returned.
+#' @param allPatterns matrix of patterns stored in the columns
+#' @param allParams list of all CoGAPS parameters
+#' @return a matrix of consensus patterns
 #' @importFrom stats weighted.mean
 patternMatch <- function(allPatterns, allParams)
 {

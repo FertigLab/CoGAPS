@@ -26,6 +26,7 @@
 ^src/file_parser/TsvParser.o
 ^src/file_parser/MtxParser.o
 ^src/math/Algorithms.o
+^src/math/Math.o
 ^src/math/Random.o
 ^src/cpp_tests/testAlgorithms.o
 ^src/cpp_tests/testAtomicDomain.o

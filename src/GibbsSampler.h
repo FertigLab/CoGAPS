@@ -425,7 +425,7 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::removeMass(uint64_t pos, float mass, unsigned row, unsigned col)
 {
     mDomain.cacheErase(pos);
-    mMatrix(row, col) = std::max(mMatrix(row, col) - mass, 0.f);
+    mMatrix(row, col) = gaps::max(mMatrix(row, col) - mass, 0.f);
     impl()->updateAPMatrix(row, col, -mass);
 }
 
@@ -448,7 +448,7 @@ unsigned col)
     }
 
     // accept mass as long as it's non-zero
-    if (mass >= gaps::algo::epsilon)
+    if (mass >= gaps::epsilon)
     {
         addMass(pos, mass, row, col);
         mQueue.acceptBirth();
@@ -466,7 +466,7 @@ void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass, unsigned row,
 unsigned col)
 {
     // kill off atom
-    mMatrix(row, col) = std::max(mMatrix(row, col) - mass, 0.f);
+    mMatrix(row, col) = gaps::max(mMatrix(row, col) - mass, 0.f);
     impl()->updateAPMatrix(row, col, -mass);
 
     // calculate rebirth mass
@@ -573,7 +573,7 @@ template <class T, class MatA, class MatB>
 bool GibbsSampler<T, MatA, MatB>::updateAtomMass(uint64_t pos, float mass,
 float delta)
 {
-    if (mass + delta < gaps::algo::epsilon)
+    if (mass + delta < gaps::epsilon)
     {
         mDomain.cacheErase(pos);
         mQueue.acceptDeath();
@@ -617,7 +617,7 @@ std::pair<float, bool> GibbsSampler<T, MatA, MatB>::gibbsMass(AlphaParameters al
     alpha.s *= mAnnealingTemp;
     alpha.su *= mAnnealingTemp;
 
-    if (alpha.s > gaps::algo::epsilon)
+    if (alpha.s > gaps::epsilon)
     {
         float mean = (alpha.su - mLambda) / alpha.s;
         float sd = 1.f / std::sqrt(alpha.s);
@@ -626,8 +626,8 @@ std::pair<float, bool> GibbsSampler<T, MatA, MatB>::gibbsMass(AlphaParameters al
         if (pLower < 1.f)
         {
             float m = gaps::random::inverseNormSample(pLower, 1.f, mean, sd);
-            float gMass = std::min(m, mMaxGibbsMass / mLambda);
-            return std::pair<float, bool>(gMass, gMass >= gaps::algo::epsilon);
+            float gMass = gaps::min(m, mMaxGibbsMass / mLambda);
+            return std::pair<float, bool>(gMass, gMass >= gaps::epsilon);
         }
     }
     return std::pair<float, bool>(0.f, false);
@@ -640,7 +640,7 @@ float m1, float m2)
     alpha.s *= mAnnealingTemp;
     alpha.su *= mAnnealingTemp;
 
-    if (alpha.s > gaps::algo::epsilon)
+    if (alpha.s > gaps::epsilon)
     {
         float mean = alpha.su / alpha.s; // lambda cancels out
         float sd = 1.f / std::sqrt(alpha.s);
@@ -650,7 +650,7 @@ float m1, float m2)
         if (!(pLower >  0.95f || pUpper < 0.05f))
         {
             float delta = gaps::random::inverseNormSample(pLower, pUpper, mean, sd);
-            float gibbsMass = std::min(std::max(-m1, delta), m2); // conserve mass
+            float gibbsMass = gaps::min(gaps::max(-m1, delta), m2); // conserve mass
             return std::pair<float, bool>(gibbsMass, true);
         }
     }

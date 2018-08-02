@@ -6,9 +6,10 @@
 \alias{patternMarkers,CogapsResult-method}
 \title{compute pattern markers statistic}
 \usage{
-patternMarkers(object, threshold = "all", lp = NA, full = FALSE)
+patternMarkers(object, threshold = "all", lp = NA)
 
-\S4method{patternMarkers}{CogapsResult}(object, threshold, lp)
+\S4method{patternMarkers}{CogapsResult}(object, threshold = "all",
+  lp = NA)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}

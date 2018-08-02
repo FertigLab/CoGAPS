@@ -32,5 +32,5 @@ these parameters  are interrelated so they must be set together
 }
 \examples{
  params <- new("CogapsParams")
- params <- setDistributedParams(3, 2, 4)
+ params <- setDistributedParams(params, 5)
 }

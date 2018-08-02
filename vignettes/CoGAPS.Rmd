@@ -13,6 +13,7 @@ output:
 
 ```{r include=FALSE, cache=FALSE}
 library(CoGAPS)
+library(BiocParallel)
 ```
 
 # Introduction
@@ -28,7 +29,7 @@ the elements in the A and P matrices are constrained to be greater than or
 equal to zero. This constraint simultaneously reflects the non-negative nature
 of gene expression data and enforces the additive nature of the resulting
 feature dimensions, generating solutions that are biologically intuitive to
-interpret @SEUNG_1999.
+interpret (@SEUNG_1999).
 
 CoGAPS has two extensions that allow it to scale up to large data sets,
 Genome-Wide CoGAPS (GWCoGAPS) and Single-Cell CoGAPS (scCOGAPS). This package
@@ -229,12 +230,12 @@ The following calls are equivalent:
 
 ```{r}
 # genome-wide CoGAPS
-CoGAPS(SimpSim.data, params, distributed="genome-wide")
-GWCoGAPS(SimpSim.data, params)
+CoGAPS(SimpSim.data, params, distributed="genome-wide", outputFrequency=1000)
+GWCoGAPS(SimpSim.data, params, outputFrequency=1000)
 
 # single-cell CoGAPS
-CoGAPS(SimpSim.data, params, distributed="single-cell", singleCell=TRUE)
-scCoGAPS(SimpSim.data, params)
+CoGAPS(SimpSim.data, params, distributed="single-cell", singleCell=TRUE, outputFrequency=1000)
+scCoGAPS(SimpSim.data, params, outputFrequency=1000)
 ```
 
 Notice that we also set the parameter `singleCell=TRUE`. This makes some 
@@ -268,11 +269,37 @@ THIS SECTION UNDER CONSTRUCTION
 
 ## Checkpoint System - Saving/Loading CoGAPS Runs
 
+CoGAPS allows the user to save their progress throughout the run, and restart
+from the latest saved "checkpoint". This is intended to that if the server
+crashes in the middle of a long run it doesn't need to be restarted from the
+beginning. Set the `checkpointInterval` parameter to save checkpoints and
+pass a file name as `checkpointInFile` to load from a checkpoint. 
+
+```{r}
+# our initial run
+CoGAPS(SimpSim.data, params, checkpointInterval=100, checkpointOutFile="vignette_example.out")
+
+# assume the previous run crashes
+CoGAPS(SimpSim.data, checkpointInFile="vignette_example.out")
+```
+
 ## Manual Pipeline for GWCoGAPS/scCoGAPS
 
 THIS SECTION UNDER CONSTRUCTION
 
 ## Setting Parallel Backend for GWCoGAPS/scCoGAPS
+
+The distributed computation for CoGAPS uses `BiocParallel` underneath the hood
+to manage the parallelization. The user has the option to specify what the
+backend should be. By default, it is `MulticoreParam` with the same number
+of workers at `nSets`. Use the `BPPARAM` parameter in `CoGAPS` to set the
+backend. See the vignette for `BiocParallel` for more information about the
+different choices for the backend.
+
+```{r}
+# run CoGAPS with serial backend
+scCoGAPS(SimpSim.data, params, BPPARAM=BiocParallel::SerialParam())
+```
 
 ## Transposing Data
 

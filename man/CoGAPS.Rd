@@ -7,7 +7,8 @@
 CoGAPS(data, params = new("CogapsParams"), nThreads = 1,
   messages = TRUE, outputFrequency = 500, uncertainty = NULL,
   checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 1000,
-  checkpointInFile = NULL, transposeData = FALSE, ...)
+  checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
+  ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
@@ -36,6 +37,8 @@ contained in this file}
 for data that is stored as samples x genes since CoGAPS requires data to be
 genes x samples}
 
+\item{BPPARAM}{BiocParallel backend}
+
 \item{...}{allows for overwriting parameters in params}
 }
 \value{
@@ -53,14 +56,14 @@ SingleCellExperiment. The supported file types are csv, tsv, and mtx.
 \examples{
 # Running from R object
 data(GIST)
-resultA <- CoGAPS(GIST.D)
+resultA <- CoGAPS(GIST.data_frame)
 
 # Running from file name
 gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
 resultB <- CoGAPS(gist_path)
 
-Setting Parameters
+# Setting Parameters
 params <- new("CogapsParams")
 params <- setParam(params, "nPatterns", 5)
-resultC <- CoGAPS(GIST.D, params)
+resultC <- CoGAPS(GIST.data_frame, params)
 }

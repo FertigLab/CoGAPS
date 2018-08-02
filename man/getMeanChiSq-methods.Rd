@@ -16,7 +16,7 @@ getMeanChiSq(object)
 \value{
 chi-sq error
 data(SimpSim)
-result <- CoGAPS(SimpSim.D)
+result <- CoGAPS(SimpSim.data)
 meanChiSq(result)
 }
 \description{

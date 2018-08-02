@@ -4,10 +4,11 @@
 \alias{GWCoGAPS}
 \title{Genome Wide CoGAPS}
 \usage{
-GWCoGAPS(data, params = new("CogapsParams"), nThreads = NULL,
+GWCoGAPS(data, params = new("CogapsParams"), nThreads = 1,
   messages = TRUE, outputFrequency = 500, uncertainty = NULL,
   checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 1000,
-  checkpointInFile = NULL, transposeData = FALSE, ...)
+  checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
+  ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
@@ -35,6 +36,8 @@ contained in this file}
 \item{transposeData}{T/F for transposing data while reading it in - useful
 for data that is stored as samples x genes since CoGAPS requires data to be
 genes x samples}
+
+\item{BPPARAM}{BiocParallel backend}
 
 \item{...}{allows for overwriting parameters in params}
 }
