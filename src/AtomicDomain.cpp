@@ -150,7 +150,6 @@ void AtomicDomain::erase(uint64_t pos)
 void AtomicDomain::cacheInsert(uint64_t pos, float mass) const
 {
     unsigned ndx = 0;
-
     #pragma omp critical(atomicInsert)
     {
         ndx = mInsertCacheIndex++;
@@ -161,7 +160,6 @@ void AtomicDomain::cacheInsert(uint64_t pos, float mass) const
 void AtomicDomain::cacheErase(uint64_t pos) const
 {
     unsigned ndx = 0;
-
     #pragma omp critical(atomicErase)
     {
         ndx = mEraseCacheIndex++;
@@ -196,7 +194,7 @@ void AtomicDomain::flushCache()
 // O(logN)
 void AtomicDomain::updateMass(uint64_t pos, float newMass)
 {
-    mAtoms[mAtomPositions.at(pos)].mass = newMass; // TODO at is C++11
+    mAtoms[mAtomPositions.at(pos)].mass = newMass; // TODO at() is C++11
 }
 
 Archive& operator<<(Archive &ar, Atom &a)

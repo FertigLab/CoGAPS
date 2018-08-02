@@ -1,253 +1,279 @@
-# regenerate `SimpSim.result` with correct row/col names
-# need to pass whole GSets list
-# not one element
-# smooth patterns nbd
-# bluered not quotes - it's a function
-# make sure import heatmap.2 from gplots
-# make sure GWCoGAPS vignette is included
-# look into conference poster/abstract submission
-# write first draft of abstract
+#' @include class-CogapsParams.R
+NULL
+
+#' Checks if file is supported
+#' @param file path to file
+#' @return TRUE if file is supported, FALSE if not
+#' @importFrom tools file_ext
+supported <- function(file)
+{
+    if (!is(file, "character"))
+        return(FALSE)
+    return(tools::file_ext(file) %in% c("tsv", "csv", "mtx"))
+}
 
 #' CoGAPS Matrix Factorization Algorithm
-#' 
-#' @details calls the C++ MCMC code and performs Bayesian
+#' @export 
+#'
+#' @description calls the C++ MCMC code and performs Bayesian
 #' matrix factorization returning the two matrices that reconstruct
 #' the data matrix
-#' @param D data matrix
-#' @param S uncertainty matrix (std devs for chi-squared of Log Likelihood)
-#' @param nFactor number of patterns (basis vectors, metagenes), which must be
-#' greater than or equal to the number of rows of FP
-#' @param nEquil number of iterations for burn-in
-#' @param nSample number of iterations for sampling
-#' @param nOutputs how often to print status into R by iterations
-#' @param alphaA sparsity parameter for A domain
-#' @param alphaP sparsity parameter for P domain
-#' @param maxGibbmassA limit truncated normal to max size
-#' @param maxGibbmassP limit truncated normal to max size
-#' @param seed a positive seed is used as-is, while any negative seed tells
-#' the algorithm to pick a seed based on the current time
-#' @param messages display progress messages
-#' @param singleCellRNASeq indicates if the data is single cell RNA-seq data
-#' @param whichMatrixFixed character to indicate whether A or P matric contains
-#' the fixed patterns
-#' @param fixedPatterns matrix of fixed values in either A or P matrix
-#' @param checkpointInterval time (in seconds) between creating a checkpoint
-#' @param checkpointFile name of the checkpoint file
-#' @param nCores number of cpu cores to run in parallel over
-#' @param ... keeps backwards compatibility with arguments from older versions
-#' @return list with A and P matrix estimates
-#' @importFrom methods new
+#' @details The supported R types are: matrix, data.frame, SummarizedExperiment,
+#' SingleCellExperiment. The supported file types are csv, tsv, and mtx.
+#' @param data File name or R object (see details for supported types)
+#' @param params CogapsParams object
+#' @param nThreads maximum number of threads to run on
+#' @param messages T/F for displaying output
+#' @param outputFrequency number of iterations between each output (set to 0 to
+#' disable status updates, other output is controlled by @code messages)
+#' @param uncertainty uncertainty matrix - either a matrix or a supported
+#' file type
+#' @param checkpointOutFile name of the checkpoint file to create
+#' @param checkpointInterval number of iterations between each checkpoint (set
+#' to 0 to disable checkpoints)
+#' @param checkpointInFile if this is provided, CoGAPS runs from the checkpoint
+#' contained in this file
+#' @param transposeData T/F for transposing data while reading it in - useful
+#' for data that is stored as samples x genes since CoGAPS requires data to be
+#' genes x samples
+#' @param BPPARAM BiocParallel backend 
+#' @param ... allows for overwriting parameters in params
+#' @return CogapsResult object
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
-#' @export
-CoGAPS <- function(D, S, nFactor=7, nEquil=250, nSample=250, nOutputs=1000,
-alphaA=0.01, alphaP=0.01, maxGibbmassA=100, maxGibbmassP=100,
-seed=-1, messages=TRUE, singleCellRNASeq=FALSE, whichMatrixFixed='N',
-fixedPatterns=matrix(0), checkpointInterval=0, 
-checkpointFile="gaps_checkpoint.out", nCores=1, ...)
+#' # Running from R object
+#' data(GIST)
+#' resultA <- CoGAPS(GIST.data_frame)
+#'
+#' # Running from file name
+#' gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
+#' resultB <- CoGAPS(gist_path)
+#'
+#' # Setting Parameters
+#' params <- new("CogapsParams")
+#' params <- setParam(params, "nPatterns", 5)
+#' resultC <- CoGAPS(GIST.data_frame, params)
+#' @importFrom methods new is
+#' @importFrom SummarizedExperiment assay
+#' @importFrom utils packageVersion
+CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
+messages=TRUE, outputFrequency=500, uncertainty=NULL,
+checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 {
-    # get v2 arguments
-    oldArgs <- list(...)
-    if (!is.null(oldArgs$nOutR))
-        nOutputs <- oldArgs$nOutR
-    if (!is.null(oldArgs$max_gibbmass_paraA))
-        maxGibbmassA <- oldArgs$max_gibbmass_paraA
-    if (!is.null(oldArgs$max_gibbmass_paraP))
-        maxGibbmassP <- oldArgs$max_gibbmass_paraP
-    if (!is.null(oldArgs$sampleSnapshots) & is.null(oldArgs$numSnapshots))
-        nSnapshots <- 100
-    if (!is.null(oldArgs$sampleSnapshots) & !is.null(oldArgs$numSnapshots))
-        nSnapshots <- oldArgs$numSnapshots
-    if (missing(D) & !is.null(oldArgs$data))
-        D <- oldArgs$data
-    if (missing(S) & !is.null(oldArgs$unc))
-        S <- oldArgs$unc
+    # store all parameters in a list and parse parameters from ...
+    allParams <- list("gaps"=params,
+        "nThreads"=nThreads,
+        "messages"=messages,
+        "outputFrequency"=outputFrequency,
+        "checkpointOutFile"=checkpointOutFile,
+        "checkpointInterval"=checkpointInterval,
+        "checkpointInFile"=checkpointInFile,
+        "transposeData"=transposeData,
+        "bpBackend"=BPPARAM,
+        "whichMatrixFixed"=NULL # internal parameter
+    )
+    allParams <- parseExtraParams(allParams, list(...))
 
-    # get pump arguments - hidden for now from user
-    pumpThreshold <- "unique"
-    nPumpSamples <- 0
-    if (!is.null(list(...)$pumpThreshold))
-        pumpThreshold <- list(...)$pumpThreshold
-    if (!is.null(list(...)$nPumpSamples))
-        pumpThreshold <- list(...)$nPumpSamples
+    # display start up message for the user
+    startupMessage(data, allParams$transposeData, allParams$gaps@distributed)
 
-    # check arguments
-    if (class(D) != "matrix" | class(S) != "matrix")
-        stop('D and S must be matrices')
-    if (any(D < 0) | any(S < 0))
-        stop('D and S matrix must be non-negative')
-    if (nrow(D) != nrow(S) | ncol(D) != ncol(S))
-        stop('D and S matrix have different dimensions')
-    if (whichMatrixFixed == 'A' & nrow(fixedPatterns) != nrow(D))
-        stop('invalid number of rows for fixedPatterns')
-    if (whichMatrixFixed == 'A' & ncol(fixedPatterns) > nFactor)
-        stop('invalid number of columns for fixedPatterns')
-    if (whichMatrixFixed == 'P' & nrow(fixedPatterns) > nFactor)
-        stop('invalid number of rows for fixedPatterns')
-    if (whichMatrixFixed == 'P' & ncol(fixedPatterns) != ncol(D))
-        stop('invalid number of columns for fixedPatterns')
-    thresholdEnum <- c("unique", "cut")
-    
-    # get seed
-    if (seed < 0)
+    # check file extension
+    if (is(data, "character") & !supported(data))
+        stop("unsupported file extension for data")
+
+    # check uncertainty matrix
+    if (is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "character"))
+        stop("uncertainty must be same data type as data (file name)")
+    if (is(uncertainty, "character") & !supported(uncertainty))
+        stop("unsupported file extension for uncertainty")
+    if (!is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "matrix"))
+        stop("uncertainty must be a matrix unless data is a file path")
+    if (!is(data, "character"))
+        checkDataMatrix(data, uncertainty, params)
+
+    # check single cell parameter
+    if (!is.null(allParams$gaps@distributed))
+        if (allParams$gaps@distributed == "single-cell" & !allParams$gaps@singleCell)
+            warning("running single-cell CoGAPS with singleCell=FALSE")
+
+    if (!is.null(allParams$gaps@distributed) & allParams$nThreads > 1)
+        stop("can't run multi-threaded and distributed CoGAPS at the same time")
+
+    # convert data to matrix
+    if (is(data, "data.frame"))
+        data <- data.matrix(data)
+    else if (is(data, "SummarizedExperiment"))
+        data <- SummarizedExperiment::assay(data, "counts")
+    else if (is(data, "SingleCellExperiment"))
+        data <- SummarizedExperiment::assay(data, "counts")
+
+    # determine which function to call cogaps algorithm
+    if (!is.null(allParams$gaps@distributed))
+        dispatchFunc <- distributedCogaps # genome-wide or single-cell cogaps
+    else if (is(data, "character"))
+        dispatchFunc <- cogaps_cpp_from_file # data is a file path
+    else
+        dispatchFunc <- cogaps_cpp # default
+
+    # check if we're running from a checkpoint
+    if (!is.null(allParams$checkpointInFile))
     {
-        # TODO get time in milliseconds
-        seed <- 0
+        if (!is.null(allParams$gaps@distributed))
+            stop("checkpoints not supported for distributed cogaps")
+        else
+            message("Running CoGAPS from a checkpoint")
     }
 
-    # run algorithm with call to C++ code
-    result <- cogaps_cpp(D, S, nFactor, nEquil, nEquil/10, nSample, nOutputs,
-        alphaA, alphaP, maxGibbmassA, maxGibbmassP, seed, messages,
-        singleCellRNASeq, whichMatrixFixed, fixedPatterns, checkpointInterval,
-        checkpointFile, which(thresholdEnum==pumpThreshold), nPumpSamples,
-        nCores)
-    
-    # label matrices and return list
-    patternNames <- paste('Patt', 1:nFactor, sep='')
-    rownames(result$Amean) <- rownames(result$Asd) <- rownames(D)
-    colnames(result$Amean) <- colnames(result$Asd) <- patternNames
-    rownames(result$Pmean) <- rownames(result$Psd) <- patternNames
-    colnames(result$Pmean) <- colnames(result$Psd) <- colnames(D)
-    return(v2CoGAPS(result, ...)) # backwards compatible with v2
+    # run cogaps
+    gapsReturnList <- dispatchFunc(data, allParams, uncertainty)
+
+    # convert list to CogapsResult object
+    return(new("CogapsResult",
+        Amean       = gapsReturnList$Amean,
+        Asd         = gapsReturnList$Asd,
+        Pmean       = gapsReturnList$Pmean,
+        Psd         = gapsReturnList$Psd,
+        seed        = gapsReturnList$seed,
+        meanChiSq   = gapsReturnList$meanChiSq,
+        geneNames   = getGeneNames(data, allParams),
+        sampleNames = getSampleNames(data, allParams),
+        diagnostics = list("diag"=gapsReturnList$diagnostics, "params"=params,
+                            "version"=utils::packageVersion("CoGAPS"))
+    ))
 }
 
-#' Restart CoGAPS from Checkpoint File
+#' Single Cell CoGAPS
 #' @export
 #'
-#' @details loads the state of a previous CoGAPS run from a file and
-#'  continues the run from that point
-#' @param D data matrix
-#' @param S uncertainty matrix
-#' @param nFactor number of patterns
-#' @param nIter number of iterations
-#' @param checkpointFile path to checkpoint file
-#' @param path path to checkpoint file
-#' @return list with A and P matrix estimates
-#' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
-CoGapsFromCheckpoint <- function(D, S, nFactor, nIter, checkpointFile)
+#' @description wrapper around single-cell distributed algorithm for CoGAPS
+#' @inheritParams CoGAPS
+#' @return CogapsResult object
+#' @importFrom methods new
+scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
+messages=TRUE, outputFrequency=500, uncertainty=NULL,
+checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 {
-    cogapsFromCheckpoint_cpp(D, S, nFactor, nIter, nIter, checkpointFile)
+    params@distributed <- "single-cell"
+    params@singleCell <- TRUE
+    CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
+        checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
+        BPPARAM, ...)
 }
 
-#' CoGAPS with file input for matrix
+#' Genome Wide CoGAPS
+#' @export
 #'
-#' @param D file path for data matrix
-#' @return list with A and P matrix estimates
-#' @examples
-#'  file <- system.file("extdata/GIST.mtx", package="CoGAPS")
-#'  CoGAPSFromFile(file)
-CoGAPSFromFile <- function(D)
+#' @description wrapper around genome-wide distributed algorithm for CoGAPS
+#' @inheritParams CoGAPS
+#' @return CogapsResult object
+#' @importFrom methods new
+GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
+messages=TRUE, outputFrequency=500, uncertainty=NULL,
+checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 {
-    cogapsFromFile_cpp(D)
+    params@distributed <- "genome-wide"
+    CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
+        checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
+        BPPARAM, ...)
+}   
+
+#' write start up message
+#'
+#' @param data data set
+#' @param transpose if we are transposing the data set
+#' @param distributed if we are running distributed CoGAPS
+#' @return message displayed to screen
+startupMessage <- function(data, transpose, distributed)
+{
+    nGenes <- ifelse(transpose, ncol_helper(data), nrow_helper(data))
+    nSamples <- ifelse(transpose, nrow_helper(data), ncol_helper(data))
+
+    dist_message <- "Standard"
+    if (!is.null(distributed))
+        dist_message <- distributed
+    message(paste("Running", dist_message, "CoGAPS on", nGenes, "genes and",
+        nSamples, "samples"))
 }
 
-#' Display Information About Package Compilation
+#' find the gene names in the data
 #'
-#' @details displays information about how the package was compiled, i.e. which
+#' @param data data set
+#' @param allParams list of all cogaps parameters
+#' @return vector of gene names
+getGeneNames <- function(data, allParams)
+{
+    if (is(data, "matrix") & !allParams$transposeData)
+        return(rownames(data))
+    if (is(data, "matrix") & allParams$transposeData)
+        return(colnames(data))
+}
+
+#' find the sample names in the data
+#'
+#' @param data data set
+#' @param allParams list of all cogaps parameters
+#' @return vector of sample names
+getSampleNames <- function(data, allParams)
+{
+    if (is(data, "matrix") & !allParams$transposeData)
+        return(colnames(data))
+    if (is(data, "matrix") & allParams$transposeData)
+        return(rownames(data))
+}
+
+#' parse parameters passed through the ... variable
+#'
+#' @param allParams list of all parameters
+#' @param extraParams list of parameters in ...
+#' @return allParams with any valid parameters in extraParams added
+#' @note will halt with an error if any parameters in extraParams are invalid
+#' @importFrom methods slotNames
+parseExtraParams <- function(allParams, extraParams)
+{
+    # parse direct params
+    for (s in slotNames(allParams$gaps))
+    {
+        if (!is.null(extraParams[[s]]))
+        {
+            allParams$gaps <- setParam(allParams$gaps, s, extraParams[[s]])
+            extraParams[[s]] <- NULL
+        }
+    }
+
+    # check for unrecognized options
+    if (length(extraParams) > 0)
+        stop(paste("unrecognized argument:", names(extraParams)[1]))
+
+    return(allParams)
+}
+
+#' check that provided data is valid
+#'
+#' @param data data matrix
+#' @param uncertainty uncertainty matrix, can be null
+#' @param params CogapsParams object
+#' @return throws an error if data has problems
+checkDataMatrix <- function(data, uncertainty, params)
+{
+    if (sum(data < 0) > 0 | sum(uncertainty < 0) > 0)
+        stop("negative values in data and/or uncertainty matrix")
+    if (nrow(data) <= params@nPatterns | ncol(data) <= params@nPatterns)
+        stop("nPatterns must be less than dimensions of data")
+    if (sum(uncertainty < 1e-5) > 0)
+        warning("small values in uncertainty matrix detected")
+}
+
+#' Information About Package Compilation
+#' @export
+#'
+#' @details returns information about how the package was compiled, i.e. which
 #'  compiler/version was used, which compile time options were enabled, etc...
-#' @return display builds information
+#' @return string containing build report
 #' @examples
-#'  CoGAPS::buildReport()
-#' @export
+#' CoGAPS::buildReport()
 buildReport <- function()
 {
     getBuildReport_cpp()
-}
-
-#' Backwards Compatibility with v2
-#'
-#' @param D data matrix
-#' @param S uncertainty matrix
-#' @param ABins unused
-#' @param PBins unused
-#' @param simulation_id unused
-#' @param nOutR number of output messages
-#' @param output_atomic unused
-#' @param fixedBinProbs unused
-#' @param fixedDomain unused
-#' @param sampleSnapshots indicates if snapshots should be made
-#' @param numSnapshots how many snapshots to take
-#' @param nMaxA unused
-#' @param nMaxP unused
-#' @param max_gibbmass_paraA limit truncated normal to max size
-#' @param max_gibbmass_paraP limit truncated normal to max size
-#' @return list with A and P matrix estimates
-#' @importFrom methods new
-#' @inheritParams CoGAPS
-#' @examples
-#' data(SimpSim)
-#' result <- gapsRun(SimpSim.D, SimpSim.S, nFactor=3)
-#' @export
-gapsRun <- function(D, S, ABins=data.frame(), PBins=data.frame(), nFactor=7,
-simulation_id="simulation", nEquil=1000, nSample=1000, nOutR=1000,
-output_atomic=FALSE, fixedBinProbs=FALSE, fixedDomain="N", sampleSnapshots=TRUE,
-numSnapshots=100, alphaA=0.01, nMaxA=100000, max_gibbmass_paraA=100.0,
-alphaP=0.01, nMaxP=100000, max_gibbmass_paraP=100.0, seed=-1, messages=TRUE)
-{
-    warning('gapsRun is deprecated with v3.0, use CoGAPS')
-    CoGAPS(D, S, nFactor=nFactor, nEquil=nEquil, nSample=nSample,
-        nOutputs=nOutR, nSnapshots=ifelse(sampleSnapshots,numSnapshots,0),
-        alphaA=alphaA, alphaP=alphaP, maxGibbmassA=max_gibbmass_paraA,
-        messages=messages, maxGibbmassP=max_gibbmass_paraP, seed=seed)
-}
-
-#' Backwards Compatibility with v2
-#'
-#' @param D data matrix
-#' @param S uncertainty matrix
-#' @param FP data.frame with rows giving fixed patterns for P
-#' @param fixedMatrix unused
-#' @param ... v2 style parameters
-#' @return list with A and P matrix estimates
-#' @importFrom methods new
-#' @inheritParams gapsRun
-#' @examples
-#' data(SimpSim)
-#' nC <- ncol(SimpSim.D)
-#' patterns <- matrix(1:nC/nC, nrow=1, ncol=nC)
-#' result <- gapsMapRun(SimpSim.D, SimpSim.S, FP=patterns, nFactor=3)
-#' @export
-gapsMapRun <- function(D, S, FP, ABins=data.frame(), PBins=data.frame(),
-nFactor=5, simulation_id="simulation", nEquil=1000, nSample=1000, nOutR=1000,
-output_atomic=FALSE, fixedMatrix="P", fixedBinProbs=FALSE, fixedDomain="N",
-sampleSnapshots=TRUE, numSnapshots=100, alphaA=0.01, nMaxA=100000,
-max_gibbmass_paraA=100.0, alphaP=0.01, nMaxP=100000, max_gibbmass_paraP=100.0,
-seed=-1, messages=TRUE)
-{
-    warning('gapsMapRun is deprecated with v3.0, use CoGaps')
-    CoGAPS(D, S, nFactor=nFactor, nEquil=nEquil, nSample=nSample,
-        nOutputs=nOutR, nSnapshots=ifelse(sampleSnapshots,numSnapshots,0),
-        alphaA=alphaA, alphaP=alphaP, maxGibbmassA=max_gibbmass_paraA,
-        messages=messages, maxGibbmassP=max_gibbmass_paraP, seed=seed,
-        whichMatrixFixed='P', fixedPatterns=as.matrix(FP))
-}
-
-# helper function for backwards compatibility
-v2CoGAPS <- function(result, ...)
-{
-    if (!is.null(list(...)$GStoGenes))
-    {
-        warning('GStoGenes is deprecated with v3.0, see CoGAPS documentation')
-        if (is.null(list(...)$plot) | list(...)$plot)
-        {
-            plotGAPS(result$Amean, result$Pmean)
-        }
-        if (is.null(list(...)$nPerm))
-        {
-            nPerm <- 500
-        }
-        else
-        {
-            nPerm <- list(...)$nPerm
-        }
-        GSP <- calcCoGAPSStat(result$Amean, result$Asd, list(...)$GStoGenes,
-            nPerm)
-        result <- list(meanChi2=result$meanChi2, Amean=result$Amean,
-            Asd=result$Asd, Pmean=result$Pmean, Psd=result$Psd,
-            GSUpreg=GSP$GSUpreg, GSDownreg=GSP$GSDownreg, GSActEst=GSP$GSActEst)
-    }
-    return(result)
 }

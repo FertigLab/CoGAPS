@@ -4,68 +4,66 @@
 \alias{CoGAPS}
 \title{CoGAPS Matrix Factorization Algorithm}
 \usage{
-CoGAPS(D, S, nFactor = 7, nEquil = 250, nSample = 250, nOutputs = 1000,
-  alphaA = 0.01, alphaP = 0.01, maxGibbmassA = 100, maxGibbmassP = 100,
-  seed = -1, messages = TRUE, singleCellRNASeq = FALSE,
-  whichMatrixFixed = "N", fixedPatterns = matrix(0),
-  checkpointInterval = 0, checkpointFile = "gaps_checkpoint.out",
-  nCores = 1, ...)
+CoGAPS(data, params = new("CogapsParams"), nThreads = 1,
+  messages = TRUE, outputFrequency = 500, uncertainty = NULL,
+  checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 1000,
+  checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
+  ...)
 }
 \arguments{
-\item{D}{data matrix}
+\item{data}{File name or R object (see details for supported types)}
 
-\item{S}{uncertainty matrix (std devs for chi-squared of Log Likelihood)}
+\item{params}{CogapsParams object}
 
-\item{nFactor}{number of patterns (basis vectors, metagenes), which must be
-greater than or equal to the number of rows of FP}
+\item{nThreads}{maximum number of threads to run on}
 
-\item{nEquil}{number of iterations for burn-in}
+\item{messages}{T/F for displaying output}
 
-\item{nSample}{number of iterations for sampling}
+\item{outputFrequency}{number of iterations between each output (set to 0 to
+disable status updates, other output is controlled by @code messages)}
 
-\item{nOutputs}{how often to print status into R by iterations}
+\item{uncertainty}{uncertainty matrix - either a matrix or a supported
+file type}
 
-\item{alphaA}{sparsity parameter for A domain}
+\item{checkpointOutFile}{name of the checkpoint file to create}
 
-\item{alphaP}{sparsity parameter for P domain}
+\item{checkpointInterval}{number of iterations between each checkpoint (set
+to 0 to disable checkpoints)}
 
-\item{maxGibbmassA}{limit truncated normal to max size}
+\item{checkpointInFile}{if this is provided, CoGAPS runs from the checkpoint
+contained in this file}
 
-\item{maxGibbmassP}{limit truncated normal to max size}
+\item{transposeData}{T/F for transposing data while reading it in - useful
+for data that is stored as samples x genes since CoGAPS requires data to be
+genes x samples}
 
-\item{seed}{a positive seed is used as-is, while any negative seed tells
-the algorithm to pick a seed based on the current time}
+\item{BPPARAM}{BiocParallel backend}
 
-\item{messages}{display progress messages}
-
-\item{singleCellRNASeq}{indicates if the data is single cell RNA-seq data}
-
-\item{whichMatrixFixed}{character to indicate whether A or P matric contains
-the fixed patterns}
-
-\item{fixedPatterns}{matrix of fixed values in either A or P matrix}
-
-\item{checkpointInterval}{time (in seconds) between creating a checkpoint}
-
-\item{checkpointFile}{name of the checkpoint file}
-
-\item{nCores}{number of cpu cores to run in parallel over}
-
-\item{...}{keeps backwards compatibility with arguments from older versions}
+\item{...}{allows for overwriting parameters in params}
 }
 \value{
-list with A and P matrix estimates
+CogapsResult object
 }
 \description{
-CoGAPS Matrix Factorization Algorithm
-}
-\details{
 calls the C++ MCMC code and performs Bayesian
 matrix factorization returning the two matrices that reconstruct
 the data matrix
 }
-\examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.D, SimpSim.S, nFactor=3, nOutputs=250)
+\details{
+The supported R types are: matrix, data.frame, SummarizedExperiment,
+SingleCellExperiment. The supported file types are csv, tsv, and mtx.
 }
+\examples{
+# Running from R object
+data(GIST)
+resultA <- CoGAPS(GIST.data_frame)
 
+# Running from file name
+gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
+resultB <- CoGAPS(gist_path)
+
+# Setting Parameters
+params <- new("CogapsParams")
+params <- setParam(params, "nPatterns", 5)
+resultC <- CoGAPS(GIST.data_frame, params)
+}

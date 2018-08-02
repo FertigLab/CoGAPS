@@ -1,0 +1,351 @@
+---
+title: "CoGAPS - Coordinated Gene Association in Pattern Sets"
+author: "Thomas Sherman, Genevieve Stein-O'Brien, Hyejune Limb, Elana Fertig"
+date: "`r doc_date()`"
+bibliography: References.bib
+vignette: >
+    %\VignetteIndexEntry{CoGAPS}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+output: 
+    BiocStyle::html_document
+---
+
+```{r include=FALSE, cache=FALSE}
+library(CoGAPS)
+library(BiocParallel)
+```
+
+# Introduction
+
+Coordinated Gene Association in Pattern Sets (CoGAPS) is a technique for latent
+space learning in gene expression data. CoGAPS is a member of the
+Nonnegative Matrix Factorization (NMF) class of algorithms. NMFs factorize a
+data matrix into two related matrices containing gene weights, the
+Amplitude (A) matrix, and sample weights, the Pattern (P) Matrix. Each column
+of A or row of P defines a feature and together this set of features defines
+the latent space among genes and samples, respectively. In NMF, the values of
+the elements in the A and P matrices are constrained to be greater than or
+equal to zero. This constraint simultaneously reflects the non-negative nature
+of gene expression data and enforces the additive nature of the resulting
+feature dimensions, generating solutions that are biologically intuitive to
+interpret (@SEUNG_1999).
+
+CoGAPS has two extensions that allow it to scale up to large data sets,
+Genome-Wide CoGAPS (GWCoGAPS) and Single-Cell CoGAPS (scCOGAPS). This package
+presents a unified R interface for all three methods, with a parallel,
+efficient underlying implementation in C++.
+
+# Installing CoGAPS
+
+*CoGAPS* is a bioconductor package and so the release version can be installed
+as follows:
+
+```{r eval=FALSE}
+source("https://bioconductor.org/biocLite.R")
+biocLite("CoGAPS")
+```
+
+The most up-to-date version of *CoGAPS* can be installed directly from the 
+*FertigLab* Github Repository:
+
+```{r eval=FALSE}
+## Method 1 using biocLite
+biocLite("FertigLab/CoGAPS", dependencies = TRUE, build_vignettes = TRUE)
+
+## Method 2 using devtools package
+devtools::install_github("FertigLab/CoGAPS")
+```
+
+There is also an option to install the development version of *CoGAPS*, 
+while this version has the latest experimental features, it is not guaranteed
+to be stable.
+
+```{r eval=FALSE}
+## Method 1 using biocLite
+biocLite("FertigLab/CoGAPS", ref="develop", dependencies = TRUE, build_vignettes = TRUE)
+
+## Method 2 using devtools package
+devtools::install_github("FertigLab/CoGAPS", ref="develop")
+```
+
+# Package Overview
+
+We first give a walkthrough of the package features using a simple, simulated
+data set. In later sections we provide two example workflows on real data
+sets.
+
+## Running CoGAPS with Default Parameters
+
+The only required argument to `CoGAPS` is the data set. This can be a `matrix`,
+`data.frame`, `SummarizedExperiment`, `SingleCellExperiment` or the path of a
+file (`tsv`, `csv`, `mtx`) containing the data.
+
+```{r}
+# load data
+data(SimpSim)
+
+# run CoGAPS
+CoGAPS(SimpSim.data)
+```
+
+While CoGAPS is running it periodically prints status messages. For example,
+`20000 of 25000, Atoms: 2932(80), ChiSq: 9728, time: 00:00:29 / 00:01:19`. This
+message tells us that CoGAPS is at iteration 20000 out of 25000 for this phase,
+and that 29 seconds out of an estimated 1 minute 19 seconds have passed. It 
+also tells us the size of the atomic domain which is a core component of the 
+algorithm but can be ignored for now. Finally, the ChiSq value tells us how
+closely the A and P matrices reconstruct the original data. In general, we want
+this value to go down - but it is not a perfect measurment of how well CoGAPS
+is finding the biological processes contained in the data. CoGAPS also prints
+a message indicating which phase is currently happening. There are two phases
+to the algorithm - *Calibration* and *Sampling*.
+
+## Setting Parameters
+
+### Model Parameters
+
+Most of the time we'll want to set some parameters before running CoGAPS.
+Parameters are managed with a `CogapsParams` object. This object will
+store all parameters needed to run CoGAPS and provides a simple interface for
+viewing and setting the parameter values.
+
+```{r}
+# create new parameters object
+params <- new("CogapsParams")
+
+# view all parameters
+params
+
+# get the value for a specific parameter
+getParam(params, "nPatterns")
+
+# set the value for a specific parameter
+params <- setParam(params, "nPatterns", 3)
+getParam(params, "nPatterns")
+``` 
+
+Once we've created the parameters object we can pass it along with our data to
+`CoGAPS`.
+
+```{r}
+# run CoGAPS with specified model parameters
+CoGAPS(SimpSim.data, params)
+```
+
+### Run Configuration Options
+
+The `CogapsParams` class manages the model parameters - i.e. the parameters
+that affect the result. There are also a few parameters that are passed
+directly to `CoGAPS` that control things like displaying the status of the run.
+
+```{r}
+# run CoGAPS with specified output frequency
+CoGAPS(SimpSim.data, params, outputFrequency=250)
+```
+
+There are several other arguments that are passed directly to `CoGAPS` which
+are covered in later sections.
+
+## Visualizing Output
+
+`CoGAPS` returns a `CogapsResult` object that can be passed on to the analysis
+and plotting functions provided in the package. By default, the `plot` function
+displays how the patterns vary across the samples. (Note that we pass the 
+`nIterations` parameter here directly, this is allowed for any parameters in 
+the `CogapsParams` class and will always take precedent over the values given
+in `params`).
+
+```{r}
+# store result
+result <- CoGAPS(SimpSim.data, params, nIterations=5000, outputFrequency=2500)
+
+# plot CogapsResult object returned from CoGAPS
+plot(result)
+```
+
+In the example workflows we'll explore some more analysis functions provided in
+the package.
+
+## Running CoGAPS in Parallel
+
+Non-Negative Matrix Factorization algorithms typically require long computation
+times and CoGAPS is no exception. In order to scale CoGAPS up to the size of
+data sets seen in practice we need to take advantage of modern hardware
+and parallelize the algorithm.
+
+### Multi-Threaded Parallelization
+
+The simplest way to run CoGAPS in parallel is to provide the `nThreads`
+argument to `CoGAPS`. This allows the underlying algorithm to run on multiple
+threads and has no effect on the mathematics of the algorithm i.e. this is
+still standard CoGAPS. The precise number of threads to use depends on many
+things like hardware and data size. The best approach is to play around with
+different values and see how it effects the estimated time.
+
+```{r}
+CoGAPS(SimpSim.data, nIterations=10000, outputFrequency=5000, nThreads=1)
+CoGAPS(SimpSim.data, nIterations=10000, outputFrequency=5000, nThreads=4)
+```
+
+Note this method relies on CoGAPS being compiled with OpenMP support, use
+`buildReport` to check.
+
+```{r}
+cat(CoGAPS::buildReport())
+```
+
+### Distributed CoGAPS (GWCoGAPS/scCoGAPS)
+
+For large datasets (greater than a few thousand genes or samples) the
+multi-threaded parallelization isn't enough. It is more efficient to break up
+the data into subsets and perform CoGAPS on each subset in parallel, stitching 
+the results back together at the end. The CoGAPS extensions, GWCOGAPS and 
+scCoGAPS, each implement a version of this method (@OBRIEN_2017).
+
+In order to use these extensions, some additional parameters are required.
+`nSets` specifies the number of subsets to break the data set into. `cut`,
+`minNS`, and `maxNS` control the process of matching patterns across subsets
+and in general should not be changed from defaults. More information about
+these parameters can be found in the original papers. These parameters
+need to be set with a different function than `setParam` since they depend
+on each other. Here we only set `nSets` (always required), but we have the
+option to pass the other parameters as well.
+
+```{r}
+params <- setDistributedParams(params, nSets=3)
+```
+
+Setting `nSets` requires balancing available hardware and run time against the
+size of your data. In general, `nSets` should be less than or equal to the
+number of nodes/cores that are available. If that is true, then the more subsets
+you create, the faster CoGAPS will run - however, some robustness can be lost
+when the subsets get too small. The general rule of thumb is to set `nSets`
+so that each subset has between 1000 and 5000 genes or cells. We will see an
+example of this on real data in the next two sections.
+
+Once the distributed parameters have been set we can call CoGAPS either by
+setting the `distributed` parameter or by using the provided wrapper functions.
+The following calls are equivalent:
+
+```{r}
+# genome-wide CoGAPS
+GWCoGAPS(SimpSim.data, params, outputFrequency=1000)
+
+# genome-wide CoGAPS
+CoGAPS(SimpSim.data, params, distributed="genome-wide", outputFrequency=1000)
+
+# single-cell CoGAPS
+scCoGAPS(SimpSim.data, params, outputFrequency=1000)
+
+# single-cell CoGAPS
+CoGAPS(SimpSim.data, params, distributed="single-cell", singleCell=TRUE, outputFrequency=1000)
+```
+
+Notice that we also set the parameter `singleCell=TRUE`. This makes some 
+adjustments to the algorithm to account for the sparsity in single-cell data.
+The `scCoGAPS` wrapper automatically sets this parameter for us.
+
+The parallel backend for this computation is managed by the package `BiocParallel`
+and there is an option for the user to specifiy which backend they want. See the
+[Additional Features](#setting-parallel-backend-for-gwcogapssccogaps)
+section for more information.
+
+In general it is preferred to pass a file name to `GWCoGAPS`/`scCoGAPS` since
+otherwise the entire data set must be copied across multiple processes which
+will slow things down and potentially cause an out-of-memory error. We will
+see examples of this in the next two sections.
+
+# Workflow Example - Bulk Data
+
+THIS SECTION UNDER CONSTRUCTION
+
+Here we walk through running CoGAPS on the *GIST* data set from @OCHS_2009,
+which contains gene expression data from gastrointestinal
+stromal tumor cell lines treated with Gleevec. The matrix contains bulk gene
+expression data with 1363 genes and 9 samples.
+
+# Workflow Example - Single Cell Data
+
+THIS SECTION UNDER CONSTRUCTION
+
+# Additional Features of CoGAPS
+
+## Checkpoint System - Saving/Loading CoGAPS Runs
+
+CoGAPS allows the user to save their progress throughout the run, and restart
+from the latest saved "checkpoint". This is intended so that if the server
+crashes in the middle of a long run it doesn't need to be restarted from the
+beginning. Set the `checkpointInterval` parameter to save checkpoints and
+pass a file name as `checkpointInFile` to load from a checkpoint. 
+
+```{r}
+# our initial run
+CoGAPS(SimpSim.data, params, checkpointInterval=100, checkpointOutFile="vignette_example.out")
+
+# assume the previous run crashes
+CoGAPS(SimpSim.data, checkpointInFile="vignette_example.out")
+```
+
+## Manual Pipeline for GWCoGAPS/scCoGAPS
+
+THIS SECTION UNDER CONSTRUCTION
+
+## Setting Parallel Backend for GWCoGAPS/scCoGAPS
+
+The distributed computation for CoGAPS uses `BiocParallel` underneath the hood
+to manage the parallelization. The user has the option to specify what the
+backend should be. By default, it is `MulticoreParam` with the same number
+of workers at `nSets`. Use the `BPPARAM` parameter in `CoGAPS` to set the
+backend. See the vignette for `BiocParallel` for more information about the
+different choices for the backend.
+
+```{r}
+# run CoGAPS with serial backend
+scCoGAPS(SimpSim.data, params, BPPARAM=BiocParallel::SerialParam())
+```
+
+## Transposing Data
+
+If your data is stored as samples x genes, `CoGAPS` allows you to pass
+`transposeData=TRUE` and will automatically read the transpose of your data
+to get the required genes x samples configuration.
+
+## Passing Uncertainty Matrix
+
+In addition to providing the data, the user can also specify an uncertainty
+measurement - the standard deviation of each entry in the data matrix. By
+default, `CoGAPS` assumes that the standard deviation matrix is 10% of the
+data matrix. This is a reasonable heuristic to use, but for specific types
+of data you may be able to provide better information.
+
+```{r}
+# run CoGAPS with custom uncertainty
+data(GIST)
+result <- CoGAPS(GIST.matrix, params, uncertainty=GIST.uncertainty)
+```
+
+## Getting Information from CogapsResult
+
+The `CogapsResult` object that's returned from `CoGAPS` has more than just
+the raw matrices stored in it. Here are a few things you can query from the
+result:
+
+```{r}
+# get the mean ChiSq statistic over all samples
+getMeanChiSq(result)
+
+# get the version number used to create this result
+getVersion(result)
+
+# get the original parameters used to create this result
+getOriginalParameters(result)
+```
+
+# Citing CoGAPS
+
+If you use the CoGAPS package for your analysis, please cite @FERTIG_2010
+
+If you use the gene set statistic, please cite @OCHS_2009
+
+# References

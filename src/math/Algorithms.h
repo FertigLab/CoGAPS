@@ -3,6 +3,8 @@
 
 #include "../data_structures/Matrix.h"
 
+#include <cmath>
+
 #define GAPS_SQ(x) ((x) * (x))
 
 struct AlphaParameters
@@ -26,13 +28,8 @@ namespace gaps
 {
 namespace algo
 {
-    const float epsilon = 1.0e-10f;
-    const float pi = 3.14159265358979323846264f;
-
-    float stringToFloat(const std::string &s);
-
     bool isVectorZero(const float *vec, unsigned size);
-
+    
     // vector algorithms    
     unsigned whichMin(const Vector &vec);
     float sum(const Vector &vec);

@@ -1,11 +1,13 @@
 #include "GapsStatistics.h"
 #include "math/Algorithms.h"
 
-GapsStatistics::GapsStatistics(unsigned nRow, unsigned nCol, unsigned nFactor, PumpThreshold t)
-    : mAMeanMatrix(nRow, nFactor), mAStdMatrix(nRow, nFactor),
-        mPMeanMatrix(nFactor, nCol), mPStdMatrix(nFactor, nCol),
-        mStatUpdates(0), mNumPatterns(nFactor), mPumpMatrix(nRow, nCol),
-        mPumpThreshold(t), mPumpStatUpdates(0)
+GapsStatistics::GapsStatistics(unsigned nRow, unsigned nCol, unsigned nPatterns,
+PumpThreshold t)
+    :
+mAMeanMatrix(nRow, nPatterns), mAStdMatrix(nRow, nPatterns),
+mPMeanMatrix(nPatterns, nCol), mPStdMatrix(nPatterns, nCol),
+mStatUpdates(0), mNumPatterns(nPatterns), mPumpMatrix(nRow, nCol),
+mPumpThreshold(t), mPumpStatUpdates(0)
 {}
 
 void GapsStatistics::update(const AmplitudeGibbsSampler &ASampler,
@@ -29,6 +31,37 @@ const PatternGibbsSampler &PSampler)
     }
 }
 
+ColMatrix GapsStatistics::Amean() const
+{
+    return mAMeanMatrix / mStatUpdates;
+}
+
+ColMatrix GapsStatistics::Asd() const
+{
+    return gaps::algo::computeStdDev(mAStdMatrix, mAMeanMatrix,
+        mStatUpdates);
+}
+
+RowMatrix GapsStatistics::Pmean() const
+{
+    return mPMeanMatrix / mStatUpdates;
+}
+
+RowMatrix GapsStatistics::Psd() const
+{
+    return gaps::algo::computeStdDev(mPStdMatrix, mPMeanMatrix,
+        mStatUpdates);
+}
+
+float GapsStatistics::meanChiSq(const AmplitudeGibbsSampler &ASampler) const
+{
+    ColMatrix A = mAMeanMatrix / mStatUpdates;
+    RowMatrix P = mPMeanMatrix / mStatUpdates;
+    RowMatrix M(gaps::algo::matrixMultiplication(A, P));
+    return 2.f * gaps::algo::loglikelihood(ASampler.mDMatrix, ASampler.mSMatrix,
+        M);
+}
+
 static unsigned geneThreshold(const ColMatrix &rankMatrix, unsigned pat)
 {
     float cutRank = rankMatrix.nRow();
@@ -38,7 +71,7 @@ static unsigned geneThreshold(const ColMatrix &rankMatrix, unsigned pat)
         {
             if (j != pat && rankMatrix(i,j) <= rankMatrix(i,pat))
             {
-                cutRank = std::min(cutRank, std::max(0.f, rankMatrix(i,pat)-1));
+                cutRank = gaps::min(cutRank, gaps::max(0.f, rankMatrix(i,pat)-1));
             }
         }
     }
@@ -127,50 +160,19 @@ const PatternGibbsSampler &PSampler)
     patternMarkers(ASampler.mMatrix, PSampler.mMatrix, mPumpMatrix);
 }
 
-Rcpp::NumericMatrix GapsStatistics::AMean() const
-{
-    return (mAMeanMatrix / mStatUpdates).rMatrix();
-}
-
-Rcpp::NumericMatrix GapsStatistics::AStd() const
-{
-    return gaps::algo::computeStdDev(mAStdMatrix, mAMeanMatrix,
-        mStatUpdates).rMatrix();
-}
-
-Rcpp::NumericMatrix GapsStatistics::PMean() const
-{
-    return (mPMeanMatrix / mStatUpdates).rMatrix();
-}
-
-Rcpp::NumericMatrix GapsStatistics::PStd() const
-{
-    return gaps::algo::computeStdDev(mPStdMatrix, mPMeanMatrix,
-        mStatUpdates).rMatrix();
-}
-
-float GapsStatistics::meanChiSq(const AmplitudeGibbsSampler &ASampler) const
-{
-    ColMatrix A = mAMeanMatrix / mStatUpdates;
-    RowMatrix P = mPMeanMatrix / mStatUpdates;
-    RowMatrix M(gaps::algo::matrixMultiplication(A, P));
-    return 2.f * gaps::algo::loglikelihood(ASampler.mDMatrix, ASampler.mSMatrix,
-        M);
-}
-
-Rcpp::NumericMatrix GapsStatistics::pumpMatrix() const
+RowMatrix GapsStatistics::pumpMatrix() const
 {
     unsigned denom = mPumpStatUpdates != 0 ? mPumpStatUpdates : 1.f;
-    return (mPumpMatrix / denom).rMatrix();
+    return RowMatrix(mPumpMatrix / denom);
 }
 
-Rcpp::NumericMatrix GapsStatistics::meanPattern()
+RowMatrix GapsStatistics::meanPattern()
 {
     ColMatrix Amean(mAMeanMatrix / static_cast<float>(mStatUpdates));
     RowMatrix Pmean(mPMeanMatrix / static_cast<float>(mStatUpdates));
     ColMatrix mat(mAMeanMatrix.nRow(), mAMeanMatrix.nCol());
     patternMarkers(Amean, Pmean, mat);
-    return mat.rMatrix();
+    return RowMatrix(mat);
 }
 
 Archive& operator<<(Archive &ar, GapsStatistics &stat)
