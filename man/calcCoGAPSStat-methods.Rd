@@ -25,8 +25,3 @@ calculates the gene set statistics for each
 column of A using a Z-score from the elements of the A matrix,
 the input gene set, and permutation tests
 }
-\examples{
-data('SimpSim')
-result <- CoGAPS(SimpSim.D)
-calcCoGAPSStat(result, GStoGenes=GSets, numPerm=500)
-}

@@ -7,6 +7,14 @@
 \usage{
 \S4method{initialize}{CogapsParams}(.Object, ...)
 }
+\arguments{
+\item{.Object}{CogapsParams object}
+
+\item{...}{initial values for slots}
+}
+\value{
+initialized CogapsParams object
+}
 \description{
 constructor for CogapsParams
 }

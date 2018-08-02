@@ -77,16 +77,16 @@ void GapsRunner::setCheckpointInterval(unsigned interval)
     mCheckpointInterval = interval;
 }
 
-GapsResult GapsRunner::run()
+GapsResult GapsRunner::run(bool printThreads)
 {
     mStartTime = bpt_now();
 
     // calculate appropiate number of threads if compiled with openmp
     #ifdef __GAPS_OPENMP__
-    if (mPrintMessages)
+    if (mPrintMessages && printThreads)
     {
         unsigned availableThreads = omp_get_max_threads();
-        mMaxThreads = std::min(availableThreads, mMaxThreads);
+        mMaxThreads = gaps::min(availableThreads, mMaxThreads);
         gaps_printf("Running on %d out of %d available threads\n",
             mMaxThreads, availableThreads);
     }
@@ -130,13 +130,13 @@ void GapsRunner::runOnePhase()
         {        
             float temp = static_cast<float>(2 * mCurrentIteration)
                 / static_cast<float>(mMaxIterations);
-            mASampler.setAnnealingTemp(std::min(1.f, temp));
-            mPSampler.setAnnealingTemp(std::min(1.f, temp));
+            mASampler.setAnnealingTemp(gaps::min(1.f, temp));
+            mPSampler.setAnnealingTemp(gaps::min(1.f, temp));
         }
     
         // number of updates per iteration is poisson 
-        unsigned nA = gaps::random::poisson(std::max(mASampler.nAtoms(), 10ul));
-        unsigned nP = gaps::random::poisson(std::max(mPSampler.nAtoms(), 10ul));
+        unsigned nA = gaps::random::poisson(gaps::max(mASampler.nAtoms(), 10));
+        unsigned nP = gaps::random::poisson(gaps::max(mPSampler.nAtoms(), 10));
         updateSampler(nA, nP);
 
         if (mPhase == 'S')
@@ -180,7 +180,7 @@ void GapsRunner::updateSampler(unsigned nA, unsigned nP)
 static double estimatedNumUpdates(double current, double total, float nAtoms)
 {
     double coef = nAtoms / std::log(current);
-    return coef * std::log(std::sqrt(2 * total * gaps::algo::pi)) +
+    return coef * std::log(std::sqrt(2 * total * gaps::pi)) +
         total * coef * std::log(total) - total * coef;
 }
 

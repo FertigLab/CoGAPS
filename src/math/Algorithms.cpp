@@ -20,7 +20,7 @@ float gaps::algo::min(const Vector &vec)
     float min = vec[0];
     for (unsigned i = 0; i < vec.size(); ++i)
     {
-        min = std::min(min, vec[i]);
+        min = gaps::min(min, vec[i]);
     }
     return min;
 }
@@ -30,7 +30,7 @@ float gaps::algo::max(const Vector &vec)
     float max = vec[0];
     for (unsigned i = 0; i < vec.size(); ++i)
     {
-        max = std::max(max, vec[i]);
+        max = gaps::max(max, vec[i]);
     }
     return max;
 }

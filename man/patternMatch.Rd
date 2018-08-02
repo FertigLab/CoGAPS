@@ -7,25 +7,12 @@
 patternMatch(allPatterns, allParams)
 }
 \arguments{
-\item{Atot}{a matrix containing the total by set estimates of Pmean output from \code{reOrderBySet}}
+\item{allPatterns}{matrix of patterns stored in the columns}
 
-\item{nSets}{number of parallel sets used to generate \code{Atot}}
-
-\item{cnt}{number of branches at which to cut dendrogram}
-
-\item{minNS}{minimum of individual set contributions a cluster must contain}
-
-\item{maxNS}{maximum of individual set contributions a cluster must contain}
-
-\item{ignore.NA}{logical indicating whether or not to ignore NAs from potential over dimensionalization. Default is FALSE.}
-
-\item{bySet}{logical indicating whether to return list of matched set solutions from \code{Atot}}
-
-\item{...}{additional parameters for \code{agnes}}
+\item{allParams}{list of all CoGAPS parameters}
 }
 \value{
-a matrix of consensus patterns by samples. If \code{bySet=TRUE} then a list of the set contributions to each
-consensus pattern is also returned.
+a matrix of consensus patterns
 }
 \description{
 Match Patterns Across Multiple Runs

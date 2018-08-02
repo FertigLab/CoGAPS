@@ -4,9 +4,9 @@
 #include "../Archive.h"
 #include "../GapsAssert.h"
 #include "../file_parser/FileParser.h"
+#include "../math/Math.h"
 #include "Vector.h"
 
-#include <algorithm>
 #include <vector>
 
 /****************************** MATRIX INTERFACE ******************************/
@@ -273,7 +273,7 @@ T GenericMatrix<T>::pmax(float scale, float max) const
     {
         for (unsigned j = 0; j < mNumCols; ++j)
         {
-            mat(i,j) = std::max(impl()->operator()(i,j) * scale, max);
+            mat(i,j) = gaps::max(impl()->operator()(i,j) * scale, max);
         }
     }
     return mat;

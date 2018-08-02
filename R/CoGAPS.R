@@ -36,27 +36,29 @@ supported <- function(file)
 #' @param transposeData T/F for transposing data while reading it in - useful
 #' for data that is stored as samples x genes since CoGAPS requires data to be
 #' genes x samples
+#' @param BPPARAM BiocParallel backend 
 #' @param ... allows for overwriting parameters in params
 #' @return CogapsResult object
 #' @examples
 #' # Running from R object
 #' data(GIST)
-#' resultA <- CoGAPS(GIST.D)
+#' resultA <- CoGAPS(GIST.data_frame)
 #'
 #' # Running from file name
 #' gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
 #' resultB <- CoGAPS(gist_path)
 #'
-#' Setting Parameters
+#' # Setting Parameters
 #' params <- new("CogapsParams")
 #' params <- setParam(params, "nPatterns", 5)
-#' resultC <- CoGAPS(GIST.D, params)
+#' resultC <- CoGAPS(GIST.data_frame, params)
 #' @importFrom methods new is
 #' @importFrom SummarizedExperiment assay
+#' @importFrom utils packageVersion
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, ...)
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 {
     # store all parameters in a list and parse parameters from ...
     allParams <- list("gaps"=params,
@@ -67,9 +69,13 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
         "checkpointInterval"=checkpointInterval,
         "checkpointInFile"=checkpointInFile,
         "transposeData"=transposeData,
+        "bpBackend"=BPPARAM,
         "whichMatrixFixed"=NULL # internal parameter
     )
     allParams <- parseExtraParams(allParams, list(...))
+
+    # display start up message for the user
+    startupMessage(data, allParams$transposeData, allParams$gaps@distributed)
 
     # check file extension
     if (is(data, "character") & !supported(data))
@@ -89,6 +95,9 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
     if (!is.null(allParams$gaps@distributed))
         if (allParams$gaps@distributed == "single-cell" & !allParams$gaps@singleCell)
             warning("running single-cell CoGAPS with singleCell=FALSE")
+
+    if (!is.null(allParams$gaps@distributed) & allParams$nThreads > 1)
+        stop("can't run multi-threaded and distributed CoGAPS at the same time")
 
     # convert data to matrix
     if (is(data, "data.frame"))
@@ -126,7 +135,10 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
         Psd         = gapsReturnList$Psd,
         seed        = gapsReturnList$seed,
         meanChiSq   = gapsReturnList$meanChiSq,
-        diagnostics = list("diag"=gapsReturnList$diagnostics, "params"=params)
+        geneNames   = getGeneNames(data, allParams),
+        sampleNames = getSampleNames(data, allParams),
+        diagnostics = list("diag"=gapsReturnList$diagnostics, "params"=params,
+                            "version"=utils::packageVersion("CoGAPS"))
     ))
 }
 
@@ -140,13 +152,13 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, ...)
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 {
     params@distributed <- "single-cell"
     params@singleCell <- TRUE
     CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
         checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
-        ...)
+        BPPARAM, ...)
 }
 
 #' Genome Wide CoGAPS
@@ -159,13 +171,57 @@ checkpointInFile=NULL, transposeData=FALSE, ...)
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, ...)
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 {
     params@distributed <- "genome-wide"
     CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
         checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
-        ...)
+        BPPARAM, ...)
 }   
+
+#' write start up message
+#'
+#' @param data data set
+#' @param transpose if we are transposing the data set
+#' @param distributed if we are running distributed CoGAPS
+#' @return message displayed to screen
+startupMessage <- function(data, transpose, distributed)
+{
+    nGenes <- ifelse(transpose, ncol_helper(data), nrow_helper(data))
+    nSamples <- ifelse(transpose, nrow_helper(data), ncol_helper(data))
+
+    dist_message <- "Standard"
+    if (!is.null(distributed))
+        dist_message <- distributed
+    message(paste("Running", dist_message, "CoGAPS on", nGenes, "genes and",
+        nSamples, "samples"))
+}
+
+#' find the gene names in the data
+#'
+#' @param data data set
+#' @param allParams list of all cogaps parameters
+#' @return vector of gene names
+getGeneNames <- function(data, allParams)
+{
+    if (is(data, "matrix") & !allParams$transposeData)
+        return(rownames(data))
+    if (is(data, "matrix") & allParams$transposeData)
+        return(colnames(data))
+}
+
+#' find the sample names in the data
+#'
+#' @param data data set
+#' @param allParams list of all cogaps parameters
+#' @return vector of sample names
+getSampleNames <- function(data, allParams)
+{
+    if (is(data, "matrix") & !allParams$transposeData)
+        return(colnames(data))
+    if (is(data, "matrix") & allParams$transposeData)
+        return(rownames(data))
+}
 
 #' parse parameters passed through the ... variable
 #'

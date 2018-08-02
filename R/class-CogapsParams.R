@@ -38,6 +38,9 @@ setClass("CogapsParams", slots = c(
 ))
 
 #' constructor for CogapsParams
+#' @param .Object CogapsParams object
+#' @param ... initial values for slots
+#' @return initialized CogapsParams object
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsParams",
     function(.Object, ...)
@@ -114,7 +117,7 @@ setGeneric("setParam", function(object, whichParam, value)
 #' @return the modified params object
 #' @examples
 #'  params <- new("CogapsParams")
-#'  params <- setDistributedParams(3, 2, 4)
+#'  params <- setDistributedParams(params, 5)
 setGeneric("setDistributedParams", function(object, nSets, cut=NULL,
 minNS=NULL, maxNS=NULL)
     {standardGeneric("setDistributedParams")})

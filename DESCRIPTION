@@ -22,10 +22,12 @@ Imports:
     methods,
     gplots,
     graphics,
+    RColorBrewer,
     Rcpp,
     S4Vectors,
     SingleCellExperiment,
-    SummarizedExperiment
+    SummarizedExperiment,
+    utils
 Suggests:
     testthat,
     knitr,

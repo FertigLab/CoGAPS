@@ -76,16 +76,17 @@ std::vector<unsigned> getSubsetIndices(const Rcpp::Nullable<Rcpp::IntegerVector>
     return std::vector<unsigned>(1); // interpreted as null, i.e. will be ignored
 }
 
-bool processDistributedParameters(const Rcpp::List &allParams)
+// return if running distributed, and if so, are we partitioning rows/cols
+std::pair<bool, bool> processDistributedParameters(const Rcpp::List &allParams)
 {
     const Rcpp::S4 &gapsParams(allParams["gaps"]);
     if (!Rf_isNull(gapsParams.slot("distributed")))
     {
         std::string d = Rcpp::as<std::string>(gapsParams.slot("distributed"));
         GAPS_ASSERT(d == "genome-wide" || d == "single-cell");
-        return d == "genome-wide";
+        return std::pair<bool, bool>(true, d == "genome-wide");
     }
-    return false; // will be ignored anyways
+    return std::pair<bool, bool>(false, false);
 }
 
 // this is the main function that creates a GapsRunner and runs CoGAPS
@@ -93,11 +94,12 @@ bool processDistributedParameters(const Rcpp::List &allParams)
 template <class DataType>
 static Rcpp::List cogapsRun(const DataType &data, const Rcpp::List &allParams,
 const DataType &uncertainty, const Rcpp::Nullable<Rcpp::IntegerVector> &indices,
-const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix)
+const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
 {
     // calculate essential parameters needed for constructing GapsRunner
     unsigned nPatterns = getNumPatterns(allParams);
-    bool partitionRows = processDistributedParameters(allParams);
+    bool printThreads = !processDistributedParameters(allParams).first;
+    bool partitionRows = processDistributedParameters(allParams).second;
     std::vector<unsigned> cIndices(getSubsetIndices(indices));
 
     // construct GapsRunner
@@ -143,13 +145,13 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix)
 
     // set parameters that aren't saved in the checkpoint
     runner.setMaxThreads(allParams["nThreads"]);
-    runner.setPrintMessages(allParams["messages"]);
+    runner.setPrintMessages(allParams["messages"] && isMaster);
     runner.setOutputFrequency(allParams["outputFrequency"]);
     runner.setCheckpointOutFile(allParams["checkpointOutFile"]);
     runner.setCheckpointInterval(allParams["checkpointInterval"]);
 
     // run cogaps and return the GapsResult in an R list
-    GapsResult result(runner.run());
+    GapsResult result(runner.run(printThreads));
     return Rcpp::List::create(
         Rcpp::Named("Amean") = createRMatrix(result.Amean),
         Rcpp::Named("Pmean") = createRMatrix(result.Pmean, true),
@@ -168,14 +170,16 @@ Rcpp::List cogaps_cpp_from_file(const Rcpp::CharacterVector &data,
 const Rcpp::List &allParams,
 const Rcpp::Nullable<Rcpp::CharacterVector> &uncertainty=R_NilValue,
 const Rcpp::Nullable<Rcpp::IntegerVector> &indices=R_NilValue,
-const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue)
+const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue,
+bool isMaster=true)
 {
     std::string unc = ""; // interpreted as null, i.e. will be ignored
     if (uncertainty.isNotNull())
     {
         unc = Rcpp::as<std::string>(Rcpp::CharacterVector(uncertainty));
     }
-    return cogapsRun(Rcpp::as<std::string>(data), allParams, unc, indices, fixedMatrix);
+    return cogapsRun(Rcpp::as<std::string>(data), allParams, unc, indices,
+        fixedMatrix, isMaster);
 }
 
 // [[Rcpp::export]]
@@ -183,14 +187,16 @@ Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data,
 const Rcpp::List &allParams,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &uncertainty=R_NilValue,
 const Rcpp::Nullable<Rcpp::IntegerVector> &indices=R_NilValue,
-const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue)
+const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue,
+bool isMaster=true)
 {
     Matrix unc(1,1); // interpreted as null, i.e. will be ignored
     if (uncertainty.isNotNull())
     {
         unc = convertRMatrix(Rcpp::NumericMatrix(uncertainty));
     }
-    return cogapsRun(convertRMatrix(data), allParams, unc, indices, fixedMatrix);
+    return cogapsRun(convertRMatrix(data), allParams, unc, indices,
+        fixedMatrix, isMaster);
 }
 
 // [[Rcpp::export]]

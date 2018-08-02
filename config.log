@@ -451,7 +451,7 @@ configure:6353: gcc -o conftest -UNDEBUG -Wall -pedantic -g -O0   conftest.c  >&
 configure:6353: $? = 0
 configure:6353: ./conftest
 configure:6353: $? = 0
-configure:6363: result: 806ea:7100800:7ffafbff:bfebfbff
+configure:6363: result: 806ea:6100800:7ffafbff:bfebfbff
 configure:6390: checking for x86 cpuid 0x00000007 output
 configure:6420: gcc -o conftest -UNDEBUG -Wall -pedantic -g -O0   conftest.c  >&5
 configure:6420: $? = 0
@@ -757,7 +757,7 @@ ax_cv_cxx_openmp=-fopenmp
 ax_cv_gcc_x86_avx_xgetbv_0x00000000=1f:0
 ax_cv_gcc_x86_avx_xgetbv_=unknown
 ax_cv_gcc_x86_cpuid_0x00000000=16:756e6547:6c65746e:49656e69
-ax_cv_gcc_x86_cpuid_0x00000001=806ea:7100800:7ffafbff:bfebfbff
+ax_cv_gcc_x86_cpuid_0x00000001=806ea:6100800:7ffafbff:bfebfbff
 ax_cv_gcc_x86_cpuid_0x00000007=0:29c6fbf:0:0
 ax_cv_gcc_x86_cpuid_0x80000000=80000008:0:0:0
 ax_cv_gcc_x86_cpuid_0x80000001=0:0:121:2c100800

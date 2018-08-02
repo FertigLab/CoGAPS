@@ -71,7 +71,7 @@ static unsigned geneThreshold(const ColMatrix &rankMatrix, unsigned pat)
         {
             if (j != pat && rankMatrix(i,j) <= rankMatrix(i,pat))
             {
-                cutRank = std::min(cutRank, std::max(0.f, rankMatrix(i,pat)-1));
+                cutRank = gaps::min(cutRank, gaps::max(0.f, rankMatrix(i,pat)-1));
             }
         }
     }

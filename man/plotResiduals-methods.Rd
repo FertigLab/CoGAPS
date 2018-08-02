@@ -25,6 +25,6 @@ calculate residuals and produce heatmap
 }
 \examples{
 data(SimpSim)
-result <- CoGAPS(SimpSim.D)
-plotResiduals(result, SimpSim.D)
+result <- CoGAPS(SimpSim.data)
+plotResiduals(result, SimpSim.data)
 }

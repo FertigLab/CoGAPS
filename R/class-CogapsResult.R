@@ -1,6 +1,8 @@
 #' CogapsResult
 #' @export
 #'
+#' @slot sampleStdDev std dev of the sampled P matrices
+#' @slot featureStdDev std dev of the sampled A matrices
 #' @description Contains all output from Cogaps run
 #' @importClassesFrom S4Vectors Annotated
 #' @importClassesFrom SingleCellExperiment LinearEmbeddingMatrix
@@ -10,20 +12,30 @@ setClass("CogapsResult", contains="LinearEmbeddingMatrix", slots=c(
 ))
 
 #' Constructor for CogapsResult
+#' @param .Object CogapsResult object
+#' @param Amean mean of sampled A matrices
+#' @param Pmean mean of sampled P matrices
+#' @param Asd std dev of sampled A matrices
+#' @param Psd std dev of sampled P matrices
+#' @param seed random seed used for the run
+#' @param meanChiSq mean value of ChiSq statistic
+#' @param geneNames names of genes in original data set
+#' @param sampleNames names of samples in original data set
+#' @param diagnostics assorted diagnostic reports from the run
+#' @param ... initial values for slots
 #' @return initialized CogapsResult object
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsResult",
-function(.Object, Amean, Pmean, Asd, Psd, seed, meanChiSq, diagnostics=list(),
-...)
+function(.Object, Amean, Pmean, Asd, Psd, seed, meanChiSq, geneNames=NULL,
+sampleNames=NULL, diagnostics=NULL, ...)
 {
     .Object@featureLoadings <- Amean
     .Object@sampleFactors <- Pmean
+    .Object@featureStdDev <- Asd
+    .Object@sampleStdDev <- Psd
 
-    if (!is.null(Asd))
-        .Object@featureStdDev <- Asd
-    if (!is.null(Psd))
-        .Object@sampleStdDev <- Psd
-
+    .Object@metadata[["geneNames"]] <- geneNames
+    .Object@metadata[["sampleNames"]] <- sampleNames
     .Object@metadata[["seed"]] <- seed
     .Object@metadata[["meanChiSq"]] <- meanChiSq
     .Object@metadata[["diagnostics"]] <- diagnostics
@@ -52,7 +64,7 @@ setValidity("CogapsResult",
 #' @param object an object of type CogapsResult
 #' @return chi-sq error
 #' data(SimpSim)
-#' result <- CoGAPS(SimpSim.D)
+#' result <- CoGAPS(SimpSim.data)
 #' meanChiSq(result)
 setGeneric("getMeanChiSq", function(object)
     {standardGeneric("getMeanChiSq")})
@@ -70,7 +82,7 @@ setGeneric("getMeanChiSq", function(object)
 #' @return matrix of z-scores
 #' @examples
 #' data(SimpSim)
-#' result <- CoGAPS(SimpSim.D)
+#' result <- CoGAPS(SimpSim.data)
 #' feature_zscore <- calcZ(result)
 setGeneric("calcZ", function(object, which="feature")
     {standardGeneric("calcZ")})
@@ -85,7 +97,7 @@ setGeneric("calcZ", function(object, which="feature")
 #' @return the D' estimate of a gene or set of genes
 #' @examples
 #' data(SimpSim)
-#' result <- CoGAPS(SimpSim.D)
+#' result <- CoGAPS(SimpSim.data)
 #' D_estimate <- reconstructGene(result)
 setGeneric("reconstructGene", function(object, genes=NULL)
     {standardGeneric("reconstructGene")})
@@ -104,7 +116,7 @@ setGeneric("reconstructGene", function(object, genes=NULL)
 #' @return plots a heatmap of the A Matrix
 #' @examples
 #' data(SimpSim)
-#' result <- CoGAPS(SimpSim.D)
+#' result <- CoGAPS(SimpSim.data)
 #' binMatrix <- binaryA(result, threshold=3)
 setGeneric("binaryA", function(object, threshold=3)
     {standardGeneric("binaryA")})
@@ -121,8 +133,8 @@ setGeneric("binaryA", function(object, threshold=3)
 #' @return creates a residual plot
 #' @examples
 #' data(SimpSim)
-#' result <- CoGAPS(SimpSim.D)
-#' plotResiduals(result, SimpSim.D)
+#' result <- CoGAPS(SimpSim.data)
+#' plotResiduals(result, SimpSim.data)
 setGeneric("plotResiduals", function(object, data, uncertainty=NULL)
     {standardGeneric("plotResiduals")})
 
@@ -138,10 +150,6 @@ setGeneric("plotResiduals", function(object, data, uncertainty=NULL)
 #' @param GStoGenes data.frame or list with gene sets
 #' @param numPerm number of permutations for null
 #' @return gene set statistics for each column of A
-#' @examples
-#' data('SimpSim')
-#' result <- CoGAPS(SimpSim.D)
-#' calcCoGAPSStat(result, GStoGenes=GSets, numPerm=500)
 setGeneric("calcCoGAPSStat", function(object, GStoGenes, numPerm=500)
     {standardGeneric("calcCoGAPSStat")})
 
@@ -159,10 +167,6 @@ setGeneric("calcCoGAPSStat", function(object, GStoGenes, numPerm=500)
 #' @param Pw weight on genes
 #' @param nullGenes logical indicating gene adjustment
 #' @return gene similiarity statistic
-#' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.D)
-#' calcGeneGSStat(result, GSGenes=GSets[[1]], numPerm=500)
 setGeneric("calcGeneGSStat", function(object, GStoGenes, numPerm,
 Pw=rep(1,ncol(object@featureLoadings)), nullGenes=FALSE)
     {standardGeneric("calcGeneGSStat")})
@@ -184,10 +188,6 @@ Pw=rep(1,ncol(object@featureLoadings)), nullGenes=FALSE)
 #' @param PwNull - logical indicating gene adjustment
 #' @return A vector of length GSGenes containing the p-values of set membership
 #' for each gene containined in the set specified in GSGenes.
-#' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.D)
-#' computeGeneGSProb(result, GSGenes=GSets[[1]], numPerm=500)
 setGeneric("computeGeneGSProb", function(object, GStoGenes, numPerm=500,
 Pw=rep(1,ncol(object@featureLoadings)), PwNull=FALSE)
     {standardGeneric("computeGeneGSProb")})
@@ -207,6 +207,6 @@ Pw=rep(1,ncol(object@featureLoadings)), PwNull=FALSE)
 #' @return By default a non-overlapping list of genes associated with each
 #' \code{lp}. If \code{full=TRUE} a data.frame of genes rankings with a column
 #' for each \code{lp} will also be returned.
-setGeneric("patternMarkers", function(object, threshold="all", lp=NA, full=FALSE)
+setGeneric("patternMarkers", function(object, threshold="all", lp=NA)
     {standardGeneric("patternMarkers")})
 
