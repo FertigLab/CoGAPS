@@ -12,6 +12,9 @@ env:
   global:
     - TMPDIR=$HOME
 
+before_install:
+  - chmod +x configure
+
 # notification setup
 notifications:
   slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts
