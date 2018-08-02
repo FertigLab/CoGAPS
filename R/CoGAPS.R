@@ -149,9 +149,6 @@ checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 #' @inheritParams CoGAPS
 #' @return CogapsResult object
 #' @importFrom methods new
-#' @examples
-#' data(SimpSim)
-#' scCoGAPS(SimpSim.data, BPPARAM=BiocParallel::SerialParam())
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
@@ -171,9 +168,6 @@ checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 #' @inheritParams CoGAPS
 #' @return CogapsResult object
 #' @importFrom methods new
-#' @examples
-#' data(SimpSim)
-#' GWCoGAPS(SimpSim.data, BPPARAM=BiocParallel::SerialParam())
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
