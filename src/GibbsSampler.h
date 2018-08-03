@@ -520,11 +520,16 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::exchange(uint64_t p1, float m1, uint64_t p2,
 float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 {
-    float pUpper = gaps::random::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
-    float newMass = gaps::random::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
     {
-        if ((m1 > m2 && newMass - m1 < 0) || (m2 > m1 && m2 - newMass < 0))
+        float pUpper = gaps::random::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
+        float newMass = gaps::random::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
+
+        // swapping only effects alpha parameters - only effects gibbs
+        // flips the sign of alpha parameters (only su)
+        // flips sign in gibbs mass
+        // can we swap after gibbsMass calculation?
+        if ((m1 > m2 && m1 > newMass) || (m2 > m1 && m2 < newMass))
         {
             std::swap(r1, r2);
             std::swap(c1, c2);
