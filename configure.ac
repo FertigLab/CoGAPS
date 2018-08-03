@@ -32,10 +32,16 @@ GAPS_LIBS=
 AX_COMPILER_VENDOR
 AX_COMPILER_VERSION
 
-# set openmp flags
+# set openmp flags, disable only if requested
+AC_ARG_ENABLE(openmp, [AC_HELP_STRING([--enable-openmp],
+    [compile with openMP support if available])],
+    [use_openmp=$enableval], [use_openmp=yes])
+
 AX_OPENMP
-GAPS_CXX_FLAGS+=" $OPENMP_CXXFLAGS "
-GAPS_LIBS+=" $OPENMP_CXXFLAGS "
+if test "x$use_openmp" != "xno" ; then
+    GAPS_CXX_FLAGS+=" $OPENMP_CXXFLAGS "
+    GAPS_LIBS+=" $OPENMP_CXXFLAGS "
+fi
 
 # detect SIMD support
 AX_EXT

@@ -12,6 +12,7 @@ env:
   global:
     - TMPDIR=$HOME
 
+# make sure configure is executable
 before_install:
   - chmod +x configure
 

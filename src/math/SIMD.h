@@ -105,6 +105,8 @@ public:
     void load(const float *ptr) { mData = LOAD_PACKED(ptr); }
     void store(float *ptr) { STORE_PACKED(ptr, mData); }
 
+// RTTI may be expensive
+
 #if defined( __GAPS_AVX__ )
     float scalar()
     {
