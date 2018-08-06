@@ -26,10 +26,6 @@
 \item{diagnostics}{assorted diagnostic reports from the run}
 
 \item{...}{initial values for slots}
-
-\item{geneNames}{names of genes in original data set}
-
-\item{sampleNames}{names of samples in original data set}
 }
 \value{
 initialized CogapsResult object

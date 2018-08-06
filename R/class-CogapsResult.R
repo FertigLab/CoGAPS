@@ -19,8 +19,6 @@ setClass("CogapsResult", contains="LinearEmbeddingMatrix", slots=c(
 #' @param Psd std dev of sampled P matrices
 #' @param seed random seed used for the run
 #' @param meanChiSq mean value of ChiSq statistic
-#' @param geneNames names of genes in original data set
-#' @param sampleNames names of samples in original data set
 #' @param diagnostics assorted diagnostic reports from the run
 #' @param ... initial values for slots
 #' @return initialized CogapsResult object
@@ -41,7 +39,7 @@ function(.Object, Amean, Pmean, Asd, Psd, seed, meanChiSq, diagnostics=NULL, ...
 
     .Object@metadata[["seed"]] <- seed
     .Object@metadata[["meanChiSq"]] <- meanChiSq
-    .Object@metadata[["diagnostics"]] <- diagnostics
+    .Object@metadata <- append(.Object@metadata, diagnostics)
 
     .Object <- callNextMethod(.Object, ...)
     .Object
