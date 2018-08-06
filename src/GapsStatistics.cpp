@@ -18,7 +18,7 @@ const PatternGibbsSampler &PSampler)
     // update     
     for (unsigned j = 0; j < mNumPatterns; ++j)
     {
-        float norm = gaps::algo::sum(PSampler.mMatrix.getRow(j));
+        float norm = gaps::algo::max(PSampler.mMatrix.getRow(j));
         norm = norm == 0.f ? 1.f : norm;
 
         Vector quot(PSampler.mMatrix.getRow(j) / norm);
