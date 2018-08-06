@@ -31,6 +31,17 @@ distributedCogaps <- function(data, allParams, uncertainty)
     initialResult <- bplapply(1:length(sets), FUN, BPPARAM=allParams$bpBackend,
         sets=sets, data=data, allParams=allParams, uncertainty=uncertainty)
 
+    # allow user to save intermediate results
+    if (allParams$saveUnmatched)
+    {
+        if (allParams$gaps@distributed == "genome-wide")
+            unmatchedPatterns <- lapply(initialResult, function(x) x@sampleFactors)
+        else
+            unmatchedPatterns <- lapply(initialResult, function(x) x@featureLoadings)
+        filename <- paste("unmatched_patterns_", allParams$gaps@nPatterns, sep="")
+        save(sets, unmatchedPatterns, file=paste(filename, "RData", sep="."))
+    }
+
     # match patterns in either A or P matrix
     if (allParams$messages)
         message("Matching Patterns Across Subsets...")
@@ -50,42 +61,6 @@ distributedCogaps <- function(data, allParams, uncertainty)
 
     # get result 
     return(stitchTogether(finalResult, allParams))
-}
-
-#' get number of rows from supported file name or matrix
-#' @param data either a file name or a matrix
-#' @return number of rows
-#' @importFrom data.table fread
-#' @importFrom tools file_ext
-nrow_helper <- function(data)
-{
-    if (is(data, "character"))
-    {
-        return(switch(tools::file_ext(data),
-            "csv" = nrow(data.table::fread(data, select=1)),
-            "tsv" = nrow(data.table::fread(data, select=1)),
-            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,1])
-        ))
-    }
-    return(nrow(data))
-}
-
-#' get number of columns from supported file name or matrix
-#' @param data either a file name or a matrix
-#' @return number of columns
-#' @importFrom data.table fread
-#' @importFrom tools file_ext
-ncol_helper <- function(data)
-{
-    if (is(data, "character"))
-    {
-        return(switch(tools::file_ext(data),
-            "csv" = ncol(data.table::fread(data, nrows=1)) - 1,
-            "tsv" = ncol(data.table::fread(data, nrows=1)) - 1,
-            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,2])
-        ))
-    }
-    return(ncol(data))
 }
 
 #' partition genes/samples into subsets
@@ -135,32 +110,36 @@ findConsensusMatrix <- function(result, allParams)
 #' @importFrom stats weighted.mean
 patternMatch <- function(allPatterns, allParams)
 {
-    cc <- corcut(allPatterns, allParams)
+    PatsByClust <- corcut(allPatterns, allParams)
 
     # split by maxNS
-    indx <- which(sapply(cc$PatsByClust, function(x) ncol(x) > allParams$gaps@maxNS))
+    indx <- which(sapply(PatsByClust, function(x) ncol(x) > allParams$gaps@maxNS))
     while (length(indx) > 0)
     { 
         allParams$gaps@cut <- 2
-        icc <- corcut(cc$PatsByClust[[indx[1]]], allParams)
+        internalPatsByClust <- corcut(PatsByClust[[indx[1]]], allParams)
 
-        cc$PatsByClust[[indx[1]]] <- icc$PatsByClust[[1]]
-        cc$RtoMeanPattern[[indx[1]]] <- icc$RtoMeanPattern[[1]]
-        if (length(icc$PatsByClust) > 1)
+        PatsByClust[[indx[1]]] <- internalPatsByClust[[1]]
+        if (length(internalPatsByClust) > 1)
         {
-            cc$PatsByClust <- append(cc$PatsByClust, icc$PatsByClust[2])
-            cc$RtoMeanPattern <- append(cc$RtoMeanPattern, icc$RtoMeanPattern[2])
+            PatsByClust <- append(PatsByClust, internalPatsByClust[2])
         }
-        indx <- which(sapply(cc$PatsByClust, function(x) ncol(x) > allParams$gaps@maxNS))
+        indx <- which(sapply(PatsByClust, function(x) ncol(x) > allParams$gaps@maxNS))
     }
 
     # create matrix of mean patterns - weighted by coefficient of determination
-    PatsByCDSWavg <- sapply(1:length(cc$PatsByClust), function(z)
-        apply(cc$PatsByClust[[z]], 1, function(x) weighted.mean(x, (cc$RtoMeanPattern[[z]])^3)))
-    colnames(PatsByCDSWavg) <- lapply(1:length(cc$PatsByClust), function(x) paste("Pattern", x))
+    PatsByCDSWavg <- sapply(PatsByClust, function(clust)
+        apply(clust, 1, function(row) weighted.mean(row, correlationToMeanPattern(clust)^3)))
+    colnames(PatsByCDSWavg) <- paste("Pattern", 1:length(cc$PatsByClust))
 
     # scale
     return(apply(PatsByCDSWavg, 2, function(col) col / max(col)))
+}
+
+correlationToMeanPattern <- function(cluster)
+{
+    meanPat <- rowMeans(cluster)
+    sapply(1:ncol(cluster), function(j) round(cor(x=cluster[,j], y=meanPat), 3))
 }
 
 #' cluster patterns together
@@ -177,20 +156,16 @@ corcut <- function(allPatterns, allParams)
     clust <- cluster::agnes(x=corr.dist, diss=TRUE, "complete")
     patternIds <- stats::cutree(stats::as.hclust(clust), k=allParams$gaps@cut)
 
-    RtoMeanPattern <- list()
     PatsByClust <- list()
     for (cluster in unique(patternIds))
     {
         if (sum(patternIds==cluster) >= allParams$gaps@minNS)
         {
             clusterPats <- allPatterns[,patternIds==cluster]
-            meanPat <- rowMeans(clusterPats)
-            RtoMeanPattern[[as.character(cluster)]] <- sapply(1:ncol(clusterPats),
-                function(j) round(cor(x=clusterPats[,j], y=meanPat), 3))
             PatsByClust[[as.character(cluster)]] <- clusterPats
         }
     }
-    return(list("RtoMeanPattern"=RtoMeanPattern, "PatsByClust"=PatsByClust))
+    return(PatsByClust)
 }
 
 #' concatenate final results across subsets

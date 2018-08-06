@@ -12,6 +12,42 @@ supported <- function(file)
     return(tools::file_ext(file) %in% c("tsv", "csv", "mtx"))
 }
 
+#' get number of rows from supported file name or matrix
+#' @param data either a file name or a matrix
+#' @return number of rows
+#' @importFrom data.table fread
+#' @importFrom tools file_ext
+nrow_helper <- function(data)
+{
+    if (is(data, "character"))
+    {
+        return(switch(tools::file_ext(data),
+            "csv" = nrow(data.table::fread(data, select=1)),
+            "tsv" = nrow(data.table::fread(data, select=1)),
+            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,1])
+        ))
+    }
+    return(nrow(data))
+}
+
+#' get number of columns from supported file name or matrix
+#' @param data either a file name or a matrix
+#' @return number of columns
+#' @importFrom data.table fread
+#' @importFrom tools file_ext
+ncol_helper <- function(data)
+{
+    if (is(data, "character"))
+    {
+        return(switch(tools::file_ext(data),
+            "csv" = ncol(data.table::fread(data, nrows=1)) - 1,
+            "tsv" = ncol(data.table::fread(data, nrows=1)) - 1,
+            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,2])
+        ))
+    }
+    return(ncol(data))
+}
+
 #' CoGAPS Matrix Factorization Algorithm
 #' @export 
 #'
@@ -58,7 +94,8 @@ supported <- function(file)
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, 
+saveUnmatchedPatterns=FALSE, ...)
 {
     # store all parameters in a list and parse parameters from ...
     allParams <- list("gaps"=params,
@@ -70,6 +107,7 @@ checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
         "checkpointInFile"=checkpointInFile,
         "transposeData"=transposeData,
         "bpBackend"=BPPARAM,
+        "saveUnmatched"=saveUnmatchedPatterns,
         "whichMatrixFixed"=NULL # internal parameter
     )
     allParams <- parseExtraParams(allParams, list(...))
@@ -135,8 +173,6 @@ checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
         Psd         = gapsReturnList$Psd,
         seed        = gapsReturnList$seed,
         meanChiSq   = gapsReturnList$meanChiSq,
-        geneNames   = getGeneNames(data, allParams),
-        sampleNames = getSampleNames(data, allParams),
         diagnostics = list("diag"=gapsReturnList$diagnostics, "params"=params,
                             "version"=utils::packageVersion("CoGAPS"))
     ))
@@ -195,32 +231,6 @@ startupMessage <- function(data, transpose, distributed)
         dist_message <- distributed
     message(paste("Running", dist_message, "CoGAPS on", nGenes, "genes and",
         nSamples, "samples"))
-}
-
-#' find the gene names in the data
-#'
-#' @param data data set
-#' @param allParams list of all cogaps parameters
-#' @return vector of gene names
-getGeneNames <- function(data, allParams)
-{
-    if (is(data, "matrix") & !allParams$transposeData)
-        return(rownames(data))
-    if (is(data, "matrix") & allParams$transposeData)
-        return(colnames(data))
-}
-
-#' find the sample names in the data
-#'
-#' @param data data set
-#' @param allParams list of all cogaps parameters
-#' @return vector of sample names
-getSampleNames <- function(data, allParams)
-{
-    if (is(data, "matrix") & !allParams$transposeData)
-        return(colnames(data))
-    if (is(data, "matrix") & allParams$transposeData)
-        return(rownames(data))
 }
 
 #' parse parameters passed through the ... variable
