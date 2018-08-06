@@ -190,13 +190,14 @@ saveUnmatchedPatterns=FALSE, ...)
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, 
+saveUnmatchedPatterns=FALSE, ...)
 {
     params@distributed <- "single-cell"
     params@singleCell <- TRUE
     CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
         checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
-        BPPARAM, ...)
+        BPPARAM, saveUnmatchedPatterns, ...)
 }
 
 #' Genome Wide CoGAPS
@@ -209,12 +210,13 @@ checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, 
+saveUnmatchedPatterns=FALSE, ...)
 {
     params@distributed <- "genome-wide"
     CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
         checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
-        BPPARAM, ...)
+        BPPARAM, saveUnmatchedPatterns, ...)
 }   
 
 #' write start up message
