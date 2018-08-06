@@ -73,6 +73,8 @@ ncol_helper <- function(data)
 #' for data that is stored as samples x genes since CoGAPS requires data to be
 #' genes x samples
 #' @param BPPARAM BiocParallel backend 
+#' @param saveUnmatchedPatterns when running distributed cogaps, save the
+#' intermediate result from each subset of the data
 #' @param ... allows for overwriting parameters in params
 #' @return CogapsResult object
 #' @examples
