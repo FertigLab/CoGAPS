@@ -27,7 +27,7 @@ const PatternGibbsSampler &PSampler)
 
         Vector prod(ASampler.mMatrix.getCol(j) * norm);
         mAMeanMatrix.getCol(j) += prod;
-        mAStdMatrix.getCol(j) += gaps::algo::elementSq(prod); 
+        mAStdMatrix.getCol(j) += gaps::algo::elementSq(prod); // precision loss? use double?
     }
 }
 

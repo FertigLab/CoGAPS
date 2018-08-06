@@ -120,14 +120,15 @@ template<class GenericMatrix>
 GenericMatrix gaps::algo::computeStdDev(const GenericMatrix &stdMat,
 const GenericMatrix &meanMat, unsigned nUpdates)
 {
+    GAPS_ASSERT(nUpdates > 1);
     GenericMatrix retMat(stdMat.nRow(), stdMat.nCol());
-    float meanTerm = 0.f;
     for (unsigned r = 0; r < retMat.nRow(); ++r)
     {
         for (unsigned c = 0; c < retMat.nCol(); ++c)
         {
-            meanTerm = meanMat(r,c) * meanMat(r,c) / static_cast<float>(nUpdates);
-            retMat(r,c) = std::sqrt((stdMat(r,c) - meanTerm) / (static_cast<float>(nUpdates) - 1.f));
+            float meanTerm = meanMat(r,c) * meanMat(r,c) / static_cast<float>(nUpdates);
+            float numer = gaps::max(0.f, stdMat(r,c) - meanTerm);
+            retMat(r,c) = std::sqrt(numer / (static_cast<float>(nUpdates) - 1.f));
         }
     }
     return retMat;

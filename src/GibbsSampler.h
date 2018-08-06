@@ -525,20 +525,20 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
         float pUpper = gaps::random::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
         float newMass = gaps::random::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
 
-        // swapping only effects alpha parameters - only effects gibbs
-        // flips the sign of alpha parameters (only su)
-        // flips sign in gibbs mass
-        // can we swap after gibbsMass calculation?
-        if ((m1 > m2 && m1 > newMass) || (m2 > m1 && m2 < newMass))
-        {
-            std::swap(r1, r2);
-            std::swap(c1, c2);
-            std::swap(p1, p2);
-            std::swap(m1, m2);
-        }
-
         if (impl()->canUseGibbs(r1, c1, r2, c2))
         {
+            // swapping only effects alpha parameters - only effects gibbs
+            // flips the sign of alpha parameters (only su)
+            // flips sign in gibbs mass
+            // can we swap after gibbsMass calculation?
+            if ((m1 > m2 && m1 > newMass) || (m2 > m1 && m2 < newMass))
+            {
+                std::swap(r1, r2);
+                std::swap(c1, c2);
+                std::swap(p1, p2);
+                std::swap(m1, m2);
+            }
+
             AlphaParameters alpha = impl()->alphaParameters(r1, c1, r2, c2);
             std::pair<float, bool> gMass = gibbsMass(alpha, m1, m2);
             if (gMass.second)
@@ -549,9 +549,9 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
             }
         }
 
-        // use metropolis hastings otherwise
         float delta = m1 > m2 ? newMass - m1 : m2 - newMass; // change larger mass
-        float pOldMass = m1 + delta > m2 - delta ? m1 : m2;
+        float pOldMass = 2 * newMass > m1 + m2 ? gaps::max(m1, m2) : gaps::min(m1, m2);
+    
         float pNew = gaps::random::d_gamma(newMass, 2.f, 1.f / mLambda);
         float pOld = gaps::random::d_gamma(pOldMass, 2.f, 1.f / mLambda);
 
