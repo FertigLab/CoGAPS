@@ -130,7 +130,7 @@ patternMatch <- function(allPatterns, allParams)
     # create matrix of mean patterns - weighted by coefficient of determination
     PatsByCDSWavg <- sapply(PatsByClust, function(clust)
         apply(clust, 1, function(row) weighted.mean(row, correlationToMeanPattern(clust)^3)))
-    colnames(PatsByCDSWavg) <- paste("Pattern", 1:length(cc$PatsByClust))
+    colnames(PatsByCDSWavg) <- paste("Pattern", 1:length(PatsByClust))
 
     # scale
     return(apply(PatsByCDSWavg, 2, function(col) col / max(col)))
