@@ -26,16 +26,19 @@ setClass("CogapsResult", contains="LinearEmbeddingMatrix", slots=c(
 #' @return initialized CogapsResult object
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsResult",
-function(.Object, Amean, Pmean, Asd, Psd, seed, meanChiSq, geneNames=NULL,
-sampleNames=NULL, diagnostics=NULL, ...)
+function(.Object, Amean, Pmean, Asd, Psd, seed, meanChiSq, diagnostics=NULL, ...)
 {
     .Object@featureLoadings <- Amean
     .Object@sampleFactors <- Pmean
     .Object@featureStdDev <- Asd
     .Object@sampleStdDev <- Psd
 
-    .Object@metadata[["geneNames"]] <- geneNames
-    .Object@metadata[["sampleNames"]] <- sampleNames
+    patternNames <- paste("Pattern", 1:ncol(Amean), sep="_")
+    colnames(.Object@featureLoadings) <- patternNames
+    colnames(.Object@featureStdDev) <- patternNames
+    colnames(.Object@sampleFactors) <- patternNames
+    colnames(.Object@sampleStdDev) <- patternNames
+
     .Object@metadata[["seed"]] <- seed
     .Object@metadata[["meanChiSq"]] <- meanChiSq
     .Object@metadata[["diagnostics"]] <- diagnostics

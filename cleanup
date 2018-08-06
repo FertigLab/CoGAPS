@@ -1,2 +1,1 @@
-#! /bin/sh
-/bin/rm src/Makevars
+rm src/Makevars
