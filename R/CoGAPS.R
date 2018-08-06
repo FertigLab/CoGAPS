@@ -73,8 +73,6 @@ ncol_helper <- function(data)
 #' for data that is stored as samples x genes since CoGAPS requires data to be
 #' genes x samples
 #' @param BPPARAM BiocParallel backend 
-#' @param saveUnmatchedPatterns when running distributed cogaps, save the
-#' intermediate result from each subset of the data
 #' @param ... allows for overwriting parameters in params
 #' @return CogapsResult object
 #' @examples
@@ -96,8 +94,7 @@ ncol_helper <- function(data)
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, 
-saveUnmatchedPatterns=FALSE, ...)
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 {
     # store all parameters in a list and parse parameters from ...
     allParams <- list("gaps"=params,
@@ -109,7 +106,6 @@ saveUnmatchedPatterns=FALSE, ...)
         "checkpointInFile"=checkpointInFile,
         "transposeData"=transposeData,
         "bpBackend"=BPPARAM,
-        "saveUnmatched"=saveUnmatchedPatterns,
         "whichMatrixFixed"=NULL # internal parameter
     )
     allParams <- parseExtraParams(allParams, list(...))
@@ -147,6 +143,9 @@ saveUnmatchedPatterns=FALSE, ...)
     else if (is(data, "SingleCellExperiment"))
         data <- SummarizedExperiment::assay(data, "counts")
 
+    # label matrix
+    
+
     # determine which function to call cogaps algorithm
     if (!is.null(allParams$gaps@distributed))
         dispatchFunc <- distributedCogaps # genome-wide or single-cell cogaps
@@ -175,8 +174,8 @@ saveUnmatchedPatterns=FALSE, ...)
         Psd         = gapsReturnList$Psd,
         seed        = gapsReturnList$seed,
         meanChiSq   = gapsReturnList$meanChiSq,
-        diagnostics = list("diag"=gapsReturnList$diagnostics, "params"=params,
-                            "version"=utils::packageVersion("CoGAPS"))
+        diagnostics = append(gapsReturnList$diagnostics,
+            list("params"=allParams$gaps, "version"=utils::packageVersion("CoGAPS")))
     ))
 }
 
@@ -190,14 +189,13 @@ saveUnmatchedPatterns=FALSE, ...)
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, 
-saveUnmatchedPatterns=FALSE, ...)
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 {
     params@distributed <- "single-cell"
     params@singleCell <- TRUE
     CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
         checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
-        BPPARAM, saveUnmatchedPatterns, ...)
+        BPPARAM, ...)
 }
 
 #' Genome Wide CoGAPS
@@ -210,13 +208,12 @@ saveUnmatchedPatterns=FALSE, ...)
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, 
-saveUnmatchedPatterns=FALSE, ...)
+checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL, ...)
 {
     params@distributed <- "genome-wide"
     CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
         checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
-        BPPARAM, saveUnmatchedPatterns, ...)
+        BPPARAM, ...)
 }   
 
 #' write start up message

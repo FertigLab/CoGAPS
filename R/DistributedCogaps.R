@@ -31,22 +31,17 @@ distributedCogaps <- function(data, allParams, uncertainty)
     initialResult <- bplapply(1:length(sets), FUN, BPPARAM=allParams$bpBackend,
         sets=sets, data=data, allParams=allParams, uncertainty=uncertainty)
 
-    # allow user to save intermediate results
-    if (allParams$saveUnmatched)
-    {
-        if (allParams$gaps@distributed == "genome-wide")
-            unmatchedPatterns <- lapply(initialResult, function(x) x@sampleFactors)
-        else
-            unmatchedPatterns <- lapply(initialResult, function(x) x@featureLoadings)
-        filename <- paste("unmatched_patterns_", allParams$gaps@nPatterns, sep="")
-        save(sets, unmatchedPatterns, file=paste(filename, "RData", sep="."))
-    }
+    # get all unmatched patterns
+    if (allParams$gaps@distributed == "genome-wide")
+        unmatchedPatterns <- lapply(initialResult, function(x) x@sampleFactors)
+    else
+        unmatchedPatterns <- lapply(initialResult, function(x) x@featureLoadings)
 
     # match patterns in either A or P matrix
     if (allParams$messages)
         message("Matching Patterns Across Subsets...")
-    consensusMatrix <- findConsensusMatrix(initialResult, allParams)
-    allParams$gaps@nPatterns <- ncol(consensusMatrix)
+    matchedPatterns <- findConsensusMatrix(unmatchedPatterns, allParams)
+    allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
 
     # set fixed matrix
     allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
@@ -57,10 +52,17 @@ distributedCogaps <- function(data, allParams, uncertainty)
         message("Running Final Stage...")
     finalResult <- bplapply(1:length(sets), FUN, BPPARAM=allParams$bpBackend,
         sets=sets, data=data, allParams=allParams, uncertainty=uncertainty,
-        fixedMatrix=consensusMatrix)
+        fixedMatrix=matchedPatterns$consensus)
 
-    # get result 
-    return(stitchTogether(finalResult, allParams))
+    # concatenate final result
+    fullResult <- stitchTogether(finalResult, allParams)
+
+    # add diagnostic information before returning
+    fullResult$diagnostics$unmatchedPatterns <- unmatchedPatterns
+    fullResult$diagnostics$clusteredPatterns <- matchedPatterns$clusteredPatterns
+    fullResult$diagnostics$RtoMeanPattern <- lapply(matchedPatterns$clusteredPatterns, correlationToMeanPattern)
+    fullResult$diagnostics$subsets <- sets
+    return(fullResult)
 }
 
 #' partition genes/samples into subsets
@@ -88,19 +90,16 @@ createSets <- function(data, allParams)
 }
 
 #' find the consensus pattern matrix across all subsets
-#' @param result list of CogapsResult object from all runs across subsets
+#' @param unmatchedPatterns list of all unmatched pattern matrices from initial
+#' run of CoGAPS
 #' @param allParams list of all CoGAPS parameters
 #' @return matrix of consensus patterns
-findConsensusMatrix <- function(result, allParams)
+findConsensusMatrix <- function(unmatchedPatterns, allParams)
 {
-    if (allParams$gaps@distributed == "genome-wide")
-        patterns <- do.call(cbind, lapply(result, function(x) x@sampleFactors))
-    else
-        patterns <- do.call(cbind, lapply(result, function(x) x@featureLoadings))
-
+    allPatterns <- do.call(cbind, unmatchedPatterns)
     comb <- expand.grid(1:allParams$gaps@nSets, 1:allParams$gaps@nPatterns)
-    colnames(patterns) <- paste(comb[,1], comb[,2], sep=".")
-    return(patternMatch(patterns, allParams))
+    colnames(allPatterns) <- paste(comb[,1], comb[,2], sep=".")
+    return(patternMatch(allPatterns, allParams))
 }
 
 #' Match Patterns Across Multiple Runs
@@ -133,7 +132,9 @@ patternMatch <- function(allPatterns, allParams)
     colnames(PatsByCDSWavg) <- paste("Pattern", 1:length(PatsByClust))
 
     # scale
-    return(apply(PatsByCDSWavg, 2, function(col) col / max(col)))
+    return(list("clusteredPatterns"=PatsByClust,
+        "consensus"=apply(PatsByCDSWavg, 2, function(col) col / max(col))))
+
 }
 
 correlationToMeanPattern <- function(cluster)

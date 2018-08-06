@@ -8,7 +8,7 @@ scCoGAPS(data, params = new("CogapsParams"), nThreads = 1,
   messages = TRUE, outputFrequency = 500, uncertainty = NULL,
   checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 1000,
   checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
-  saveUnmatchedPatterns = FALSE, ...)
+  ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
@@ -38,9 +38,6 @@ for data that is stored as samples x genes since CoGAPS requires data to be
 genes x samples}
 
 \item{BPPARAM}{BiocParallel backend}
-
-\item{saveUnmatchedPatterns}{when running distributed cogaps, save the
-intermediate result from each subset of the data}
 
 \item{...}{allows for overwriting parameters in params}
 }
