@@ -17,3 +17,4 @@ a matrix of consensus patterns
 \description{
 Match Patterns Across Multiple Runs
 }
+\keyword{internal}

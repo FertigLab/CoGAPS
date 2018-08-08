@@ -22,11 +22,11 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     # data types
     res <- list()
-    res[[1]] <- CoGAPS(testDataFrame, nIterations=100, outputFrequency=50, seed=1)
-    res[[2]] <- CoGAPS(testMatrix, nIterations=100, outputFrequency=50, seed=1)
-    res[[3]] <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=50, seed=1)
-    res[[4]] <- CoGAPS(gistTsvPath, nIterations=100, outputFrequency=50, seed=1)
-    res[[5]] <- CoGAPS(gistMtxPath, nIterations=100, outputFrequency=50, seed=1)
+    res[[1]] <- CoGAPS(testDataFrame, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[2]] <- CoGAPS(testMatrix, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[3]] <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[4]] <- CoGAPS(gistTsvPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[5]] <- CoGAPS(gistMtxPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
     expect_true(all(sapply(res, no_na_in_result)))
     
     expect_equal(nrow(res[[1]]@featureLoadings), 1363)
@@ -41,15 +41,15 @@ test_that("Valid Top-Level CoGAPS Calls",
     # transposing data
     res <- list()
     res[[1]] <- CoGAPS(testDataFrame, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1)
+        outputFrequency=50, seed=1, messages=FALSE)
     res[[2]] <- CoGAPS(testMatrix, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1)
+        outputFrequency=50, seed=1, messages=FALSE)
     res[[3]] <- CoGAPS(gistCsvPath, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1)
+        outputFrequency=50, seed=1, messages=FALSE)
     res[[4]] <- CoGAPS(gistTsvPath, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1)
+        outputFrequency=50, seed=1, messages=FALSE)
     res[[5]] <- CoGAPS(gistMtxPath, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1)
+        outputFrequency=50, seed=1, messages=FALSE)
     expect_true(all(sapply(res, no_na_in_result)))
     
     expect_equal(nrow(res[[1]]@featureLoadings), 9)
@@ -63,39 +63,39 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     # passing uncertainty
     expect_error(res <- CoGAPS(testDataFrame, uncertainty=as.matrix(GIST.uncertainty),
-        nIterations=100, outputFrequency=50, seed=1), NA)    
+        nIterations=100, outputFrequency=50, seed=1, messages=FALSE), NA)    
     expect_true(no_na_in_result(res))
 
     # multiple threads
     expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
-        outputFrequency=50, seed=1, nThreads=2), NA)
+        outputFrequency=50, seed=1, messages=FALSE, nThreads=2), NA)
     expect_true(no_na_in_result(res))
 
     expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
-        outputFrequency=50, seed=1, nThreads=6), NA)
+        outputFrequency=50, seed=1, messages=FALSE, nThreads=6), NA)
     expect_true(no_na_in_result(res))
 
     expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
-        outputFrequency=50, seed=1, nThreads=12), NA)
+        outputFrequency=50, seed=1, messages=FALSE, nThreads=12), NA)
     expect_true(no_na_in_result(res))
 
     # genome-wide CoGAPS 
     expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
-        outputFrequency=50, seed=1, distributed="genome-wide"), NA)
+        outputFrequency=50, seed=1, messages=FALSE, distributed="genome-wide"), NA)
     expect_true(no_na_in_result(res))
 
     expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
-        outputFrequency=50, seed=1, distributed="genome-wide"), NA)
+        outputFrequency=50, seed=1, messages=FALSE, distributed="genome-wide"), NA)
     expect_true(no_na_in_result(res))
 
     # single-cell CoGAPS
     expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
-        outputFrequency=50, seed=1, distributed="single-cell", singleCell=TRUE,
+        outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell", singleCell=TRUE,
         transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
 
     expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
-        outputFrequency=50, seed=1, distributed="single-cell", singleCell=TRUE,
+        outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell", singleCell=TRUE,
         transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
 })

@@ -5,8 +5,8 @@
 \alias{initialize,CogapsResult-method}
 \title{Constructor for CogapsResult}
 \usage{
-\S4method{initialize}{CogapsResult}(.Object, Amean, Pmean, Asd, Psd, seed,
-  meanChiSq, diagnostics = NULL, ...)
+\S4method{initialize}{CogapsResult}(.Object, Amean, Pmean, Asd, Psd,
+  meanChiSq, geneNames, sampleNames, diagnostics = NULL, ...)
 }
 \arguments{
 \item{.Object}{CogapsResult object}
@@ -19,9 +19,11 @@
 
 \item{Psd}{std dev of sampled P matrices}
 
-\item{seed}{random seed used for the run}
-
 \item{meanChiSq}{mean value of ChiSq statistic}
+
+\item{geneNames}{names of genes in data}
+
+\item{sampleNames}{names of samples in data}
 
 \item{diagnostics}{assorted diagnostic reports from the run}
 

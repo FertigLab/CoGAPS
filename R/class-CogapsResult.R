@@ -17,14 +17,16 @@ setClass("CogapsResult", contains="LinearEmbeddingMatrix", slots=c(
 #' @param Pmean mean of sampled P matrices
 #' @param Asd std dev of sampled A matrices
 #' @param Psd std dev of sampled P matrices
-#' @param seed random seed used for the run
 #' @param meanChiSq mean value of ChiSq statistic
+#' @param geneNames names of genes in data
+#' @param sampleNames names of samples in data
 #' @param diagnostics assorted diagnostic reports from the run
 #' @param ... initial values for slots
 #' @return initialized CogapsResult object
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsResult",
-function(.Object, Amean, Pmean, Asd, Psd, seed, meanChiSq, diagnostics=NULL, ...)
+function(.Object, Amean, Pmean, Asd, Psd, meanChiSq, geneNames,
+sampleNames, diagnostics=NULL, ...)
 {
     .Object@featureLoadings <- Amean
     .Object@sampleFactors <- Pmean
@@ -32,12 +34,19 @@ function(.Object, Amean, Pmean, Asd, Psd, seed, meanChiSq, diagnostics=NULL, ...
     .Object@sampleStdDev <- Psd
 
     patternNames <- paste("Pattern", 1:ncol(Amean), sep="_")
+
+    rownames(.Object@featureLoadings) <- geneNames
     colnames(.Object@featureLoadings) <- patternNames
+
+    rownames(.Object@featureStdDev) <- geneNames
     colnames(.Object@featureStdDev) <- patternNames
+
+    rownames(.Object@sampleFactors) <- sampleNames
     colnames(.Object@sampleFactors) <- patternNames
+
+    rownames(.Object@sampleStdDev) <- sampleNames
     colnames(.Object@sampleStdDev) <- patternNames
 
-    .Object@metadata[["seed"]] <- seed
     .Object@metadata[["meanChiSq"]] <- meanChiSq
     .Object@metadata <- append(.Object@metadata, diagnostics)
 
@@ -98,6 +107,62 @@ setGeneric("getVersion", function(object)
 #' getOriginalParameters(result)
 setGeneric("getOriginalParameters", function(object)
     {standardGeneric("getOriginalParameters")})
+
+#' return unmatched patterns from each subset
+#' @export
+#' @docType methods
+#' @rdname getUnmatchedPatterns-methods
+#'
+#' @param object an object of type CogapsResult
+#' @return CogapsParams object
+#' @examples
+#' data(SimpSim)
+#' result <- CoGAPS(SimpSim.data)
+#' getUnmatchedPatterns(result)
+setGeneric("getUnmatchedPatterns", function(object)
+    {standardGeneric("getUnmatchedPatterns")})
+
+#' return clustered patterns from set of all patterns across all subsets
+#' @export
+#' @docType methods
+#' @rdname getClusteredPatterns-methods
+#'
+#' @param object an object of type CogapsResult
+#' @return CogapsParams object
+#' @examples
+#' data(SimpSim)
+#' result <- CoGAPS(SimpSim.data)
+#' getClusteredPatterns(result)
+setGeneric("getClusteredPatterns", function(object)
+    {standardGeneric("getClusteredPatterns")})
+
+#' return correlation between each pattern and the cluster mean
+#' @export
+#' @docType methods
+#' @rdname getCorrelationToMeanPattern-methods
+#'
+#' @param object an object of type CogapsResult
+#' @return CogapsParams object
+#' @examples
+#' data(SimpSim)
+#' result <- CoGAPS(SimpSim.data)
+#' getCorrelationToMeanPattern(result)
+setGeneric("getCorrelationToMeanPattern", function(object)
+    {standardGeneric("getCorrelationToMeanPattern")})
+
+#' return the names of the genes (samples) in each subset
+#' @export
+#' @docType methods
+#' @rdname getSubsets-methods
+#'
+#' @param object an object of type CogapsResult
+#' @return CogapsParams object
+#' @examples
+#' data(SimpSim)
+#' result <- CoGAPS(SimpSim.data)
+#' getSubsets(result)
+setGeneric("getSubsets", function(object)
+    {standardGeneric("getSubsets")})
 
 #' compute z-score matrix
 #' @export

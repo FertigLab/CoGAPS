@@ -16,6 +16,14 @@ library(CoGAPS)
 library(BiocParallel)
 ```
 
+# Vignette Version
+
+This vignette was built using CoGAPS version:
+
+```{r}
+packageVersion("CoGAPS")
+```
+
 # Introduction
 
 Coordinated Gene Association in Pattern Sets (CoGAPS) is a technique for latent
@@ -79,7 +87,7 @@ sets.
 
 The only required argument to `CoGAPS` is the data set. This can be a `matrix`,
 `data.frame`, `SummarizedExperiment`, `SingleCellExperiment` or the path of a
-file (`tsv`, `csv`, `mtx`) containing the data.
+file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
 
 ```{r}
 # load data
@@ -147,9 +155,43 @@ CoGAPS(SimpSim.data, params, outputFrequency=250)
 There are several other arguments that are passed directly to `CoGAPS` which
 are covered in later sections.
 
+## Breaking Down the Return Object from CoGAPS
+
+CoGAPS returns a object of the class `CogapsResult` which inherits from `LinearEmbeddingMatrix` (defined in the `SingleCellExperiment`
+package). CoGAPS stores the lower dimensional representation of the samples 
+(P matrix) in the `sampleFactors` slot and the weight of the features (A matrix)
+in the `featureLoadings` slot. `CogapsResult` also adds two of its own slots -
+`sampleStdDev` and `featureStdDev` which contain the standard deviation across
+sample points for each matrix.
+
+There is also some information in the `metadata` slot such as the original
+parameters and value for the Chi-Sq statistic. In general, the metadata will
+vary depending on how `CoGAPS` was called in the first place. The package 
+provides these functions for querying the metadata in a safe manner:
+
+```{r}
+# run CoGAPS
+result <- CoGAPS(SimpSim.data, params, messages=FALSE)
+
+# get the mean ChiSq statistic over all samples
+getMeanChiSq(result)
+
+# get the version number used to create this result
+getVersion(result)
+
+# get the original parameters used to create this result
+getOriginalParameters(result)
+```
+
+To convert a `CogapsResult` object to a `LinearEmbeddingMatrix` use
+
+```{r}
+as(result, "LinearEmbeddingMatrix")
+```
+
 ## Visualizing Output
 
-`CoGAPS` returns a `CogapsResult` object that can be passed on to the analysis
+The `CogapsResult` object can be passed on to the analysis
 and plotting functions provided in the package. By default, the `plot` function
 displays how the patterns vary across the samples. (Note that we pass the 
 `nIterations` parameter here directly, this is allowed for any parameters in 
@@ -158,7 +200,7 @@ in `params`).
 
 ```{r}
 # store result
-result <- CoGAPS(SimpSim.data, params, nIterations=5000, outputFrequency=2500)
+result <- CoGAPS(SimpSim.data, params, nIterations=5000, messages=FALSE)
 
 # plot CogapsResult object returned from CoGAPS
 plot(result)
@@ -230,16 +272,16 @@ The following calls are equivalent:
 
 ```{r}
 # genome-wide CoGAPS
-GWCoGAPS(SimpSim.data, params, outputFrequency=1000)
+GWCoGAPS(SimpSim.data, params, messages=FALSE)
 
 # genome-wide CoGAPS
-CoGAPS(SimpSim.data, params, distributed="genome-wide", outputFrequency=1000)
+CoGAPS(SimpSim.data, params, distributed="genome-wide", messages=FALSE)
 
 # single-cell CoGAPS
-scCoGAPS(SimpSim.data, params, outputFrequency=1000)
+scCoGAPS(SimpSim.data, params, messages=FALSE)
 
 # single-cell CoGAPS
-CoGAPS(SimpSim.data, params, distributed="single-cell", singleCell=TRUE, outputFrequency=1000)
+CoGAPS(SimpSim.data, params, distributed="single-cell", singleCell=TRUE, messages=FALSE)
 ```
 
 Notice that we also set the parameter `singleCell=TRUE`. This makes some 
@@ -248,7 +290,7 @@ The `scCoGAPS` wrapper automatically sets this parameter for us.
 
 The parallel backend for this computation is managed by the package `BiocParallel`
 and there is an option for the user to specifiy which backend they want. See the
-[Additional Features](#setting-parallel-backend-for-gwcogapssccogaps)
+[Additional Features](#setting-parallel-backend)
 section for more information.
 
 In general it is preferred to pass a file name to `GWCoGAPS`/`scCoGAPS` since
@@ -281,28 +323,14 @@ pass a file name as `checkpointInFile` to load from a checkpoint.
 
 ```{r}
 # our initial run
-CoGAPS(SimpSim.data, params, checkpointInterval=100, checkpointOutFile="vignette_example.out")
+res1 <- CoGAPS(SimpSim.data, params, checkpointInterval=100, checkpointOutFile="vignette_example.out", messages=FALSE)
 
 # assume the previous run crashes
-CoGAPS(SimpSim.data, checkpointInFile="vignette_example.out")
-```
+res2 <- CoGAPS(SimpSim.data, checkpointInFile="vignette_example.out", messages=FALSE)
 
-## Manual Pipeline for GWCoGAPS/scCoGAPS
-
-THIS SECTION UNDER CONSTRUCTION
-
-## Setting Parallel Backend for GWCoGAPS/scCoGAPS
-
-The distributed computation for CoGAPS uses `BiocParallel` underneath the hood
-to manage the parallelization. The user has the option to specify what the
-backend should be. By default, it is `MulticoreParam` with the same number
-of workers at `nSets`. Use the `BPPARAM` parameter in `CoGAPS` to set the
-backend. See the vignette for `BiocParallel` for more information about the
-different choices for the backend.
-
-```{r}
-# run CoGAPS with serial backend
-scCoGAPS(SimpSim.data, params, BPPARAM=BiocParallel::SerialParam())
+# check that they're equal
+all(res1@featureLoadings == res2@featureLoadings)
+all(res1@sampleFactors == res2@sampleFactors)
 ```
 
 ## Transposing Data
@@ -322,24 +350,103 @@ of data you may be able to provide better information.
 ```{r}
 # run CoGAPS with custom uncertainty
 data(GIST)
-result <- CoGAPS(GIST.matrix, params, uncertainty=GIST.uncertainty)
+result <- CoGAPS(GIST.matrix, params, uncertainty=GIST.uncertainty, messages=FALSE)
 ```
 
-## Getting Information from CogapsResult
+## GWCoGAPS/scCoGAPS
 
-The `CogapsResult` object that's returned from `CoGAPS` has more than just
-the raw matrices stored in it. Here are a few things you can query from the
-result:
+### Setting Parallel Backend
+
+The distributed computation for CoGAPS uses `BiocParallel` underneath the hood
+to manage the parallelization. The user has the option to specify what the
+backend should be. By default, it is `MulticoreParam` with the same number
+of workers as `nSets`. Use the `BPPARAM` parameter in `CoGAPS` to set the
+backend. See the vignette for `BiocParallel` for more information about the
+different choices for the backend.
 
 ```{r}
-# get the mean ChiSq statistic over all samples
-getMeanChiSq(result)
+# run CoGAPS with serial backend
+scCoGAPS(SimpSim.data, params, BPPARAM=BiocParallel::SerialParam(), messages=FALSE)
+```
 
-# get the version number used to create this result
-getVersion(result)
+### Methods of Subsetting Data
 
-# get the original parameters used to create this result
-getOriginalParameters(result)
+The default method for subsetting the data is to uniformly break up the rows
+(cols) of the data. There is an alternative option where the user provides an
+annotation vector for the rownames (colnames) of the data and gives a weight to
+each category in the annotation vector. Equal sized subsets are then drawn by 
+sampling all rows (cols) according to the weight of each category.
+
+```{r}
+# sampling with weights
+anno <- sample(letters[1:5], size=nrow(SimpSim.data), replace=TRUE)
+params <- new("CogapsParams")
+params <- setAnnotationWeights(params, annotation=anno, weights=c(1,1,2,2,1))
+result <- GWCoGAPS(SimpSim.data, params, messages=FALSE)
+```
+
+Finally, the user can set `explicitSets` which is a list of character or 
+numeric vectors indicating which names or indices of the data should be put
+into each set.
+
+```{r}
+# running cogaps with given subsets
+sets <- list(1:225, 226:450, 451:675, 676:900)
+result <- GWCoGAPS(SimpSim.data, explicitSets=sets, messages=FALSE)
+```
+
+### Additional Return Information
+
+When running GWCoGAPS or scCoGAPS, some additional metadata is returned that 
+relates to the pattern matching process. This process is how CoGAPS
+stitches the results from each subset back together.
+
+```{r}
+# run GWCoGAPS (subset data so the displayed output is small)
+data <- SimpSim.data[,1:8]
+params <- new("CogapsParams")
+params <- setParam(params, "nPatterns", 3)
+params <- setDistributedParams(params, nSets=2)
+result <- GWCoGAPS(data, params, messages=FALSE)
+
+# get the unmatched patterns from each subset
+getUnmatchedPatterns(result)
+
+# get the clustered patterns from the set of all patterns
+getClusteredPatterns(result)
+
+# get the correlation of each pattern to the cluster mean
+getCorrelationToMeanPattern(result)
+
+# get the size of the subsets used
+sapply(getSubsets(result), length)
+```
+
+### Manual Pipeline
+
+CoGAPS allows for a custom process for matching the patterns together. If you 
+have a result object from a previous run of GWCoGAPS/scCoGAPS, the unmatched
+patterns for each subset are found by calling `getUnmatchedPatterns`. Apply
+any method you like as long as the result is a matrix with the number of rows
+equal to the number of samples (genes) and the number of columns is equal to 
+the number of patterns. Then pass the matrix to the  `matchedPatterns` argument
+along with the original parameters for the GWCoGAPS/scCoGAPS run.
+
+```{r}
+# initial run
+result <- GWCoGAPS(SimpSim.data, messages=FALSE)
+
+# custom matching process (just take matrix from first subset as a dummy)
+consensusMatrix <- getUnmatchedPatterns(result)[[1]]
+
+# run with our custom matched patterns matrix
+GWCoGAPS(SimpSim.data, matchedPatterns=consensusMatrix)
+```
+
+# sessionInfo()
+
+```{r}
+sessionInfo()
 ```
 
 # Citing CoGAPS

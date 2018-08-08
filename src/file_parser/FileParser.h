@@ -11,6 +11,7 @@ enum GapsFileType
     GAPS_MTX,
     GAPS_CSV,
     GAPS_TSV,
+    GAPS_GCT,
     GAPS_INVALID_FILE_TYPE
 };
 
@@ -68,6 +69,9 @@ public:
 
     template <class MatrixType>
     static void writeToMtx(const std::string &path, const MatrixType &mat);
+
+    template <class MatrixType>
+    static void writeToGct(const std::string &path, const MatrixType &mat);
 };
 
 // temporary solution - should be moved into specific file parsers, ok for now
@@ -154,6 +158,40 @@ void FileParser::writeToMtx(const std::string &path, const MatrixType &mat)
                 outputFile << i + 1 << " " << j + 1 << " " << mat(i,j) << "\n";
             }
         }
+    }
+    outputFile.close();
+}
+
+template <class MatrixType>
+void FileParser::writeToGct(const std::string &path, const MatrixType &mat)
+{
+    GAPS_ASSERT(FileParser::fileType(path) == GAPS_GCT);
+
+    std::ofstream outputFile;
+    outputFile.open(path.c_str());
+    outputFile << "#1.2\n";
+    outputFile << mat.nRow() << "\t" << mat.nCol() << "\n";
+
+    outputFile << "\"NAME\"\t\"Description\"";
+
+    // write column names
+    for (unsigned i = 0; i < mat.nCol(); ++i)
+    {
+        outputFile << "\t\"Col" << i << "\"";
+    }
+    outputFile << "\n";
+
+    for (unsigned i = 0; i < mat.nRow(); ++i)
+    {
+        // write row names
+        outputFile << "\"Row" << i << "\"\t\"BLANK\"\t";
+        
+        // write data
+        for (unsigned j = 0; j < mat.nCol(); ++j)
+        {
+            outputFile << "\t" << mat(i,j);
+        }
+        outputFile << "\n";
     }
     outputFile.close();
 }

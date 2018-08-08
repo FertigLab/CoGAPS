@@ -39,5 +39,13 @@ a cluster must contain}
 
 \item{\code{maxNS}}{[distributed parameter] maximum of individual set contributions
 a cluster can contain}
+
+\item{\code{explicitSets}}{[distributed parameter] specify subsets by index or name}
+
+\item{\code{samplingAnnotation}}{[distributed parameter] specify categories along
+the rows (cols) to use for weighted sampling}
+
+\item{\code{samplingWeight}}{[distributed parameter] weights associated with 
+samplingAnnotation}
 }}
 
