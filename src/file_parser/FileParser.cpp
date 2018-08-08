@@ -3,6 +3,7 @@
 #include "FileParser.h"
 #include "MtxParser.h"
 #include "TsvParser.h"
+#include "GctParser.h"
 
 #include <string>
 
@@ -13,6 +14,7 @@ AbstractFileParser* AbstractFileParser::create(const std::string &path)
         case GAPS_MTX: return new MtxParser(path);
         case GAPS_CSV: return new CsvParser(path);
         case GAPS_TSV: return new TsvParser(path);
+        case GAPS_GCT: return new GctParser(path);
         default: GAPS_ERROR("Invalid file type\n");
     }
 }
@@ -58,6 +60,7 @@ GapsFileType FileParser::fileType(const std::string &path)
     if (ext == ".mtx") { return GAPS_MTX; }
     if (ext == ".csv") { return GAPS_CSV; }
     if (ext == ".tsv") { return GAPS_TSV; }
+    if (ext == ".gct") { return GAPS_GCT; }
 
     return GAPS_INVALID_FILE_TYPE;
 }

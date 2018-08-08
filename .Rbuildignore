@@ -23,6 +23,7 @@
 ^src/data_structures/Vector.o
 ^src/file_parser/FileParser.o
 ^src/file_parser/CsvParser.o
+^src/file_parser/GctParser.o
 ^src/file_parser/TsvParser.o
 ^src/file_parser/MtxParser.o
 ^src/math/Algorithms.o

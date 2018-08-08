@@ -1,5 +1,5 @@
 Package: CoGAPS
-Version: 3.3.5
+Version: 3.3.6
 Date: 2018-04-24
 Title: Coordinated Gene Activity in Pattern Sets
 Author: Thomas Sherman, Wai-shing Lee, Conor Kelton, Ondrej Maxian, Jacob Carey,
@@ -49,8 +49,10 @@ Collate:
     'class-CogapsParams.R'
     'CoGAPS.R'
     'DistributedCogaps.R'
+    'HelperFunctions.R'
     'Package.R'
     'RcppExports.R'
+    'SubsetData.R'
     'class-CogapsResult.R'
     'methods-CogapsParams.R'
     'methods-CogapsResult.R'

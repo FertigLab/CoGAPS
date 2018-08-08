@@ -4,12 +4,14 @@
 \alias{corcut}
 \title{cluster patterns together}
 \usage{
-corcut(allPatterns, allParams)
+corcut(allPatterns, cut, minNS)
 }
 \arguments{
 \item{allPatterns}{matrix of all patterns across subsets}
 
-\item{allParams}{list of all CoGAPS parameters}
+\item{cut}{number of branches at which to cut dendrogram}
+
+\item{minNS}{minimum of individual set contributions a cluster must contain}
 }
 \value{
 patterns listed by which cluster they belong to
@@ -17,3 +19,4 @@ patterns listed by which cluster they belong to
 \description{
 cluster patterns together
 }
+\keyword{internal}

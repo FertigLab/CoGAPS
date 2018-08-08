@@ -2,6 +2,8 @@
 #define __COGAPS_MATH_H__
 
 #include <stdint.h>
+#include <string>
+#include <sstream>
 
 namespace gaps
 {
@@ -15,6 +17,17 @@ namespace gaps
     float max(float a, float b);
     unsigned max(unsigned a, unsigned b);
     uint64_t max(uint64_t a, uint64_t b);
+
+    template <class T>
+    std::string to_string(T a);
+}
+
+template <class T>
+std::string gaps::to_string(T a)
+{
+    std::stringstream ss;
+    ss << a;
+    return ss.str();
 }
 
 #endif

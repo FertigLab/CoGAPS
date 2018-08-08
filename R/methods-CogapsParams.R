@@ -1,14 +1,13 @@
 setMethod("show", signature("CogapsParams"),
 function(object)
 {
-    cat("An Object of class \"CogapsParams\"\n")
-    cat("\n")
     cat("-- Standard Parameters --\n")
     cat("nPatterns     ", object@nPatterns, "\n")
     cat("nIterations   ", object@nIterations, "\n")
     cat("seed          ", object@seed, "\n")
     cat("singleCell    ", object@singleCell, "\n")
-    cat("distributed   ", ifelse(is.null(object@distributed), FALSE, TRUE), "\n")
+    if (!is.null(object@distributed))
+        cat("distributed   ", object@distributed, "\n")
     cat("\n")
     cat("-- Sparsity Parameters --\n")
     if (object@alphaA == object@alphaP)
@@ -61,6 +60,10 @@ function(object, whichParam, value)
     {
         stop("please set this parameter with setDistributedParams")
     }
+    else if (whichParam %in% c("samplingAnnotation", "samplingWeight"))
+    {
+        stop("please set this parameter with setAnnotationWeights")
+    }
     else
     {
         slot(object, whichParam) <- value
@@ -75,11 +78,26 @@ function(object, whichParam, value)
 setMethod("setDistributedParams", signature(object="CogapsParams"),
 function(object, nSets, cut, minNS, maxNS)
 {
+    message("setting distributed parameters - call this again if you change ",
+        "nPatterns")
+
     object@nSets <- nSets
 
     object@cut <- ifelse(is.null(cut), object@nPatterns, cut)
     object@minNS <- ifelse(is.null(minNS), ceiling(object@nSets / 2), minNS)
     object@maxNS <- ifelse(is.null(maxNS), object@minNS + object@nSets, maxNS)
+
+    validObject(object)
+    return(object)
+})
+
+#' @rdname setAnnotationWeights-methods
+#' @aliases setAnnotationWeights
+setMethod("setAnnotationWeights", signature(object="CogapsParams"),
+function(object, annotation, weights)
+{
+    object@samplingAnnotation <- annotation
+    object@samplingWeight <- weights
 
     validObject(object)
     return(object)

@@ -8,7 +8,7 @@ GWCoGAPS(data, params = new("CogapsParams"), nThreads = 1,
   messages = TRUE, outputFrequency = 500, uncertainty = NULL,
   checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 1000,
   checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
-  ...)
+  geneNames = NULL, sampleNames = NULL, matchedPatterns = NULL, ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
@@ -38,6 +38,12 @@ for data that is stored as samples x genes since CoGAPS requires data to be
 genes x samples}
 
 \item{BPPARAM}{BiocParallel backend}
+
+\item{geneNames}{vector of names of genes in data}
+
+\item{sampleNames}{vector of names of samples in data}
+
+\item{matchedPatterns}{manually matched patterns for distributed CoGAPS}
 
 \item{...}{allows for overwriting parameters in params}
 }

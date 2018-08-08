@@ -2,6 +2,7 @@
 #include "../file_parser/CsvParser.h"
 #include "../file_parser/TsvParser.h"
 #include "../file_parser/MtxParser.h"
+#include "../file_parser/GctParser.h"
 
 #include "../data_structures/Matrix.h"
 
@@ -13,6 +14,7 @@ TEST_CASE("Test Parsers")
     std::string csvPath = Rcpp::as<std::string>(env["gistCsvPath"]);
     std::string tsvPath = Rcpp::as<std::string>(env["gistTsvPath"]);
     std::string mtxPath = Rcpp::as<std::string>(env["gistMtxPath"]);
+    std::string gctPath = Rcpp::as<std::string>(env["gistGctPath"]);
 
     SECTION("Test CsvParser")
     {
@@ -80,6 +82,32 @@ TEST_CASE("Test Parsers")
             REQUIRE(e.row < 1363);
             REQUIRE(e.col < 9);
             ++count;
+        }
+        REQUIRE(count == 12267);
+    }
+
+    SECTION("Test GctParser")
+    {
+        GctParser p(gctPath);
+        REQUIRE(p.nRow() == 1363);
+        REQUIRE(p.nCol() == 9);
+
+        unsigned row = 0;
+        unsigned col = 0;
+        unsigned count = 0;
+        while (p.hasNext())
+        {
+            MatrixElement e(p.getNext());
+            REQUIRE(e.row == row);
+            REQUIRE(e.col == col);
+
+            ++count;
+            ++col;
+            if (col == 9)
+            {
+                ++row;
+                col = 0;
+            }
         }
         REQUIRE(count == 12267);
     }

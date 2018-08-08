@@ -18,3 +18,4 @@ matrix of consensus patterns
 \description{
 find the consensus pattern matrix across all subsets
 }
+\keyword{internal}

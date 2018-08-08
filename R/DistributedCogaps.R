@@ -1,4 +1,5 @@
 #' CoGAPS Distributed Matrix Factorization Algorithm
+#' @keywords internal
 #'
 #' @description runs CoGAPS over subsets of the data and stitches the results
 #' back together
@@ -10,13 +11,20 @@
 #' @importFrom BiocParallel bplapply MulticoreParam
 distributedCogaps <- function(data, allParams, uncertainty)
 {
-    FUN <- function(index, sets, data, allParams, uncertainty, fixedMatrix=NULL)
+    FUN <- function(index, sets, data, allParams, uncertainty, geneNames,
+    sampleNames, fixedMatrix=NULL)
     {
+        if (allParams$gaps@distributed == "genome-wide")
+            geneNames <- geneNames[sets[[index]]]
+        else
+            sampleNames <- sampleNames[sets[[index]]]
+
         internal <- ifelse(is(data, "character"), cogaps_cpp_from_file, cogaps_cpp)
         raw <- internal(data, allParams, uncertainty, sets[[index]],
             fixedMatrix, index == 1)
         new("CogapsResult", Amean=raw$Amean, Asd=raw$Asd, Pmean=raw$Pmean,
-            Psd=raw$Psd, seed=raw$seed, meanChiSq=raw$meanChiSq)
+            Psd=raw$Psd, meanChiSq=raw$meanChiSq, geneNames=geneNames,
+            sampleNames=sampleNames)
     }
 
     # randomly sample either rows or columns into subsets to break the data up
@@ -25,71 +33,78 @@ distributedCogaps <- function(data, allParams, uncertainty)
     if (is.null(allParams$bpBackend))
         allParams$bpBackend <- BiocParallel::MulticoreParam(workers=length(sets))
     
-    # run Cogaps normally on each subset of the data
-    if (allParams$messages)
-        message("Running Across Subsets...")
-    initialResult <- bplapply(1:length(sets), FUN, BPPARAM=allParams$bpBackend,
-        sets=sets, data=data, allParams=allParams, uncertainty=uncertainty)
+    if (is.null(allParams$matchedPatterns))
+    {
+        # run Cogaps normally on each subset of the data
+        if (allParams$messages)
+            cat("Running Across Subsets...\n\n")
+        initialResult <- bplapply(1:length(sets), FUN, BPPARAM=allParams$bpBackend,
+            sets=sets, data=data, allParams=allParams, uncertainty=uncertainty,
+            geneNames=allParams$geneNames, sampleNames=allParams$sampleNames)
 
-    # get all unmatched patterns
-    if (allParams$gaps@distributed == "genome-wide")
-        unmatchedPatterns <- lapply(initialResult, function(x) x@sampleFactors)
+        # get all unmatched patterns
+        if (allParams$gaps@distributed == "genome-wide")
+            unmatchedPatterns <- lapply(initialResult, function(x) x@sampleFactors)
+        else
+            unmatchedPatterns <- lapply(initialResult, function(x) x@featureLoadings)
+
+        # match patterns in either A or P matrix
+        if (allParams$messages)
+            cat("\nMatching Patterns Across Subsets...\n")
+        matchedPatterns <- findConsensusMatrix(unmatchedPatterns, allParams)
+        allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
+
+        # set fixed matrix
+        allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
+            == "genome-wide", "P", "A")
+    }
     else
-        unmatchedPatterns <- lapply(initialResult, function(x) x@featureLoadings)
-
-    # match patterns in either A or P matrix
-    if (allParams$messages)
-        message("Matching Patterns Across Subsets...")
-    matchedPatterns <- findConsensusMatrix(unmatchedPatterns, allParams)
-    allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
-
-    # set fixed matrix
-    allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
-        == "genome-wide", "P", "A")
-
+    {
+        matchedPatterns <- list(consensus=allParams$matchedPatterns)
+        allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
+        allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
+            == "genome-wide", "P", "A")
+    }
+        
     # run final phase with fixed matrix
     if (allParams$messages)
-        message("Running Final Stage...")
+        cat("Running Final Stage...\n\n")
     finalResult <- bplapply(1:length(sets), FUN, BPPARAM=allParams$bpBackend,
         sets=sets, data=data, allParams=allParams, uncertainty=uncertainty,
+        geneNames=allParams$geneNames, sampleNames=allParams$sampleNames,    
         fixedMatrix=matchedPatterns$consensus)
 
     # concatenate final result
     fullResult <- stitchTogether(finalResult, allParams)
 
     # add diagnostic information before returning
-    fullResult$diagnostics$unmatchedPatterns <- unmatchedPatterns
-    fullResult$diagnostics$clusteredPatterns <- matchedPatterns$clusteredPatterns
-    fullResult$diagnostics$RtoMeanPattern <- lapply(matchedPatterns$clusteredPatterns, correlationToMeanPattern)
-    fullResult$diagnostics$subsets <- sets
+    if (is.null(allParams$matchedPatterns))
+    {
+        fullResult$diagnostics$unmatchedPatterns <- unmatchedPatterns
+        fullResult$diagnostics$clusteredPatterns <- matchedPatterns$clusteredPatterns
+        fullResult$diagnostics$CorrToMeanPattern <- lapply(matchedPatterns$clusteredPatterns, corrToMeanPattern)
+    }
+
+    if (allParams$gaps@distributed == "genome-wide")
+        allNames <- allParams$geneNames
+    else
+        allNames <- allParams$sampleNames
+    fullResult$diagnostics$subsets <- lapply(sets, function(s) allNames[s])
+
+    # rename genes/samples if dimension was subsetted incompletely
+    allUsedIndices <- sort(unlist(sets))
+    if (allParams$gaps@distributed == "genome-wide")
+        fullResult$geneNames <- allParams$geneNames[allUsedIndices]
+    else
+        fullResult$sampleNames <- allParams$sampleNames[allUsedIndices]
+
     return(fullResult)
 }
 
-#' partition genes/samples into subsets
-#' @description either genes or samples or partitioned depending on the type
-#' of distributed CoGAPS (i.e. genome-wide or single-cell)
-#' @param data either file name or matrix
-#' @param allParams list of all CoGAPS parameters
-#' @return list of sorted subsets of either genes or samples
-createSets <- function(data, allParams)
-{
-    total <- ifelse(xor(allParams$transposeData, allParams$gaps@distributed == "genome-wide"),
-        nrow_helper(data), ncol_helper(data))
-    setSize <- floor(total / allParams$gaps@nSets)
-
-    sets <- list()
-    remaining <- 1:total
-    for (n in 1:(allParams$gaps@nSets - 1))
-    {
-        selected <- sample(remaining, setSize, replace=FALSE)
-        sets[[n]] <- sort(selected)
-        remaining <- setdiff(remaining, selected)
-    }
-    sets[[allParams$gaps@nSets]] <- sort(remaining)
-    return(sets)
-}
 
 #' find the consensus pattern matrix across all subsets
+#' @keywords internal
+#'
 #' @param unmatchedPatterns list of all unmatched pattern matrices from initial
 #' run of CoGAPS
 #' @param allParams list of all CoGAPS parameters
@@ -103,73 +118,84 @@ findConsensusMatrix <- function(unmatchedPatterns, allParams)
 }
 
 #' Match Patterns Across Multiple Runs
+#' @keywords internal
+#'
 #' @param allPatterns matrix of patterns stored in the columns
 #' @param allParams list of all CoGAPS parameters
 #' @return a matrix of consensus patterns
 #' @importFrom stats weighted.mean
 patternMatch <- function(allPatterns, allParams)
 {
-    PatsByClust <- corcut(allPatterns, allParams)
+    # cluster patterns
+    clusters <- corcut(allPatterns, allParams$gaps@cut, allParams$gaps@minNS)
 
-    # split by maxNS
-    indx <- which(sapply(PatsByClust, function(x) ncol(x) > allParams$gaps@maxNS))
-    while (length(indx) > 0)
-    { 
-        allParams$gaps@cut <- 2
-        internalPatsByClust <- corcut(PatsByClust[[indx[1]]], allParams)
-
-        PatsByClust[[indx[1]]] <- internalPatsByClust[[1]]
-        if (length(internalPatsByClust) > 1)
-        {
-            PatsByClust <- append(PatsByClust, internalPatsByClust[2])
-        }
-        indx <- which(sapply(PatsByClust, function(x) ncol(x) > allParams$gaps@maxNS))
+    # function to split a cluster in two (might fail to do so)
+    splitCluster <- function(list, index, minNS)
+    {
+        split <- corcut(list[[index]], 2, minNS)
+        list[[index]] <- split[[1]]
+        if (length(split) > 1)
+            list <- append(list, split[2])
+        return(list)
     }
 
-    # create matrix of mean patterns - weighted by coefficient of determination
-    PatsByCDSWavg <- sapply(PatsByClust, function(clust)
-        apply(clust, 1, function(row) weighted.mean(row, correlationToMeanPattern(clust)^3)))
-    colnames(PatsByCDSWavg) <- paste("Pattern", 1:length(PatsByClust))
+    # split large clusters into two
+    tooLarge <- function(x) ncol(x) > allParams$gaps@maxNS
+    indx <- which(sapply(clusters, tooLarge))
+    while (length(indx) > 0)
+    {
+        clusters <- splitCluster(clusters, indx[1], allParams$gaps@minNS)
+        indx <- which(sapply(clusters, tooLarge))
+    }
+    names(clusters) <- as.character(1:length(clusters))
 
-    # scale
-    return(list("clusteredPatterns"=PatsByClust,
-        "consensus"=apply(PatsByCDSWavg, 2, function(col) col / max(col))))
+    # create matrix of mean patterns - weighted by correlation to mean pattern
+    meanPatterns <- sapply(clusters, function(clust) apply(clust, 1,
+        function(row)  weighted.mean(row, corrToMeanPattern(clust)^3)))
+    colnames(meanPatterns) <- paste("Pattern", 1:length(clusters))
 
+    # returned patterns after scaling max to 1
+    return(list("clusteredPatterns"=clusters,
+        "consensus"=apply(meanPatterns, 2, function(col) col / max(col))))
 }
 
-correlationToMeanPattern <- function(cluster)
+#' calculate correlation of each pattern in a cluster to the cluster mean
+#' @keywords internal
+corrToMeanPattern <- function(cluster)
 {
     meanPat <- rowMeans(cluster)
     sapply(1:ncol(cluster), function(j) round(cor(x=cluster[,j], y=meanPat), 3))
 }
 
 #' cluster patterns together
+#' @keywords internal
+#'
 #' @param allPatterns matrix of all patterns across subsets
-#' @param allParams list of all CoGAPS parameters
+#' @param cut number of branches at which to cut dendrogram
+#' @param minNS minimum of individual set contributions a cluster must contain
 #' @return patterns listed by which cluster they belong to
 #' @importFrom cluster agnes
 #' @importFrom stats cutree as.hclust cor
-corcut <- function(allPatterns, allParams)
+corcut <- function(allPatterns, cut, minNS)
 {
     corr.dist <- cor(allPatterns)
     corr.dist <- 1 - corr.dist
 
-    clust <- cluster::agnes(x=corr.dist, diss=TRUE, "complete")
-    patternIds <- stats::cutree(stats::as.hclust(clust), k=allParams$gaps@cut)
+    clusterSummary <- cluster::agnes(x=corr.dist, diss=TRUE, "complete")
+    clusterIds <- stats::cutree(stats::as.hclust(clusterSummary), k=cut)
 
-    PatsByClust <- list()
-    for (cluster in unique(patternIds))
+    clusters <- list()
+    for (id in unique(clusterIds))
     {
-        if (sum(patternIds==cluster) >= allParams$gaps@minNS)
-        {
-            clusterPats <- allPatterns[,patternIds==cluster]
-            PatsByClust[[as.character(cluster)]] <- clusterPats
-        }
+        if (sum(clusterIds==id) >= minNS)
+            clusters[[as.character(id)]] <- allPatterns[,clusterIds==id,drop=FALSE]
     }
-    return(PatsByClust)
+    return(clusters)
 }
 
 #' concatenate final results across subsets
+#' @keywords internal
+#'
 #' @param result list of CogapsResult object from all runs across subsets
 #' @param allParams list of all CoGAPS parameters
 #' @return list with all CoGAPS output

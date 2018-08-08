@@ -47,7 +47,7 @@ function(object)
 setMethod("getVersion", signature(object="CogapsResult"),
 function(object)
 {
-    object@metadata$diagnostics$version
+    object@metadata$version
 })
 
 #' @rdname getOriginalParameters-methods
@@ -55,7 +55,55 @@ function(object)
 setMethod("getOriginalParameters", signature(object="CogapsResult"),
 function(object)
 {
-    object@metadata$diagnostics$params
+    object@metadata$params
+})
+
+#' @rdname getUnmatchedPatterns-methods
+#' @aliases getUnmatchedPatterns
+setMethod("getUnmatchedPatterns", signature(object="CogapsResult"),
+function(object)
+{
+    if (!is.null(object@metadata$unmatchedPatterns))
+        return(object@metadata$unmatchedPatterns)
+
+    message("this result was not generated with a call to GWCoGAPS or scCoGAPS")
+    return(NULL)
+})
+
+#' @rdname getClusteredPatterns-methods
+#' @aliases getClusteredPatterns
+setMethod("getClusteredPatterns", signature(object="CogapsResult"),
+function(object)
+{
+    if (!is.null(object@metadata$clusteredPatterns))
+        return(object@metadata$clusteredPatterns)
+
+    message("this result was not generated with a call to GWCoGAPS or scCoGAPS")
+    return(NULL)
+})
+
+#' @rdname getCorrelationToMeanPattern-methods
+#' @aliases getCorrelationToMeanPattern
+setMethod("getCorrelationToMeanPattern", signature(object="CogapsResult"),
+function(object)
+{
+    if (!is.null(object@metadata$CorrToMeanPattern))
+        return(object@metadata$CorrToMeanPattern)
+
+    message("this result was not generated with a call to GWCoGAPS or scCoGAPS")
+    return(NULL)
+})
+
+#' @rdname getSubsets-methods
+#' @aliases getSubsets
+setMethod("getSubsets", signature(object="CogapsResult"),
+function(object)
+{
+    if (!is.null(object@metadata$subsets))
+        return(object@metadata$subsets)
+
+    message("this result was not generated with a call to GWCoGAPS or scCoGAPS")
+    return(NULL)
 })
 
 #' @rdname calcZ-methods

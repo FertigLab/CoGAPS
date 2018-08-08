@@ -17,3 +17,4 @@ list with all CoGAPS output
 \description{
 concatenate final results across subsets
 }
+\keyword{internal}

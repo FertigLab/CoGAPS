@@ -20,6 +20,11 @@
 #' a cluster must contain
 #' @slot maxNS [distributed parameter] maximum of individual set contributions
 #' a cluster can contain
+#' @slot explicitSets [distributed parameter] specify subsets by index or name
+#' @slot samplingAnnotation [distributed parameter] specify categories along
+#' the rows (cols) to use for weighted sampling
+#' @slot samplingWeight [distributed parameter] weights associated with 
+#' samplingAnnotation
 #' @importClassesFrom S4Vectors character_OR_NULL
 setClass("CogapsParams", slots = c(
     nPatterns = "numeric",
@@ -34,7 +39,10 @@ setClass("CogapsParams", slots = c(
     nSets = "numeric",
     cut = "numeric",
     minNS = "numeric",
-    maxNS = "numeric"
+    maxNS = "numeric",
+    explicitSets = "ANY",
+    samplingAnnotation = "character_OR_NULL",
+    samplingWeight = "numeric"
 ))
 
 #' constructor for CogapsParams
@@ -60,6 +68,9 @@ setMethod("initialize", "CogapsParams",
         .Object@nSets <- 4
         .Object@minNS <- ceiling(.Object@nSets / 2)
         .Object@maxNS <- .Object@minNS + .Object@nSets
+        .Object@explicitSets <- NULL
+        .Object@samplingAnnotation <- NULL
+        .Object@samplingWeight <- integer(0)
 
         .Object <- callNextMethod(.Object, ...)
         .Object
@@ -84,6 +95,21 @@ setValidity("CogapsParams",
             "minNS must be an integer greater than one"
         if (object@nSets <= 1 | object@nSets %% 1 != 0)
             "minNS must be an integer greater than one"
+        if (!is.null(object@explicitSets) & length(object@explicitSets) != object@nSets)
+            "nSets doesn't match length of explicitSets"
+        if (length(unique(object@samplingAnnotation)) != length(object@samplingWeight))
+            stop("samplingWeight has mismatched size with amount of distinct annotations")
+
+        # check type of explicitSets
+        if (!is.null(object@explicitSets) & !is(object@explicitSets, "list"))
+            "explicitSets must be a list of numeric or character"
+        isNum <- sapply(object@explicitSets, function(s) is(s, "numeric"))
+        isChar <- sapply(object@explicitSets, function(s) is(s, "charcater"))
+        if (!is.null(object@explicitSets) & !(all(isNum) | all(isChar)))
+            "explicitSets must be a list of numeric or character"
+
+        if (!is.null(object@explicitSets) & length(object@explicitSets) != object@nSets)
+            "wrong number of sets given"
     }
 )
 
@@ -121,6 +147,22 @@ setGeneric("setParam", function(object, whichParam, value)
 setGeneric("setDistributedParams", function(object, nSets, cut=NULL,
 minNS=NULL, maxNS=NULL)
     {standardGeneric("setDistributedParams")})
+
+#' set the annotation labels and weights for subsetting the data
+#' @export
+#' @docType methods
+#' @rdname setAnnotationWeights-methods
+#'
+#' @description these parameters  are interrelated so they must be set together
+#' @param object an object of type CogapsParams
+#' @param annotation vector of labels
+#' @param weights vector of weights
+#' @return the modified params object
+#' @examples
+#'  params <- new("CogapsParams")
+#'  params <- setAnnotationWeights(params, c('a', 'b', 'c'), c(1,2,1))
+setGeneric("setAnnotationWeights", function(object, annotation, weights)
+    {standardGeneric("setAnnotationWeights")})
 
 #' get the value of a parameter
 #' @export

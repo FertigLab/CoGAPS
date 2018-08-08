@@ -13,6 +13,7 @@ OBJECTS =   AtomicDomain.o \
             data_structures/Matrix.o \
             data_structures/Vector.o \
             file_parser/CsvParser.o \
+            file_parser/GctParser.o \
             file_parser/FileParser.o \
             file_parser/TsvParser.o \
             file_parser/MtxParser.o \

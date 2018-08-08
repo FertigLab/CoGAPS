@@ -3,6 +3,7 @@
 
 #include <Rcpp.h>
 #include <string>
+#include <sstream>
 
 // these are helper functions for converting matrix/vector types
 // to and from R objects
@@ -150,8 +151,16 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
     runner.setCheckpointOutFile(allParams["checkpointOutFile"]);
     runner.setCheckpointInterval(allParams["checkpointInterval"]);
 
-    // run cogaps and return the GapsResult in an R list
+    // run cogaps
     GapsResult result(runner.run(printThreads));
+    
+    // write result to file if requested
+    if (allParams["outputToFile"] != R_NilValue)
+    {
+        result.writeToFile(Rcpp::as<std::string>(allParams["outputToFile"]));
+    }
+
+    // return R list
     return Rcpp::List::create(
         Rcpp::Named("Amean") = createRMatrix(result.Amean),
         Rcpp::Named("Pmean") = createRMatrix(result.Pmean, true),
@@ -159,6 +168,8 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
         Rcpp::Named("Psd") = createRMatrix(result.Psd, true),
         Rcpp::Named("seed") = runner.getSeed(),
         Rcpp::Named("meanChiSq") = result.meanChiSq,
+        Rcpp::Named("geneNames") = allParams["geneNames"],
+        Rcpp::Named("sampleNames") = allParams["sampleNames"],
         Rcpp::Named("diagnostics") = Rcpp::List::create()
     );
 }
