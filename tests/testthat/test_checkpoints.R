@@ -9,5 +9,4 @@ test_that("Checkpoint System",
 
     expect_true(all.equal(run1@featureLoadings, run2@featureLoadings))
     expect_true(all.equal(run1@sampleFactors, run2@sampleFactors))
-
 })
