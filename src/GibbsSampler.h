@@ -522,22 +522,19 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 {
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
     {
-        float pUpper = gaps::random::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
-        float newMass = gaps::random::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
-
         if (impl()->canUseGibbs(r1, c1, r2, c2))
         {
             // swapping only effects alpha parameters - only effects gibbs
             // flips the sign of alpha parameters (only su)
             // flips sign in gibbs mass
             // can we swap after gibbsMass calculation?
-            if ((m1 > m2 && m1 > newMass) || (m2 > m1 && m2 < newMass))
+            /*if ((m1 > m2 && m1 > newMass) || (m2 > m1 && m2 < newMass))
             {
                 std::swap(r1, r2);
                 std::swap(c1, c2);
                 std::swap(p1, p2);
                 std::swap(m1, m2);
-            }
+            }*/
 
             AlphaParameters alpha = impl()->alphaParameters(r1, c1, r2, c2);
             std::pair<float, bool> gMass = gibbsMass(alpha, m1, m2);
@@ -548,6 +545,9 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
                 return;
             }
         }
+
+        float pUpper = gaps::random::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
+        float newMass = gaps::random::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
 
         float delta = m1 > m2 ? newMass - m1 : m2 - newMass; // change larger mass
         float pOldMass = 2.f * newMass > m1 + m2 ? gaps::max(m1, m2) : gaps::min(m1, m2);
