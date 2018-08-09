@@ -442,7 +442,7 @@ result <- GWCoGAPS(SimpSim.data, messages=FALSE)
 consensusMatrix <- getUnmatchedPatterns(result)[[1]]
 
 # run with our custom matched patterns matrix
-GWCoGAPS(SimpSim.data, matchedPatterns=consensusMatrix)
+GWCoGAPS(SimpSim.data, matchedPatterns=consensusMatrix, explicitSets=getSubsets(result))
 ```
 
 # sessionInfo()
