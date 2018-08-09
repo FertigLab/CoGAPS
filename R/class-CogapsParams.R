@@ -110,6 +110,11 @@ setValidity("CogapsParams",
 
         if (!is.null(object@explicitSets) & length(object@explicitSets) != object@nSets)
             "wrong number of sets given"
+        if (length(object@samplingWeight) & is.null(names(object@samplingWeight)))
+            "samplingWeight must be a named vector"
+
+        if (!is.null(object@explicitSets) & !is.null(object@samplingWeight))
+            "explicitSets and samplingAnnotation/samplingWeight are both set"
     }
 )
 
