@@ -550,7 +550,7 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
         }
 
         float delta = m1 > m2 ? newMass - m1 : m2 - newMass; // change larger mass
-        float pOldMass = 2 * newMass > m1 + m2 ? gaps::max(m1, m2) : gaps::min(m1, m2);
+        float pOldMass = 2.f * newMass > m1 + m2 ? gaps::max(m1, m2) : gaps::min(m1, m2);
     
         float pNew = gaps::random::d_gamma(newMass, 2.f, 1.f / mLambda);
         float pOld = gaps::random::d_gamma(pOldMass, 2.f, 1.f / mLambda);
