@@ -122,6 +122,8 @@ void GapsRunner::runOnePhase()
 {
     for (; mCurrentIteration < mMaxIterations; ++mCurrentIteration)
     {
+        createCheckpoint();
+
         #ifdef __GAPS_R_BUILD__
         Rcpp::checkUserInterrupt();
         #endif
@@ -145,7 +147,6 @@ void GapsRunner::runOnePhase()
         }
 
         displayStatus();
-        createCheckpoint();
     }
 }
 
@@ -244,12 +245,10 @@ void GapsRunner::createCheckpoint()
     
         // create checkpoint file
         Archive ar(mCheckpointOutFile, ARCHIVE_WRITE);
-        
         gaps::random::save(ar);
         ar << mNumPatterns << mSeed << mASampler << mPSampler << mStatistics
             << mFixedMatrix << mMaxIterations << mPhase << mCurrentIteration
             << mNumUpdatesA << mNumUpdatesP;
-
         ar.close();
 
         // delete backup file
