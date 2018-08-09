@@ -30,11 +30,16 @@ sampleWithExplictSets <- function(allParams, total)
 #' @return list of subsets
 sampleWithAnnotationWeights <- function(allParams, setSize)
 {
+    # sort annotation group and weights so they match up
+    weight <- allParams$gaps@samplingWeight
+    weight <- weight[order(names(weight))]
     groups <- unique(allParams$gaps@samplingAnnotation)
+    groups <- sort(groups)
+
+    # sample accordingly
     return(lapply(1:allParams$gaps@nSets, function(i)
     {
-        groupCount <- sample(groups, size=setSize, replace=TRUE,
-            prob=allParams$gaps@samplingWeight)
+        groupCount <- sample(groups, size=setSize, replace=TRUE, prob=weight)
         sort(unlist(sapply(groups, function(g)
         {
             groupNdx <- which(allParams$gaps@samplingAnnotation == g)

@@ -21,7 +21,7 @@ supported <- function(file)
 {
     if (!is(file, "character"))
         return(FALSE)
-    return(tools::file_ext(file) %in% c("tsv", "csv", "mtx"))
+    return(tools::file_ext(file) %in% c("tsv", "csv", "mtx", "gct"))
 }
 
 #' get number of rows from supported file name or matrix
@@ -38,7 +38,8 @@ nrowHelper <- function(data)
         return(switch(tools::file_ext(data),
             "csv" = nrow(data.table::fread(data, select=1)),
             "tsv" = nrow(data.table::fread(data, select=1)),
-            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,1])
+            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,1]),
+            "gct" = as.numeric(strsplit(as.matrix(data.table::fread(data, nrows=1, sep='\t')), "\\s+")[[1]][1])
         ))
     }
     return(nrow(data))
@@ -58,7 +59,8 @@ ncolHelper <- function(data)
         return(switch(tools::file_ext(data),
             "csv" = ncol(data.table::fread(data, nrows=1)) - 1,
             "tsv" = ncol(data.table::fread(data, nrows=1)) - 1,
-            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,2])
+            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,2]),
+            "gct" = as.numeric(strsplit(as.matrix(data.table::fread(data, nrows=1, sep='\t')), "\\s+")[[1]][2])
         ))
     }
     return(ncol(data))

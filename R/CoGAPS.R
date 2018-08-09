@@ -86,12 +86,13 @@ outputToFile=NULL, ...)
     )
     allParams <- parseExtraParams(allParams, list(...))
 
-    # display start up message for the user
-    startupMessage(data, allParams)
-
     # check file extension
     if (is(data, "character") & !supported(data))
         stop("unsupported file extension for data")
+
+    # enforce the use of explicit subsets with manual pattern matching
+    if (!is.null(allParams$matchedPatterns) & is.null(allParams$gaps@explicitSets))
+        stop("must provide explicit subsets when doing manual pattern matching")
 
     # check uncertainty matrix
     if (is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "character"))
@@ -154,6 +155,7 @@ outputToFile=NULL, ...)
     allParams$sampleNames <- sampleNames
 
     # run cogaps
+    startupMessage(data, allParams)
     gapsReturnList <- dispatchFunc(data, allParams, uncertainty)
 
     # convert list to CogapsResult object

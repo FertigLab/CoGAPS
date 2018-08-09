@@ -380,8 +380,10 @@ sampling all rows (cols) according to the weight of each category.
 ```{r}
 # sampling with weights
 anno <- sample(letters[1:5], size=nrow(SimpSim.data), replace=TRUE)
+w <- c(1,1,2,2,1)
+names(w) <- letters[1:5]
 params <- new("CogapsParams")
-params <- setAnnotationWeights(params, annotation=anno, weights=c(1,1,2,2,1))
+params <- setAnnotationWeights(params, annotation=anno, weights=w)
 result <- GWCoGAPS(SimpSim.data, params, messages=FALSE)
 ```
 

@@ -19,6 +19,7 @@ test_that("Valid Top-Level CoGAPS Calls",
     gistCsvPath <- system.file("extdata/GIST.csv", package="CoGAPS")
     gistTsvPath <- system.file("extdata/GIST.tsv", package="CoGAPS")
     gistMtxPath <- system.file("extdata/GIST.mtx", package="CoGAPS")
+    gistGctPath <- system.file("extdata/GIST.gct", package="CoGAPS")
 
     # data types
     res <- list()
@@ -27,15 +28,16 @@ test_that("Valid Top-Level CoGAPS Calls",
     res[[3]] <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
     res[[4]] <- CoGAPS(gistTsvPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
     res[[5]] <- CoGAPS(gistMtxPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[6]] <- CoGAPS(gistGctPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
     expect_true(all(sapply(res, no_na_in_result)))
     
     expect_equal(nrow(res[[1]]@featureLoadings), 1363)
     expect_equal(ncol(res[[1]]@featureLoadings), 7)
     expect_equal(nrow(res[[1]]@sampleFactors), 9)
     expect_equal(ncol(res[[1]]@sampleFactors), 7)
-    expect_true(all(sapply(1:4, function(i)
+    expect_true(all(sapply(1:5, function(i)
         res[[i]]@featureLoadings == res[[i+1]]@featureLoadings)))
-    expect_true(all(sapply(1:4, function(i)
+    expect_true(all(sapply(1:5, function(i)
         res[[i]]@sampleFactors == res[[i+1]]@sampleFactors)))
 
     # transposing data
@@ -50,15 +52,17 @@ test_that("Valid Top-Level CoGAPS Calls",
         outputFrequency=50, seed=1, messages=FALSE)
     res[[5]] <- CoGAPS(gistMtxPath, transposeData=TRUE, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE)
+    res[[6]] <- CoGAPS(gistGctPath, transposeData=TRUE, nIterations=100,
+        outputFrequency=50, seed=1, messages=FALSE)
     expect_true(all(sapply(res, no_na_in_result)))
     
     expect_equal(nrow(res[[1]]@featureLoadings), 9)
     expect_equal(ncol(res[[1]]@featureLoadings), 7)
     expect_equal(nrow(res[[1]]@sampleFactors), 1363)
     expect_equal(ncol(res[[1]]@sampleFactors), 7)
-    expect_true(all(sapply(1:4, function(i)
+    expect_true(all(sapply(1:5, function(i)
         res[[i]]@featureLoadings == res[[i+1]]@featureLoadings)))
-    expect_true(all(sapply(1:4, function(i)
+    expect_true(all(sapply(1:5, function(i)
         res[[i]]@sampleFactors == res[[i+1]]@sampleFactors)))
 
     # passing uncertainty
