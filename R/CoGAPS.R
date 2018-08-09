@@ -136,7 +136,7 @@ outputToFile=NULL, ...)
         if (!is.null(allParams$gaps@distributed))
             stop("checkpoints not supported for distributed cogaps")
         else
-            cat("Running CoGAPS from a checkpoint")
+            cat("Running CoGAPS from a checkpoint\n")
     }
 
     # get gene/sample names
