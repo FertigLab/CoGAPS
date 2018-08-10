@@ -524,18 +524,6 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
     {
         if (impl()->canUseGibbs(r1, c1, r2, c2))
         {
-            // swapping only effects alpha parameters - only effects gibbs
-            // flips the sign of alpha parameters (only su)
-            // flips sign in gibbs mass
-            // can we swap after gibbsMass calculation?
-            /*if ((m1 > m2 && m1 > newMass) || (m2 > m1 && m2 < newMass))
-            {
-                std::swap(r1, r2);
-                std::swap(c1, c2);
-                std::swap(p1, p2);
-                std::swap(m1, m2);
-            }*/
-
             AlphaParameters alpha = impl()->alphaParameters(r1, c1, r2, c2);
             std::pair<float, bool> gMass = gibbsMass(alpha, m1, m2);
             if (gMass.second)
