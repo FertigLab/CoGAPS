@@ -12,7 +12,7 @@ test_that("Subsetting Data",
     names(weights) <- letters[1:5]
     params <- new("CogapsParams")
     params <- setAnnotationWeights(params, annotation=anno, weights=weights)
-    result <- GWCoGAPS(testMatrix, params, messages=FALSE)
+    result <- GWCoGAPS(testMatrix, params, messages=FALSE, seed=123)
 
     getIndex <- function(s) as.numeric(strsplit(s, "_")[[1]][2])
     getIndices <- function(set) unname(sapply(set, getIndex))
@@ -21,7 +21,7 @@ test_that("Subsetting Data",
     hist <- sapply(getSubsets(result), getHistogram)
     freq <- unname(rowSums(hist) / sum(hist))
     
-    expect_true(all.equal(freq, unname(weights / sum(weights)), tol=0.05))
+    expect_true(all.equal(freq, unname(weights / sum(weights)), tol=0.1))
 
     # running cogaps with given subsets
     sets <- list(1:225, 226:450, 451:675, 676:900)
