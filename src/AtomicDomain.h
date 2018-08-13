@@ -3,7 +3,7 @@
 
 #include "Archive.h"
 
-#include <boost/unordered_set.hpp>
+#include <boost/unordered_map.hpp>
 
 #include <cstddef>
 #include <map>
@@ -67,8 +67,7 @@ private:
     // domain storage
     std::vector<Atom> mAtoms;
     std::map<uint64_t, uint64_t> mAtomPositions;
-
-    boost::unordered_set<uint64_t> mUsedPositions;
+    boost::unordered_map<uint64_t, uint64_t> mPositionLookup;
 
     mutable std::vector<RawAtom> mInsertCache;
     mutable std::vector<uint64_t> mEraseCache;
