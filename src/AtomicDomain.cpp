@@ -25,7 +25,7 @@ uint64_t AtomicDomain::randomFreePosition() const
     do
     {
         pos = gaps::random::uniform64(0, mDomainSize);
-    } while (mUsedPositions.count(pos) > 0); // hash map => count is O(l)
+    } while (mPositionLookup.count(pos) > 0);
     return pos;
 }
 
@@ -95,9 +95,9 @@ Atom AtomicDomain::insert(uint64_t pos, float mass)
         _right(atom).leftNdx = size() + 1;
     } 
 
-    // add atom to vector
+    // add atom to vector and lookup table
+    mPositionLookup.insert(std::pair<uint64_t, uint64_t>(pos, size()));
     mAtoms.push_back(atom);
-    mUsedPositions.insert(pos);
 
     return atom;
 }
@@ -108,7 +108,7 @@ Atom AtomicDomain::insert(uint64_t pos, float mass)
 void AtomicDomain::erase(uint64_t pos)
 {
     // get vector index of this atom
-    uint64_t index = mAtomPositions.at(pos);
+    uint64_t index = mPositionLookup.at(pos);
 
     // connect neighbors of atom to be deleted
     if (hasLeft(mAtoms[index]))
@@ -129,6 +129,10 @@ void AtomicDomain::erase(uint64_t pos)
         mAtomPositions.erase(mAtoms[index].pos);
         mAtomPositions.insert(std::pair<uint64_t, uint64_t>(mAtoms[index].pos,
             index));
+
+        mPositionLookup.erase(mAtoms[index].pos);
+        mPositionLookup.insert(std::pair<uint64_t, uint64_t>(mAtoms[index].pos,
+            index));
     
         // update moved atom's neighbors
         if (hasLeft(mAtoms[index]))
@@ -144,7 +148,7 @@ void AtomicDomain::erase(uint64_t pos)
     // delete atom from vector in O(1), map in O(logN)
     mAtomPositions.erase(pos);
     mAtoms.pop_back();
-    mUsedPositions.erase(pos);
+    mPositionLookup.erase(pos);
 }
 
 void AtomicDomain::cacheInsert(uint64_t pos, float mass) const
@@ -191,10 +195,10 @@ void AtomicDomain::flushCache()
     mEraseCache.clear();
 }
 
-// O(logN)
+// O(1)
 void AtomicDomain::updateMass(uint64_t pos, float newMass)
 {
-    mAtoms[mAtomPositions.at(pos)].mass = newMass; // TODO at() is C++11
+    mAtoms[mPositionLookup.at(pos)].mass = newMass;
 }
 
 Archive& operator<<(Archive &ar, Atom &a)
