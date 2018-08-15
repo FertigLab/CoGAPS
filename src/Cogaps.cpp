@@ -61,7 +61,7 @@ unsigned getNumPatterns(const Rcpp::List &allParams)
     {
         std::string file(Rcpp::as<std::string>(allParams["checkpointInFile"]));
         Archive ar(file, ARCHIVE_READ);
-        gaps::random::load(ar);
+        GapsRng::load(ar);
         ar >> nPatterns;
         ar.close();
     }
@@ -119,7 +119,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
     {
         std::string file(Rcpp::as<std::string>(allParams["checkpointInFile"]));
         Archive ar(file, ARCHIVE_READ);
-        gaps::random::load(ar);
+        GapsRng::load(ar);
         ar >> runner;
         ar.close();
     }
@@ -135,7 +135,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
 
         // set parameters that would be saved in the checkpoint
         const Rcpp::S4 &gapsParams(allParams["gaps"]);
-        gaps::random::setSeed(gapsParams.slot("seed"));
+        GapsRng::setSeed(gapsParams.slot("seed"));
         runner.recordSeed(gapsParams.slot("seed"));
         runner.setMaxIterations(gapsParams.slot("nIterations"));
         runner.setSparsity(gapsParams.slot("alphaA"),

@@ -103,8 +103,8 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
 
     float bdProb = mMaxAtoms < 2 ? 0.6667f : 0.5f;
 
-    mU1 = mUseCachedRng ? mU1 : gaps::random::uniform();
-    mU2 = mUseCachedRng ? mU2: gaps::random::uniform();
+    mU1 = mUseCachedRng ? mU1 : mRng.uniform();
+    mU2 = mUseCachedRng ? mU2: mRng.uniform();
     mUseCachedRng = false;
 
     float lowerBound = deathProb(mMinAtoms);
@@ -166,7 +166,7 @@ bool ProposalQueue::move(AtomicDomain &domain)
         return false;
     }
 
-    uint64_t newLocation = gaps::random::uniform64(lbound, rbound - 1);
+    uint64_t newLocation = mRng.uniform64(lbound, rbound - 1);
     if (mUsedIndices.count(a.pos / mDimensionSize) || mUsedIndices.count(newLocation / mDimensionSize))
     {
         return false; // matrix conflict - can't compute deltaLL

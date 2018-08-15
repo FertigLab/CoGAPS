@@ -20,148 +20,28 @@
 #include <algorithm>
 #include <stdint.h>
 
-#ifdef __GAPS_OPENMP__
-    #include <omp.h>
-#else
-    typedef int omp_int_t;
-    inline omp_int_t omp_get_thread_num() { return 0; }
-    inline omp_int_t omp_get_max_threads() { return 1; }
-#endif
-
 #define Q_GAMMA_THRESHOLD 0.000001f
 #define Q_GAMMA_MIN_VALUE 0.0
 
-//typedef boost::random::mt19937 RNGType;
-//typedef boost::random::mt11213b RNGType; // should be faster
+const float maxU32AsFloat = static_cast<float>(std::numeric_limits<uint32_t>::max());
+const double maxU32AsDouble = static_cast<double>(std::numeric_limits<uint32_t>::max());
 
 static Xoroshiro128plus seeder;
 
-static std::vector<GapsRng>& rng()
+void GapsRng::save(Archive &ar)
 {
-    static std::vector<GapsRng> allRngs(omp_get_max_threads());
-    return allRngs;
+    ar << seeder;
 }
 
-void gaps::random::save(Archive &ar)
+void GapsRng::load(Archive &ar)
 {
-    for (unsigned i = 0; i < rng().size(); ++i)
-    {
-        ar << seeder;
-    }
+    ar >> seeder;
 }
 
-void gaps::random::load(Archive &ar)
-{
-    for (unsigned i = 0; i < rng().size(); ++i)
-    {
-        ar >> seeder;
-    }
-}
-
-void gaps::random::setSeed(uint32_t seed)
+void GapsRng::setSeed(uint64_t seed)
 {
     seeder.seed(seed);
 }
-
-int gaps::random::poisson(float lambda)
-{   
-    return rng().at(omp_get_thread_num()).poisson(lambda);
-}
-
-float gaps::random::exponential(float lambda)
-{
-    return rng().at(omp_get_thread_num()).exponential(lambda);
-}
-
-float gaps::random::uniform()
-{
-    return rng().at(omp_get_thread_num()).uniform();
-}
-
-float gaps::random::uniform(float a, float b)
-{
-    return rng().at(omp_get_thread_num()).uniform(a,b);
-}
-
-uint64_t gaps::random::uniform64()
-{
-    return rng().at(omp_get_thread_num()).uniform64();
-}
-
-uint64_t gaps::random::uniform64(uint64_t a, uint64_t b)
-{
-    return rng().at(omp_get_thread_num()).uniform64(a,b);
-}
-
-float gaps::random::d_gamma(float d, float shape, float scale)
-{
-    boost::math::gamma_distribution<> gam(shape, scale);
-    return pdf(gam, d);
-}
-
-float gaps::random::p_gamma(float p, float shape, float scale)
-{
-    boost::math::gamma_distribution<> gam(shape, scale);
-    return cdf(gam, p);
-}
-
-float gaps::random::q_gamma(float q, float shape, float scale)
-{
-    if (q < Q_GAMMA_THRESHOLD)
-    {
-        return Q_GAMMA_MIN_VALUE;
-    }
-    boost::math::gamma_distribution<> gam(shape, scale);
-    return quantile(gam, q);
-}
-
-float gaps::random::d_norm(float d, float mean, float sd)
-{
-    boost::math::normal_distribution<> norm(mean, sd);
-    return pdf(norm, d);
-}
-
-float gaps::random::q_norm(float q, float mean, float sd)
-{
-    boost::math::normal_distribution<> norm(mean, sd);
-    return quantile(norm, q);
-}
-
-float gaps::random::p_norm(float p, float mean, float sd)
-{
-    boost::math::normal_distribution<> norm(mean, sd);
-    return cdf(norm, p);
-}
-
-double gaps::lgamma(double x)
-{
-    return boost::math::lgamma(x);
-}
-
-float gaps::random::inverseNormSample(float a, float b, float mean, float sd)
-{
-    float u = gaps::random::uniform(a, b);
-    while (u == 0.f || u == 1.f)
-    {
-        u = gaps::random::uniform(a, b);
-    }
-    return gaps::random::q_norm(u, mean, sd);
-}
-
-float gaps::random::inverseGammaSample(float a, float b, float mean, float sd)
-{
-    float u = gaps::random::uniform(a, b);
-    while (u == 0.f || u == 1.f)
-    {
-        u = gaps::random::uniform(a, b);
-    }
-    return gaps::random::q_gamma(u, mean, sd);
-}
-
-///////////////////////// NEW /////////////////////////////////////////////////
-
-const float maxU32AsFloat = static_cast<float>(std::numeric_limits<uint32_t>::max());
-const double maxU32AsDouble = static_cast<double>(std::numeric_limits<uint32_t>::max());
 
 static uint64_t rotl(const uint64_t x, int k)
 {
@@ -352,3 +232,67 @@ float GapsRng::exponential(float lambda)
     return -1.f * std::log(uniform()) / lambda;
 }
 
+float GapsRng::inverseNormSample(float a, float b, float mean, float sd)
+{
+    float u = uniform(a, b);
+    while (u == 0.f || u == 1.f)
+    {
+        u = uniform(a, b);
+    }
+    return gaps::q_norm(u, mean, sd);
+}
+
+float GapsRng::inverseGammaSample(float a, float b, float mean, float sd)
+{
+    float u = uniform(a, b);
+    while (u == 0.f || u == 1.f)
+    {
+        u = uniform(a, b);
+    }
+    return gaps::q_gamma(u, mean, sd);
+}
+
+float gaps::d_gamma(float d, float shape, float scale)
+{
+    boost::math::gamma_distribution<> gam(shape, scale);
+    return pdf(gam, d);
+}
+
+float gaps::p_gamma(float p, float shape, float scale)
+{
+    boost::math::gamma_distribution<> gam(shape, scale);
+    return cdf(gam, p);
+}
+
+float gaps::q_gamma(float q, float shape, float scale)
+{
+    if (q < Q_GAMMA_THRESHOLD)
+    {
+        return Q_GAMMA_MIN_VALUE;
+    }
+    boost::math::gamma_distribution<> gam(shape, scale);
+    return quantile(gam, q);
+}
+
+float gaps::d_norm(float d, float mean, float sd)
+{
+    boost::math::normal_distribution<> norm(mean, sd);
+    return pdf(norm, d);
+}
+
+float gaps::q_norm(float q, float mean, float sd)
+{
+    boost::math::normal_distribution<> norm(mean, sd);
+    return quantile(norm, q);
+}
+
+float gaps::p_norm(float p, float mean, float sd)
+{
+    boost::math::normal_distribution<> norm(mean, sd);
+    return cdf(norm, p);
+}
+
+double gaps::lgamma(double x)
+{
+    return boost::math::lgamma(x);
+}
