@@ -252,6 +252,18 @@ float GapsRng::inverseGammaSample(float a, float b, float mean, float sd)
     return gaps::q_gamma(u, mean, sd);
 }
 
+Archive& operator<<(Archive &ar, GapsRng &gen)
+{
+    ar << gen.mState;
+    return ar;
+}
+
+Archive& operator>>(Archive &ar, GapsRng &gen)
+{
+    ar >> gen.mState;
+    return ar;
+}
+
 float gaps::d_gamma(float d, float shape, float scale)
 {
     boost::math::gamma_distribution<> gam(shape, scale);
