@@ -216,7 +216,7 @@ Archive& operator>>(Archive &ar, Atom &a)
 Archive& operator<<(Archive &ar, AtomicDomain &domain)
 {
     unsigned nAtoms = domain.mAtoms.size();
-    ar << nAtoms << domain.mDomainSize;
+    ar << nAtoms << domain.mDomainSize << domain.mRng;
 
     for (unsigned i = 0; i < nAtoms; ++i)
     {
@@ -228,7 +228,7 @@ Archive& operator<<(Archive &ar, AtomicDomain &domain)
 Archive& operator>>(Archive &ar, AtomicDomain &domain)
 {
     unsigned nAtoms = 0;
-    ar >> nAtoms >> domain.mDomainSize;
+    ar >> nAtoms >> domain.mDomainSize >> domain.mRng;
 
     Atom a(0, 0.f);
     for (unsigned i = 0; i < nAtoms; ++i)

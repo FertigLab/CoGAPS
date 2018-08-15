@@ -7,6 +7,15 @@
 #include <stdint.h>
 #include <vector>
 
+struct OptionalFloat
+{
+    bool hasValue;
+    float value;
+
+    OptionalFloat() : hasValue(false), value(0.f) {}
+    OptionalFloat(float f) : hasValue(true), value(f) {}
+};
+
 namespace gaps
 {
     double lgamma(double x);
@@ -74,6 +83,9 @@ private:
     double uniformd();
     int poissonSmall(double lambda);
     int poissonLarge(double lambda);
+
+    friend Archive& operator<<(Archive &ar, GapsRng &gen);
+    friend Archive& operator>>(Archive &ar, GapsRng &gen);
 };
 
 #endif // __COGAPS_RANDOM_H__

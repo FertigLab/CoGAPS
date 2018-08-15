@@ -222,13 +222,15 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
 Archive& operator<<(Archive &ar, ProposalQueue &queue)
 {
     ar << queue.mMinAtoms << queue.mMaxAtoms << queue.mNumBins
-        << queue.mDimensionSize << queue.mDomainSize << queue.mAlpha;
+        << queue.mDimensionSize << queue.mDomainSize << queue.mAlpha
+        << queue.mRng;
     return ar;
 }
 
 Archive& operator>>(Archive &ar, ProposalQueue &queue)
 {
     ar >> queue.mMinAtoms >> queue.mMaxAtoms >> queue.mNumBins
-        >> queue.mDimensionSize >> queue.mDomainSize >> queue.mAlpha;
+        >> queue.mDimensionSize >> queue.mDomainSize >> queue.mAlpha
+        >> queue.mRng;
     return ar;
 }
