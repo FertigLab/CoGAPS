@@ -2,6 +2,7 @@
 #define __COGAPS_ATOMIC_DOMAIN_H__
 
 #include "Archive.h"
+#include "math/Random.h"
 
 #include <boost/unordered_map.hpp>
 
@@ -15,6 +16,7 @@ class AtomicDomain;
 // Want the neighbors to be pointers, but can't use pointers since vector
 // is resized, shifted integers allow for 0 to be "null" and 1 to be the
 // first index. AtomicDomain is responsible for managing this correctly.
+// TODO use get/set neighbor
 struct Atom
 {
 private:    
@@ -74,6 +76,8 @@ private:
 
     mutable unsigned mInsertCacheIndex;
     mutable unsigned mEraseCacheIndex;
+
+    mutable GapsRng mRng;
 
     Atom& _left(const Atom &atom);
     Atom& _right(const Atom &atom);

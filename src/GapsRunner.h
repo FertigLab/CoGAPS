@@ -97,6 +97,8 @@ private:
 
     unsigned mNumUpdatesA;
     unsigned mNumUpdatesP;
+
+    mutable GapsRng mRng;
         
     void runOnePhase();
     void updateSampler(unsigned nA, unsigned nP);

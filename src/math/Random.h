@@ -11,32 +11,13 @@ namespace gaps
 {
     double lgamma(double x);
 
-    namespace random
-    {
-        void setSeed(uint32_t seed);
-
-        float uniform();
-        float uniform(float a, float b);
-        uint64_t uniform64();
-        uint64_t uniform64(uint64_t a, uint64_t b);
-
-        float exponential(float lambda);
-        int poisson(float lambda);
-
-        float inverseNormSample(float a, float b, float mean, float sd);
-        float inverseGammaSample(float a, float b, float mean, float sd);
-
-        float d_gamma(float d, float shape, float scale);
-        float p_gamma(float p, float shape, float scale);
-        float q_gamma(float q, float shape, float scale);
-        float d_norm(float d, float mean, float sd);
-        float q_norm(float q, float mean, float sd);
-        float p_norm(float p, float mean, float sd);
-
-        void save(Archive &ar);
-        void load(Archive &ar);
-    } // namespace random
-} // namespace gaps
+    float d_gamma(float d, float shape, float scale);
+    float p_gamma(float p, float shape, float scale);
+    float q_gamma(float q, float shape, float scale);
+    float d_norm(float d, float mean, float sd);
+    float q_norm(float q, float mean, float sd);
+    float p_norm(float p, float mean, float sd);
+}
 
 // used for seeding individual rngs
 class Xoroshiro128plus
@@ -74,6 +55,13 @@ public:
 
     int poisson(double lambda);
     float exponential(float lambda);
+
+    float inverseNormSample(float a, float b, float mean, float sd);
+    float inverseGammaSample(float a, float b, float mean, float sd);
+
+    static void setSeed(uint64_t seed);
+    static void save(Archive &ar);
+    static void load(Archive &ar);
   
 private:
 

@@ -65,19 +65,20 @@ protected:
     void addMass(uint64_t pos, float mass, unsigned row, unsigned col);
     void removeMass(uint64_t pos, float mass, unsigned row, unsigned col);
 
-    void birth(uint64_t pos, unsigned row, unsigned col);
-    void death(uint64_t pos, float mass, unsigned row, unsigned col);
+    void birth(uint64_t pos, unsigned row, unsigned col, GapsRng *rng);
+    void death(uint64_t pos, float mass, unsigned row, unsigned col, GapsRng *rng);
     void move(uint64_t src, float mass, uint64_t dest, unsigned r1, unsigned c1,
-        unsigned r2, unsigned c2);
+        unsigned r2, unsigned c2, GapsRng *rng);
     void exchange(uint64_t p1, float m1, uint64_t p2, float m2, unsigned r1,
-        unsigned c1, unsigned r2, unsigned c2);
+        unsigned c1, unsigned r2, unsigned c2, GapsRng *rng);
 
     bool updateAtomMass(uint64_t pos, float mass, float delta);
     void acceptExchange(uint64_t p1, float m1, float d1, uint64_t p2, float m2,
         float d2, unsigned r1, unsigned c1, unsigned r2, unsigned c2);
 
-    std::pair<float, bool> gibbsMass(AlphaParameters alpha);
-    std::pair<float, bool> gibbsMass(AlphaParameters alpha, float m1, float m2);
+    std::pair<float, bool> gibbsMass(AlphaParameters alpha, GapsRng *rng);
+    std::pair<float, bool> gibbsMass(AlphaParameters alpha, float m1, float m2,
+        GapsRng *rng);
 
 public:
 
@@ -399,16 +400,16 @@ void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
     switch (prop.type)
     {
         case 'B':
-            birth(prop.pos1, r1, c1);
+            birth(prop.pos1, r1, c1, &prop.rng);
             break;
         case 'D':
-            death(prop.pos1, prop.mass1, r1, c1);
+            death(prop.pos1, prop.mass1, r1, c1, &prop.rng);
             break;
         case 'M':
-            move(prop.pos1, prop.mass1, prop.pos2, r1, c1, r2, c2);
+            move(prop.pos1, prop.mass1, prop.pos2, r1, c1, r2, c2, &prop.rng);
             break;
         case 'E':
-            exchange(prop.pos1, prop.mass1, prop.pos2, prop.mass2, r1, c1, r2, c2);
+            exchange(prop.pos1, prop.mass1, prop.pos2, prop.mass2, r1, c1, r2, c2, &prop.rng);
             break;
     }
 }
@@ -433,18 +434,18 @@ void GibbsSampler<T, MatA, MatB>::removeMass(uint64_t pos, float mass, unsigned 
 // or with the gibbs mass calculation
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::birth(uint64_t pos, unsigned row,
-unsigned col)
+unsigned col, GapsRng *rng)
 {
     // calculate proposed mass
     float mass = 0.f;
     if (impl()->canUseGibbs(row, col))
     {
         AlphaParameters alpha = impl()->alphaParameters(row, col);
-        mass = gibbsMass(alpha).first;
+        mass = gibbsMass(alpha, rng).first;
     }
     else
     {
-        mass = gaps::random::exponential(mLambda);
+        mass = rng->exponential(mLambda);
     }
 
     // accept mass as long as it's non-zero
@@ -463,7 +464,7 @@ unsigned col)
 // the original mass or the gibbs mass calculation
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass, unsigned row,
-unsigned col)
+unsigned col, GapsRng *rng)
 {
     // kill off atom
     mMatrix(row, col) = gaps::max(mMatrix(row, col) - mass, 0.f);
@@ -474,7 +475,7 @@ unsigned col)
     AlphaParameters alpha = impl()->alphaParameters(row, col);
     if (impl()->canUseGibbs(row, col))
     {
-        std::pair<float, bool> gMass = gibbsMass(alpha);
+        std::pair<float, bool> gMass = gibbsMass(alpha, rng);
         if (gMass.second)
         {
             rebirthMass = gMass.first;
@@ -483,7 +484,7 @@ unsigned col)
 
     // accept/reject rebirth
     float deltaLL = rebirthMass * (alpha.su - alpha.s * rebirthMass / 2.f);
-    if (deltaLL * mAnnealingTemp >= std::log(gaps::random::uniform()))
+    if (deltaLL * mAnnealingTemp >= std::log(rng->uniform()))
     {
         mDomain.updateMass(pos, rebirthMass);
         mMatrix(row, col) += rebirthMass;
@@ -500,12 +501,12 @@ unsigned col)
 // move mass from src to dest in the atomic domain
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::move(uint64_t src, float mass, uint64_t dest,
-unsigned r1, unsigned c1, unsigned r2, unsigned c2)
+unsigned r1, unsigned c1, unsigned r2, unsigned c2, GapsRng *rng)
 {
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
     {
         float deltaLL = impl()->computeDeltaLL(r1, c1, -mass, r2, c2, mass);
-        if (deltaLL * mAnnealingTemp > std::log(gaps::random::uniform()))
+        if (deltaLL * mAnnealingTemp > std::log(rng->uniform()))
         {
             removeMass(src, mass, r1, c1);
             addMass(dest, mass, r2, c2);
@@ -518,14 +519,14 @@ unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 // the exchange
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::exchange(uint64_t p1, float m1, uint64_t p2,
-float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
+float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2, GapsRng *rng)
 {
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
     {
         if (impl()->canUseGibbs(r1, c1, r2, c2))
         {
             AlphaParameters alpha = impl()->alphaParameters(r1, c1, r2, c2);
-            std::pair<float, bool> gMass = gibbsMass(alpha, m1, m2);
+            std::pair<float, bool> gMass = gibbsMass(alpha, m1, m2, rng);
             if (gMass.second)
             {
                 acceptExchange(p1, m1, gMass.first, p2, m2, -gMass.first, r1,
@@ -534,14 +535,14 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
             }
         }
 
-        float pUpper = gaps::random::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
-        float newMass = gaps::random::inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
+        float pUpper = gaps::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
+        float newMass = rng->inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
 
         float delta = m1 > m2 ? newMass - m1 : m2 - newMass; // change larger mass
         float pOldMass = 2.f * newMass > m1 + m2 ? gaps::max(m1, m2) : gaps::min(m1, m2);
     
-        float pNew = gaps::random::d_gamma(newMass, 2.f, 1.f / mLambda);
-        float pOld = gaps::random::d_gamma(pOldMass, 2.f, 1.f / mLambda);
+        float pNew = gaps::d_gamma(newMass, 2.f, 1.f / mLambda);
+        float pOld = gaps::d_gamma(pOldMass, 2.f, 1.f / mLambda);
 
         if (pOld == 0.f && pNew != 0.f) // special case
         {
@@ -550,7 +551,7 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
         }
         float deltaLL = impl()->computeDeltaLL(r1, c1, delta, r2, c2, -delta);
         float priorLL = (pOld == 0.f) ? 1.f : pOld / pNew;
-        float u = std::log(gaps::random::uniform() * priorLL);
+        float u = std::log(rng->uniform() * priorLL);
         if (u < deltaLL * mAnnealingTemp)
         {
             acceptExchange(p1, m1, delta, p2, m2, -delta, r1, c1, r2, c2);
@@ -605,7 +606,8 @@ unsigned r2, unsigned c2)
 }
 
 template <class T, class MatA, class MatB>
-std::pair<float, bool> GibbsSampler<T, MatA, MatB>::gibbsMass(AlphaParameters alpha)
+std::pair<float, bool> GibbsSampler<T, MatA, MatB>::gibbsMass(AlphaParameters alpha,
+GapsRng *rng)
 {        
     alpha.s *= mAnnealingTemp;
     alpha.su *= mAnnealingTemp;
@@ -614,11 +616,11 @@ std::pair<float, bool> GibbsSampler<T, MatA, MatB>::gibbsMass(AlphaParameters al
     {
         float mean = (alpha.su - mLambda) / alpha.s;
         float sd = 1.f / std::sqrt(alpha.s);
-        float pLower = gaps::random::p_norm(0.f, mean, sd);
+        float pLower = gaps::p_norm(0.f, mean, sd);
 
         if (pLower < 1.f)
         {
-            float m = gaps::random::inverseNormSample(pLower, 1.f, mean, sd);
+            float m = rng->inverseNormSample(pLower, 1.f, mean, sd);
             float gMass = gaps::min(m, mMaxGibbsMass / mLambda);
             return std::pair<float, bool>(gMass, gMass >= gaps::epsilon);
         }
@@ -628,7 +630,7 @@ std::pair<float, bool> GibbsSampler<T, MatA, MatB>::gibbsMass(AlphaParameters al
 
 template <class T, class MatA, class MatB>
 std::pair<float, bool> GibbsSampler<T, MatA, MatB>::gibbsMass(AlphaParameters alpha,
-float m1, float m2)
+float m1, float m2, GapsRng *rng)
 {
     alpha.s *= mAnnealingTemp;
     alpha.su *= mAnnealingTemp;
@@ -637,12 +639,12 @@ float m1, float m2)
     {
         float mean = alpha.su / alpha.s; // lambda cancels out
         float sd = 1.f / std::sqrt(alpha.s);
-        float pLower = gaps::random::p_norm(-m1, mean, sd);
-        float pUpper = gaps::random::p_norm(m2, mean, sd);
+        float pLower = gaps::p_norm(-m1, mean, sd);
+        float pUpper = gaps::p_norm(m2, mean, sd);
 
         if (!(pLower >  0.95f || pUpper < 0.05f))
         {
-            float delta = gaps::random::inverseNormSample(pLower, pUpper, mean, sd);
+            float delta = rng->inverseNormSample(pLower, pUpper, mean, sd);
             float gibbsMass = gaps::min(gaps::max(-m1, delta), m2); // conserve mass
             return std::pair<float, bool>(gibbsMass, true);
         }
