@@ -52,28 +52,6 @@ TEST_CASE("Test Random.h - Random Number Generation")
         // TODO
     }
 
-    SECTION("Test normal distribution")
-    {
-        // sample distribution
-        float mean = 0.f, var = 0.f;
-        float norm[1024];
-        for (unsigned i = 0; i < 1024; ++i)
-        {
-            norm[i] = gaps::random::normal(0.f, 1.f);
-            mean += norm[i];
-        }
-
-        // check parameters
-        mean /= 1024.f;
-        for (unsigned i = 0; i < 1000; ++i)
-        {
-            var += pow(norm[i] - mean, 2);
-        }
-        var /= 1024.f;
-        REQUIRE(mean == Approx(0.f).epsilon(0.025f));
-        REQUIRE(var == Approx(1.f).epsilon(0.025f));
-    }
-
     SECTION("Test poisson distribution")
     {
         float total = 0.f;
