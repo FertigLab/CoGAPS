@@ -55,9 +55,6 @@ public:
     void setRightAdjacentBucket(AtomBucket *bucket);
     void setLeftAdjacentBucket(AtomBucket *bucket);
 
-    AtomBucket& operator=(const AtomBucket& other);
-
-    unsigned getIndex(uint64_t pos);
     Atom* getLeft(unsigned index);
     Atom* getRight(unsigned index);
 
@@ -65,8 +62,8 @@ public:
 private:
 #endif
 
-    Atom mBucket;
-    bool mFull;
+    Atom mBucket[2];
+    uint32_t mSize;
     
     AtomBucket *mOverflow;
     AtomBucket *mPrev;
@@ -76,6 +73,8 @@ private:
     void connectAdjacent();
 
     Atom* back();
+
+    AtomBucket& operator=(const AtomBucket& other); // prevent copies
     
     friend Archive& operator<<(Archive& ar, AtomBucket &b);
     friend Archive& operator>>(Archive& ar, AtomBucket &b);
