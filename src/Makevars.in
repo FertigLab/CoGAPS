@@ -21,6 +21,7 @@ OBJECTS =   AtomicDomain.o \
             math/Math.o \
             math/Random.o \
             cpp_tests/testAlgorithms.o \
+            cpp_tests/testAtomicDomain.o \
             cpp_tests/testEfficientSets.o \
             cpp_tests/testFileParsers.o \
             cpp_tests/testMatrix.o \

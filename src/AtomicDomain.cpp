@@ -4,18 +4,19 @@
 #include <vector>
 
 // should only ever use this when copying a default constructed bucket
-AtomBucket& AtomBucket::operator=(const AtomBucket& other)
+// in the vector of buckets used in the allocator
+/*AtomBucket& AtomBucket::operator=(const AtomBucket& other)
 {
-    GAPS_ASSERT(!other.mFull);
+    GAPS_ASSERT(other.mSize == 0);
     GAPS_ASSERT(other.mPrev == NULL);
     GAPS_ASSERT(other.mNext == NULL);
     GAPS_ASSERT(other.mOverflow == NULL);
 
-    mFull = false;
+    mSize = 0;
     mPrev = NULL;
     mNext = NULL;
     mOverflow = NULL;
-}
+}*/
 
 /////////////////////// ALLOCATOR FOR OVERFLOW BUCKETS /////////////////////////
 
@@ -130,61 +131,114 @@ bool AtomNeighborhood::hasRight()
 // cases are fast
 
 AtomBucket::AtomBucket()
-    : mFull(false), mOverflow(NULL), mPrev(NULL), mNext(NULL)
+    : mSize(0), mOverflow(NULL), mPrev(NULL), mNext(NULL)
 {}
 
 unsigned AtomBucket::size() const
 {
-    unsigned thisSize = mFull ? 1 : 0;
-    return mOverflow == NULL ? thisSize : thisSize + mOverflow->size();
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+
+    return mOverflow == NULL ? mSize : mSize + mOverflow->size();
 }
 
 bool AtomBucket::isEmpty() const
 {
-    return !mFull;
+    return mSize == 0;
 }
 
 bool AtomBucket::contains(uint64_t pos) const
 {
-    if (mOverflow != NULL && pos > mBucket.pos)
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(pos > 0);
+
+    if (mOverflow != NULL && !mOverflow->isEmpty() && pos > mBucket[1].pos)
     {
         return mOverflow->contains(pos);
     }
     else
     {
-        return mFull ? pos == mBucket.pos : false;
+        switch (mSize)
+        {
+            case 0:
+                return false;
+            case 1:
+                return mBucket[0].pos == pos;
+            case 2:
+                return mBucket[0].pos == pos || mBucket[1].pos == pos;
+        }
     }
 }
 
 Atom* AtomBucket::operator[](unsigned index)
 {
-    return index == 0 ? &mBucket : mOverflow->operator[](index - 1);
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(index < size());
+
+    if (index > 1) // must be overflowed
+    {
+        return mOverflow->operator[](index - 2);
+    }
+    return &(mBucket[index]);
 }
 
 void AtomBucket::insert(uint64_t pos, float mass)
 {
-    if (!mFull)
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(pos > 0);
+
+    if (mSize == 0)
     {
-        mBucket = Atom(pos, mass);
-        mFull = true;
+        mBucket[0] = Atom(pos, mass);
+        ++mSize;
+    }
+    else if (mSize == 1)
+    {
+        if (pos < mBucket[0].pos)
+        {
+            mBucket[1] = mBucket[0];
+            mBucket[0] = Atom(pos, mass);
+        }
+        else
+        {
+            mBucket[1] = Atom(pos, mass);
+        }
+        ++mSize;
     }
     else
     {
+        // check if we need to allocate the overflow bucket
         if (mOverflow == NULL)
         {
             mOverflow = createAtomBucket();
             mOverflow->mPrev = this;
             mOverflow->mNext = mNext;
         }
-        
-        if (pos < mBucket.pos)
+        else if (mOverflow->isEmpty())
         {
-            mOverflow->insert(mBucket.pos, mBucket.mass);
-            mBucket = Atom(pos, mass);
+            mOverflow->mPrev = this;
+            mOverflow->mNext = mNext;
+        }
+
+        // push correct atom into overflow bucket
+        if (pos > mBucket[1].pos)
+        {
+            return mOverflow->insert(pos, mass);
+        }
+        mOverflow->insert(mBucket[1].pos, mBucket[1].mass);
+
+        // if inserting in this bucket, find correct position
+        if (pos < mBucket[0].pos)
+        {
+            mBucket[1] = mBucket[0];
+            mBucket[0] = Atom(pos, mass);
         }
         else
         {
-            mOverflow->insert(pos, mass);
+            mBucket[1] = Atom(pos, mass);
         }
     }
 }
@@ -192,55 +246,100 @@ void AtomBucket::insert(uint64_t pos, float mass)
 // assumes pos is contained in this chain
 void AtomBucket::erase(uint64_t pos)
 {
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(pos > 0);
+    GAPS_ASSERT(mSize > 0);
     GAPS_ASSERT(contains(pos));
-    if (mBucket.pos == pos)
+
+    if (mSize == 1)
     {
+        connectAdjacent();
+        mSize = 0;
+    }
+    else if (mSize == 2)
+    {
+        // check if this position is in overflow bucket    
+        if (pos > mBucket[1].pos)
+        {
+            return mOverflow->erase(pos);
+        }
+
+        // shift top position down if needed
+        if (mBucket[0].pos == pos)
+        {
+            mBucket[0] = mBucket[1];
+        }
+        
+        // pull first atom from overflow if it's there
         if (mOverflow != NULL && !mOverflow->isEmpty())
         {
-            mBucket = *(mOverflow->front());
+            mBucket[1] = *(mOverflow->front());
             mOverflow->eraseFront();
         }
-        else
+        else // just delete atom at last position
         {
-            mFull = false;
-            connectAdjacent();
+            --mSize;
         }
-    }
-    else
-    {
-        mOverflow->erase(pos);
     }
 }
 
 void AtomBucket::eraseFront()
 {
-    if (mOverflow != NULL && !mOverflow->isEmpty())
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+
+    GAPS_ASSERT(mSize > 0);
+
+    if (mSize == 1)
     {
-        mBucket = *(mOverflow->front());
-        mOverflow->eraseFront();
-    }
-    else
-    {
-        mFull = false;
         connectAdjacent();
+        mSize = 0;
+    }
+    else if (mSize == 2)
+    {
+        mBucket[0] = mBucket[1];
+        
+        // pull first atom from overflow if it's there
+        if (mOverflow != NULL && !mOverflow->isEmpty())
+        {
+            mBucket[1] = *(mOverflow->front());
+            mOverflow->eraseFront();
+        }
+        else
+        {
+            --mSize;
+        }
     }
 }
 
 AtomNeighborhood AtomBucket::getNeighbors(unsigned index)
 {
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(index < size());
+
     return AtomNeighborhood(getLeft(index), this->operator[](index), getRight(index));
 }
 
 AtomNeighborhood AtomBucket::getRightNeighbor(unsigned index)
 {
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(index < size());
+
     return AtomNeighborhood(NULL, this->operator[](index), getRight(index));
 }
 
-// needs to propogate through overflow
+// needs to propogate through overflow so that the last overflow will know
+// where the next bucket is
 void AtomBucket::setRightAdjacentBucket(AtomBucket *bucket)
 {
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+
     mNext = bucket;
-    if (mOverflow != NULL)
+    if (mOverflow != NULL && !mOverflow->isEmpty())
     {
         mOverflow->setRightAdjacentBucket(bucket);
     }
@@ -248,12 +347,20 @@ void AtomBucket::setRightAdjacentBucket(AtomBucket *bucket)
 
 void AtomBucket::setLeftAdjacentBucket(AtomBucket *bucket)
 {
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(bucket == NULL || !bucket->isEmpty());
+
     mPrev = bucket;
 }
 
 void AtomBucket::connectAdjacent()
 {
-    if (mNext != NULL)
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+
+    // be careful when connecting overflow buckets
+    if (mNext != NULL && (mPrev == NULL || mPrev->mOverflow != this))
     {
         mNext->setLeftAdjacentBucket(mPrev);
     }
@@ -261,61 +368,87 @@ void AtomBucket::connectAdjacent()
     {
         mPrev->setRightAdjacentBucket(mNext);
     }
+
+    mNext = NULL;
+    mPrev = NULL;
 }
 
 Atom* AtomBucket::front()
 {
-    return &mBucket;
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(mSize > 0);
+    GAPS_ASSERT(mBucket[0].pos > 0);
+
+    return &(mBucket[0]);
 }
 
 Atom* AtomBucket::back()
 {
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(mSize > 0);
+
     if (mOverflow == NULL || (mOverflow != NULL && mOverflow->isEmpty()))
     {
-        return &mBucket;
+        return &(mBucket[mSize - 1]);
     }
     return mOverflow->back();
 }
 
 Atom* AtomBucket::getLeft(unsigned index)
 {
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(mSize > 0);
+    GAPS_ASSERT(index < size());
+
     if (index == 0)
     {
-        return mPrev != NULL ? mPrev->back() : NULL;
+        GAPS_ASSERT(mPrev == NULL || mPrev->mOverflow != this);
+        return mPrev != NULL ? mPrev->back() : NULL; // mPrev can't be overflow here
     }
-    else if (index == 1)
+    else if (index < 3)
     {
-        return &mBucket;
+        return &(mBucket[index - 1]);
     }
     else
     {
-        return mOverflow->getLeft(index - 1);
+        GAPS_ASSERT(mOverflow != NULL);
+        return mOverflow->getLeft(index - 2);
     }    
 }
 
 Atom* AtomBucket::getRight(unsigned index)
 {
-    if (index == 0)
+    GAPS_ASSERT(mPrev == NULL || !mPrev->isEmpty());
+    GAPS_ASSERT(mNext == NULL || !mNext->isEmpty());
+    GAPS_ASSERT(mSize > 0);
+    GAPS_ASSERT(index < size());
+
+    if (index == mSize - 1) // this is last atom in bucket
     {
         if (mOverflow != NULL && !mOverflow->isEmpty())
         {
             return mOverflow->front();
         }
-        else
-        {
-            return mNext != NULL ? mNext->front() : NULL;
-        }
-    }
-    else // must be overflowed
+        return mNext != NULL ? mNext->front() : NULL;
+    }        
+    else if (index == 0)
     {
-        return mOverflow->getRight(index - 1);
+        GAPS_ASSERT(mBucket[1].pos > 0);
+        return &(mBucket[1]);
+    }
+    else
+    {
+        mOverflow->getRight(index - 2);
     }
 }
 
 Archive& operator<<(Archive &ar, AtomBucket &b)
 {
     bool hasOverflow = (b.mOverflow != NULL);
-    ar << b.mBucket << b.mFull << hasOverflow;
+    ar << b.mBucket[0] << b.mBucket[1] << b.mSize << hasOverflow;
 
     if (hasOverflow)
     {
@@ -327,11 +460,11 @@ Archive& operator<<(Archive &ar, AtomBucket &b)
 Archive& operator>>(Archive& ar, AtomBucket &b)
 {
     bool hasOverflow = false;
-    ar >> b.mBucket >> b.mFull >> hasOverflow;
+    ar >> b.mBucket[0] >> b.mBucket[1] >> b.mSize >> hasOverflow;
 
     if (hasOverflow)
     {
-        b.mOverflow = new AtomBucket();
+        b.mOverflow = createAtomBucket();
         ar >> *b.mOverflow;
     }
     return ar;
@@ -420,23 +553,25 @@ void AtomHashMap::insert(uint64_t pos, float mass)
     if (mHashMap[index].isEmpty())
     {
         mHashMap[index].insert(pos, mass);
+        GAPS_ASSERT(mHashMap[index].contains(pos));
         std::set<unsigned>::iterator it = mFullBuckets.insert(index).first;
         if (it != mFullBuckets.begin())
         {
             --it;
-            mHashMap[*it].setRightAdjacentBucket(&mHashMap[index]);
             mHashMap[index].setLeftAdjacentBucket(&mHashMap[*it]);
+            mHashMap[*it].setRightAdjacentBucket(&mHashMap[index]);
             ++it;
         }
         if (++it != mFullBuckets.end())
         {
-            mHashMap[*it].setLeftAdjacentBucket(&mHashMap[index]);
             mHashMap[index].setRightAdjacentBucket(&mHashMap[*it]);
+            mHashMap[*it].setLeftAdjacentBucket(&mHashMap[index]);
         }
     }
     else
     {
         mHashMap[index].insert(pos, mass);
+        GAPS_ASSERT(mHashMap[index].contains(pos));
     }
     GAPS_ASSERT(mHashMap[index].contains(pos));
 
