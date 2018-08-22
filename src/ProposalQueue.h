@@ -14,14 +14,32 @@
 struct AtomicProposal
 {
     char type;
-    uint64_t pos1;
-    float mass1;
-    uint64_t pos2;
-    float mass2;
+    uint64_t birthPos; // used in birth
+    uint64_t moveDest; // used in move
+
+    Atom *atom1; // used in death, move, exchange
+    Atom *atom2; // used in exchange
+
     mutable GapsRng rng;
 
-    AtomicProposal(char t, uint64_t p1, float m1=0.f, uint64_t p2=0, float m2=0.f)
-        : type(t), pos1(p1), mass1(m1), pos2(p2), mass2(m2)
+    // birth
+    AtomicProposal(char t, uint64_t pos)
+        : type(t), birthPos(pos), moveDest(0), atom1(NULL), atom2(NULL)
+    {}
+        
+    // death
+    AtomicProposal(char t, Atom *atom)
+        : type(t), birthPos(0), moveDest(0), atom1(atom), atom2(NULL)
+    {}
+
+    // move
+    AtomicProposal(char t, Atom *atom, uint64_t dest)
+        : type(t), birthPos(0), moveDest(dest), atom1(atom), atom2(NULL)
+    {}
+
+    // exchange
+    AtomicProposal(char t, Atom *a1, Atom *a2)
+        : type(t), birthPos(0), moveDest(0), atom1(a1), atom2(a2)
     {}
 };
 
@@ -74,7 +92,7 @@ public:
     void populate(AtomicDomain &domain, unsigned limit);
     void clear();
     unsigned size() const;
-    const AtomicProposal& operator[](int n) const;
+    AtomicProposal& operator[](int n);
 
     // update min/max atoms
     void acceptDeath();

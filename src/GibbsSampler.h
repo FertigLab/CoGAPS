@@ -60,21 +60,19 @@ protected:
 
     T* impl();
 
-    void processProposal(const AtomicProposal &prop);
+    void processProposal(AtomicProposal *prop);
 
     void addMass(uint64_t pos, float mass, unsigned row, unsigned col);
     void removeMass(uint64_t pos, float mass, unsigned row, unsigned col);
 
-    void birth(uint64_t pos, unsigned row, unsigned col, GapsRng *rng);
-    void death(uint64_t pos, float mass, unsigned row, unsigned col, GapsRng *rng);
-    void move(uint64_t src, float mass, uint64_t dest, unsigned r1, unsigned c1,
-        unsigned r2, unsigned c2, GapsRng *rng);
-    void exchange(uint64_t p1, float m1, uint64_t p2, float m2, unsigned r1,
-        unsigned c1, unsigned r2, unsigned c2, GapsRng *rng);
+    void birth(AtomicProposal *prop);
+    void death(AtomicProposal *prop);
+    void move(AtomicProposal *prop);
+    void exchange(AtomicProposal *prop);
 
-    bool updateAtomMass(uint64_t pos, float mass, float delta);
-    void acceptExchange(uint64_t p1, float m1, float d1, uint64_t p2, float m2,
-        float d2, unsigned r1, unsigned c1, unsigned r2, unsigned c2);
+    bool updateAtomMass(Atom *atom, float delta);
+    void acceptExchange(AtomicProposal *prop, float d1, unsigned r1,
+        unsigned c1, unsigned r2, unsigned c2);
 
     std::pair<float, bool> gibbsMass(AlphaParameters alpha, GapsRng *rng);
     std::pair<float, bool> gibbsMass(AlphaParameters alpha, float m1, float m2,
@@ -210,7 +208,8 @@ mDMatrix(data, transposeData, partitionRows, indices),
 mSMatrix(mDMatrix.pmax(0.1f, 0.1f)),
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
 mMatrix(amp ? mDMatrix.nRow() : nPatterns, amp ? nPatterns : mDMatrix.nCol()),
-mOtherMatrix(NULL), mQueue(mMatrix.nRow() * mMatrix.nCol()), mLambda(0.f),
+mOtherMatrix(NULL), mQueue(mMatrix.nRow() * mMatrix.nCol()),
+mDomain(mMatrix.nRow() * mMatrix.nCol()), mLambda(0.f),
 mMaxGibbsMass(100.f), mAnnealingTemp(1.f), mNumRows(mMatrix.nRow()),
 mNumCols(mMatrix.nCol()), mAvgQueue(0.f), mNumQueues(0.f)
 {
@@ -286,7 +285,7 @@ void GibbsSampler<T, MatA, MatB>::update(unsigned nSteps, unsigned nCores)
         #pragma omp parallel for num_threads(nCores)
         for (unsigned i = 0; i < mQueue.size(); ++i)
         {
-            processProposal(mQueue[i]);
+            processProposal(&mQueue[i]);
         }
         mDomain.flushCache();
         mQueue.clear();
@@ -327,41 +326,7 @@ float GibbsSampler<T, MatA, MatB>::getAvgQueue() const
 template <class T, class MatA, class MatB>
 bool GibbsSampler<T, MatA, MatB>::internallyConsistent()
 {
-    if (mDomain.size() > 0)
-    {
-        Atom a = mDomain.front();
-        float current = a.mass;
-        uint64_t row = impl()->getRow(a.pos);
-        uint64_t col = impl()->getCol(a.pos);
-
-        while (mDomain.hasRight(a))
-        {
-            a = mDomain.right(a);
-            if (row != impl()->getRow(a.pos) || col != impl()->getCol(a.pos))
-            {
-                float matVal = mMatrix(row, col);
-                if (std::abs(current - matVal) > 0.1f)
-                {
-                    gaps_printf("mass difference detected at row %lu, column %lu: %f %f\n",
-                        row, col, current, matVal); 
-                    return false;
-                }
-                
-                row = impl()->getRow(a.pos);
-                col = impl()->getCol(a.pos);
-                current = a.mass;
-            }
-            else
-            {
-                current += a.mass;
-            }
-        }
-        return true;
-    }
-    else
-    {
-        return gaps::algo::sum(mMatrix) == 0.f;
-    }
+    return true;
 }
 #endif
 
@@ -392,24 +357,22 @@ T* GibbsSampler<T, MatA, MatB>::impl()
 }
 
 template <class T, class MatA, class MatB>
-void GibbsSampler<T, MatA, MatB>::processProposal(const AtomicProposal &prop)
+void GibbsSampler<T, MatA, MatB>::processProposal(AtomicProposal *prop)
 {
-    unsigned r1 = impl()->getRow(prop.pos1), c1 = impl()->getCol(prop.pos1);
-    unsigned r2 = impl()->getRow(prop.pos2), c2 = impl()->getCol(prop.pos2);
-
-    switch (prop.type)
+    unsigned r1 = 0, c1 = 0, r2 = 0, c2 = 0;
+    switch (prop->type)
     {
         case 'B':
-            birth(prop.pos1, r1, c1, &prop.rng);
+            birth(prop);
             break;
         case 'D':
-            death(prop.pos1, prop.mass1, r1, c1, &prop.rng);
+            death(prop);
             break;
         case 'M':
-            move(prop.pos1, prop.mass1, prop.pos2, r1, c1, r2, c2, &prop.rng);
+            move(prop);
             break;
         case 'E':
-            exchange(prop.pos1, prop.mass1, prop.pos2, prop.mass2, r1, c1, r2, c2, &prop.rng);
+            exchange(prop);
             break;
     }
 }
@@ -433,25 +396,29 @@ void GibbsSampler<T, MatA, MatB>::removeMass(uint64_t pos, float mass, unsigned 
 // add an atom at pos, calculate mass either with an exponential distribution
 // or with the gibbs mass calculation
 template <class T, class MatA, class MatB>
-void GibbsSampler<T, MatA, MatB>::birth(uint64_t pos, unsigned row,
-unsigned col, GapsRng *rng)
+void GibbsSampler<T, MatA, MatB>::birth(AtomicProposal *prop)
 {
+    unsigned row = impl()->getRow(prop->birthPos);
+    unsigned col = impl()->getCol(prop->birthPos);
+
     // calculate proposed mass
     float mass = 0.f;
     if (impl()->canUseGibbs(row, col))
     {
         AlphaParameters alpha = impl()->alphaParameters(row, col);
-        mass = gibbsMass(alpha, rng).first;
+        mass = gibbsMass(alpha, &(prop->rng)).first;
     }
     else
     {
-        mass = rng->exponential(mLambda);
+        mass = prop->rng.exponential(mLambda);
     }
 
     // accept mass as long as it's non-zero
     if (mass >= gaps::epsilon)
     {
-        addMass(pos, mass, row, col);
+        mDomain.cacheInsert(prop->birthPos, mass);
+        mMatrix(row, col) += mass;
+        impl()->updateAPMatrix(row, col, mass);
         mQueue.acceptBirth();
     }
     else
@@ -463,19 +430,22 @@ unsigned col, GapsRng *rng)
 // automatically accept death, attempt a rebirth at the same position, using
 // the original mass or the gibbs mass calculation
 template <class T, class MatA, class MatB>
-void GibbsSampler<T, MatA, MatB>::death(uint64_t pos, float mass, unsigned row,
-unsigned col, GapsRng *rng)
+void GibbsSampler<T, MatA, MatB>::death(AtomicProposal *prop)
 {
+    // calculate bin for this atom
+    unsigned row = impl()->getRow(prop->atom1->pos);
+    unsigned col = impl()->getCol(prop->atom1->pos);
+
     // kill off atom
-    mMatrix(row, col) = gaps::max(mMatrix(row, col) - mass, 0.f);
-    impl()->updateAPMatrix(row, col, -mass);
+    mMatrix(row, col) = gaps::max(mMatrix(row, col) - prop->atom1->mass, 0.f);
+    impl()->updateAPMatrix(row, col, -1.f * prop->atom1->mass);
 
     // calculate rebirth mass
-    float rebirthMass = mass;
+    float rebirthMass = prop->atom1->mass;
     AlphaParameters alpha = impl()->alphaParameters(row, col);
     if (impl()->canUseGibbs(row, col))
     {
-        std::pair<float, bool> gMass = gibbsMass(alpha, rng);
+        std::pair<float, bool> gMass = gibbsMass(alpha, &(prop->rng));
         if (gMass.second)
         {
             rebirthMass = gMass.first;
@@ -484,32 +454,42 @@ unsigned col, GapsRng *rng)
 
     // accept/reject rebirth
     float deltaLL = rebirthMass * (alpha.su - alpha.s * rebirthMass / 2.f);
-    if (deltaLL * mAnnealingTemp >= std::log(rng->uniform()))
+    if (deltaLL * mAnnealingTemp >= std::log(prop->rng.uniform()))
     {
-        mDomain.updateMass(pos, rebirthMass);
+        prop->atom1->mass = rebirthMass;
         mMatrix(row, col) += rebirthMass;
         impl()->updateAPMatrix(row, col, rebirthMass);
         mQueue.rejectDeath();
     }
     else
     {
-        mDomain.cacheErase(pos);
+        mDomain.cacheErase(prop->atom1->pos);
         mQueue.acceptDeath();
     }
 }
 
 // move mass from src to dest in the atomic domain
 template <class T, class MatA, class MatB>
-void GibbsSampler<T, MatA, MatB>::move(uint64_t src, float mass, uint64_t dest,
-unsigned r1, unsigned c1, unsigned r2, unsigned c2, GapsRng *rng)
+void GibbsSampler<T, MatA, MatB>::move(AtomicProposal *prop)
 {
+    unsigned r1 = impl()->getRow(prop->atom1->pos);
+    unsigned c1 = impl()->getCol(prop->atom1->pos);
+    unsigned r2 = impl()->getRow(prop->moveDest);
+    unsigned c2 = impl()->getCol(prop->moveDest);
+
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
     {
-        float deltaLL = impl()->computeDeltaLL(r1, c1, -mass, r2, c2, mass);
-        if (deltaLL * mAnnealingTemp > std::log(rng->uniform()))
+        float deltaLL = impl()->computeDeltaLL(r1, c1, -1.f * prop->atom1->mass,
+            r2, c2, prop->atom1->mass);
+        if (deltaLL * mAnnealingTemp > std::log(prop->rng.uniform()))
         {
-            removeMass(src, mass, r1, c1);
-            addMass(dest, mass, r2, c2);
+            mDomain.cacheMove(prop->atom1->pos, prop->moveDest, prop->atom1->mass);
+
+            mMatrix(r1, c1) = gaps::max(mMatrix(r1, c1) - prop->atom1->mass, 0.f);
+            mMatrix(r2, c2) += prop->atom1->mass;
+
+            impl()->updateAPMatrix(r1, c1, -1.f * prop->atom1->mass);
+            impl()->updateAPMatrix(r2, c2, prop->atom1->mass);
         }
     }
 }
@@ -518,25 +498,31 @@ unsigned r1, unsigned c1, unsigned r2, unsigned c2, GapsRng *rng)
 // for one of the atoms to be deleted if it's mass becomes too small after
 // the exchange
 template <class T, class MatA, class MatB>
-void GibbsSampler<T, MatA, MatB>::exchange(uint64_t p1, float m1, uint64_t p2,
-float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2, GapsRng *rng)
+void GibbsSampler<T, MatA, MatB>::exchange(AtomicProposal *prop)
 {
+    unsigned r1 = impl()->getRow(prop->atom1->pos);
+    unsigned c1 = impl()->getCol(prop->atom1->pos);
+    unsigned r2 = impl()->getRow(prop->atom2->pos);
+    unsigned c2 = impl()->getCol(prop->atom2->pos);
+
     if (r1 != r2 || c1 != c2) // automatically reject if change in same bin
     {
+        float m1 = prop->atom1->mass;
+        float m2 = prop->atom2->mass;
+
         if (impl()->canUseGibbs(r1, c1, r2, c2))
         {
             AlphaParameters alpha = impl()->alphaParameters(r1, c1, r2, c2);
-            std::pair<float, bool> gMass = gibbsMass(alpha, m1, m2, rng);
+            std::pair<float, bool> gMass = gibbsMass(alpha, m1, m2, &(prop->rng));
             if (gMass.second)
             {
-                acceptExchange(p1, m1, gMass.first, p2, m2, -gMass.first, r1,
-                    c1, r2, c2);
+                acceptExchange(prop, gMass.first, r1, c1, r2, c2);
                 return;
             }
         }
 
         float pUpper = gaps::p_gamma(m1 + m2, 2.f, 1.f / mLambda);
-        float newMass = rng->inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
+        float newMass = prop->rng.inverseGammaSample(0.f, pUpper, 2.f, 1.f / mLambda);
 
         float delta = m1 > m2 ? newMass - m1 : m2 - newMass; // change larger mass
         float pOldMass = 2.f * newMass > m1 + m2 ? gaps::max(m1, m2) : gaps::min(m1, m2);
@@ -546,15 +532,15 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2, GapsRng *rng)
 
         if (pOld == 0.f && pNew != 0.f) // special case
         {
-            acceptExchange(p1, m1, delta, p2, m2, -delta, r1, c1, r2, c2);
+            acceptExchange(prop, delta, r1, c1, r2, c2);
             return;
         }
         float deltaLL = impl()->computeDeltaLL(r1, c1, delta, r2, c2, -delta);
         float priorLL = (pOld == 0.f) ? 1.f : pOld / pNew;
-        float u = std::log(rng->uniform() * priorLL);
+        float u = std::log(prop->rng.uniform() * priorLL);
         if (u < deltaLL * mAnnealingTemp)
         {
-            acceptExchange(p1, m1, delta, p2, m2, -delta, r1, c1, r2, c2);
+            acceptExchange(prop, delta, r1, c1, r2, c2);
             return;
         }
     }
@@ -564,33 +550,32 @@ float m2, unsigned r1, unsigned c1, unsigned r2, unsigned c2, GapsRng *rng)
 // helper function for acceptExchange, used to conditionally update the mass
 // at a single position, deleting the atom if the new mass is too small
 template <class T, class MatA, class MatB>
-bool GibbsSampler<T, MatA, MatB>::updateAtomMass(uint64_t pos, float mass,
-float delta)
+bool GibbsSampler<T, MatA, MatB>::updateAtomMass(Atom *atom, float delta)
 {
-    if (mass + delta < gaps::epsilon)
+    if (atom->mass + delta < gaps::epsilon)
     {
-        mDomain.cacheErase(pos);
+        mDomain.cacheErase(atom->pos);
         mQueue.acceptDeath();
         return false;
     }
-    mDomain.updateMass(pos, mass + delta);
+    atom->mass += delta;
     return true;
 }
 
 // helper function for exchange step, updates the atomic domain, matrix, and
 // A*P matrix
 template <class T, class MatA, class MatB>
-void GibbsSampler<T, MatA, MatB>::acceptExchange(uint64_t p1, float m1,
-float d1, uint64_t p2, float m2, float d2, unsigned r1, unsigned c1,
-unsigned r2, unsigned c2)
+void GibbsSampler<T, MatA, MatB>::acceptExchange(AtomicProposal *prop,
+float d1, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 {
-    bool b1 = updateAtomMass(p1, m1, d1);
-    bool b2 = updateAtomMass(p2, m2, d2);
+    float d2 = -1.f * d1;
+    bool b1 = updateAtomMass(prop->atom1, d1);
+    bool b2 = updateAtomMass(prop->atom2, d2);
     GAPS_ASSERT(b1 || b2);
     
     // delete entire atom if resize would make it too small
-    if (!b1) { d1 = -m1; }
-    if (!b2) { d2 = -m2; }
+    if (!b1) { d1 = -1.f * prop->atom1->mass; }
+    if (!b2) { d2 = -1.f * prop->atom2->mass; }
 
     if (b1 && b2)
     {
@@ -598,9 +583,7 @@ unsigned r2, unsigned c2)
     }
 
     mMatrix(r1, c1) += d1;
-    GAPS_ASSERT(mMatrix(r1, c1) >= 0);
     mMatrix(r2, c2) += d2;
-    GAPS_ASSERT(mMatrix(r2, c2) >= 0);
     impl()->updateAPMatrix(r1, c1, d1);
     impl()->updateAPMatrix(r2, c2, d2);
 }

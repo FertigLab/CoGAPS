@@ -50,7 +50,7 @@ unsigned ProposalQueue::size() const
     return mQueue.size();
 }
 
-const AtomicProposal& ProposalQueue::operator[](int n) const
+AtomicProposal& ProposalQueue::operator[](int n)
 {
     return mQueue[n];
 }
@@ -142,24 +142,24 @@ bool ProposalQueue::birth(AtomicDomain &domain)
 
 bool ProposalQueue::death(AtomicDomain &domain)
 {
-    Atom a = domain.randomAtom();
-    if (mUsedIndices.count(a.pos / mDimensionSize))
+    Atom* a = domain.randomAtom();
+    if (mUsedIndices.count(a->pos / mDimensionSize))
     {
         return false; // matrix conflict - can't compute gibbs mass or deltaLL
     }
 
-    mQueue.push_back(AtomicProposal('D', a.pos, a.mass));
-    mUsedIndices.insert(a.pos / mDimensionSize);
-    mUsedPositions.insert(a.pos);
+    mQueue.push_back(AtomicProposal('D', a));
+    mUsedIndices.insert(a->pos / mDimensionSize);
+    mUsedPositions.insert(a->pos);
     --mMinAtoms;
     return true;
 }
 
 bool ProposalQueue::move(AtomicDomain &domain)
 {
-    Atom a = domain.randomAtom();
-    uint64_t lbound = domain.hasLeft(a) ? domain.left(a).pos : 0;
-    uint64_t rbound = domain.hasRight(a) ? domain.right(a).pos : mDomainSize;
+    AtomNeighborhood hood = domain.randomAtomWithNeighbors();
+    uint64_t lbound = hood.hasLeft() ? hood.left->pos : 1;
+    uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainSize;
 
     if (!mUsedPositions.isEmptyInterval(lbound, rbound))
     {
@@ -167,54 +167,55 @@ bool ProposalQueue::move(AtomicDomain &domain)
     }
 
     uint64_t newLocation = mRng.uniform64(lbound, rbound - 1);
-    if (mUsedIndices.count(a.pos / mDimensionSize) || mUsedIndices.count(newLocation / mDimensionSize))
+    if (mUsedIndices.count(hood.center->pos / mDimensionSize) || mUsedIndices.count(newLocation / mDimensionSize))
     {
         return false; // matrix conflict - can't compute deltaLL
     }
 
-    mQueue.push_back(AtomicProposal('M', a.pos, a.mass, newLocation));
-    mUsedIndices.insert(a.pos / mDimensionSize);
+    mQueue.push_back(AtomicProposal('M', hood.center, newLocation));
+    mUsedIndices.insert(hood.center->pos / mDimensionSize);
     mUsedIndices.insert(newLocation / mDimensionSize);
-    mUsedPositions.insert(a.pos);
+    mUsedPositions.insert(hood.center->pos);
     mUsedPositions.insert(newLocation);
     return true;
 }
 
 bool ProposalQueue::exchange(AtomicDomain &domain)
 {
-    Atom a1 = domain.randomAtom();
-    Atom a2 = domain.hasRight(a1) ? domain.right(a1) : domain.front();
+    AtomNeighborhood hood = domain.randomAtomWithRightNeighbor();
+    Atom* a1 = hood.center;    
+    Atom* a2 = hood.hasRight() ? hood.right : domain.front();
 
-    if (domain.hasRight(a1)) // has neighbor
+    if (hood.hasRight()) // has neighbor
     {
-        if (!mUsedPositions.isEmptyInterval(a1.pos, a2.pos))
+        if (!mUsedPositions.isEmptyInterval(a1->pos, a2->pos))
         {
             return false;
         }
     }
     else // exchange with first atom
     {
-        if (!mUsedPositions.isEmptyInterval(a1.pos, mDomainSize))
+        if (!mUsedPositions.isEmptyInterval(a1->pos, mDomainSize))
         {
             return false;
         }
         
-        if (!mUsedPositions.isEmptyInterval(0, domain.front().pos))
+        if (!mUsedPositions.isEmptyInterval(0, domain.front()->pos))
         {
             return false;
         }
     }
 
-    if (mUsedIndices.count(a1.pos / mDimensionSize) || mUsedIndices.count(a2.pos / mDimensionSize))
+    if (mUsedIndices.count(a1->pos / mDimensionSize) || mUsedIndices.count(a2->pos / mDimensionSize))
     {
         return false; // matrix conflict - can't compute gibbs mass or deltaLL
     }
 
-    mQueue.push_back(AtomicProposal('E', a1.pos, a1.mass, a2.pos, a2.mass));
-    mUsedIndices.insert(a1.pos / mDimensionSize);
-    mUsedIndices.insert(a2.pos / mDimensionSize);
-    mUsedPositions.insert(a1.pos);
-    mUsedPositions.insert(a2.pos);
+    mQueue.push_back(AtomicProposal('E', a1, a2));
+    mUsedIndices.insert(a1->pos / mDimensionSize);
+    mUsedIndices.insert(a2->pos / mDimensionSize);
+    mUsedPositions.insert(a1->pos);
+    mUsedPositions.insert(a2->pos);
     --mMinAtoms;
     return true;
 }
