@@ -36,7 +36,7 @@ class AtomicDomain
 {
 public:
 
-    AtomicDomain(unsigned nBins);
+    AtomicDomain(uint64_t nBins);
 
     // access atoms
     Atom* front();
@@ -64,7 +64,7 @@ private:
     // size of atomic domain to ensure all bins are equal length
     uint64_t mDomainLength;
 
-    // domain storage, specialized hash map
+    // domain storage, sorted vector
     std::vector<Atom> mAtoms;
 
     // holds cache of operations

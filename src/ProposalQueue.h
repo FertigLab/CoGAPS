@@ -21,25 +21,10 @@ struct AtomicProposal
 
     mutable GapsRng rng;
 
-    // birth
-    AtomicProposal(char t, uint64_t pos)
-        : type(t), birthPos(pos), moveDest(0), atom1(NULL), atom2(NULL)
-    {}
-        
-    // death
-    AtomicProposal(char t, Atom *atom)
-        : type(t), birthPos(0), moveDest(0), atom1(atom), atom2(NULL)
-    {}
-
-    // move
-    AtomicProposal(char t, Atom *atom, uint64_t dest)
-        : type(t), birthPos(0), moveDest(dest), atom1(atom), atom2(NULL)
-    {}
-
-    // exchange
-    AtomicProposal(char t, Atom *a1, Atom *a2)
-        : type(t), birthPos(0), moveDest(0), atom1(a1), atom2(a2)
-    {}
+    AtomicProposal(char t, uint64_t pos); // birth
+    AtomicProposal(char t, Atom *atom); // death
+    AtomicProposal(char t, Atom *atom, uint64_t dest); // move
+    AtomicProposal(char t, Atom *a1, Atom *a2); // exchange
 };
 
 class ProposalQueue

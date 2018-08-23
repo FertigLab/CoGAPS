@@ -2,12 +2,38 @@
 #include "ProposalQueue.h"
 #include "math/Random.h"
 
+//////////////////////////////// AtomicProposal ////////////////////////////////
+
+// birth
+AtomicProposal::AtomicProposal(char t, uint64_t pos)
+    : type(t), birthPos(pos), moveDest(0), atom1(NULL), atom2(NULL)
+{}
+    
+// death
+AtomicProposal::AtomicProposal(char t, Atom *atom)
+    : type(t), birthPos(0), moveDest(0), atom1(atom), atom2(NULL)
+{}
+
+// move
+AtomicProposal::AtomicProposal(char t, Atom *atom, uint64_t dest)
+    : type(t), birthPos(0), moveDest(dest), atom1(atom), atom2(NULL)
+{}
+
+// exchange
+AtomicProposal::AtomicProposal(char t, Atom *a1, Atom *a2)
+    : type(t), birthPos(0), moveDest(0), atom1(a1), atom2(a2)
+{}
+
+
+//////////////////////////////// ProposalQueue /////////////////////////////////
+
 ProposalQueue::ProposalQueue(unsigned primaryDimSize, unsigned secondaryDimSize)
     :
 mMinAtoms(0), mMaxAtoms(0), mNumBins(primaryDimSize * secondaryDimSize),
 mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins),
 mSecondaryDimLength(mBinLength * secondaryDimSize),
-mDomainLength(mBinLength * mNumBins), mSecondaryDimSize(secondaryDimSize)
+mDomainLength(mBinLength * mNumBins), mSecondaryDimSize(secondaryDimSize),
+mAlpha(0.f), mU1(0.f), mU2(0.f), mUseCachedRng(false)
 {
     mUsedIndices.setDimensionSize(primaryDimSize);
 }
@@ -19,6 +45,9 @@ void ProposalQueue::setAlpha(float alpha)
 
 void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
 {
+    GAPS_ASSERT(mMinAtoms == mMaxAtoms);
+    GAPS_ASSERT(mMaxAtoms == domain.size());
+
     unsigned nIter = 0;
     bool success = true;
     while (nIter++ < limit && success)
@@ -33,10 +62,11 @@ void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
 
 void ProposalQueue::clear()
 {
+    GAPS_ASSERT(mMinAtoms == mMaxAtoms);
+
     mQueue.clear();
     mUsedPositions.clear();
     mUsedIndices.clear();
-    GAPS_ASSERT(mMinAtoms == mMaxAtoms);
 }
 
 unsigned ProposalQueue::size() const
@@ -46,6 +76,9 @@ unsigned ProposalQueue::size() const
 
 AtomicProposal& ProposalQueue::operator[](int n)
 {
+    GAPS_ASSERT(mQueue.size() > 0);
+    GAPS_ASSERT(n < mQueue.size());
+
     return mQueue[n];
 }
 
@@ -130,7 +163,8 @@ unsigned ProposalQueue::secondaryIndex(uint64_t pos) const
 }
 
 // TODO add atoms with empty mass? fill in mass in gibbssampler?
-// inserting invalidates previous pointers
+// inserting invalidates previous pointers, but not inserting
+// prevents them from being selected for death
 bool ProposalQueue::birth(AtomicDomain &domain)
 {
     uint64_t pos = domain.randomFreePosition();
@@ -198,7 +232,7 @@ bool ProposalQueue::move(AtomicDomain &domain)
 bool ProposalQueue::exchange(AtomicDomain &domain)
 {
     AtomNeighborhood hood = domain.randomAtomWithRightNeighbor();
-    Atom* a1 = hood.center;    
+    Atom* a1 = hood.center;
     Atom* a2 = hood.hasRight() ? hood.right : domain.front();
 
     if (hood.hasRight()) // has neighbor
@@ -242,20 +276,18 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
     return true;
 }
 
-Archive& operator<<(Archive &ar, ProposalQueue &queue)
+Archive& operator<<(Archive &ar, ProposalQueue &q)
 {
-    ar << queue.mMinAtoms << queue.mMaxAtoms << queue.mNumBins
-        << queue.mBinLength << queue.mSecondaryDimLength << queue.mDomainLength
-        << queue.mSecondaryDimSize << queue.mAlpha << queue.mRng
-        << queue.mU1 << queue.mU2 << queue.mUseCachedRng;
+    ar << q.mMinAtoms << q.mMaxAtoms << q.mNumBins << q.mBinLength
+        << q.mSecondaryDimLength << q.mDomainLength << q.mSecondaryDimSize
+        << q.mAlpha << q.mRng;
     return ar;
 }
 
-Archive& operator>>(Archive &ar, ProposalQueue &queue)
+Archive& operator>>(Archive &ar, ProposalQueue &q)
 {
-    ar >> queue.mMinAtoms >> queue.mMaxAtoms >> queue.mNumBins
-        >> queue.mBinLength >> queue.mSecondaryDimLength >> queue.mDomainLength
-        >> queue.mSecondaryDimSize >> queue.mAlpha >> queue.mRng
-        >> queue.mU1 >> queue.mU2 >> queue.mUseCachedRng;
+    ar >> q.mMinAtoms >> q.mMaxAtoms >> q.mNumBins >> q.mBinLength
+        >> q.mSecondaryDimLength >> q.mDomainLength >> q.mSecondaryDimSize
+        >> q.mAlpha >> q.mRng;
     return ar;
 }
