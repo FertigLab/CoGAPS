@@ -9,8 +9,8 @@
 
 struct OptionalFloat
 {
-    bool hasValue;
     float value;
+    bool hasValue;
 
     OptionalFloat() : hasValue(false), value(0.f) {}
     OptionalFloat(float f) : hasValue(true), value(f) {}
@@ -26,6 +26,13 @@ namespace gaps
     float d_norm(float d, float mean, float sd);
     float q_norm(float q, float mean, float sd);
     float p_norm(float p, float mean, float sd);
+
+    float d_gamma_fast(float d, float shape, float scale);
+    float p_gamma_fast(float p, float shape, float scale);
+    float q_gamma_fast(float q, float shape, float scale);
+    float d_norm_fast(float d, float mean, float sd);
+    float p_norm_fast(float p, float mean, float sd);
+    float q_norm_fast(float q, float mean, float sd);
 }
 
 // used for seeding individual rngs
@@ -66,7 +73,7 @@ public:
     float exponential(float lambda);
 
     float inverseNormSample(float a, float b, float mean, float sd);
-    float inverseGammaSample(float a, float b, float mean, float sd);
+    float truncGammaUpper(float b, float shape, float scale);
 
     static void setSeed(uint64_t seed);
     static void save(Archive &ar);
