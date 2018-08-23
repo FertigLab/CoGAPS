@@ -1,6 +1,8 @@
 #ifndef __COGAPS_ARCHIVE_H__
 #define __COGAPS_ARCHIVE_H__
 
+#include "GapsAssert.h"
+
 #include <fstream>
 #include <stdint.h>
 
@@ -9,8 +11,8 @@
 #define ARCHIVE_WRITE (std::ios::out | std::ios::trunc)
 
 // magic number written to beginning of archive files
-// needs to be updated everytime to method of checkpointing changes
-#define ARCHIVE_MAGIC_NUM 0xCE45D32A
+// needs to be updated everytime the method of checkpointing changes
+#define ARCHIVE_MAGIC_NUM 0xCE45D32B // v3.3.22
 
 class Archive
 {
@@ -21,10 +23,28 @@ private:
 public:
 
     Archive(const std::string &path, std::ios_base::openmode flags)
-        : mStream(path.c_str(), std::ios::binary | flags)
-    {}
+        :
+    mStream(path.c_str(), std::ios::binary | flags)
+    {
+        if (flags == ARCHIVE_WRITE)
+        {
+            *this << static_cast<uint32_t>(ARCHIVE_MAGIC_NUM);
+        }
+        else // read
+        {
+            uint32_t magic = 0;
+            *this >> magic;
+            if (magic != ARCHIVE_MAGIC_NUM)
+            {
+                GAPS_ERROR("incompatible checkpoint file\n");
+            }            
+        }
+    }
 
-    void close() {mStream.close();}
+    void close()
+    {
+        mStream.close();
+    }
 
     template<typename T>
     friend Archive& writeToArchive(Archive &ar, T val)

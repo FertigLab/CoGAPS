@@ -3,6 +3,40 @@
 
 #include <vector>
 
+////////////////////////////////// HELPER //////////////////////////////////////
+
+// used with std::lower_bound
+static bool compareAtomLower(const Atom &lhs, uint64_t pos)
+{
+    return lhs.pos < pos;
+}
+
+// used with std::binary_search
+static bool compareAtom(const Atom &lhs, const Atom &rhs)
+{
+    return lhs.pos < rhs.pos;
+}
+
+// check if a position in contained in a vector of atoms
+static bool vecContains(const std::vector<Atom> &vec, uint64_t pos)
+{
+    Atom temp(pos, 0.f);
+    return std::binary_search(vec.begin(), vec.end(), temp, compareAtom);
+}
+
+// used in debug mode to check if vector is always sorted
+static bool isSorted(const std::vector<Atom> &vec)
+{
+    for (unsigned i = 1; i < vec.size(); ++i)
+    {
+        if (vec[i].pos <= vec[i-1].pos)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 ////////////////////////////////// ATOM ////////////////////////////////////////
 
 Atom::Atom() : pos(0), mass(0.f) {}
@@ -46,7 +80,7 @@ bool AtomNeighborhood::hasRight()
 
 ////////////////////////////// ATOMIC DOMAIN ///////////////////////////////////
 
-AtomicDomain::AtomicDomain(unsigned nBins)
+AtomicDomain::AtomicDomain(uint64_t nBins)
 {
     uint64_t binLength = std::numeric_limits<uint64_t>::max() / nBins;
     mDomainLength = binLength * nBins;
@@ -55,12 +89,15 @@ AtomicDomain::AtomicDomain(unsigned nBins)
 Atom* AtomicDomain::front()
 {
     GAPS_ASSERT(size() > 0);
+
     return &(mAtoms.front());
 }
 
 Atom* AtomicDomain::randomAtom()
 {
     GAPS_ASSERT(size() > 0);
+    GAPS_ASSERT(isSorted(mAtoms));
+
     unsigned index = mRng.uniform32(0, mAtoms.size() - 1);
     return &(mAtoms[index]);
 }
@@ -68,6 +105,7 @@ Atom* AtomicDomain::randomAtom()
 AtomNeighborhood AtomicDomain::randomAtomWithNeighbors()
 {
     GAPS_ASSERT(size() > 0);
+
     unsigned index = mRng.uniform32(0, mAtoms.size() - 1);
     Atom* left = (index == 0) ? NULL : &(mAtoms[index - 1]);
     Atom* right = (index == mAtoms.size() - 1) ? NULL : &(mAtoms[index + 1]);
@@ -77,30 +115,10 @@ AtomNeighborhood AtomicDomain::randomAtomWithNeighbors()
 AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor()
 {
     GAPS_ASSERT(size() > 0);
+
     unsigned index = mRng.uniform32(0, mAtoms.size() - 1);
     Atom* right = (index == mAtoms.size() - 1) ? NULL : &(mAtoms[index + 1]);
     return AtomNeighborhood(NULL, &(mAtoms[index]), right);
-}
-
-static bool compareAtomLower(const Atom &lhs, uint64_t pos)
-{
-    return lhs.pos < pos;
-}
-
-static bool compareAtomUpper(uint64_t pos, const Atom &lhs)
-{
-    return lhs.pos < pos;
-}
-
-static bool compareAtom(const Atom &lhs, const Atom &rhs)
-{
-    return lhs.pos < rhs.pos;
-}
-
-static bool vecContains(const std::vector<Atom> &vec, uint64_t pos)
-{
-    Atom temp(pos, 0.f);
-    return std::binary_search(vec.begin(), vec.end(), temp, compareAtom);
 }
 
 uint64_t AtomicDomain::randomFreePosition() const
@@ -149,6 +167,8 @@ void AtomicDomain::resetCache(unsigned n)
 void AtomicDomain::erase(uint64_t pos)
 {
     GAPS_ASSERT(size() > 0);
+    GAPS_ASSERT(vecContains(mAtoms, pos));
+
     std::vector<Atom>::iterator it;
     it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
     mAtoms.erase(it);
@@ -191,7 +211,7 @@ Archive& operator<<(Archive &ar, AtomicDomain &domain)
 Archive& operator>>(Archive &ar, AtomicDomain &domain)
 {
     Atom temp;
-    unsigned size = 0;
+    uint64_t size = 0;
     ar >> domain.mDomainLength >> domain.mRng >> size;
     for (unsigned i = 0; i < size; ++i)
     {

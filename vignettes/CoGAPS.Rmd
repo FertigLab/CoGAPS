@@ -226,8 +226,8 @@ things like hardware and data size. The best approach is to play around with
 different values and see how it effects the estimated time.
 
 ```{r}
-CoGAPS(SimpSim.data, nIterations=10000, outputFrequency=5000, nThreads=1)
-CoGAPS(SimpSim.data, nIterations=10000, outputFrequency=5000, nThreads=4)
+CoGAPS(SimpSim.data, nIterations=10000, outputFrequency=5000, nThreads=1, seed=5)
+CoGAPS(SimpSim.data, nIterations=10000, outputFrequency=5000, nThreads=4, seed=5)
 ```
 
 Note this method relies on CoGAPS being compiled with OpenMP support, use

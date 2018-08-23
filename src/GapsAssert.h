@@ -48,4 +48,4 @@
     #define DEBUG_PING   
 #endif
 
-#endif
+#endif // __COGAPS_GAPS_ASSERT_H__
