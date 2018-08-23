@@ -14,6 +14,10 @@ AC_PROG_CXX
 AC_ARG_ENABLE(debug, [AC_HELP_STRING([--enable-debug],
     [build debug version of CoGAPS])], [build_debug=yes], [build_debug=no])
 
+# Check if running internal tests
+AC_ARG_ENABLE(internal-tests, [AC_HELP_STRING([--enable-internal-tests],
+    [allow for testing private data])], [internal_tests=yes], [internal_tests=no])
+
 # Check if compiler warnings should be turned on
 AC_ARG_ENABLE(warnings, [AC_HELP_STRING([--enable-warnings],
     [compile CoGAPS with warning messages])], [warnings=yes], [warnings=no])
@@ -52,6 +56,12 @@ echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compile
 if test "x$build_debug" = "xyes" ; then
     echo "Building Debug Version of CoGAPS"
     GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
+fi
+
+# set compile flags for internal tests
+if test "x$internal_tests" = "xyes" ; then
+    echo "Enabling Internal Tests"
+    GAPS_CPP_FLAGS+=" -DGAPS_INTERNAL_TESTS "
 fi
 
 # set compile flags if warnings enabled

@@ -6,10 +6,9 @@
 #include "data_structures/EfficientSets.h"
 #include "math/Random.h"
 
-#include <boost/unordered_set.hpp>
-
 #include <cstddef>
 #include <stdint.h>
+#include <vector>
 
 struct AtomicProposal
 {
@@ -45,48 +44,10 @@ struct AtomicProposal
 
 class ProposalQueue
 {
-private:
-
-    std::vector<AtomicProposal> mQueue; // not really a queue for now
-    
-    IntFixedHashSet mUsedIndices;
-    IntDenseOrderedSet mUsedPositions;
-
-    uint64_t mMinAtoms;
-    uint64_t mMaxAtoms;
-
-    uint64_t mNumBins;
-    uint64_t mDimensionSize; // rows of A, cols of P
-    uint64_t mDomainSize;
-
-    float mAlpha;
-
-    bool mUseCachedRng;
-    float mU1;
-    float mU2;
-
-    mutable GapsRng mRng;
-
-    float deathProb(uint64_t nAtoms) const;
-    bool birth(AtomicDomain &domain);
-    bool death(AtomicDomain &domain);
-    bool move(AtomicDomain &domain);
-    bool exchange(AtomicDomain &domain);
-
-    bool makeProposal(AtomicDomain &domain);
-
 public:
 
-    ProposalQueue(unsigned nBins)
-        : mMinAtoms(0), mMaxAtoms(0), mNumBins(nBins), mDimensionSize(0),
-        mDomainSize(0), mAlpha(0.f), mUseCachedRng(false), mU1(0.f), mU2(0.f)
-    {}
-
-    // set parameters
-    void setNumBins(unsigned nBins);
-    void setDomainSize(uint64_t size);
+    ProposalQueue(unsigned primaryDimSize, unsigned secondaryDimSize);
     void setAlpha(float alpha);
-    void setDimensionSize(uint64_t binSize, uint64_t dimLength);
 
     // modify/access queue
     void populate(AtomicDomain &domain, unsigned limit);
@@ -99,6 +60,41 @@ public:
     void rejectDeath();
     void acceptBirth();
     void rejectBirth();
+
+private:
+
+    std::vector<AtomicProposal> mQueue; // not really a queue for now
+    
+    IntFixedHashSet mUsedIndices;
+    IntDenseOrderedSet mUsedPositions;
+
+    uint64_t mMinAtoms;
+    uint64_t mMaxAtoms;
+
+    unsigned mNumBins; // number of matrix elements
+    uint64_t mBinLength; // atomic length of one bin
+    uint64_t mSecondaryDimLength; // atomic length of one row (col) for A (P)
+    uint64_t mDomainLength; // length of entire atomic domain
+    unsigned mSecondaryDimSize; // number of cols (rows) for A (P)
+
+    float mAlpha;
+
+    mutable GapsRng mRng;
+
+    float mU1;
+    float mU2;
+    bool mUseCachedRng;
+
+    unsigned primaryIndex(uint64_t pos) const;
+    unsigned secondaryIndex(uint64_t pos) const;
+
+    float deathProb(uint64_t nAtoms) const;
+    bool birth(AtomicDomain &domain);
+    bool death(AtomicDomain &domain);
+    bool move(AtomicDomain &domain);
+    bool exchange(AtomicDomain &domain);
+
+    bool makeProposal(AtomicDomain &domain);
 
     // serialization
     friend Archive& operator<<(Archive &ar, ProposalQueue &queue);

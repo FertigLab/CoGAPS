@@ -5,7 +5,6 @@
 #include "math/Random.h"
 
 #include <vector>
-#include <set>
 
 struct Atom
 {
@@ -33,146 +32,11 @@ struct AtomNeighborhood
     bool hasRight();
 };
 
-class AtomBucket
-{
-public:
-
-    AtomBucket();
-
-    unsigned size() const;
-    bool isEmpty() const;
-    bool contains(uint64_t pos) const;
-
-    Atom* front();
-    Atom* operator[](unsigned index);
-
-    void insert(uint64_t pos, float mass);
-    void erase(uint64_t pos);
-        
-    AtomNeighborhood getNeighbors(unsigned index);
-    AtomNeighborhood getRightNeighbor(unsigned index);
-
-    void setRightAdjacentBucket(AtomBucket *bucket);
-    void setLeftAdjacentBucket(AtomBucket *bucket);
-
-    Atom* getLeft(unsigned index);
-    Atom* getRight(unsigned index);
-
-#ifndef GAPS_INTERNAL_TESTS
-private:
-#endif
-
-    Atom mBucket[2];
-    uint32_t mSize;
-    
-    AtomBucket *mOverflow;
-    AtomBucket *mPrev;
-    AtomBucket *mNext;
-
-    void eraseFront();
-    void connectAdjacent();
-
-    Atom* back();
-
-    AtomBucket& operator=(const AtomBucket& other); // prevent copies
-    
-    friend Archive& operator<<(Archive& ar, AtomBucket &b);
-    friend Archive& operator>>(Archive& ar, AtomBucket &b);
-};
-
-struct HashMapIndex
-{
-    unsigned bucket;
-    unsigned index;
-
-    HashMapIndex(unsigned b, unsigned i) : bucket(b), index(i) {}
-};
-
-// hash map of chained AtomBuckets
-// data structure that holds atoms
-// accessing happens much more than insert/erase so more time is spent
-// up front (sorting) to save time on access
-// note that atoms can never occupy position 0
-class AtomHashMap
-{
-public:
-
-    // required that length is a multiple of expectedNumAtoms
-    AtomHashMap(unsigned expectedNumAtoms);
-    void setTotalLength(uint64_t length);
-
-    // TODO while moving the atoms cannot change the atom order, it can
-    // move an atom from one bucket to another - this moved atom must be
-    // the front atom moving to the back of the prev bucket or the back
-    // atom moving to the front of the next atom - effectively creating
-    // a reorder event - it may even need allocation
-
-    Atom* front();
-    Atom* randomAtom();
-    AtomNeighborhood randomAtomWithNeighbors();
-    AtomNeighborhood randomAtomWithRightNeighbor();
-
-    bool contains(uint64_t pos) const;
-    unsigned size() const;
-
-    void insert(uint64_t pos, float mass);
-    void erase(uint64_t pos);
-    void move(uint64_t src, uint64_t dest, float mass); // cannot reorder
-
-    Atom* getLeft(uint64_t pos);
-    Atom* getRight(uint64_t pos);
-
-    bool hasLeft(uint64_t pos);
-    bool hasRight(uint64_t pos);
-
-    void updateMass(uint64_t pos, float newMass);
-
-#ifndef GAPS_INTERNAL_TESTS
-private:
-#endif
-
-    unsigned mSize;
-    unsigned mWhichLongestBucket;
-    unsigned mLongestBucketSize;
-
-    unsigned mExpectedNumAtoms;
-
-    uint64_t mBucketLength;
-    uint64_t mTotalLength;
-
-    std::vector<AtomBucket> mHashMap;
-    std::set<unsigned> mFullBuckets; // TODO use IntFixedHashSet
-
-    // random number generator
-    mutable GapsRng mRng;
-
-    unsigned hash(uint64_t pos) const;
-    HashMapIndex getRandomIndex() const;
-
-    friend Archive& operator<<(Archive& ar, AtomHashMap &h);
-    friend Archive& operator>>(Archive& ar, AtomHashMap &h);
-};
-
-struct MoveOperation
-{
-    uint64_t src;
-    uint64_t dest;
-    float mass;
-
-    MoveOperation() : src(0), dest(0), mass(0.f) {}
-
-    MoveOperation(uint64_t s, uint64_t d, float m) :
-        src(s), dest(d), mass(m)
-    {}
-};
-
 class AtomicDomain
 {
 public:
 
     AtomicDomain(unsigned nBins);
-
-    void setDomainSize(uint64_t size);
 
     // access atoms
     Atom* front();
@@ -186,7 +50,6 @@ public:
     // modify domain
     void cacheInsert(uint64_t pos, float mass) const;
     void cacheErase(uint64_t pos) const;
-    void cacheMove(uint64_t src, uint64_t dest, float mass) const;
     void flushCache();
     void resetCache(unsigned n);
 
@@ -194,26 +57,29 @@ public:
     friend Archive& operator<<(Archive &ar, AtomicDomain &domain);
     friend Archive& operator>>(Archive &ar, AtomicDomain &domain);
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     // size of atomic domain to ensure all bins are equal length
     uint64_t mDomainLength;
 
     // domain storage, specialized hash map
-    mutable AtomHashMap mAtoms;
+    std::vector<Atom> mAtoms;
 
     // holds cache of operations
     mutable std::vector<Atom> mInsertCache;
     mutable std::vector<uint64_t> mEraseCache;
-    mutable std::vector<MoveOperation> mMoveCache;
 
     // current index in the operation cache
     mutable unsigned mInsertCacheIndex;
     mutable unsigned mEraseCacheIndex;
-    mutable unsigned mMoveCacheIndex;
 
     // random number generator
     mutable GapsRng mRng;
+
+    void erase(uint64_t pos);
+    void insert(uint64_t pos, float mass);
 
     // serialization
     friend Archive& operator<<(Archive &ar, AtomicDomain &domain);

@@ -2,8 +2,7 @@
 #define __COGAPS_ARCHIVE_H__
 
 #include <fstream>
-
-#include <boost/random/mersenne_twister.hpp>
+#include <stdint.h>
 
 // flags for opening an archive
 #define ARCHIVE_READ  std::ios::in
@@ -53,7 +52,6 @@ public:
     friend Archive& operator<<(Archive &ar, int64_t val)  { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, float val)    { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, double val)   { return writeToArchive(ar, val); }
-    friend Archive& operator<<(Archive &ar, boost::random::mt11213b val) { return writeToArchive(ar, val); }
 
     friend Archive& operator>>(Archive &ar, char &val)     { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, bool &val)     { return readFromArchive(ar, val); }
@@ -63,7 +61,6 @@ public:
     friend Archive& operator>>(Archive &ar, int64_t &val)  { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, float &val)    { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, double &val)   { return readFromArchive(ar, val); }
-    friend Archive& operator>>(Archive &ar, boost::random::mt11213b &val) { return readFromArchive(ar, val); }
 };
 
 #endif // __COGAPS_ARCHIVE_H__

@@ -16,10 +16,10 @@ public:
 
     IntFixedHashSet() : mCurrentKey(1) {}
 
-    void setDimensionSize(uint64_t size) {mSet.resize(size, 0);}
+    void setDimensionSize(unsigned size) {mSet.resize(size, 0);}
     void clear() {++mCurrentKey;}
-    bool count(uint64_t n) {return mSet[n] == mCurrentKey;}
-    void insert(uint64_t n) {mSet[n] = mCurrentKey;}
+    bool contains(unsigned n) {return mSet[n] == mCurrentKey;}
+    void insert(unsigned n) {mSet[n] = mCurrentKey;}
 };
 
 // TODO have sorted vector with at least some % of holes

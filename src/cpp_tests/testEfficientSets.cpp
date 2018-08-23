@@ -6,16 +6,16 @@ TEST_CASE("Test IntFixedHashSet")
     IntFixedHashSet set;
 
     set.setDimensionSize(1000);
-    REQUIRE(!set.count(123));
+    REQUIRE(!set.contains(123));
     
     set.insert(123);
-    REQUIRE(set.count(123));
+    REQUIRE(set.contains(123));
 
     set.clear();
-    REQUIRE(!set.count(123));
+    REQUIRE(!set.contains(123));
 
     set.insert(123);
-    REQUIRE(set.count(123));
+    REQUIRE(set.contains(123));
 }
 
 TEST_CASE("Test IntDenseOrderedSet")
