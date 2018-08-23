@@ -237,14 +237,16 @@ float GapsRng::inverseNormSample(float a, float b, float mean, float sd)
     return gaps::q_norm(u, mean, sd);
 }
 
-float GapsRng::inverseGammaSample(float a, float b, float mean, float sd)
+float GapsRng::truncGammaUpper(float b, float shape, float scale)
 {
-    float u = uniform(a, b);
+    float upper = gaps::p_gamma(b, shape, scale);
+
+    float u = uniform(0.f, upper);
     while (u == 0.f || u == 1.f)
     {
-        u = uniform(a, b);
+        u = uniform(0.f, upper);
     }
-    return gaps::q_gamma(u, mean, sd);
+    return gaps::q_gamma(u, shape, scale);
 }
 
 Archive& operator<<(Archive &ar, GapsRng &gen)
@@ -302,4 +304,10 @@ float gaps::p_norm(float p, float mean, float sd)
 double gaps::lgamma(double x)
 {
     return boost::math::lgamma(x);
+}
+
+float gaps::d_norm_fast(float d, float mean, float sd)
+{
+    return std::exp((d - mean) * (d - mean) / (-2.f * sd * sd))
+        / std::sqrt(2.f * gaps::pi * sd * sd);
 }
