@@ -496,6 +496,7 @@ bool GibbsSampler<T, MatA, MatB>::updateAtomMass(Atom *atom, float delta)
 {
     if (atom->mass + delta < gaps::epsilon)
     {
+        DEBUG_PING // want to know if this ever happens
         mDomain.cacheErase(atom->pos);
         mQueue.acceptDeath();
         return false;
@@ -510,12 +511,6 @@ template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::acceptExchange(AtomicProposal *prop,
 float d1, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 {
-    // can make this assertion more formal if we customize p/q norm functions
-    // to handle tail situations a certain way
-    GAPS_ASSERT(prop->atom1->mass + d1 > gaps::epsilon);
-    GAPS_ASSERT(prop->atom2->mass - d1 > gaps::epsilon);
-    //d1 = gaps::max(-1.f * (prop->atom1->mass - epsilon), d1);
-
     float d2 = -1.f * d1;
     bool b1 = updateAtomMass(prop->atom1, d1);
     bool b2 = updateAtomMass(prop->atom2, d2);

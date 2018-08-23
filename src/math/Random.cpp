@@ -123,14 +123,15 @@ uint32_t GapsRng::uniform32()
     return next();
 }
 
+// inclusive of a and b
 uint32_t GapsRng::uniform32(uint32_t a, uint32_t b)
 {
-    uint32_t range = b - a;
-    if (range == 0)
+    if (b == a)
     {
         return a;
     }
 
+    uint32_t range = b + 1 - a;
     uint32_t x = uniform32();
     uint32_t iPart = std::numeric_limits<uint32_t>::max() / range;
     while (x >= range * iPart)
@@ -147,14 +148,15 @@ uint64_t GapsRng::uniform64()
     return high | low;
 }
 
+// inclusive of a and b
 uint64_t GapsRng::uniform64(uint64_t a, uint64_t b)
 {
-    uint64_t range = b - a;
-    if (range == 0)
+    if (b == a)
     {
         return a;
     }
 
+    uint64_t range = b + 1 - a;
     uint64_t x = uniform64();
     uint64_t iPart = std::numeric_limits<uint64_t>::max() / range;
     while (x >= range * iPart)
