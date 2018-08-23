@@ -2,20 +2,14 @@
 #include "ProposalQueue.h"
 #include "math/Random.h"
 
-void ProposalQueue::setNumBins(unsigned nBins)
+ProposalQueue::ProposalQueue(unsigned primaryDimSize, unsigned secondaryDimSize)
+    :
+mMinAtoms(0), mMaxAtoms(0), mNumBins(primaryDimSize * secondaryDimSize),
+mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins),
+mSecondaryDimLength(mBinLength * secondaryDimSize),
+mDomainLength(mBinLength * mNumBins), mSecondaryDimSize(secondaryDimSize)
 {
-    mNumBins = nBins;
-}
-
-void ProposalQueue::setDomainSize(uint64_t size)
-{
-    mDomainSize = size;
-}
-
-void ProposalQueue::setDimensionSize(uint64_t binSize, uint64_t dimLength)
-{
-    mDimensionSize = binSize * dimLength;
-    mUsedIndices.setDimensionSize(mNumBins / dimLength);
+    mUsedIndices.setDimensionSize(primaryDimSize);
 }
 
 void ProposalQueue::setAlpha(float alpha)
@@ -81,7 +75,7 @@ void ProposalQueue::rejectBirth()
 
 float ProposalQueue::deathProb(uint64_t nAtoms) const
 {
-    double size = static_cast<double>(mDomainSize);
+    double size = static_cast<double>(mDomainLength);
     double term1 = (size - static_cast<double>(nAtoms)) / size;
     double term2 = mAlpha * static_cast<double>(mNumBins) * term1;
     return static_cast<double>(nAtoms) / (static_cast<double>(nAtoms) + term2);
@@ -120,21 +114,33 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
         {
             return death(domain);
         }
-        return false;
+        return false; // can't determine B/D since range is too wide
     }
     return (mU1 < 0.75f || mMaxAtoms < 2) ? move(domain) : exchange(domain);
 }
     
+unsigned ProposalQueue::primaryIndex(uint64_t pos) const
+{
+    return pos / mSecondaryDimLength;
+}
+
+unsigned ProposalQueue::secondaryIndex(uint64_t pos) const
+{
+    return (pos / mBinLength) % mSecondaryDimSize;
+}
+
+// TODO add atoms with empty mass? fill in mass in gibbssampler?
+// inserting invalidates previous pointers
 bool ProposalQueue::birth(AtomicDomain &domain)
 {
     uint64_t pos = domain.randomFreePosition();
-    if (mUsedIndices.count(pos / mDimensionSize))
+    if (mUsedIndices.contains(primaryIndex(pos)))
     {
         return false; // matrix conflict - can't compute gibbs mass
     }
 
     mQueue.push_back(AtomicProposal('B', pos));
-    mUsedIndices.insert(pos / mDimensionSize);
+    mUsedIndices.insert(primaryIndex(pos));
     mUsedPositions.insert(pos);
     ++mMaxAtoms;
     return true;
@@ -143,13 +149,13 @@ bool ProposalQueue::birth(AtomicDomain &domain)
 bool ProposalQueue::death(AtomicDomain &domain)
 {
     Atom* a = domain.randomAtom();
-    if (mUsedIndices.count(a->pos / mDimensionSize))
+    if (mUsedIndices.contains(primaryIndex(a->pos)))
     {
         return false; // matrix conflict - can't compute gibbs mass or deltaLL
     }
 
     mQueue.push_back(AtomicProposal('D', a));
-    mUsedIndices.insert(a->pos / mDimensionSize);
+    mUsedIndices.insert(primaryIndex(a->pos));
     mUsedPositions.insert(a->pos);
     --mMinAtoms;
     return true;
@@ -158,23 +164,32 @@ bool ProposalQueue::death(AtomicDomain &domain)
 bool ProposalQueue::move(AtomicDomain &domain)
 {
     AtomNeighborhood hood = domain.randomAtomWithNeighbors();
-    uint64_t lbound = hood.hasLeft() ? hood.left->pos : 1;
-    uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainSize;
+    uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
+    uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainLength;
 
     if (!mUsedPositions.isEmptyInterval(lbound, rbound))
     {
-        return false;
+        return false; // atomic conflict - don't know neighbors
     }
 
-    uint64_t newLocation = mRng.uniform64(lbound, rbound - 1);
-    if (mUsedIndices.count(hood.center->pos / mDimensionSize) || mUsedIndices.count(newLocation / mDimensionSize))
+    uint64_t newLocation = mRng.uniform64(lbound + 1, rbound - 1);
+
+    if (primaryIndex(hood.center->pos) == primaryIndex(newLocation)
+    && secondaryIndex(hood.center->pos) == secondaryIndex(newLocation))
+    {
+        hood.center->pos = newLocation; // automatically accept moves in same bin
+        return true;
+    }
+
+    if (mUsedIndices.contains(primaryIndex(hood.center->pos))
+    || mUsedIndices.contains(primaryIndex(newLocation)))
     {
         return false; // matrix conflict - can't compute deltaLL
     }
 
     mQueue.push_back(AtomicProposal('M', hood.center, newLocation));
-    mUsedIndices.insert(hood.center->pos / mDimensionSize);
-    mUsedIndices.insert(newLocation / mDimensionSize);
+    mUsedIndices.insert(primaryIndex(hood.center->pos));
+    mUsedIndices.insert(primaryIndex(newLocation));
     mUsedPositions.insert(hood.center->pos);
     mUsedPositions.insert(newLocation);
     return true;
@@ -190,30 +205,37 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
     {
         if (!mUsedPositions.isEmptyInterval(a1->pos, a2->pos))
         {
-            return false;
+            return false; // atomic conflict - don't know right neighbor
         }
     }
     else // exchange with first atom
     {
-        if (!mUsedPositions.isEmptyInterval(a1->pos, mDomainSize))
+        if (!mUsedPositions.isEmptyInterval(a1->pos, mDomainLength))
         {
-            return false;
+            return false; // atomic conflict - don't know right neighbor
         }
         
         if (!mUsedPositions.isEmptyInterval(0, domain.front()->pos))
         {
-            return false;
+            return false; // atomic conflict - don't know right neighbor
         }
     }
 
-    if (mUsedIndices.count(a1->pos / mDimensionSize) || mUsedIndices.count(a2->pos / mDimensionSize))
+    if (primaryIndex(a1->pos) == primaryIndex(a2->pos)
+    && secondaryIndex(a1->pos) == secondaryIndex(a2->pos))
+    {
+        return true; // TODO automatically accept exchanges in same bin
+    }
+
+    if (mUsedIndices.contains(primaryIndex(a1->pos))
+    || mUsedIndices.contains(primaryIndex(a2->pos)))
     {
         return false; // matrix conflict - can't compute gibbs mass or deltaLL
     }
 
     mQueue.push_back(AtomicProposal('E', a1, a2));
-    mUsedIndices.insert(a1->pos / mDimensionSize);
-    mUsedIndices.insert(a2->pos / mDimensionSize);
+    mUsedIndices.insert(primaryIndex(a1->pos));
+    mUsedIndices.insert(primaryIndex(a2->pos));
     mUsedPositions.insert(a1->pos);
     mUsedPositions.insert(a2->pos);
     --mMinAtoms;
@@ -223,15 +245,17 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
 Archive& operator<<(Archive &ar, ProposalQueue &queue)
 {
     ar << queue.mMinAtoms << queue.mMaxAtoms << queue.mNumBins
-        << queue.mDimensionSize << queue.mDomainSize << queue.mAlpha
-        << queue.mRng;
+        << queue.mBinLength << queue.mSecondaryDimLength << queue.mDomainLength
+        << queue.mSecondaryDimSize << queue.mAlpha << queue.mRng
+        << queue.mU1 << queue.mU2 << queue.mUseCachedRng;
     return ar;
 }
 
 Archive& operator>>(Archive &ar, ProposalQueue &queue)
 {
     ar >> queue.mMinAtoms >> queue.mMaxAtoms >> queue.mNumBins
-        >> queue.mDimensionSize >> queue.mDomainSize >> queue.mAlpha
-        >> queue.mRng;
+        >> queue.mBinLength >> queue.mSecondaryDimLength >> queue.mDomainLength
+        >> queue.mSecondaryDimSize >> queue.mAlpha >> queue.mRng
+        >> queue.mU1 >> queue.mU2 >> queue.mUseCachedRng;
     return ar;
 }

@@ -10,13 +10,6 @@
 #include <boost/math/distributions/gamma.hpp>
 #include <boost/math/distributions/normal.hpp>
 
-#include <boost/random/exponential_distribution.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/poisson_distribution.hpp>
-#include <boost/random/uniform_01.hpp>
-#include <boost/random/uniform_real_distribution.hpp>
-
 #include <algorithm>
 #include <stdint.h>
 
