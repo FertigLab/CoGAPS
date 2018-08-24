@@ -94,10 +94,15 @@ distributedCogaps <- function(data, allParams, uncertainty)
     # rename genes/samples if dimension was subsetted incompletely
     allUsedIndices <- sort(unlist(sets))
     if (allParams$gaps@distributed == "genome-wide")
+    {
         fullResult$geneNames <- allParams$geneNames[allUsedIndices]
+        fullResult$sampleNames <- allParams$sampleNames
+    }
     else
+    {
+        fullResult$geneNames <- allParams$geneNames
         fullResult$sampleNames <- allParams$sampleNames[allUsedIndices]
-
+    }
     return(fullResult)
 }
 

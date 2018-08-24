@@ -28,6 +28,11 @@ setMethod("initialize", "CogapsResult",
 function(.Object, Amean, Pmean, Asd, Psd, meanChiSq, geneNames,
 sampleNames, diagnostics=NULL, ...)
 {
+    if (is.null(geneNames))
+        warning("no gene names given")
+    if (is.null(sampleNames))
+        warning("no sample names given")
+
     .Object@featureLoadings <- Amean
     .Object@sampleFactors <- Pmean
     .Object@featureStdDev <- Asd

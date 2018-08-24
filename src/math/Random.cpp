@@ -229,8 +229,8 @@ float GapsRng::exponential(float lambda)
 
 OptionalFloat GapsRng::truncNormal(float a, float b, float mean, float sd)
 {
-    float pLower = gaps::p_norm(a, mean, sd);
-    float pUpper = gaps::p_norm(b, mean, sd);
+    float pLower = gaps::p_norm(a + gaps::epsilon, mean, sd);
+    float pUpper = gaps::p_norm(b + gaps::epsilon, mean, sd);
 
     if (!(pLower >  0.95f || pUpper < 0.05f))
     {
@@ -240,8 +240,7 @@ OptionalFloat GapsRng::truncNormal(float a, float b, float mean, float sd)
             u = uniform(pLower, pUpper);
         }
         float ret = gaps::q_norm(u, mean, sd);
-        GAPS_ASSERT(ret >= a);
-        GAPS_ASSERT(ret <= b);
+        ret = gaps::min(gaps::max(a, ret), b); // need this for truncation error
         return OptionalFloat(ret);
     }
     OptionalFloat();
