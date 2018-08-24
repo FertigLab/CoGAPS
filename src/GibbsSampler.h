@@ -538,12 +538,24 @@ template <class T, class MatA, class MatB>
 OptionalFloat GibbsSampler<T, MatA, MatB>::gibbsMass(AlphaParameters alpha,
 GapsRng *rng)
 {        
-    alpha *= mAnnealingTemp;
+    alpha.s *= mAnnealingTemp;
+    alpha.su *= mAnnealingTemp;
+
     if (alpha.s > gaps::epsilon)
     {
         float mean = (alpha.su - mLambda) / alpha.s;
         float sd = 1.f / std::sqrt(alpha.s);
-        return rng->truncNormal(gaps::epsilon, mMaxGibbsMass / mLambda, mean, sd);
+        float pLower = gaps::p_norm(0.f, mean, sd);
+
+        if (pLower < 1.f)
+        {
+            float m = rng->inverseNormSample(pLower, 1.f, mean, sd);
+            float gMass = gaps::min(m, mMaxGibbsMass / mLambda);
+            if (gMass >= gaps::epsilon)
+            {
+                return OptionalFloat(gMass);
+            }
+        }
     }
     return OptionalFloat();
 }
@@ -552,12 +564,22 @@ template <class T, class MatA, class MatB>
 OptionalFloat GibbsSampler<T, MatA, MatB>::gibbsMass(AlphaParameters alpha,
 float m1, float m2, GapsRng *rng)
 {
-    alpha *= mAnnealingTemp;
+    alpha.s *= mAnnealingTemp;
+    alpha.su *= mAnnealingTemp;
+
     if (alpha.s > gaps::epsilon)
     {
         float mean = alpha.su / alpha.s; // lambda cancels out
         float sd = 1.f / std::sqrt(alpha.s);
-        return rng->truncNormal(-m1, m2, mean, sd);
+        float pLower = gaps::p_norm(-m1, mean, sd);
+        float pUpper = gaps::p_norm(m2, mean, sd);
+
+        if (!(pLower >  0.95f || pUpper < 0.05f))
+        {
+            float delta = rng->inverseNormSample(pLower, pUpper, mean, sd);
+            float gMass = gaps::min(gaps::max(-m1, delta), m2); // conserve mass
+            return OptionalFloat(gMass);
+        }
     }
     return OptionalFloat();
 }
