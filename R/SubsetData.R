@@ -18,9 +18,12 @@ sampleWithExplictSets <- function(allParams, total)
             allNames <- allParams$geneNames
         else
             allNames <- allParams$sampleNames
-        if (is.null(allNames))
-            stop("missing gene/sample names")
-        return(lapply(allParams$gaps@explicitSets, function(set) which(allNames %in% set)))
+        return(lapply(allParams$gaps@explicitSets, function(set)
+        {
+            if (any(!(allNames %in% set)))
+                stop("some named genes in explicitSets not found")
+            return(which(allNames %in% set))
+        }
     }
 }
 
