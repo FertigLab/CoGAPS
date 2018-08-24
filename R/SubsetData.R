@@ -87,6 +87,8 @@ createSets <- function(data, allParams)
 
     if (!is.null(allParams$gaps@explicitSets))
     {
+        if (length(allParams$gaps@explicitSets) != allParams$gaps@nSets)
+            stop("nSets does not match number of explicit sets given")
         return(sampleWithExplictSets(allParams, total))
     }
 

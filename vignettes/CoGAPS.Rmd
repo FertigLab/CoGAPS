@@ -389,12 +389,14 @@ result <- GWCoGAPS(SimpSim.data, params, messages=FALSE)
 
 Finally, the user can set `explicitSets` which is a list of character or 
 numeric vectors indicating which names or indices of the data should be put
-into each set.
+into each set. Make sure to set `nSets` to the correct value before passing `explicitSets`.
 
 ```{r}
 # running cogaps with given subsets
 sets <- list(1:225, 226:450, 451:675, 676:900)
-result <- GWCoGAPS(SimpSim.data, explicitSets=sets, messages=FALSE)
+params <- new("CogapsParams")
+params <- setDistributedParams(params, nSets=length(sets))
+result <- GWCoGAPS(SimpSim.data, params, explicitSets=sets, messages=FALSE)
 ```
 
 ### Additional Return Information
