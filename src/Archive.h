@@ -68,7 +68,8 @@ public:
     friend Archive& operator<<(Archive &ar, bool val)     { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, int val)      { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, unsigned val) { return writeToArchive(ar, val); }
-    friend Archive& operator<<(Archive &ar, uint64_t val) { return writeToArchive(ar, val); }
+    friend Archive& operator<<(Archive &ar, unsigned long val) { return writeToArchive(ar, val); }
+    friend Archive& operator<<(Archive &ar, unsigned long long val) { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, int64_t val)  { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, float val)    { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, double val)   { return writeToArchive(ar, val); }
@@ -77,7 +78,8 @@ public:
     friend Archive& operator>>(Archive &ar, bool &val)     { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, int &val)      { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, unsigned &val) { return readFromArchive(ar, val); }
-    friend Archive& operator>>(Archive &ar, uint64_t &val) { return readFromArchive(ar, val); }
+    friend Archive& operator>>(Archive &ar, unsigned long &val) { return readFromArchive(ar, val); }
+    friend Archive& operator>>(Archive &ar, unsigned long long &val) { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, int64_t &val)  { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, float &val)    { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, double &val)   { return readFromArchive(ar, val); }

@@ -36,6 +36,7 @@ struct GapsResult
             case GAPS_CSV: return writeCsv(base);
             case GAPS_TSV: return writeTsv(base);
             case GAPS_GCT: return writeGct(base);
+            default: GAPS_ERROR("Invalid file type\n");
         }
     }
 
