@@ -23,7 +23,7 @@ sampleWithExplictSets <- function(allParams, total)
             if (any(!(allNames %in% set)))
                 stop("some named genes in explicitSets not found")
             return(which(allNames %in% set))
-        }
+        }))
     }
 }
 
