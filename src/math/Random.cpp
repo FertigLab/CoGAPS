@@ -227,23 +227,14 @@ float GapsRng::exponential(float lambda)
     return -1.f * std::log(uniform()) / lambda;
 }
 
-OptionalFloat GapsRng::truncNormal(float a, float b, float mean, float sd)
+float GapsRng::inverseNormSample(float a, float b, float mean, float sd)
 {
-    float pLower = gaps::p_norm(a, mean, sd);
-    float pUpper = gaps::p_norm(b, mean, sd);
-
-    if (!(pLower >  0.95f || pUpper < 0.05f))
+    float u = uniform(a, b);
+    while (u == 0.f || u == 1.f)
     {
-        float u = uniform(pLower, pUpper);
-        while (u == 0.f || u == 1.f)
-        {
-            u = uniform(pLower, pUpper);
-        }
-        float ret = gaps::q_norm(u, mean, sd);
-        ret = gaps::min(gaps::max(a, ret), b); // need this for truncation error
-        return OptionalFloat(ret);
+        u = uniform(a, b);
     }
-    OptionalFloat();
+    return gaps::q_norm(u, mean, sd);
 }
 
 float GapsRng::truncGammaUpper(float b, float shape, float scale)
