@@ -1,4 +1,4 @@
-#include "GapsAssert.h"
+#include "utils/GapsAssert.h"
 #include "ProposalQueue.h"
 #include "math/Random.h"
 

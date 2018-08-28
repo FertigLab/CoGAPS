@@ -1,5 +1,5 @@
 #include "CsvParser.h"
-#include "../GapsAssert.h"
+#include "../utils/GapsAssert.h"
 
 #include <fstream>
 #include <iostream>

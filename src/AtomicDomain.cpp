@@ -1,5 +1,5 @@
 #include "AtomicDomain.h"
-#include "GapsAssert.h"
+#include "utils/GapsAssert.h"
 
 #include <vector>
 
@@ -136,34 +136,6 @@ uint64_t AtomicDomain::size() const
     return mAtoms.size();
 }
 
-void AtomicDomain::cacheInsert(uint64_t pos, float mass) const
-{
-    unsigned ndx = 0;
-    #pragma omp critical(atomicInsert)
-    {
-        ndx = mInsertCacheIndex++;
-    }
-    mInsertCache[ndx] = Atom(pos, mass);
-}
-
-void AtomicDomain::cacheErase(uint64_t pos) const
-{
-    unsigned ndx = 0;
-    #pragma omp critical(atomicErase)
-    {
-        ndx = mEraseCacheIndex++;
-    }
-    mEraseCache[ndx] = pos;
-}
-
-void AtomicDomain::resetCache(unsigned n)
-{
-    mInsertCacheIndex = 0;
-    mEraseCacheIndex = 0;
-    mInsertCache.resize(n);
-    mEraseCache.resize(n);
-}
-
 void AtomicDomain::erase(uint64_t pos)
 {
     GAPS_ASSERT(size() > 0);
@@ -179,22 +151,6 @@ void AtomicDomain::insert(uint64_t pos, float mass)
     std::vector<Atom>::iterator it;
     it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
     mAtoms.insert(it, Atom(pos, mass));
-}
-
-void AtomicDomain::flushCache()
-{
-    for (unsigned i = 0; i < mEraseCacheIndex; ++i)
-    {
-        erase(mEraseCache[i]);
-    }
-
-    for (unsigned i = 0; i < mInsertCacheIndex; ++i)
-    {
-        insert(mInsertCache[i].pos, mInsertCache[i].mass);
-    }
-
-    mInsertCache.clear();
-    mEraseCache.clear();
 }
 
 Archive& operator<<(Archive &ar, AtomicDomain &domain)

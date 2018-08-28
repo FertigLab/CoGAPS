@@ -1,7 +1,7 @@
 #include "Matrix.h"
 #include "../file_parser/CsvParser.h"
 #include "../file_parser/MatrixElement.h"
-#include "../GapsAssert.h"
+#include "../utils/GapsAssert.h"
 
 template <class MatA, class MatB>
 inline void copyMatrix(MatA &dest, const MatB &source)

@@ -1,5 +1,6 @@
 #include "GapsRunner.h"
 #include "math/SIMD.h"
+#include "utils/GlobalConfig.h"
 
 #include <Rcpp.h>
 #include <string>

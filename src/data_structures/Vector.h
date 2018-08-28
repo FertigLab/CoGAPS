@@ -1,7 +1,7 @@
 #ifndef __COGAPS_VECTOR_H__
 #define __COGAPS_VECTOR_H__
 
-#include "../Archive.h"
+#include "../utils/Archive.h"
 
 #include <boost/align/aligned_allocator.hpp>
 #include <vector>

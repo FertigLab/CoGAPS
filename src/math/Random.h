@@ -1,7 +1,7 @@
 #ifndef __COGAPS_RANDOM_H__
 #define __COGAPS_RANDOM_H__
 
-#include "../Archive.h"
+#include "../utils/Archive.h"
 
 #include <fstream>
 #include <stdint.h>

@@ -1,12 +1,12 @@
 #include "catch.h"
-#include "../Archive.h"
+#include "../utils/Archive.h"
 #include "../data_structures/Matrix.h"
 #include "../GibbsSampler.h"
 #include "../math/Random.h"
 
 #if 0
 
-TEST_CASE("Test Archive.h")
+TEST_CASE("Test utils/Archive.h")
 {
     SECTION("Reading/Writing to an Archive")
     {

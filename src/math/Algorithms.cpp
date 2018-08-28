@@ -1,6 +1,6 @@
 #include "Algorithms.h"
 #include "../data_structures/Matrix.h"
-#include "../GapsAssert.h"
+#include "../utils/GapsAssert.h"
 #include "SIMD.h"
 
 #include <algorithm>
