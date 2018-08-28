@@ -1,8 +1,8 @@
 #ifndef __COGAPS_MATRIX_H__
 #define __COGAPS_MATRIX_H__
 
-#include "../Archive.h"
-#include "../GapsAssert.h"
+#include "../utils/Archive.h"
+#include "../utils/GapsAssert.h"
 #include "../file_parser/FileParser.h"
 #include "../math/Math.h"
 #include "Vector.h"

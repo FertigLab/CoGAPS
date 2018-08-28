@@ -1,8 +1,8 @@
-#include "GapsAssert.h"
-#include "GapsPrint.h"
 #include "GapsRunner.h"
 #include "math/Random.h"
 #include "math/SIMD.h"
+#include "utils/GapsAssert.h"
+#include "utils/GapsPrint.h"
 
 #ifdef __GAPS_R_BUILD__
 #include <Rcpp.h>

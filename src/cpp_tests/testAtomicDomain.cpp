@@ -1,6 +1,6 @@
 #include "catch.h"
 #include "../AtomicDomain.h"
-#include "../GapsPrint.h"
+#include "../utils/GapsPrint.h"
 
 TEST_CASE("AtomicDomain")
 {

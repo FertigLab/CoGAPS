@@ -1,7 +1,7 @@
 #ifndef __GAPS_PROPOSAL_QUEUE_H__
 #define __GAPS_PROPOSAL_QUEUE_H__
 
-#include "Archive.h"
+#include "utils/Archive.h"
 #include "AtomicDomain.h"
 #include "data_structures/EfficientSets.h"
 #include "math/Random.h"

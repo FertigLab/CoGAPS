@@ -2,7 +2,7 @@
 
 #include "Math.h"
 #include "Random.h"
-#include "../GapsAssert.h"
+#include "../utils/GapsAssert.h"
 
 // TODO remove boost dependency
 
