@@ -5,6 +5,20 @@
 
 #include <algorithm>
 
+void gaps::algo::copyTranspose(ColMatrix *dest, const ColMatrix &src)
+{
+    GAPS_ASSERT(dest->nRow() == src.nCol());
+    GAPS_ASSERT(dest->nCol() == src.nRow());
+
+    for (unsigned j = 0; j < dest->nCol(); ++j)
+    {
+        for (unsigned i = 0; i < dest->nRow(); ++i)
+        {
+            dest->operator()(i,j) = src(j,i); // TODO test which order is better
+        }
+    }
+}
+
 float gaps::algo::sum(const Vector &vec)
 {
     float sum = 0.f;
