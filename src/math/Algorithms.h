@@ -62,6 +62,8 @@ namespace algo
     // specific matrix algorithms
     ColMatrix matrixMultiplication(const ColMatrix &A, const ColMatrix &B);
 
+    void copyTranspose(ColMatrix *dest, const ColMatrix &src);
+
     // chiSq / 2
     template <class Matrix>
     float loglikelihood(const Matrix &D, const Matrix &S,
