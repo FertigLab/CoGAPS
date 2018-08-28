@@ -204,18 +204,18 @@ float delta2)
 }
 
 // horribly slow, don't call often
-RowMatrix gaps::algo::matrixMultiplication(const ColMatrix &A, const RowMatrix &B)
+ColMatrix gaps::algo::matrixMultiplication(const ColMatrix &A, const ColMatrix &BT)
 {
-    GAPS_ASSERT_MSG(A.nCol() == B.nRow(), A.nCol() << " " << B.nRow());
-    RowMatrix temp(A.nRow(), B.nCol());
+    GAPS_ASSERT_MSG(A.nCol() == BT.nCol(), A.nCol() << " " << BT.nCol());
+    ColMatrix temp(A.nRow(), BT.nRow());
     for (unsigned i = 0; i < A.nRow(); ++i)
     {
-        for (unsigned j = 0; j < B.nCol(); ++j)
+        for (unsigned j = 0; j < BT.nRow(); ++j)
         {
             float sum = 0.0;
             for (unsigned k = 0; k < A.nCol(); ++k)
             {
-                sum += A(i,k) * B(k,j);
+                sum += A(i,k) * BT(j,k);
             }
             temp(i,j) = sum;
         }

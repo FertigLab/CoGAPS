@@ -116,38 +116,22 @@ float ProposalQueue::deathProb(uint64_t nAtoms) const
 
 bool ProposalQueue::makeProposal(AtomicDomain &domain)
 {
-    // special indeterminate cases
-    if ((mMinAtoms == 0 && mMaxAtoms > 0) || (mMinAtoms < 2 && mMaxAtoms >= 2))
-    {
-        return false;
-    }
-
     // always birth when no atoms exist
-    if (mMaxAtoms == 0)
+    if (domain.size() == 0)
     {
         return birth(domain);
     }
 
-    float bdProb = mMaxAtoms < 2 ? 0.6667f : 0.5f;
+    float bdProb = domain.size() < 2 ? 0.6667f : 0.5f;
 
-    mU1 = mUseCachedRng ? mU1 : mRng.uniform();
-    mU2 = mUseCachedRng ? mU2: mRng.uniform();
-    mUseCachedRng = false;
+    mU1 = mRng.uniform();
+    mU2 = mRng.uniform();
 
-    float lowerBound = deathProb(mMinAtoms);
-    float upperBound = deathProb(mMaxAtoms);
+    float lowerBound = deathProb(domain.size());
 
     if (mU1 <= bdProb)
     {
-        if (mU2 >= upperBound)
-        {
-            return birth(domain);
-        }
-        if (mU2 < lowerBound)
-        {
-            return death(domain);
-        }
-        return false; // can't determine B/D since range is too wide
+        return mU2 < lowerBound ? death(domain) : birth(domain);
     }
     return (mU1 < 0.75f || mMaxAtoms < 2) ? move(domain) : exchange(domain);
 }

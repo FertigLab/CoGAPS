@@ -114,7 +114,7 @@ GapsResult GapsRunner::run(bool printThreads)
             break;
     }
     GapsResult result(mStatistics);
-    result.meanChiSq = mStatistics.meanChiSq(mASampler);
+    result.meanChiSq = mStatistics.meanChiSq(mPSampler);
     return result;    
 }
 
