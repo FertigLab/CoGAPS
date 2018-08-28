@@ -151,7 +151,7 @@ AlphaParameters PatternGibbsSampler::alphaParameters(unsigned row, unsigned col)
 AlphaParameters PatternGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
-    if (c1 == c2)
+    if (r1 == r2)
     {
         return gaps::algo::alphaParameters(mDMatrix.nRow(), mDMatrix.colPtr(r1),
             mSMatrix.colPtr(r1), mAPMatrix.colPtr(r1), mOtherMatrix->colPtr(c1),
@@ -170,7 +170,7 @@ float PatternGibbsSampler::computeDeltaLL(unsigned row, unsigned col, float mass
 float PatternGibbsSampler::computeDeltaLL(unsigned r1, unsigned c1, float m1,
 unsigned r2, unsigned c2, float m2)
 {
-    if (c1 == c2)
+    if (r1 == r2)
     {
         return gaps::algo::deltaLL(mDMatrix.nRow(), mDMatrix.colPtr(r1),
             mSMatrix.colPtr(r1), mAPMatrix.colPtr(r1), mOtherMatrix->colPtr(c1),
