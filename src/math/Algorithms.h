@@ -60,7 +60,7 @@ namespace algo
         const GenericMatrix &meanMat, unsigned nUpdates);
 
     // specific matrix algorithms
-    RowMatrix matrixMultiplication(const ColMatrix &A, const RowMatrix &B);
+    ColMatrix matrixMultiplication(const ColMatrix &A, const ColMatrix &B);
 
     // chiSq / 2
     template <class Matrix>

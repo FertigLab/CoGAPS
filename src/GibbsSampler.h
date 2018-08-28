@@ -1,13 +1,13 @@
 #ifndef __COGAPS_GIBBS_SAMPLER_H__
 #define __COGAPS_GIBBS_SAMPLER_H__
 
-#include "utils/Archive.h"
 #include "AtomicDomain.h"
-#include "utils/GapsAssert.h"
 #include "ProposalQueue.h"
 #include "data_structures/Matrix.h"
 #include "math/Algorithms.h"
 #include "math/Random.h"
+#include "utils/Archive.h"
+#include "utils/GapsAssert.h"
 
 #include <algorithm>
 
@@ -40,8 +40,8 @@ protected:
     MatB mSMatrix;
     MatB mAPMatrix;
 
-    MatA mMatrix;
-    MatB* mOtherMatrix;
+    ColMatrix mMatrix;
+    const ColMatrix* mOtherMatrix;
 
     GapsRng mPropRng;
     AtomicDomain mDomain;
@@ -63,13 +63,13 @@ protected:
 
     T* impl();
 
-    float deathProb(uint64_t nAtoms) const;
     void makeAndProcessProposal();
+    float deathProb(uint64_t nAtoms) const;
 
-    void birth(GapsRng *rng);
-    void death(GapsRng *rng);
-    void move(GapsRng *rng);
-    void exchange(GapsRng *rng);
+    void birth();
+    void death();
+    void move();
+    void exchange();
 
     bool updateAtomMass(Atom *atom, float delta);
     void acceptExchange(AtomicProposal *prop, float d1, unsigned r1,
@@ -141,7 +141,6 @@ public:
         const std::vector<unsigned> &indices);
 
     void sync(PatternGibbsSampler &sampler);
-    void recalculateAPMatrix();
 };
 
 class PatternGibbsSampler : public GibbsSampler<PatternGibbsSampler, RowMatrix, ColMatrix>
@@ -173,7 +172,6 @@ public:
         const std::vector<unsigned> &indices);
 
     void sync(AmplitudeGibbsSampler &sampler);
-    void recalculateAPMatrix();
 };
 
 /******************** IMPLEMENTATION OF TEMPLATED FUNCTIONS *******************/
@@ -203,7 +201,7 @@ const std::vector<unsigned> &indices)
 mDMatrix(data, transposeData, partitionRows, indices),
 mSMatrix(mDMatrix.pmax(0.1f, 0.1f)),
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
-mMatrix(amp ? mDMatrix.nRow() : nPatterns, amp ? nPatterns : mDMatrix.nCol()),
+mMatrix(amp ? mDMatrix.nRow() : mDMatrix.nCol(), nPatterns),
 mOtherMatrix(NULL),
 mDomain(mMatrix.nRow() * mMatrix.nCol()),
 mLambda(0.f),
@@ -235,8 +233,7 @@ void GibbsSampler<T, MatA, MatB>::setSparsity(float alpha, bool singleCell)
     float meanD = singleCell ? gaps::algo::nonZeroMean(mDMatrix) :
         gaps::algo::mean(mDMatrix);
 
-    unsigned nPatterns = mDMatrix.nRow() == mMatrix.nRow() ? mMatrix.nCol() :
-        mMatrix.nRow();
+    unsigned nPatterns = mMatrix.nCol();
 
     mAlpha = alpha;
     mLambda = alpha * std::sqrt(nPatterns / meanD);
@@ -257,6 +254,8 @@ void GibbsSampler<T, MatA, MatB>::setAnnealingTemp(float temp)
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::setMatrix(const Matrix &mat)
 {   
+    GAPS_ASSERT(mat.nRow() == mMatrix.nRow());
+    GAPS_ASSERT(mat.nCol() == mMatrix.nCol());
     mMatrix = mat;
 }
 
@@ -313,25 +312,30 @@ float GibbsSampler<T, MatA, MatB>::deathProb(uint64_t nAtoms) const
 template <class T, class MatA, class MatB>
 void GibbsSampler<T, MatA, MatB>::makeAndProcessProposal()
 {
-    GapsRng rng; // need to make this independent of nThreads (use streams?)
-    if (mDomain.size() < 2) // always birth with 0 or 1 atoms
+    // always birth when no atoms exist
+    if (mDomain.size() == 0)
     {
-        return birth(&rng);
+        return birth();
     }
 
-    //float u1 = rng.uniform();
-    float u1 = 0.f;
-    if (u1 <= 0.5f)
+    float bdProb = mDomain.size() < 2 ? 0.6667f : 0.5f;
+
+    float u1 = mPropRng.uniform();
+    float u2 = mPropRng.uniform();
+
+    float lowerBound = deathProb(mDomain.size());
+
+    if (u1 <= bdProb)
     {
-        return rng.uniform() < deathProb(mDomain.size()) ? death(&rng) : birth(&rng);
+        return u2 < lowerBound ? death() : birth();
     }
-    return (u1 < 0.75f) ? move(&rng) : exchange(&rng);
+    return (u1 < 0.75f || mDomain.size() < 2) ? move() : exchange();
 }
 
 // add an atom at pos, calculate mass either with an exponential distribution
 // or with the gibbs mass calculation
 template <class T, class MatA, class MatB>
-void GibbsSampler<T, MatA, MatB>::birth(GapsRng *rng)
+void GibbsSampler<T, MatA, MatB>::birth()
 {
     uint64_t pos = mDomain.randomFreePosition();
     AtomicProposal prop = AtomicProposal('B', pos);
@@ -363,7 +367,7 @@ void GibbsSampler<T, MatA, MatB>::birth(GapsRng *rng)
 // automatically accept death, attempt a rebirth at the same position, using
 // the original mass or the gibbs mass calculation
 template <class T, class MatA, class MatB>
-void GibbsSampler<T, MatA, MatB>::death(GapsRng *rng)
+void GibbsSampler<T, MatA, MatB>::death()
 {
     Atom* a = mDomain.randomAtom();
     AtomicProposal prop = AtomicProposal('D', a);
@@ -405,21 +409,22 @@ void GibbsSampler<T, MatA, MatB>::death(GapsRng *rng)
 
 // move mass from src to dest in the atomic domain
 template <class T, class MatA, class MatB>
-void GibbsSampler<T, MatA, MatB>::move(GapsRng *rng)
+void GibbsSampler<T, MatA, MatB>::move()
 {
     AtomNeighborhood hood = mDomain.randomAtomWithNeighbors();
     uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
     uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainLength;
     uint64_t newLocation = mPropRng.uniform64(lbound + 1, rbound - 1);
-    AtomicProposal prop = AtomicProposal('M', hood.center, newLocation);
 
-    unsigned r1 = impl()->getRow(prop.atom1->pos);
-    unsigned c1 = impl()->getCol(prop.atom1->pos);
-    unsigned r2 = impl()->getRow(prop.moveDest);
-    unsigned c2 = impl()->getCol(prop.moveDest);
+    unsigned r1 = impl()->getRow(hood.center->pos);
+    unsigned c1 = impl()->getCol(hood.center->pos);
+    unsigned r2 = impl()->getRow(newLocation);
+    unsigned c2 = impl()->getCol(newLocation);
 
     if (r1 != r2 || c1 != c2)
     {
+        AtomicProposal prop = AtomicProposal('M', hood.center, newLocation);
+
         float deltaLL = impl()->computeDeltaLL(r1, c1, -1.f * prop.atom1->mass,
             r2, c2, prop.atom1->mass);
         if (deltaLL * mAnnealingTemp > std::log(prop.rng.uniform()))
@@ -434,26 +439,31 @@ void GibbsSampler<T, MatA, MatB>::move(GapsRng *rng)
             impl()->updateAPMatrix(r2, c2, prop.atom1->mass);
         }
     }
+    else
+    {
+        hood.center->pos = newLocation;
+    }
 }
 
 // exchange some amount of mass between two positions, note it is possible
 // for one of the atoms to be deleted if it's mass becomes too small after
 // the exchange
 template <class T, class MatA, class MatB>
-void GibbsSampler<T, MatA, MatB>::exchange(GapsRng *rng)
+void GibbsSampler<T, MatA, MatB>::exchange()
 {
     AtomNeighborhood hood = mDomain.randomAtomWithRightNeighbor();
     Atom* a1 = hood.center;
     Atom* a2 = hood.hasRight() ? hood.right : mDomain.front();
-    AtomicProposal prop = AtomicProposal('E', a1, a2);
 
-    unsigned r1 = impl()->getRow(prop.atom1->pos);
-    unsigned c1 = impl()->getCol(prop.atom1->pos);
-    unsigned r2 = impl()->getRow(prop.atom2->pos);
-    unsigned c2 = impl()->getCol(prop.atom2->pos);
+    unsigned r1 = impl()->getRow(a1->pos);
+    unsigned c1 = impl()->getCol(a1->pos);
+    unsigned r2 = impl()->getRow(a2->pos);
+    unsigned c2 = impl()->getCol(a2->pos);
 
     if (r1 != r2 || c1 != c2)
     {
+        AtomicProposal prop = AtomicProposal('E', a1, a2);
+
         float m1 = prop.atom1->mass;
         float m2 = prop.atom2->mass;
 
