@@ -71,6 +71,12 @@ protected:
     void move();
     void exchange();
 
+    unsigned getRow(uint64_t pos) const;
+    unsigned getCol(uint64_t pos) const;
+
+    bool canUseGibbs(unsigned col) const;
+    bool canUseGibbs(unsigned c1, unsigned c2) const;
+
     bool updateAtomMass(Atom *atom, float delta);
     void acceptExchange(AtomicProposal *prop, float d1, unsigned r1,
         unsigned c1, unsigned r2, unsigned c2);
@@ -119,10 +125,6 @@ private:
     friend class GibbsSampler;
     friend class PatternGibbsSampler;
 
-    unsigned getRow(uint64_t pos) const;
-    unsigned getCol(uint64_t pos) const;
-    bool canUseGibbs(unsigned row, unsigned col) const;
-    bool canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const;
     void updateAPMatrix(unsigned row, unsigned col, float delta);
 
     AlphaParameters alphaParameters(unsigned row, unsigned col);
@@ -150,10 +152,6 @@ private:
     friend class GibbsSampler;
     friend class AmplitudeGibbsSampler;
 
-    unsigned getRow(uint64_t pos) const;
-    unsigned getCol(uint64_t pos) const;
-    bool canUseGibbs(unsigned row, unsigned col) const;
-    bool canUseGibbs(unsigned r1, unsigned c1, unsigned r2, unsigned c2) const;
     void updateAPMatrix(unsigned row, unsigned col, float delta);
 
     AlphaParameters alphaParameters(unsigned row, unsigned col);
@@ -237,6 +235,31 @@ void GibbsSampler<T, MatA, MatB>::setSparsity(float alpha, bool singleCell)
 
     mAlpha = alpha;
     mLambda = alpha * std::sqrt(nPatterns / meanD);
+}
+
+template <class T, class MatA, class MatB>
+unsigned GibbsSampler<T, MatA, MatB>::getRow(uint64_t pos) const
+{
+    return pos / (mBinSize * mNumCols);
+}
+
+template <class T, class MatA, class MatB>
+unsigned GibbsSampler<T, MatA, MatB>::getCol(uint64_t pos) const
+{
+    return (pos / mBinSize) % mNumCols;
+}
+
+template <class T, class MatA, class MatB>
+bool GibbsSampler<T, MatA, MatB>::canUseGibbs(unsigned col) const
+{
+    return !gaps::algo::isVectorZero(mOtherMatrix->colPtr(col),
+        mOtherMatrix->nRow());
+}
+
+template <class T, class MatA, class MatB>
+bool GibbsSampler<T, MatA, MatB>::canUseGibbs(unsigned c1, unsigned c2) const
+{
+    return canUseGibbs(c1) || canUseGibbs(c2);
 }
 
 template <class T, class MatA, class MatB>
@@ -340,12 +363,12 @@ void GibbsSampler<T, MatA, MatB>::birth()
     uint64_t pos = mDomain.randomFreePosition();
     AtomicProposal prop = AtomicProposal('B', pos);
 
-    unsigned row = impl()->getRow(prop.birthPos);
-    unsigned col = impl()->getCol(prop.birthPos);
+    unsigned row = getRow(prop.birthPos);
+    unsigned col = getCol(prop.birthPos);
 
     // calculate proposed mass
     float mass = 0.f;
-    if (impl()->canUseGibbs(row, col))
+    if (canUseGibbs(col))
     {
         AlphaParameters alpha = impl()->alphaParameters(row, col);
         mass = gibbsMass(alpha, &(prop.rng)).value; // 0 if it fails
@@ -373,8 +396,8 @@ void GibbsSampler<T, MatA, MatB>::death()
     AtomicProposal prop = AtomicProposal('D', a);
 
     // calculate bin for this atom
-    unsigned row = impl()->getRow(prop.atom1->pos);
-    unsigned col = impl()->getCol(prop.atom1->pos);
+    unsigned row = getRow(prop.atom1->pos);
+    unsigned col = getCol(prop.atom1->pos);
 
     // kill off atom
     float newVal = gaps::max(mMatrix(row, col) - prop.atom1->mass, 0.f);
@@ -384,7 +407,7 @@ void GibbsSampler<T, MatA, MatB>::death()
     // calculate rebirth mass
     float rebirthMass = prop.atom1->mass;
     AlphaParameters alpha = impl()->alphaParameters(row, col);
-    if (impl()->canUseGibbs(row, col))
+    if (canUseGibbs(col))
     {
         OptionalFloat gMass = gibbsMass(alpha, &(prop.rng));
         if (gMass.hasValue)
@@ -416,10 +439,10 @@ void GibbsSampler<T, MatA, MatB>::move()
     uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainLength;
     uint64_t newLocation = mPropRng.uniform64(lbound + 1, rbound - 1);
 
-    unsigned r1 = impl()->getRow(hood.center->pos);
-    unsigned c1 = impl()->getCol(hood.center->pos);
-    unsigned r2 = impl()->getRow(newLocation);
-    unsigned c2 = impl()->getCol(newLocation);
+    unsigned r1 = getRow(hood.center->pos);
+    unsigned c1 = getCol(hood.center->pos);
+    unsigned r2 = getRow(newLocation);
+    unsigned c2 = getCol(newLocation);
 
     if (r1 != r2 || c1 != c2)
     {
@@ -455,10 +478,10 @@ void GibbsSampler<T, MatA, MatB>::exchange()
     Atom* a1 = hood.center;
     Atom* a2 = hood.hasRight() ? hood.right : mDomain.front();
 
-    unsigned r1 = impl()->getRow(a1->pos);
-    unsigned c1 = impl()->getCol(a1->pos);
-    unsigned r2 = impl()->getRow(a2->pos);
-    unsigned c2 = impl()->getCol(a2->pos);
+    unsigned r1 = getRow(a1->pos);
+    unsigned c1 = getCol(a1->pos);
+    unsigned r2 = getRow(a2->pos);
+    unsigned c2 = getCol(a2->pos);
 
     if (r1 != r2 || c1 != c2)
     {
@@ -467,7 +490,7 @@ void GibbsSampler<T, MatA, MatB>::exchange()
         float m1 = prop.atom1->mass;
         float m2 = prop.atom2->mass;
 
-        if (impl()->canUseGibbs(r1, c1, r2, c2))
+        if (canUseGibbs(c1, c2))
         {
             AlphaParameters alpha = impl()->alphaParameters(r1, c1, r2, c2);
             OptionalFloat gMass = gibbsMass(alpha, m1, m2, &(prop.rng));
