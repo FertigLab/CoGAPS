@@ -75,13 +75,6 @@ namespace algo
     AlphaParameters alphaParameters(unsigned size, const float *D,
         const float *S, const float *AP, const float *mat1, const float *mat2);
 
-    float deltaLL(unsigned size, const float *D, const float *S,
-        const float *AP, const float *mat, float delta);
-
-    float deltaLL(unsigned size, const float *D, const float *S,
-        const float *AP, const float *mat1, float delta1, const float *mat2,
-        float delta2);
-
 } // namespace algo
 } // namespace gaps
 

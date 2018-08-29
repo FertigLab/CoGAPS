@@ -1,10 +1,19 @@
 #include "GibbsSampler.h"
 #include "math/SIMD.h"
 
-void GibbsSampler::sync(GibbsSampler &sampler)
+static float getDeltaLL(AlphaParameters alpha, float mass)
 {
-    mOtherMatrix = &(sampler.mMatrix);
-    gaps::algo::copyTranspose(&mAPMatrix, sampler.mAPMatrix);
+    return mass * (alpha.su - alpha.s * mass / 2.f);
+}
+
+unsigned GibbsSampler::dataRows() const
+{
+    return mDMatrix.nRow();
+}
+
+unsigned GibbsSampler::dataCols() const
+{
+    return mDMatrix.nCol();
 }
 
 void GibbsSampler::setSparsity(float alpha, bool singleCell)
@@ -12,90 +21,8 @@ void GibbsSampler::setSparsity(float alpha, bool singleCell)
     float meanD = singleCell ? gaps::algo::nonZeroMean(mDMatrix) :
         gaps::algo::mean(mDMatrix);
 
-    unsigned nPatterns = mMatrix.nCol();
-
     mAlpha = alpha;
-    mLambda = alpha * std::sqrt(nPatterns / meanD);
-}
-
-unsigned GibbsSampler::getRow(uint64_t pos) const
-{
-    return pos / (mBinSize * mNumCols);
-}
-
-unsigned GibbsSampler::getCol(uint64_t pos) const
-{
-    return (pos / mBinSize) % mNumCols;
-}
-
-bool GibbsSampler::canUseGibbs(unsigned col) const
-{
-    return !gaps::algo::isVectorZero(mOtherMatrix->colPtr(col),
-        mOtherMatrix->nRow());
-}
-
-bool GibbsSampler::canUseGibbs(unsigned c1, unsigned c2) const
-{
-    return canUseGibbs(c1) || canUseGibbs(c2);
-}
-
-void GibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
-{
-    const float *other = mOtherMatrix->colPtr(col);
-    float *ap = mAPMatrix.colPtr(row);
-    unsigned size = mAPMatrix.nRow();
-
-    gaps::simd::packedFloat pOther, pAP;
-    gaps::simd::Index i(0);
-    gaps::simd::packedFloat pDelta(delta);
-    for (; i <= size - i.increment(); ++i)
-    {
-        pOther.load(other + i);
-        pAP.load(ap + i);
-        pAP += pDelta * pOther;
-        pAP.store(ap + i);
-    }
-
-    for (unsigned j = i.value(); j < size; ++j)
-    {
-        ap[j] += delta * other[j];
-    }
-}
-
-AlphaParameters GibbsSampler::alphaParameters(unsigned row, unsigned col)
-{
-    return gaps::algo::alphaParameters(mDMatrix.nRow(), mDMatrix.colPtr(row),
-        mSMatrix.colPtr(row), mAPMatrix.colPtr(row), mOtherMatrix->colPtr(col));
-}
-
-AlphaParameters GibbsSampler::alphaParameters(unsigned r1, unsigned c1,
-unsigned r2, unsigned c2)
-{
-    if (r1 == r2)
-    {
-        return gaps::algo::alphaParameters(mDMatrix.nRow(), mDMatrix.colPtr(r1),
-            mSMatrix.colPtr(r1), mAPMatrix.colPtr(r1), mOtherMatrix->colPtr(c1),
-            mOtherMatrix->colPtr(c2));
-    }
-    return alphaParameters(r1, c1) + alphaParameters(r2, c2);
-}
-
-float GibbsSampler::computeDeltaLL(unsigned row, unsigned col, float mass)
-{
-    AlphaParameters alpha = alphaParameters(row, col);
-    return mass * (alpha.su - alpha.s * mass / 2.f);
-}
-
-float GibbsSampler::computeDeltaLL(unsigned r1, unsigned c1, float m1,
-unsigned r2, unsigned c2, float m2)
-{
-    if (r1 == r2)
-    {
-        return gaps::algo::deltaLL(mDMatrix.nRow(), mDMatrix.colPtr(r1),
-            mSMatrix.colPtr(r1), mAPMatrix.colPtr(r1), mOtherMatrix->colPtr(c1),
-            m1, mOtherMatrix->colPtr(c2), m2);
-    }
-    return computeDeltaLL(r1, c1, m1) + computeDeltaLL(r2, c2, m2);
+    mLambda = alpha * std::sqrt(mNumPatterns / meanD);
 }
 
 void GibbsSampler::setMaxGibbsMass(float max)
@@ -115,16 +42,6 @@ void GibbsSampler::setMatrix(const Matrix &mat)
     mMatrix = mat;
 }
 
-unsigned GibbsSampler::dataRows() const
-{
-    return mDMatrix.nRow();
-}
-
-unsigned GibbsSampler::dataCols() const
-{
-    return mDMatrix.nCol();
-}
-
 float GibbsSampler::chi2() const
 {   
     return 2.f * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);
@@ -135,6 +52,12 @@ uint64_t GibbsSampler::nAtoms() const
     return mDomain.size();
 }
 
+void GibbsSampler::sync(const GibbsSampler &sampler)
+{
+    mOtherMatrix = &(sampler.mMatrix);
+    gaps::algo::copyTranspose(&mAPMatrix, sampler.mAPMatrix);
+}
+
 void GibbsSampler::update(unsigned nSteps, unsigned nCores)
 {
     unsigned n = 0;
@@ -143,14 +66,6 @@ void GibbsSampler::update(unsigned nSteps, unsigned nCores)
         makeAndProcessProposal();
         ++n;
     }
-}
-
-float GibbsSampler::deathProb(uint64_t nAtoms) const
-{
-    double size = static_cast<double>(mDomainLength);
-    double term1 = (size - static_cast<double>(nAtoms)) / size;
-    double term2 = mAlpha * static_cast<double>(mNumBins) * term1;
-    return static_cast<double>(nAtoms) / (static_cast<double>(nAtoms) + term2);
 }
 
 void GibbsSampler::makeAndProcessProposal()
@@ -175,32 +90,32 @@ void GibbsSampler::makeAndProcessProposal()
     return (u1 < 0.75f || mDomain.size() < 2) ? move() : exchange();
 }
 
-// add an atom at pos, calculate mass either with an exponential distribution
-// or with the gibbs mass calculation
+float GibbsSampler::deathProb(uint64_t nAtoms) const
+{
+    double size = static_cast<double>(mDomainLength);
+    double term1 = (size - static_cast<double>(nAtoms)) / size;
+    double term2 = mAlpha * static_cast<double>(mNumBins) * term1;
+    return static_cast<double>(nAtoms) / (static_cast<double>(nAtoms) + term2);
+}
+
+// add an atom at a random position, calculate mass either with an
+// exponential distribution or with the gibbs mass distribution
 void GibbsSampler::birth()
 {
     uint64_t pos = mDomain.randomFreePosition();
-    AtomicProposal prop = AtomicProposal('B', pos);
-
-    unsigned row = getRow(prop.birthPos);
-    unsigned col = getCol(prop.birthPos);
+    unsigned row = getRow(pos);
+    unsigned col = getCol(pos);
+    GapsRng rng;
 
     // calculate proposed mass
-    float mass = 0.f;
-    if (canUseGibbs(col))
-    {
-        AlphaParameters alpha = alphaParameters(row, col);
-        mass = gibbsMass(alpha, &(prop.rng)).value; // 0 if it fails
-    }
-    else
-    {
-        mass = prop.rng.exponential(mLambda);
-    }
+    float mass = canUseGibbs(col)
+        ? gibbsMass(alphaParameters(row, col), &rng).value
+        : rng.exponential(mLambda);
 
     // accept mass as long as it's non-zero
     if (mass >= gaps::epsilon)
     {
-        mDomain.insert(prop.birthPos, mass);
+        mDomain.insert(pos, mass);
         mMatrix(row, col) += mass;
         updateAPMatrix(row, col, mass);
     }
@@ -210,24 +125,21 @@ void GibbsSampler::birth()
 // the original mass or the gibbs mass calculation
 void GibbsSampler::death()
 {
-    Atom* a = mDomain.randomAtom();
-    AtomicProposal prop = AtomicProposal('D', a);
-
-    // calculate bin for this atom
-    unsigned row = getRow(prop.atom1->pos);
-    unsigned col = getCol(prop.atom1->pos);
+    // get random atom
+    Atom* atom = mDomain.randomAtom();
+    unsigned row = getRow(atom->pos);
+    unsigned col = getCol(atom->pos);
+    GapsRng rng;
 
     // kill off atom
-    float newVal = gaps::max(mMatrix(row, col) - prop.atom1->mass, 0.f);
-    updateAPMatrix(row, col, newVal - mMatrix(row, col));
-    mMatrix(row, col) = newVal;
+    safelyChangeMatrix(row, col, -1.f * atom->mass);
 
     // calculate rebirth mass
-    float rebirthMass = prop.atom1->mass;
     AlphaParameters alpha = alphaParameters(row, col);
+    float rebirthMass = atom->mass;
     if (canUseGibbs(col))
     {
-        OptionalFloat gMass = gibbsMass(alpha, &(prop.rng));
+        OptionalFloat gMass = gibbsMass(alpha, &rng);
         if (gMass.hasValue)
         {
             rebirthMass = gMass.value;
@@ -235,16 +147,15 @@ void GibbsSampler::death()
     }
 
     // accept/reject rebirth
-    float deltaLL = rebirthMass * (alpha.su - alpha.s * rebirthMass / 2.f);
-    if (deltaLL * mAnnealingTemp >= std::log(prop.rng.uniform()))
+    if (getDeltaLL(alpha, rebirthMass) * mAnnealingTemp >= std::log(rng.uniform()))
     {
-        prop.atom1->mass = rebirthMass;
+        atom->mass = rebirthMass;
         mMatrix(row, col) += rebirthMass;
         updateAPMatrix(row, col, rebirthMass);
     }
     else
     {
-        mDomain.erase(prop.atom1->pos);
+        mDomain.erase(atom->pos);
     }
 }
 
@@ -263,20 +174,15 @@ void GibbsSampler::move()
 
     if (r1 != r2 || c1 != c2)
     {
-        AtomicProposal prop = AtomicProposal('M', hood.center, newLocation);
-
-        float deltaLL = computeDeltaLL(r1, c1, -1.f * prop.atom1->mass,
-            r2, c2, prop.atom1->mass);
-        if (deltaLL * mAnnealingTemp > std::log(prop.rng.uniform()))
+        GapsRng rng;
+        AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
+        float deltaLL = getDeltaLL(alpha, -1.f * hood.center->mass);
+        if (deltaLL * mAnnealingTemp > std::log(rng.uniform()))
         {
-            prop.atom1->pos = prop.moveDest;
-
-            float newVal = gaps::max(mMatrix(r1, c1) - prop.atom1->mass, 0.f);
-            updateAPMatrix(r1, c1, newVal - mMatrix(r1, c1));
-            mMatrix(r1, c1) = newVal;
-
-            mMatrix(r2, c2) += prop.atom1->mass;
-            updateAPMatrix(r2, c2, prop.atom1->mass);
+            hood.center->pos = newLocation;
+            safelyChangeMatrix(r1, c1, -1.f * hood.center->mass);
+            mMatrix(r2, c2) += hood.center->mass;
+            updateAPMatrix(r2, c2, hood.center->mass);
         }
     }
     else
@@ -301,23 +207,23 @@ void GibbsSampler::exchange()
 
     if (r1 != r2 || c1 != c2)
     {
-        AtomicProposal prop = AtomicProposal('E', a1, a2);
+        GapsRng rng;
 
-        float m1 = prop.atom1->mass;
-        float m2 = prop.atom2->mass;
+        float m1 = a1->mass;
+        float m2 = a2->mass;
 
+        AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
         if (canUseGibbs(c1, c2))
         {
-            AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
-            OptionalFloat gMass = gibbsMass(alpha, m1, m2, &(prop.rng));
+            OptionalFloat gMass = gibbsMass(alpha, m1, m2, &rng);
             if (gMass.hasValue)
             {
-                acceptExchange(&prop, gMass.value, r1, c1, r2, c2);
+                acceptExchange(a1, a2, gMass.value, r1, c1, r2, c2);
                 return;
             }
         }
 
-        float newMass = prop.rng.truncGammaUpper(m1 + m2, 2.f, 1.f / mLambda);
+        float newMass = rng.truncGammaUpper(m1 + m2, 2.f, 1.f / mLambda);
 
         float delta = m1 > m2 ? newMass - m1 : m2 - newMass; // change larger mass
         float pOldMass = 2.f * newMass > m1 + m2 ? gaps::max(m1, m2) : gaps::min(m1, m2);
@@ -325,21 +231,25 @@ void GibbsSampler::exchange()
         float pNew = gaps::d_gamma(newMass, 2.f, 1.f / mLambda);
         float pOld = gaps::d_gamma(pOldMass, 2.f, 1.f / mLambda);
 
-        if (pOld == 0.f && pNew != 0.f) // special case
+        float deltaLL = getDeltaLL(alpha, delta);
+        float priorLL = (pNew == 0.f) ? 1.f : pOld / pNew;
+        if (priorLL == 0.f || std::log(rng.uniform() * priorLL) < deltaLL * mAnnealingTemp)
         {
-            acceptExchange(&prop, delta, r1, c1, r2, c2);
-            return;
-        }
-
-        float deltaLL = computeDeltaLL(r1, c1, delta, r2, c2, -delta);
-        float priorLL = (pOld == 0.f) ? 1.f : pOld / pNew;
-        float u = std::log(prop.rng.uniform() * priorLL);
-        if (u < deltaLL * mAnnealingTemp)
-        {
-            acceptExchange(&prop, delta, r1, c1, r2, c2);
+            acceptExchange(a1, a2, delta, r1, c1, r2, c2);
             return;
         }
     }
+}
+
+// helper function for exchange step
+void GibbsSampler::acceptExchange(Atom *a1, Atom *a2, float delta,
+unsigned r1, unsigned c1, unsigned r2, unsigned c2)
+{
+    float d1 = updateAtomMass(a1, delta) ? delta : -a1->mass;
+    float d2 = updateAtomMass(a2, -delta) ? -delta : -a2->mass;
+
+    safelyChangeMatrix(r1, c1, d1);
+    safelyChangeMatrix(r2, c2, d2);
 }
 
 // helper function for acceptExchange, used to conditionally update the mass
@@ -348,37 +258,11 @@ bool GibbsSampler::updateAtomMass(Atom *atom, float delta)
 {
     if (atom->mass + delta < gaps::epsilon)
     {
-        DEBUG_PING // want to know if this ever happens
         mDomain.erase(atom->pos);
         return false;
     }
     atom->mass += delta;
     return true;
-}
-
-// helper function for exchange step, updates the atomic domain, matrix, and
-// A*P matrix
-void GibbsSampler::acceptExchange(AtomicProposal *prop,
-float d1, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
-{
-    float d2 = -1.f * d1;
-    bool b1 = updateAtomMass(prop->atom1, d1);
-    bool b2 = updateAtomMass(prop->atom2, d2);
-    GAPS_ASSERT(b1 || b2);
-    
-    // delete entire atom if resize would make it too small
-    if (!b1) { d1 = -1.f * prop->atom1->mass; }
-    if (!b2) { d2 = -1.f * prop->atom2->mass; }
-
-    // ensure matrix values don't go negative (truncation error at fault)
-    float v1 = gaps::max(mMatrix(r1, c1) + d1, 0.f);
-    updateAPMatrix(r1, c1, v1 - mMatrix(r1, c1));
-    mMatrix(r1, c1) = v1;
-
-
-    float v2 = gaps::max(mMatrix(r2, c2) + d2, 0.f);
-    updateAPMatrix(r2, c2, v2 - mMatrix(r2, c2));
-    mMatrix(r2, c2) = v2;
 }
 
 OptionalFloat GibbsSampler::gibbsMass(AlphaParameters alpha,
@@ -429,25 +313,91 @@ float m1, float m2, GapsRng *rng)
     return OptionalFloat();
 }
 
+// needed to prevent negative values in matrix
+void GibbsSampler::safelyChangeMatrix(unsigned row, unsigned col, float delta)
+{
+    float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
+    updateAPMatrix(row, col, newVal - mMatrix(row, col));
+    mMatrix(row, col) = newVal;
+}
+
+void GibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
+{
+    const float *other = mOtherMatrix->colPtr(col);
+    float *ap = mAPMatrix.colPtr(row);
+    unsigned size = mAPMatrix.nRow();
+
+    gaps::simd::packedFloat pOther, pAP;
+    gaps::simd::Index i(0);
+    gaps::simd::packedFloat pDelta(delta);
+    for (; i <= size - i.increment(); ++i)
+    {
+        pOther.load(other + i);
+        pAP.load(ap + i);
+        pAP += pDelta * pOther;
+        pAP.store(ap + i);
+    }
+
+    for (unsigned j = i.value(); j < size; ++j)
+    {
+        ap[j] += delta * other[j];
+    }
+}
+
+unsigned GibbsSampler::getRow(uint64_t pos) const
+{
+    return pos / (mBinSize * mNumPatterns); // nCol == nPatterns
+}
+
+unsigned GibbsSampler::getCol(uint64_t pos) const
+{
+    return (pos / mBinSize) % mNumPatterns; // nCol == nPatterns
+}
+
+bool GibbsSampler::canUseGibbs(unsigned col) const
+{
+    return !gaps::algo::isVectorZero(mOtherMatrix->colPtr(col),
+        mOtherMatrix->nRow());
+}
+
+bool GibbsSampler::canUseGibbs(unsigned c1, unsigned c2) const
+{
+    return canUseGibbs(c1) || canUseGibbs(c2);
+}
+
+AlphaParameters GibbsSampler::alphaParameters(unsigned row, unsigned col)
+{
+    return gaps::algo::alphaParameters(mDMatrix.nRow(), mDMatrix.colPtr(row),
+        mSMatrix.colPtr(row), mAPMatrix.colPtr(row), mOtherMatrix->colPtr(col));
+}
+
+AlphaParameters GibbsSampler::alphaParameters(unsigned r1, unsigned c1,
+unsigned r2, unsigned c2)
+{
+    if (r1 == r2)
+    {
+        return gaps::algo::alphaParameters(mDMatrix.nRow(), mDMatrix.colPtr(r1),
+            mSMatrix.colPtr(r1), mAPMatrix.colPtr(r1), mOtherMatrix->colPtr(c1),
+            mOtherMatrix->colPtr(c2));
+    }
+    return alphaParameters(r1, c1) + alphaParameters(r2, c2);
+}
+
+Archive& operator<<(Archive &ar, GibbsSampler &s)
+{
+    // TODO
+    return ar;
+}
+
+Archive& operator>>(Archive &ar, GibbsSampler &s)
+{
+    // TODO
+    return ar;
+}
+
 #ifdef GAPS_DEBUG
 bool GibbsSampler::internallyConsistent()
 {
     return true;
 }
 #endif // GAPS_DEBUG
-
-Archive& operator<<(Archive &ar, GibbsSampler &s)
-{
-    ar << s.mMatrix << s.mAPMatrix << s.mDomain << s.mLambda
-        << s.mMaxGibbsMass << s.mAnnealingTemp << s.mNumRows << s.mNumCols
-        << s.mBinSize << s.mAvgQueue << s.mNumQueues;
-    return ar;
-}
-
-Archive& operator>>(Archive &ar, GibbsSampler &s)
-{
-    ar >> s.mMatrix >> s.mAPMatrix >> s.mDomain >> s.mLambda
-        >> s.mMaxGibbsMass >> s.mAnnealingTemp >> s.mNumRows >> s.mNumCols
-        >> s.mBinSize >> s.mAvgQueue >> s.mNumQueues;
-    return ar;
-}
