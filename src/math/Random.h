@@ -9,11 +9,18 @@
 
 struct OptionalFloat
 {
-    float value;
-    bool hasValue;
+public :
 
-    OptionalFloat() : hasValue(false), value(0.f) {}
-    OptionalFloat(float f) : hasValue(true), value(f) {}
+    OptionalFloat() : mHasValue(false), mValue(0.f) {}
+    OptionalFloat(float f) : mHasValue(true), mValue(f) {}
+
+    float value() { return mValue; }
+    bool hasValue() const { return mHasValue; }
+
+private :
+
+    float mValue;
+    bool mHasValue;
 };
 
 namespace gaps

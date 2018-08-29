@@ -148,7 +148,7 @@ bool gaps::algo::isVectorZero(const float *vec, unsigned size)
 AlphaParameters gaps::algo::alphaParameters(unsigned size, const float *D,
 const float *S, const float *AP, const float *mat)
 {
-    gaps::simd::packedFloat ratio, pMat, pD, pAP, pS;
+    gaps::simd::packedFloat pMat, pD, pAP, pS;
     gaps::simd::packedFloat partialS(0.f), partialSU(0.f);
     gaps::simd::Index i(0);
     for (; i <= size - i.increment(); ++i)
@@ -157,25 +157,24 @@ const float *S, const float *AP, const float *mat)
         pD.load(D + i);
         pAP.load(AP + i);
         pS.load(S + i);
-        ratio = pMat / pS;
-        partialS += ratio * ratio;
-        partialSU += (ratio * (pD - pAP)) / pS;
+        gaps::simd::packedFloat ratio(pMat / (pS * pS));
+        partialS += pMat * ratio;
+        partialSU += ratio * (pD - pAP);
     }
-    float fratio, s = partialS.scalar(), su = partialSU.scalar();
+    float s = partialS.scalar(), su = partialSU.scalar();
     for (unsigned j = i.value(); j < size; ++j)
     {
-        fratio = mat[j] / S[j]; // can save one division here by dividing by S^2
-        s += fratio * fratio;
-        su += (fratio * (D[j] - AP[j])) / S[j];
+        float ratio = mat[j] / (S[j] * S[j]);
+        s += mat[j] * ratio;
+        su += ratio * (D[j] - AP[j]);
     }
     return AlphaParameters(s,su);
 }
 
-//
 AlphaParameters gaps::algo::alphaParameters(unsigned size, const float *D,
 const float *S, const float *AP, const float *mat1, const float *mat2)
 {
-    gaps::simd::packedFloat ratio, pMat1, pMat2, pD, pAP, pS;
+    gaps::simd::packedFloat pMat1, pMat2, pD, pAP, pS;
     gaps::simd::packedFloat partialS(0.f), partialSU(0.f);
     gaps::simd::Index i(0);
     for (; i <= size - i.increment(); ++i)
@@ -185,17 +184,44 @@ const float *S, const float *AP, const float *mat1, const float *mat2)
         pD.load(D + i);
         pAP.load(AP + i);
         pS.load(S + i);
-        ratio = (pMat1 - pMat2) / pS;
-        partialS += ratio * ratio;
-        partialSU += ratio * (pD - pAP) / pS;
+        gaps::simd::packedFloat ratio((pMat1 - pMat2) / (pS * pS));
+        partialS += (pMat1 - pMat2) * ratio;
+        partialSU += ratio * (pD - pAP);
     }
 
-    float fratio, s = partialS.scalar(), su = partialSU.scalar();
+    float s = partialS.scalar(), su = partialSU.scalar();
     for (unsigned j = i.value(); j < size; ++j)
     {
-        fratio = (mat1[j] - mat2[j]) / S[j];
-        s += fratio * fratio;
-        su += fratio * (D[j] - AP[j]) / S[j];
+        float ratio = (mat1[j] - mat2[j]) / (S[j] * S[j]);
+        s += (mat1[j] - mat2[j]) * ratio;
+        su += ratio * (D[j] - AP[j]);
+    }
+    return AlphaParameters(s,su);
+}
+
+AlphaParameters gaps::algo::alphaParametersWithChange(unsigned size,
+const float *D, const float *S, const float *AP, const float *mat, float ch)
+{
+    gaps::simd::packedFloat pCh(ch);
+    gaps::simd::packedFloat pMat, pD, pAP, pS;
+    gaps::simd::packedFloat partialS(0.f), partialSU(0.f);
+    gaps::simd::Index i(0);
+    for (; i <= size - i.increment(); ++i)
+    {   
+        pMat.load(mat + i);
+        pD.load(D + i);
+        pAP.load(AP + i);
+        pS.load(S + i);
+        gaps::simd::packedFloat ratio(pMat / (pS * pS));
+        partialS += pMat * ratio;
+        partialSU += ratio * (pD - (pAP + pCh * pMat));
+    }
+    float s = partialS.scalar(), su = partialSU.scalar();
+    for (unsigned j = i.value(); j < size; ++j)
+    {
+        float ratio = mat[j] / (S[j] * S[j]);
+        s += mat[j] * ratio;
+        su += ratio * (D[j] - (AP[j] + ch * mat[j]));
     }
     return AlphaParameters(s,su);
 }

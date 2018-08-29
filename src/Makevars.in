@@ -8,7 +8,6 @@ OBJECTS =   AtomicDomain.o \
             GapsRunner.o \
             GapsStatistics.o \
             GibbsSampler.o \
-            ProposalQueue.o \
             RcppExports.o \
             test-runner.o \
             data_structures/Matrix.o \
