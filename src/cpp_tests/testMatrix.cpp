@@ -5,6 +5,8 @@
 #include "../file_parser/MtxParser.h"
 #include "../math/Algorithms.h"
 
+#if 0
+
 static std::vector<unsigned> sequentialVector(unsigned n)
 {
     std::vector<unsigned> vec;
@@ -159,3 +161,6 @@ TEST_CASE("Test Matrix.h")
 
     }
 }
+
+
+#endif

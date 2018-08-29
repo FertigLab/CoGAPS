@@ -46,11 +46,8 @@ namespace algo
     Vector elementSq(Vector vec);
     
     // generic matrix algorithms
-    template<class GenericMatrix>
-    float sum(const GenericMatrix &mat);
-
-    template<class GenericMatrix>
-    float mean(const GenericMatrix &mat);
+    float sum(const ColMatrix &mat, bool transposeOrder=false);
+    float mean(const ColMatrix &mat, bool transposeOrder=false);
 
     template<class GenericMatrix>
     float nonZeroMean(const GenericMatrix &mat);
@@ -65,9 +62,9 @@ namespace algo
     void copyTranspose(ColMatrix *dest, const ColMatrix &src);
 
     // chiSq / 2
-    template <class Matrix>
-    float loglikelihood(const Matrix &D, const Matrix &S,
-        const Matrix &AP);
+    template <class MatA, class MatB, class MatC>
+    float loglikelihood(const MatA &D, const MatB &S,
+        const MatC &AP);
 
     AlphaParameters alphaParameters(unsigned size, const float *D,
         const float *S, const float *AP, const float *mat);
@@ -84,26 +81,6 @@ namespace algo
 
 } // namespace algo
 } // namespace gaps
-
-template<class GenericMatrix>
-float gaps::algo::sum(const GenericMatrix &mat)
-{
-    float sum = 0.f;
-    for (unsigned i = 0; i < mat.nRow(); ++i)
-    {
-        for (unsigned j = 0; j < mat.nCol(); ++j)
-        {
-            sum += mat(i,j);
-        }
-    }
-    return sum;
-}
-
-template<class GenericMatrix>
-float gaps::algo::mean(const GenericMatrix &mat)
-{
-    return gaps::algo::sum(mat) / (mat.nRow() * mat.nCol());
-}
 
 template<class GenericMatrix>
 float gaps::algo::nonZeroMean(const GenericMatrix &mat)
@@ -142,9 +119,9 @@ const GenericMatrix &meanMat, unsigned nUpdates)
     return retMat;
 }
 
-template <class Matrix>
-float gaps::algo::loglikelihood(const Matrix &D, const Matrix &S,
-const Matrix &AP)
+template <class MatA, class MatB, class MatC>
+float gaps::algo::loglikelihood(const MatA &D, const MatB &S,
+const MatC &AP)
 {
     float chi2 = 0.f;
     for (unsigned i = 0; i < D.nRow(); ++i)

@@ -20,15 +20,14 @@ public:
 
     GapsStatistics(unsigned nRow, unsigned nCol, unsigned nPatterns);
 
-    void update(const AmplitudeGibbsSampler &ASampler,
-        const PatternGibbsSampler &PSampler);
+    void update(const GibbsSampler &ASampler, const GibbsSampler &PSampler);
 
     ColMatrix Amean() const;
     ColMatrix Pmean() const;
     ColMatrix Asd() const;
     ColMatrix Psd() const;
 
-    float meanChiSq(const PatternGibbsSampler &ASampler) const;
+    float meanChiSq(const GibbsSampler &PSampler) const;
 
     // serialization
     friend Archive& operator<<(Archive &ar, GapsStatistics &stat);
