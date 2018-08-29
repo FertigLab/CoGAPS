@@ -1,9 +1,10 @@
 #include "GibbsSampler.h"
+#include "math/Algorithms.h"
 #include "math/SIMD.h"
 
 static float getDeltaLL(AlphaParameters alpha, float mass)
 {
-    return mass * (alpha.su - alpha.s * mass / 2.f);
+    return mass * (alpha.s_mu - alpha.s * mass / 2.f);
 }
 
 unsigned GibbsSampler::dataRows() const
@@ -43,6 +44,11 @@ void GibbsSampler::setMatrix(const Matrix &mat)
     mMatrix = mat;
 }
 
+void GibbsSampler::setSeed(uint64_t seed)
+{
+    mSeeder.seed(seed);
+}
+
 float GibbsSampler::chi2() const
 {   
     return 2.f * gaps::algo::loglikelihood(mDMatrix, mSMatrix, mAPMatrix);
@@ -53,6 +59,11 @@ uint64_t GibbsSampler::nAtoms() const
     return mDomain.size();
 }
 
+void GibbsSampler::recalculateAPMatrix()
+{
+    mAPMatrix = gaps::algo::matrixMultiplication(*mOtherMatrix, mMatrix);
+}
+
 void GibbsSampler::sync(const GibbsSampler &sampler)
 {
     mOtherMatrix = &(sampler.mMatrix);
@@ -61,25 +72,27 @@ void GibbsSampler::sync(const GibbsSampler &sampler)
 
 void GibbsSampler::update(unsigned nSteps, unsigned nCores)
 {
+    uint64_t seed = mSeeder.next();
     for (unsigned n = 0; n < nSteps; ++n)
     {
-        makeAndProcessProposal();
+        GapsRng rng(seed, n);
+        makeAndProcessProposal(&rng);
     }
 }
 
-void GibbsSampler::makeAndProcessProposal()
+void GibbsSampler::makeAndProcessProposal(GapsRng *rng)
 {
     if (mDomain.size() < 2)
     {
-        return birth();
+        return birth(rng);
     }
 
-    float u1 = mPropRng.uniform();
+    float u1 = rng->uniform();
     if (u1 < 0.5f)
     {
-        return mPropRng.uniform() < deathProb(mDomain.size()) ? death() : birth();
+        return rng->uniform() < deathProb(mDomain.size()) ? death(rng) : birth(rng);
     }
-    return (u1 < 0.75f) ? move() : exchange();
+    return (u1 < 0.75f) ? move(rng) : exchange(rng);
 }
 
 float GibbsSampler::deathProb(uint64_t nAtoms) const
@@ -92,17 +105,16 @@ float GibbsSampler::deathProb(uint64_t nAtoms) const
 
 // add an atom at a random position, calculate mass either with an
 // exponential distribution or with the gibbs mass distribution
-void GibbsSampler::birth()
+void GibbsSampler::birth(GapsRng *rng)
 {
-    uint64_t pos = mDomain.randomFreePosition();
+    uint64_t pos = mDomain.randomFreePosition(rng);
     unsigned row = getRow(pos);
     unsigned col = getCol(pos);
-    GapsRng rng;
 
     // calculate proposed mass
     float mass = canUseGibbs(col)
-        ? gibbsMass(alphaParameters(row, col), &rng).value()
-        : rng.exponential(mLambda);
+        ? gibbsMass(alphaParameters(row, col), rng).value()
+        : rng->exponential(mLambda);
 
     // accept mass as long as it's non-zero
     if (mass >= gaps::epsilon)
@@ -115,32 +127,31 @@ void GibbsSampler::birth()
 
 // automatically accept death, attempt a rebirth at the same position, using
 // the original mass or the gibbs mass distribution
-void GibbsSampler::death()
+void GibbsSampler::death(GapsRng *rng)
 {
     // get random atom
-    Atom* atom = mDomain.randomAtom();
+    Atom* atom = mDomain.randomAtom(rng);
     unsigned row = getRow(atom->pos);
     unsigned col = getCol(atom->pos);
-    GapsRng rng;
 
     // calculate alpha parameters assuming atom dies
     AlphaParameters alpha = alphaParametersWithChange(row, col, -atom->mass);
     float rebirthMass = atom->mass;
-    bool useSame = true;
+    bool useOriginalMass = true;
     if (canUseGibbs(col))
     {
-        OptionalFloat gMass = gibbsMass(alpha, &rng);
+        OptionalFloat gMass = gibbsMass(alpha, rng);
         if (gMass.hasValue())
         {
             rebirthMass = gMass.value();
-            useSame = false;
+            useOriginalMass = false;
         }
     }
 
     // accept/reject rebirth
-    if (std::log(rng.uniform()) < getDeltaLL(alpha, rebirthMass) * mAnnealingTemp)
+    if (std::log(rng->uniform()) < getDeltaLL(alpha, rebirthMass) * mAnnealingTemp)
     {
-        if (!useSame)
+        if (!useOriginalMass)
         {
             safelyChangeMatrix(row, col, rebirthMass - atom->mass);
             atom->mass = rebirthMass;
@@ -154,12 +165,12 @@ void GibbsSampler::death()
 }
 
 // move mass from src to dest in the atomic domain
-void GibbsSampler::move()
+void GibbsSampler::move(GapsRng *rng)
 {
-    AtomNeighborhood hood = mDomain.randomAtomWithNeighbors();
+    AtomNeighborhood hood = mDomain.randomAtomWithNeighbors(rng);
     uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
     uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainLength;
-    uint64_t newLocation = mPropRng.uniform64(lbound + 1, rbound - 1);
+    uint64_t newLocation = rng->uniform64(lbound + 1, rbound - 1);
 
     unsigned r1 = getRow(hood.center->pos);
     unsigned c1 = getCol(hood.center->pos);
@@ -168,9 +179,8 @@ void GibbsSampler::move()
 
     if (r1 != r2 || c1 != c2)
     {
-        GapsRng rng;
         AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
-        if (std::log(rng.uniform()) < getDeltaLL(alpha, -hood.center->mass) * mAnnealingTemp)
+        if (std::log(rng->uniform()) < getDeltaLL(alpha, -hood.center->mass) * mAnnealingTemp)
         {
             hood.center->pos = newLocation;
             safelyChangeMatrix(r1, c1, -hood.center->mass);
@@ -187,9 +197,9 @@ void GibbsSampler::move()
 // exchange some amount of mass between two positions, note it is possible
 // for one of the atoms to be deleted if it's mass becomes too small after
 // the exchange
-void GibbsSampler::exchange()
+void GibbsSampler::exchange(GapsRng *rng)
 {
-    AtomNeighborhood hood = mDomain.randomAtomWithRightNeighbor();
+    AtomNeighborhood hood = mDomain.randomAtomWithRightNeighbor(rng);
     Atom* a1 = hood.center;
     Atom* a2 = hood.hasRight() ? hood.right : mDomain.front();
 
@@ -200,11 +210,10 @@ void GibbsSampler::exchange()
 
     if (r1 != r2 || c1 != c2)
     {
-        GapsRng rng;
         AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
         if (canUseGibbs(c1, c2))
         {
-            OptionalFloat gMass = gibbsMass(alpha, a1->mass, a2->mass, &rng);
+            OptionalFloat gMass = gibbsMass(alpha, a1->mass, a2->mass, rng);
             if (gMass.hasValue())
             {
                 acceptExchange(a1, a2, gMass.value(), r1, c1, r2, c2);
@@ -212,7 +221,7 @@ void GibbsSampler::exchange()
             }
         }
 
-        float newMass = rng.truncGammaUpper(a1->mass + a2->mass, 2.f, 1.f / mLambda);
+        float newMass = rng->truncGammaUpper(a1->mass + a2->mass, 2.f, 1.f / mLambda);
 
         // change larger mass
         float delta = a1->mass > a2->mass ? newMass - a1->mass : a2->mass - newMass;
@@ -225,7 +234,7 @@ void GibbsSampler::exchange()
 
         float deltaLL = getDeltaLL(alpha, delta);
         float priorLL = (pNew == 0.f) ? 1.f : pOld / pNew;
-        if (priorLL == 0.f || std::log(rng.uniform() * priorLL) < deltaLL * mAnnealingTemp)
+        if (priorLL == 0.f || std::log(rng->uniform() * priorLL) < deltaLL * mAnnealingTemp)
         {
             acceptExchange(a1, a2, delta, r1, c1, r2, c2);
             return;
@@ -261,11 +270,11 @@ OptionalFloat GibbsSampler::gibbsMass(AlphaParameters alpha,
 GapsRng *rng)
 {        
     alpha.s *= mAnnealingTemp;
-    alpha.su *= mAnnealingTemp;
+    alpha.s_mu *= mAnnealingTemp;
 
     if (alpha.s > gaps::epsilon)
     {
-        float mean = (alpha.su - mLambda) / alpha.s;
+        float mean = (alpha.s_mu - mLambda) / alpha.s;
         float sd = 1.f / std::sqrt(alpha.s);
         float pLower = gaps::p_norm(0.f, mean, sd);
 
@@ -286,11 +295,11 @@ OptionalFloat GibbsSampler::gibbsMass(AlphaParameters alpha,
 float m1, float m2, GapsRng *rng)
 {
     alpha.s *= mAnnealingTemp;
-    alpha.su *= mAnnealingTemp;
+    alpha.s_mu *= mAnnealingTemp;
 
     if (alpha.s > gaps::epsilon)
     {
-        float mean = alpha.su / alpha.s; // lambda cancels out
+        float mean = alpha.s_mu / alpha.s; // lambda cancels out
         float sd = 1.f / std::sqrt(alpha.s);
         float pLower = gaps::p_norm(-m1, mean, sd);
         float pUpper = gaps::p_norm(m2, mean, sd);
@@ -319,9 +328,9 @@ void GibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
     float *ap = mAPMatrix.colPtr(row);
     unsigned size = mAPMatrix.nRow();
 
-    gaps::simd::packedFloat pOther, pAP;
+    gaps::simd::PackedFloat pOther, pAP;
     gaps::simd::Index i(0);
-    gaps::simd::packedFloat pDelta(delta);
+    gaps::simd::PackedFloat pDelta(delta);
     for (; i <= size - i.increment(); ++i)
     {
         pOther.load(other + i);

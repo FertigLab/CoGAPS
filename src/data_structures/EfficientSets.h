@@ -2,16 +2,10 @@
 #define __COGAPS_EFFICIENT_SETS_H__
 
 #include <vector>
-
 #include <stdint.h>
 
 class IntFixedHashSet
 {
-private:
-
-    std::vector<uint64_t> mSet;
-    uint64_t mCurrentKey;
-
 public:
 
     IntFixedHashSet() : mCurrentKey(1) {}
@@ -20,6 +14,11 @@ public:
     void clear() {++mCurrentKey;}
     bool contains(unsigned n) {return mSet[n] == mCurrentKey;}
     void insert(unsigned n) {mSet[n] = mCurrentKey;}
+
+private:
+
+    std::vector<uint64_t> mSet;
+    uint64_t mCurrentKey;
 };
 
 // TODO have sorted vector with at least some % of holes
@@ -27,10 +26,6 @@ public:
 // when shift happens, should be minimal
 class IntDenseOrderedSet
 {
-private:
-
-    std::vector<uint64_t> mVec;
-
 public:
 
     void insert(uint64_t p) {mVec.push_back(p);}
@@ -48,6 +43,10 @@ public:
         }
         return true;
     }
+
+private:
+
+    std::vector<uint64_t> mVec;
 };
 
-#endif
+#endif // __COGAPS_EFFICIENT_SETS_H__

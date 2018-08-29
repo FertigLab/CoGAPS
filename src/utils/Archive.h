@@ -12,7 +12,8 @@
 
 // magic number written to beginning of archive files
 // needs to be updated everytime the method of checkpointing changes
-#define ARCHIVE_MAGIC_NUM 0xCE45D32B // v3.3.22
+//#define ARCHIVE_MAGIC_NUM 0xCE45D32B // v3.3.22
+#define ARCHIVE_MAGIC_NUM 0xB123AA4D // v3.3.30
 
 class Archive
 {

@@ -1,21 +1,49 @@
 #include "Vector.h"
 
+#include "../utils/GapsAssert.h"
+
+Vector::Vector(unsigned size)
+    : mValues(aligned_vector(size, 0.f))
+{}
+
 Vector::Vector(const std::vector<float> &v) : mValues(v.size())
 {
-    for (unsigned i = 0; i < v.size(); ++i)
+    unsigned sz = v.size();
+    for (unsigned i = 0; i < sz; ++i)
     {
         mValues[i] = v[i];
     }
 }
 
-void Vector::concat(const Vector& vec)
+unsigned Vector::size() const
 {
-    mValues.insert(mValues.end(), vec.mValues.begin(), vec.mValues.end());
+    return mValues.size();
+}
+
+float* Vector::ptr()
+{
+    return &mValues[0];
+}
+
+const float* Vector::ptr() const
+{
+    return &mValues[0];
+}
+
+float& Vector::operator[](unsigned i)
+{
+    return mValues[i];
+}
+
+float Vector::operator[](unsigned i) const
+{
+    return mValues[i];
 }
 
 void Vector::operator+=(const Vector &vec)
 {
-    for (unsigned i = 0; i < size(); ++i)
+    unsigned sz = size();
+    for (unsigned i = 0; i < sz; ++i)
     {
         mValues[i] += vec[i];
     }
@@ -23,7 +51,8 @@ void Vector::operator+=(const Vector &vec)
 
 Vector Vector::operator-(Vector v) const
 {
-    for (unsigned i = 0; i < size(); ++i)
+    unsigned sz = size();
+    for (unsigned i = 0; i < sz; ++i)
     {
         v[i] = mValues[i] - v[i];
     }
@@ -46,7 +75,8 @@ Vector Vector::operator/(float val) const
 
 void Vector::operator*=(float val)
 {
-    for (unsigned i = 0; i < mValues.size(); ++i)
+    unsigned sz = size();
+    for (unsigned i = 0; i < sz; ++i)
     {
         mValues[i] *= val;
     }
@@ -54,7 +84,8 @@ void Vector::operator*=(float val)
 
 void Vector::operator/=(float val)
 {
-    for (unsigned i = 0; i < size(); ++i)
+    unsigned sz = size();
+    for (unsigned i = 0; i < sz; ++i)
     {
         mValues[i] /= val;
     }
@@ -62,7 +93,9 @@ void Vector::operator/=(float val)
 
 Archive& operator<<(Archive &ar, Vector &vec)
 {
-    for (unsigned i = 0; i < vec.size(); ++i)
+    unsigned sz = vec.size();
+    ar << sz;
+    for (unsigned i = 0; i < sz; ++i)
     {
         ar << vec[i];
     }
@@ -71,7 +104,11 @@ Archive& operator<<(Archive &ar, Vector &vec)
 
 Archive& operator>>(Archive &ar, Vector &vec)
 {
-    for (unsigned i = 0; i < vec.size(); ++i)
+    unsigned sz = 0;
+    ar >> sz;
+    GAPS_ASSERT(sz == vec.size());
+
+    for (unsigned i = 0; i < sz; ++i)
     {
         ar >> vec.mValues[i];
     }

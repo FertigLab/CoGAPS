@@ -1,8 +1,10 @@
 #include "GapsRunner.h"
+#include "math/Algorithms.h"
 #include "math/Random.h"
 #include "math/SIMD.h"
 #include "utils/GapsAssert.h"
 #include "utils/GapsPrint.h"
+#include "utils/GlobalConfig.h"
 
 #ifdef __GAPS_R_BUILD__
 #include <Rcpp.h>
@@ -23,11 +25,6 @@ void GapsRunner::setFixedMatrix(char which, const Matrix &mat)
     {
         mPSampler.setMatrix(mat);
     }
-}
-
-void GapsRunner::recordSeed(uint32_t seed)
-{
-    mSeed = seed;
 }
 
 uint32_t GapsRunner::getSeed() const
@@ -245,7 +242,6 @@ void GapsRunner::createCheckpoint()
     
         // create checkpoint file
         Archive ar(mCheckpointOutFile, ARCHIVE_WRITE);
-        GapsRng::save(ar);
         ar << mNumPatterns << mSeed << mASampler << mPSampler << mStatistics
             << mFixedMatrix << mMaxIterations << mPhase << mCurrentIteration
             << mNumUpdatesA << mNumUpdatesP << mRng;
@@ -263,5 +259,12 @@ Archive& operator>>(Archive &ar, GapsRunner &gr)
         >> gr.mStatistics >> gr.mFixedMatrix >> gr.mMaxIterations >> gr.mPhase
         >> gr.mCurrentIteration >> gr.mNumUpdatesA >> gr.mNumUpdatesP
         >> gr.mRng;
+
+    gr.mASampler.sync(gr.mPSampler);
+    gr.mPSampler.sync(gr.mASampler);
+
+    gr.mASampler.recalculateAPMatrix();
+    gr.mPSampler.recalculateAPMatrix();
+
     return ar;
 }

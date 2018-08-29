@@ -18,7 +18,6 @@ OBJECTS =   AtomicDomain.o \
             file_parser/TsvParser.o \
             file_parser/MtxParser.o \
             math/Algorithms.o \
-            math/Math.o \
             math/Random.o \
             cpp_tests/testAlgorithms.o \
             cpp_tests/testAtomicDomain.o \

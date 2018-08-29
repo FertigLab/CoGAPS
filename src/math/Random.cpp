@@ -1,10 +1,9 @@
 // [[Rcpp::depends(BH)]]
 
-#include "Math.h"
 #include "Random.h"
-#include "../utils/GapsAssert.h"
 
-// TODO remove boost dependency
+#include "Algorithms.h"
+#include "../utils/GapsAssert.h"
 
 #include <boost/math/distributions/exponential.hpp>
 #include <boost/math/distributions/gamma.hpp>
@@ -14,27 +13,28 @@
 #include <stdint.h>
 
 #define Q_GAMMA_THRESHOLD 0.000001f
-#define Q_GAMMA_MIN_VALUE 0.0
+#define Q_GAMMA_MIN_VALUE 0.f
 
 const float maxU32AsFloat = static_cast<float>(std::numeric_limits<uint32_t>::max());
 const double maxU32AsDouble = static_cast<double>(std::numeric_limits<uint32_t>::max());
 
-static Xoroshiro128plus seeder;
+/////////////////////////////// OptionalFloat //////////////////////////////////
 
-void GapsRng::save(Archive &ar)
+OptionalFloat::OptionalFloat() : mHasValue(false), mValue(0.f) {}
+
+OptionalFloat::OptionalFloat(float f) : mHasValue(true), mValue(f) {}
+
+float OptionalFloat::value()
 {
-    ar << seeder;
+    return mValue;
 }
 
-void GapsRng::load(Archive &ar)
+bool OptionalFloat::hasValue() const
 {
-    ar >> seeder;
+    return mHasValue;
 }
 
-void GapsRng::setSeed(uint64_t seed)
-{
-    seeder.seed(seed);
-}
+///////////////////////////// Xoroshiro128plus /////////////////////////////////
 
 static uint64_t rotl(const uint64_t x, int k)
 {
@@ -83,7 +83,16 @@ Archive& operator>>(Archive &ar, Xoroshiro128plus &gen)
     return ar;
 }
 
-GapsRng::GapsRng() : mState(seeder.next()) {}
+////////////////////////////////// GapsRng /////////////////////////////////////
+
+GapsRng::GapsRng(uint64_t seed, uint64_t stream)
+    :
+mState(0u), mStream(stream << 1u | 1u)
+{
+    next();
+    mState += seed;
+    next();
+}
 
 uint32_t GapsRng::next()
 {
@@ -93,7 +102,7 @@ uint32_t GapsRng::next()
 
 void GapsRng::advance()
 {
-    mState = mState * 6364136223846793005ull + (54u|1);
+    mState = mState * 6364136223846793005ull + (mStream|1);
 }
 
 uint32_t GapsRng::get() const
@@ -240,7 +249,6 @@ float GapsRng::inverseNormSample(float a, float b, float mean, float sd)
 float GapsRng::truncGammaUpper(float b, float shape, float scale)
 {
     float upper = gaps::p_gamma(b, shape, scale);
-
     float u = uniform(0.f, upper);
     while (u == 0.f || u == 1.f)
     {
@@ -251,15 +259,17 @@ float GapsRng::truncGammaUpper(float b, float shape, float scale)
 
 Archive& operator<<(Archive &ar, GapsRng &gen)
 {
-    ar << gen.mState;
+    ar << gen.mState << gen.mStream;
     return ar;
 }
 
 Archive& operator>>(Archive &ar, GapsRng &gen)
 {
-    ar >> gen.mState;
+    ar >> gen.mState >> gen.mStream;
     return ar;
 }
+
+////////////////////////// Distribution Calculations ///////////////////////////
 
 float gaps::d_gamma(float d, float shape, float scale)
 {

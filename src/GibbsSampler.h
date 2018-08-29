@@ -27,10 +27,12 @@ public:
     void setMaxGibbsMass(float max);
     void setAnnealingTemp(float temp);
     void setMatrix(const Matrix &mat);
+    void setSeed(uint64_t seed);
 
     float chi2() const;
     uint64_t nAtoms() const;
 
+    void recalculateAPMatrix();
     void sync(const GibbsSampler &sampler);
     void update(unsigned nSteps, unsigned nCores);
 
@@ -53,8 +55,9 @@ private:
     ColMatrix mMatrix; // genes by patterns for A, samples by patterns for P
     const ColMatrix *mOtherMatrix; // pointer to P if this is A, and vice versa
 
-    GapsRng mPropRng;
     AtomicDomain mDomain; // data structure providing access to atoms
+
+    Xoroshiro128plus mSeeder; // used to generate seeds for individual proposals
 
     float mAlpha;
     float mLambda;
@@ -66,13 +69,13 @@ private:
     uint64_t mBinSize;
     uint64_t mDomainLength;
 
-    void makeAndProcessProposal();
+    void makeAndProcessProposal(GapsRng *rng);
     float deathProb(uint64_t nAtoms) const;
 
-    void birth();
-    void death();
-    void move();
-    void exchange();
+    void birth(GapsRng *rng);
+    void death(GapsRng *rng);
+    void move(GapsRng *rng);
+    void exchange(GapsRng *rng);
 
     void acceptExchange(Atom *a1, Atom *a2, float d1, unsigned r1,
         unsigned c1, unsigned r2, unsigned c2);
