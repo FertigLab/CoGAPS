@@ -2,6 +2,7 @@
 #define __COGAPS_ALGORITHMS_H__
 
 #include "../data_structures/Matrix.h"
+#include "Math.h"
 
 #include <cmath>
 
@@ -55,6 +56,8 @@ namespace algo
     template<class GenericMatrix>
     GenericMatrix computeStdDev(const GenericMatrix &stdMat,
         const GenericMatrix &meanMat, unsigned nUpdates);
+
+    ColMatrix pmax(const ColMatrix &mat, float factor);
 
     // specific matrix algorithms
     ColMatrix matrixMultiplication(const ColMatrix &A, const ColMatrix &B);
