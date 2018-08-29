@@ -72,6 +72,9 @@ namespace algo
     AlphaParameters alphaParameters(unsigned size, const float *D,
         const float *S, const float *AP, const float *mat);
 
+    AlphaParameters alphaParametersWithChange(unsigned size, const float *D,
+        const float *S, const float *AP, const float *mat, float d);
+
     AlphaParameters alphaParameters(unsigned size, const float *D,
         const float *S, const float *AP, const float *mat1, const float *mat2);
 

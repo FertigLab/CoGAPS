@@ -2,7 +2,6 @@
 #define __COGAPS_GIBBS_SAMPLER_H__
 
 #include "AtomicDomain.h"
-#include "ProposalQueue.h"
 #include "data_structures/Matrix.h"
 #include "math/Algorithms.h"
 #include "math/Random.h"
@@ -92,8 +91,8 @@ private:
     bool canUseGibbs(unsigned c1, unsigned c2) const;
 
     AlphaParameters alphaParameters(unsigned row, unsigned col);
-    AlphaParameters alphaParameters(unsigned r1, unsigned c1, unsigned r2,
-        unsigned c2);
+    AlphaParameters alphaParameters(unsigned r1, unsigned c1, unsigned r2, unsigned c2);
+    AlphaParameters alphaParametersWithChange(unsigned row, unsigned col, float ch);
 };
 
 template <class DataType>
