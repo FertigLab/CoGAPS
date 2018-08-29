@@ -5,6 +5,19 @@
 
 #include <algorithm>
 
+ColMatrix gaps::algo::pmax(const ColMatrix &mat, float factor)
+{
+    ColMatrix temp(mat.nRow(), mat.nCol());
+    for (unsigned i = 0; i < mat.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < mat.nCol(); ++j)
+        {
+            temp(i,j) = gaps::max(mat(i,j) * factor, factor);
+        }
+    }
+    return temp;
+}
+
 float gaps::algo::sum(const ColMatrix &mat, bool transposeOrder)
 {
     float sum = 0.f;

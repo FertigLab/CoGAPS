@@ -3,93 +3,97 @@
 #include "../file_parser/MatrixElement.h"
 #include "../utils/GapsAssert.h"
 
-template <class MatA, class MatB>
-inline void copyMatrix(MatA &dest, const MatB &source)
+ColMatrix::ColMatrix(unsigned nrow, unsigned ncol)
+: mNumRows(nrow), mNumCols(ncol)
 {
-    GAPS_ASSERT_MSG(dest.nRow() == source.nRow(), dest.nRow() << " " << source.nRow());
-    GAPS_ASSERT_MSG(dest.nCol() == source.nCol(), dest.nCol() << " " << source.nCol());
+    allocate();
+}
 
-    for (unsigned i = 0; i < dest.nRow(); ++i)
+ColMatrix::ColMatrix(const ColMatrix &mat, bool transpose, bool partitionRows,
+const std::vector<unsigned> &indices)
+{
+    if (indices.size() <= 1)
     {
-        for (unsigned j = 0; j < dest.nCol(); ++j)
+        mNumRows = transpose ? mat.nCol() : mat.nRow();
+        mNumCols = transpose ? mat.nRow() : mat.nCol();
+        allocate();
+
+        for (unsigned i = 0; i < mNumRows; ++i)
         {
-            dest(i,j) = source(i,j);
+            for (unsigned j = 0; j < mNumCols; ++j)
+            {
+                this->operator()(i,j) = transpose ? mat(j,i) : mat(i,j);
+            }
+        }
+    }
+    else
+    {
+        // create matrix
+        mNumRows = partitionRows ? indices.size() : (transpose ? mat.nCol() : mat.nRow());
+        mNumCols = partitionRows ? (transpose ? mat.nRow() : mat.nCol()) : indices.size();
+        allocate();
+
+        // fill matrix, TODO use binary search on indices
+        for (unsigned i = 0; i < mat.nRow(); ++i)
+        {
+            for (unsigned j = 0; j < mat.nCol(); ++j)
+            {
+                unsigned dataIndex = transpose ? (partitionRows ? j : i) : (partitionRows ? i : j);
+                std::vector<unsigned>::const_iterator pos = std::find(indices.begin(), indices.end(), dataIndex);
+                if (pos != indices.end())
+                {
+                    unsigned index = std::distance(indices.begin(), pos);
+                    unsigned row = partitionRows ? index : (transpose ? j : i);
+                    unsigned col = partitionRows ? (transpose ? i : j) : index;
+                    this->operator()(row,col) = mat(i,j);
+                }
+            }
         }
     }
 }
 
-/********************************** ROW MATRIX ********************************/
-
-void RowMatrix::allocate()
+// apply transpose first, then partition either rows or columns
+ColMatrix::ColMatrix(const std::string &path, bool transpose, bool partitionRows,
+const std::vector<unsigned> &indices)
 {
-    for (unsigned i = 0; i < mNumRows; ++i)
+    FileParser parser(path);
+    if (indices.size() <= 1)
     {
-        mData.push_back(Vector(mNumCols));
+        mNumRows = transpose ? parser.nCol() : parser.nRow();
+        mNumCols = transpose ? parser.nRow() : parser.nCol();
+        allocate();
+
+        while (parser.hasNext())
+        {
+            MatrixElement e(parser.getNext());
+            unsigned row = transpose ? e.col : e.row;
+            unsigned col = transpose ? e.row : e.col;
+            this->operator()(row,col) = e.value;
+        }
+    }
+    else
+    {
+        // create matrix
+        mNumRows = partitionRows ? indices.size() : (transpose ? parser.nCol() : parser.nRow());
+        mNumCols = partitionRows ? (transpose ? parser.nRow() : parser.nCol()) : indices.size();
+        allocate();
+
+        // fill matrix
+        while (parser.hasNext())
+        {
+            MatrixElement e(parser.getNext());
+            unsigned dataIndex = transpose ? (partitionRows ? e.col : e.row) : (partitionRows ? e.row : e.col);
+            std::vector<unsigned>::const_iterator pos = std::find(indices.begin(), indices.end(), dataIndex);
+            if (pos != indices.end())
+            {
+                unsigned index = std::distance(indices.begin(), pos);
+                unsigned row = partitionRows ? index : (transpose ? e.col : e.row);
+                unsigned col = partitionRows ? (transpose ? e.row : e.col) : index;
+                this->operator()(row, col) = e.value;
+            }
+        }
     }
 }
-
-RowMatrix::RowMatrix(unsigned nrow, unsigned ncol)
-    : GenericMatrix(nrow, ncol)
-{}
-
-RowMatrix::RowMatrix(const Matrix &mat, bool transpose,
-bool partitionRows, const std::vector<unsigned> &indices)
-    : GenericMatrix(mat, transpose, partitionRows, indices)
-{}
-
-RowMatrix::RowMatrix(const std::string &path, bool transpose,
-bool partitionRows, const std::vector<unsigned> &indices)
-    : GenericMatrix(path, transpose, partitionRows, indices)
-{}
-
-float& RowMatrix::operator()(unsigned r, unsigned c)
-{
-    return mData[r][c];
-}
-
-float RowMatrix::operator()(unsigned r, unsigned c) const
-{
-    return mData[r][c];
-}
-
-Vector& RowMatrix::getRow(unsigned row)
-{
-    return mData[row];
-}
-
-const Vector& RowMatrix::getRow(unsigned row) const
-{
-    return mData[row];
-}
-
-float* RowMatrix::rowPtr(unsigned row)
-{
-    return mData[row].ptr();
-}
-
-const float* RowMatrix::rowPtr(unsigned row) const
-{
-    return mData[row].ptr();
-}
-
-RowMatrix::RowMatrix(const ColMatrix &mat) : GenericMatrix(mat.nRow(), mat.nCol())
-{
-    copyMatrix(*this, mat);
-}
-
-RowMatrix& RowMatrix::operator=(const RowMatrix &mat)
-{
-    copyMatrix(*this, mat);
-    return *this;
-}
-
-RowMatrix& RowMatrix::operator=(const ColMatrix &mat)
-{
-    copyMatrix(*this, mat);
-    return *this;
-}
-
-/******************************** COLUMN MATRIX *******************************/
 
 void ColMatrix::allocate()
 {
@@ -99,19 +103,35 @@ void ColMatrix::allocate()
     }
 }
 
-ColMatrix::ColMatrix(unsigned nrow, unsigned ncol)
-    : GenericMatrix(nrow, ncol)
-{}
+unsigned ColMatrix::nRow() const
+{
+    return mNumRows;
+}
 
-ColMatrix::ColMatrix(const Matrix &mat, bool transpose,
-bool partitionRows, const std::vector<unsigned> &indices)
-    : GenericMatrix(mat, transpose, partitionRows, indices)
-{}
+unsigned ColMatrix::nCol() const
+{
+    return mNumCols;
+}
 
-ColMatrix::ColMatrix(const std::string &path, bool transpose,
-bool partitionRows, const std::vector<unsigned> &indices)
-    : GenericMatrix(path, transpose, partitionRows, indices)
-{}
+ColMatrix ColMatrix::operator*(float val) const
+{
+    ColMatrix mat(*this);
+    for (unsigned i = 0; i < mNumCols; ++i)
+    {
+        mat.mData[i] *= val;
+    }
+    return mat;
+}
+
+ColMatrix ColMatrix::operator/(float val) const
+{
+    ColMatrix mat(*this);
+    for (unsigned i = 0; i < mNumCols; ++i)
+    {
+        mat.mData[i] /= val;
+    }
+    return mat;
+}
 
 float& ColMatrix::operator()(unsigned r, unsigned c)
 {
@@ -135,27 +155,38 @@ const Vector& ColMatrix::getCol(unsigned col) const
 
 float* ColMatrix::colPtr(unsigned col)
 {
+    GAPS_ASSERT(col < mNumCols);
     return mData[col].ptr();
 }
 
 const float* ColMatrix::colPtr(unsigned col) const
 {
+    GAPS_ASSERT(col < mNumCols);
     return mData[col].ptr();
 }
 
-ColMatrix::ColMatrix(const RowMatrix &mat) : GenericMatrix(mat.nRow(), mat.nCol())
+Archive& operator<<(Archive &ar, ColMatrix &mat)
 {
-    copyMatrix(*this, mat);
+    ar << mat.mNumRows << mat.mNumCols;
+    for (unsigned i = 0; i < mat.mNumCols; ++i)
+    {
+        ar << mat.mData[i];
+    }
+    return ar;
 }
 
-ColMatrix& ColMatrix::operator=(const ColMatrix &mat)
+Archive& operator>>(Archive &ar, ColMatrix &mat)
 {
-    copyMatrix(*this, mat);
-    return *this;
-}
+    // should already by allocated
+    unsigned nr = 0, nc = 0;
+    ar >> nr >> nc;
+    GAPS_ASSERT(nr == mat.mNumRows);
+    GAPS_ASSERT(nc == mat.mNumCols);
 
-ColMatrix& ColMatrix::operator=(const RowMatrix &mat)
-{
-    copyMatrix(*this, mat);
-    return *this;
+    // read in data
+    for (unsigned i = 0; i < mat.mNumCols; ++i)
+    {
+        ar >> mat.mData[i];
+    }
+    return ar;   
 }

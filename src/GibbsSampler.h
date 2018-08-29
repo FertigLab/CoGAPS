@@ -115,7 +115,7 @@ bool transposeData, unsigned nPatterns, bool partitionRows,
 const std::vector<unsigned> &indices)
     :
 mDMatrix(data, transposeData, partitionRows, indices),
-mSMatrix(mDMatrix.pmax(0.1f, 0.1f)),
+mSMatrix(gaps::algo::pmax(mDMatrix, 0.1f)),
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
 mMatrix(mDMatrix.nCol(), nPatterns),
 mOtherMatrix(NULL),
