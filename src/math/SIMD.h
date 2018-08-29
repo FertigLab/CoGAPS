@@ -1,34 +1,10 @@
 #ifndef __COGAPS_SIMD_H__
 #define __COGAPS_SIMD_H__
 
-#ifndef SSE_INSTR_SET
-    #if defined ( __AVX2__ )
-        #define SSE_INSTR_SET 8
-    #elif defined ( __AVX__ )
-        #define SSE_INSTR_SET 7
-    #elif defined ( __SSE4_2__ )
-        #define SSE_INSTR_SET 6
-    #elif defined ( __SSE4_1__ )
-        #define SSE_INSTR_SET 5
-    #else
-        #define SSE_INSTR_SET 0
-    #endif
-#endif
+#if defined ( __AVX2__ ) || defined ( __AVX__ )
 
-#if SSE_INSTR_SET > 6
     #define __GAPS_AVX__
     #include <immintrin.h>
-#elif SSE_INSTR_SET == 6 || SSE_INSTR_SET == 5
-    #define __GAPS_SSE__
-    #include <nmmintrin.h>
-#endif
-
-namespace gaps
-{
-namespace simd
-{
-
-#if defined( __GAPS_AVX__ )
     typedef __m256 gaps_packed_t;
     const unsigned index_increment = 8;
     #define SET_SCALAR(x) _mm256_set1_ps(x)
@@ -38,7 +14,11 @@ namespace simd
     #define SUB_PACKED(a,b) _mm256_sub_ps(a,b)
     #define MUL_PACKED(a,b) _mm256_mul_ps(a,b)
     #define DIV_PACKED(a,b) _mm256_div_ps(a,b)
-#elif defined( __GAPS_SSE__ )
+
+#elif defined ( __SSE4_2__ ) || defined ( __SSE4_1__ )
+
+    #define __GAPS_SSE__
+    #include <nmmintrin.h>
     typedef __m128 gaps_packed_t;
     const unsigned index_increment = 4;
     #define SET_SCALAR(x) _mm_set1_ps(x)
@@ -48,7 +28,9 @@ namespace simd
     #define SUB_PACKED(a,b) _mm_sub_ps(a,b)
     #define MUL_PACKED(a,b) _mm_mul_ps(a,b)
     #define DIV_PACKED(a,b) _mm_div_ps(a,b)
+
 #else
+
     typedef float gaps_packed_t;
     const unsigned index_increment = 1;
     #define SET_SCALAR(x) x
@@ -58,73 +40,80 @@ namespace simd
     #define SUB_PACKED(a,b) ((a)-(b))
     #define MUL_PACKED(a,b) ((a)*(b))
     #define DIV_PACKED(a,b) ((a)/(b))
+
 #endif
+
+namespace gaps
+{
+namespace simd
+{
 
 class Index
 {
-private:
-
-    unsigned index;
-
 public:
 
     explicit Index(unsigned i) : index(i) {}
     Index& operator=(unsigned val) { index = val; return *this; }
-    bool operator<(unsigned comp) { return index < comp; }
-    bool operator<=(unsigned comp) { return index <= comp; }
+    bool operator<(unsigned comp) const { return index < comp; }
+    bool operator<=(unsigned comp) const { return index <= comp; }
     void operator++() { index += index_increment; }
     unsigned value() const { return index; }
     unsigned increment() const { return index_increment; }
+
     friend const float* operator+(const float *ptr, Index ndx);
     friend float* operator+(float *ptr, Index ndx);
+
+private:
+
+    unsigned index;
 };
 
 inline const float* operator+(const float *ptr, Index ndx) { return ptr + ndx.index; }
 inline float* operator+(float *ptr, Index ndx) { return ptr + ndx.index; }
 
-class packedFloat
+class PackedFloat
 {
-private:
-
-    gaps_packed_t mData;
-
 public:
 
-    packedFloat() : mData() {}
-    explicit packedFloat(float val) : mData(SET_SCALAR(val)) {}
-#if defined( __GAPS_SSE__ ) || defined( __GAPS_AVX__ ) || defined( __GAPS_AVX512__ )
-    explicit packedFloat(gaps_packed_t val) : mData(val) {}
+    PackedFloat() : mData() {}
+    explicit PackedFloat(float val) : mData(SET_SCALAR(val)) {}
+#if defined( __GAPS_SSE__ ) || defined( __GAPS_AVX__ )
+    explicit PackedFloat(gaps_packed_t val) : mData(val) {}
 #endif
 
-    packedFloat operator+(packedFloat b) const { return packedFloat(ADD_PACKED(mData, b.mData)); }
-    packedFloat operator-(packedFloat b) const { return packedFloat(SUB_PACKED(mData, b.mData)); }
-    packedFloat operator*(packedFloat b) const { return packedFloat(MUL_PACKED(mData, b.mData)); }
-    packedFloat operator/(packedFloat b) const { return packedFloat(DIV_PACKED(mData, b.mData)); }
+    PackedFloat operator+(PackedFloat b) const { return PackedFloat(ADD_PACKED(mData, b.mData)); }
+    PackedFloat operator-(PackedFloat b) const { return PackedFloat(SUB_PACKED(mData, b.mData)); }
+    PackedFloat operator*(PackedFloat b) const { return PackedFloat(MUL_PACKED(mData, b.mData)); }
+    PackedFloat operator/(PackedFloat b) const { return PackedFloat(DIV_PACKED(mData, b.mData)); }
 
-    void operator+=(packedFloat val) { mData = ADD_PACKED(mData, val.mData); }
+    void operator+=(PackedFloat val) { mData = ADD_PACKED(mData, val.mData); }
     void load(const float *ptr) { mData = LOAD_PACKED(ptr); }
     void store(float *ptr) { STORE_PACKED(ptr, mData); }
 
-#if defined( __GAPS_AVX__ )
     float scalar()
     {
+    #if defined( __GAPS_AVX__ )
+
         float* ra = reinterpret_cast<float*>(&mData); // NOLINT
         mData = _mm256_hadd_ps(mData, mData);
         mData = _mm256_hadd_ps(mData, mData);
         return ra[0] + ra[4];
-    }
-#elif defined( __GAPS_SSE__ )
-    float scalar()
-    {
+
+    #elif defined( __GAPS_SSE__ )
+
         float* ra = reinterpret_cast<float*>(&mData); // NOLINT
         return ra[0] + ra[1] + ra[2] + ra[3];
-    }
-#else
-    float scalar()
-    {
+
+    #else
+
         return mData;
+
+    #endif
     }
-#endif
+
+private:
+
+    gaps_packed_t mData;
 };
 
 } // namespace simd

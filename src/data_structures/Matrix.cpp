@@ -4,7 +4,8 @@
 #include "../utils/GapsAssert.h"
 
 ColMatrix::ColMatrix(unsigned nrow, unsigned ncol)
-: mNumRows(nrow), mNumCols(ncol)
+    :
+mNumRows(nrow), mNumCols(ncol)
 {
     allocate();
 }

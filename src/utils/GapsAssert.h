@@ -36,7 +36,7 @@
             if (!(cond))                                                \
             {                                                           \
                 gaps_cout << "assert failed " << __FILE__ << " " <<     \
-                    __LINE__ << ", " << msg << '\n';                   \
+                    __LINE__ << ", " << msg << '\n';                    \
                 gaps_stop();                                            \
             }                                                           \
         } while(0)

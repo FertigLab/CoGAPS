@@ -11,11 +11,11 @@ struct OptionalFloat
 {
 public :
 
-    OptionalFloat() : mHasValue(false), mValue(0.f) {}
-    OptionalFloat(float f) : mHasValue(true), mValue(f) {}
+    OptionalFloat();
+    OptionalFloat(float f);
 
-    float value() { return mValue; }
-    bool hasValue() const { return mHasValue; }
+    float value();
+    bool hasValue() const;
 
 private :
 
@@ -65,7 +65,7 @@ class GapsRng
 {
 public:
 
-    GapsRng();
+    GapsRng(uint64_t seed, uint64_t stream=54);
 
     float uniform();
     float uniform(float a, float b);
@@ -82,13 +82,10 @@ public:
     float inverseNormSample(float a, float b, float mean, float sd);
     float truncGammaUpper(float b, float shape, float scale);
 
-    static void setSeed(uint64_t seed);
-    static void save(Archive &ar);
-    static void load(Archive &ar);
-  
 private:
 
     uint64_t mState;
+    uint64_t mStream;
 
     uint32_t next();
     void advance();
