@@ -16,8 +16,8 @@ class GapsRunner
 {
 private:
     
-    AmplitudeGibbsSampler mASampler;
-    PatternGibbsSampler mPSampler;
+    GibbsSampler mASampler;
+    GibbsSampler mPSampler;
     GapsStatistics mStatistics;
 
     char mFixedMatrix;
@@ -84,9 +84,9 @@ template <class DataType>
 GapsRunner::GapsRunner(const DataType &data, bool transposeData,
 unsigned nPatterns, bool partitionRows, const std::vector<unsigned> &indices)
     :
-mASampler(data, transposeData, nPatterns, partitionRows, indices),
+mASampler(data, !transposeData, nPatterns,!partitionRows, indices),
 mPSampler(data, transposeData, nPatterns, partitionRows, indices),
-mStatistics(mASampler.dataRows(), mASampler.dataCols(), nPatterns),
+mStatistics(mPSampler.dataRows(), mPSampler.dataCols(), nPatterns),
 mFixedMatrix('N'), mMaxIterations(1000), mMaxThreads(1), mPrintMessages(true),
 mOutputFrequency(500), mCheckpointOutFile("gaps_checkpoint.out"),
 mCheckpointInterval(0), mPhase('C'), mCurrentIteration(0),
@@ -100,7 +100,7 @@ template <class DataType>
 void GapsRunner::setUncertainty(const DataType &unc, bool transposeData,
 bool partitionRows, const std::vector<unsigned> &indices)
 {
-    mASampler.setUncertainty(unc, transposeData, partitionRows, indices);
+    mASampler.setUncertainty(unc, !transposeData, !partitionRows, indices);
     mPSampler.setUncertainty(unc, transposeData, partitionRows, indices);
 }
 

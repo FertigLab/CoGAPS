@@ -8,8 +8,8 @@ mPMeanMatrix(nCol, nPatterns), mPStdMatrix(nCol, nPatterns),
 mStatUpdates(0), mNumPatterns(nPatterns)
 {}
 
-void GapsStatistics::update(const AmplitudeGibbsSampler &ASampler,
-const PatternGibbsSampler &PSampler)
+void GapsStatistics::update(const GibbsSampler &ASampler,
+const GibbsSampler &PSampler)
 {
     mStatUpdates++;
 
@@ -51,7 +51,7 @@ ColMatrix GapsStatistics::Psd() const
         mStatUpdates);
 }
 
-float GapsStatistics::meanChiSq(const PatternGibbsSampler &PSampler) const
+float GapsStatistics::meanChiSq(const GibbsSampler &PSampler) const
 {
     ColMatrix A = mAMeanMatrix / mStatUpdates;
     ColMatrix P = mPMeanMatrix / mStatUpdates;

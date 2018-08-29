@@ -5,16 +5,36 @@
 
 #include <algorithm>
 
+float gaps::algo::sum(const ColMatrix &mat, bool transposeOrder)
+{
+    float sum = 0.f;
+    unsigned outer = transposeOrder ? mat.nCol() : mat.nRow();
+    unsigned inner = transposeOrder ? mat.nRow() : mat.nCol();
+    for (unsigned i = 0; i < outer; ++i)
+    {
+        for (unsigned j = 0; j < inner; ++j)
+        {
+            sum += transposeOrder ? mat(j,i) : mat(i,j);
+        }
+    }
+    return sum;
+}
+
+float gaps::algo::mean(const ColMatrix &mat, bool transposeOrder)
+{
+    return gaps::algo::sum(mat, transposeOrder) / (mat.nRow() * mat.nCol());
+}
+
 void gaps::algo::copyTranspose(ColMatrix *dest, const ColMatrix &src)
 {
     GAPS_ASSERT(dest->nRow() == src.nCol());
     GAPS_ASSERT(dest->nCol() == src.nRow());
 
-    for (unsigned j = 0; j < dest->nCol(); ++j)
+    for (unsigned j = 0; j < src.nCol(); ++j)
     {
-        for (unsigned i = 0; i < dest->nRow(); ++i)
+        for (unsigned i = 0; i < src.nRow(); ++i)
         {
-            dest->operator()(i,j) = src(j,i); // TODO test which order is better
+            dest->operator()(j,i) = src(i,j); // TODO test which order is better
         }
     }
 }

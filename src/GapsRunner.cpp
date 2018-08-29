@@ -230,7 +230,7 @@ void GapsRunner::displayStatus()
 
         gaps_printf("%d of %d, Atoms: %lu(%lu), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
             mCurrentIteration + 1, mMaxIterations, mASampler.nAtoms(),
-            mPSampler.nAtoms(), mASampler.chi2(), elapsedHours, elapsedMinutes,
+            mPSampler.nAtoms(), mPSampler.chi2(), elapsedHours, elapsedMinutes,
             elapsedSeconds, totalHours, totalMinutes, totalSeconds);
         gaps_flush();
     }
