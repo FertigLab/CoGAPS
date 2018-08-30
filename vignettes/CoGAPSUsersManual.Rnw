@@ -42,8 +42,9 @@ The Markov chain Monte Carlo (MCMC) matrix factorization that infers patterns al
 
 \par With this version of CoGAPS, installation should be automatically completed through Bioconductor package installation:
 \begin{verbatim}
-source("http://www.bioconductor.org/biocLite.R")
-biocLite("CoGAPS")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("CoGAPS")
 \end{verbatim}
 
 \par The C++ software will be automatically compiled, linking to required boost libraries distributed as part of the CRAN \texttt{BH} package (\url{http://cran.r-project.org/web/packages/BH/index.html}) and Rcpp (\url{http://cran.r-project.org/web/packages/Rcpp/index.html}). 
