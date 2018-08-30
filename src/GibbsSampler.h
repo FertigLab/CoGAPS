@@ -33,7 +33,7 @@ public:
     uint64_t nAtoms() const;
 
     void recalculateAPMatrix();
-    void sync(const GibbsSampler &sampler);
+    void sync(const GibbsSampler &sampler, unsigned nThreads=1);
     void update(unsigned nSteps, unsigned nCores);
 
     // serialization

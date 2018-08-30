@@ -178,18 +178,20 @@ ColMatrix gaps::algo::matrixMultiplication(const ColMatrix &A, const ColMatrix &
     return temp;
 }
 
-void gaps::algo::copyTranspose(ColMatrix *dest, const ColMatrix &src)
+void gaps::algo::copyTranspose(ColMatrix *dest, const ColMatrix &src,
+unsigned nThreads)
 {
     GAPS_ASSERT(dest->nRow() == src.nCol());
     GAPS_ASSERT(dest->nCol() == src.nRow());
     unsigned nc = src.nCol();
     unsigned nr = src.nRow();
 
+    #pragma omp parallel for num_threads(nThreads)
     for (unsigned j = 0; j < nc; ++j)
     {
         for (unsigned i = 0; i < nr; ++i)
         {
-            dest->operator()(j,i) = src(i,j); // TODO test which order is better
+            dest->operator()(j,i) = src(i,j);
         }
     }
 }

@@ -48,7 +48,7 @@ namespace algo
     float nonZeroMean(const ColMatrix &mat);
     ColMatrix pmax(ColMatrix mat, float factor);
     ColMatrix matrixMultiplication(const ColMatrix &A, const ColMatrix &BT);
-    void copyTranspose(ColMatrix *dest, const ColMatrix &src);
+    void copyTranspose(ColMatrix *dest, const ColMatrix &src, unsigned nThreads=1);
     ColMatrix computeStdDev(ColMatrix stdMat, const ColMatrix &meanMat,
         unsigned nUpdates);
 

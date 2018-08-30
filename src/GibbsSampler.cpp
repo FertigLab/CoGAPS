@@ -64,10 +64,10 @@ void GibbsSampler::recalculateAPMatrix()
     mAPMatrix = gaps::algo::matrixMultiplication(*mOtherMatrix, mMatrix);
 }
 
-void GibbsSampler::sync(const GibbsSampler &sampler)
+void GibbsSampler::sync(const GibbsSampler &sampler, unsigned nThreads)
 {
     mOtherMatrix = &(sampler.mMatrix);
-    gaps::algo::copyTranspose(&mAPMatrix, sampler.mAPMatrix);
+    gaps::algo::copyTranspose(&mAPMatrix, sampler.mAPMatrix, nThreads);
 }
 
 void GibbsSampler::update(unsigned nSteps, unsigned nCores)
