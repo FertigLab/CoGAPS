@@ -86,13 +86,8 @@ Archive& operator>>(Archive &ar, Xoroshiro128plus &gen)
 ////////////////////////////////// GapsRng /////////////////////////////////////
 
 GapsRng::GapsRng(uint64_t seed, uint64_t stream)
-    :
-mState(0u), mStream(stream << 1u | 1u)
-{
-    next();
-    mState += seed;
-    next();
-}
+    : mState(seed), mStream(54u)
+{}
 
 uint32_t GapsRng::next()
 {

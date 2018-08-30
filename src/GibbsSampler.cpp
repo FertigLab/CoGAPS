@@ -72,10 +72,9 @@ void GibbsSampler::sync(const GibbsSampler &sampler)
 
 void GibbsSampler::update(unsigned nSteps, unsigned nCores)
 {
-    uint64_t seed = mSeeder.next();
     for (unsigned n = 0; n < nSteps; ++n)
     {
-        GapsRng rng(seed, n);
+        GapsRng rng(mSeeder.next());
         makeAndProcessProposal(&rng);
     }
 }
