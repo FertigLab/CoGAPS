@@ -4,26 +4,20 @@
 
 //////////////////////////////// AtomicProposal ////////////////////////////////
 
-// birth
-AtomicProposal::AtomicProposal(char t, uint64_t pos)
-    : type(t), birthPos(pos), moveDest(0), atom1(NULL), atom2(NULL)
+// birth/death
+AtomicProposal::AtomicProposal(char t, Atom* a)
+    : pos(0), atom1(a), atom2(NULL), type(t)
 {}
     
-// death
-AtomicProposal::AtomicProposal(char t, Atom *atom)
-    : type(t), birthPos(0), moveDest(0), atom1(atom), atom2(NULL)
-{}
-
 // move
-AtomicProposal::AtomicProposal(char t, Atom *atom, uint64_t dest)
-    : type(t), birthPos(0), moveDest(dest), atom1(atom), atom2(NULL)
+AtomicProposal::AtomicProposal(char t, Atom *a, uint64_t p)
+    : pos(p), atom1(a), atom2(NULL), type(t)
 {}
 
 // exchange
 AtomicProposal::AtomicProposal(char t, Atom *a1, Atom *a2)
-    : type(t), birthPos(0), moveDest(0), atom1(a1), atom2(a2)
+    : pos(0), atom1(a1), atom2(a2), type(t)
 {}
-
 
 //////////////////////////////// ProposalQueue /////////////////////////////////
 

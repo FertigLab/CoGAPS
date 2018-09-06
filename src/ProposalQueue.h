@@ -12,18 +12,16 @@
 
 struct AtomicProposal
 {
-    char type;
-    uint64_t birthPos; // used in birth
-    uint64_t moveDest; // used in move
-
+    uint64_t pos;
     Atom *atom1; // used in death, move, exchange
     Atom *atom2; // used in exchange
 
     mutable GapsRng rng;
 
-    AtomicProposal(char t, uint64_t pos); // birth
-    AtomicProposal(char t, Atom *atom); // death
-    AtomicProposal(char t, Atom *atom, uint64_t dest); // move
+    char type;
+
+    AtomicProposal(char t, Atom *a); // birth/death
+    AtomicProposal(char t, Atom *a, uint64_t p); // move
     AtomicProposal(char t, Atom *a1, Atom *a2); // exchange
 };
 
@@ -56,10 +54,10 @@ private:
     uint64_t mMinAtoms;
     uint64_t mMaxAtoms;
 
-    unsigned mNumBins; // number of matrix elements
+    double mNumBins; // number of matrix elements
     uint64_t mBinLength; // atomic length of one bin
     uint64_t mSecondaryDimLength; // atomic length of one row (col) for A (P)
-    uint64_t mDomainLength; // length of entire atomic domain
+    double mDomainLength; // length of entire atomic domain
     unsigned mSecondaryDimSize; // number of cols (rows) for A (P)
 
     float mAlpha;
