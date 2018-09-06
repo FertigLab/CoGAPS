@@ -72,39 +72,52 @@ void GibbsSampler::sync(const GibbsSampler &sampler, unsigned nThreads)
 
 void GibbsSampler::update(unsigned nSteps, unsigned nCores)
 {
-    for (unsigned n = 0; n < nSteps; ++n)
+    unsigned n = 0;
+    while (n < nSteps)
     {
-        GapsRng rng(mSeeder.next());
-        makeAndProcessProposal(&rng);
+        // populate queue, prepare domain for this queue
+        mQueue.populate(mDomain, nSteps - n);
+        n += mQueue.size();
+        
+        // update average queue count
+        #ifdef GAPS_DEBUG
+        mNumQueues += 1.f;
+        mAvgQueue *= (mNumQueues - 1.f) / mNumQueues;
+        mAvgQueue += mQueue.size() / mNumQueues;
+        #endif
+
+        // process all proposed updates
+        #pragma omp parallel for num_threads(nCores)
+        for (unsigned i = 0; i < mQueue.size(); ++i)
+        {
+            processProposal(&mQueue[i]);
+        }
+        mQueue.clear();
     }
 }
 
-void GibbsSampler::makeAndProcessProposal(GapsRng *rng)
+void GibbsSampler::processProposal(AtomicProposal *prop)
 {
-    if (mDomain.size() < 2)
+    switch (prop->type)
     {
-        return birth(rng);
+        case 'B':
+            birth(prop);
+            break;
+        case 'D':
+            death(prop);
+            break;
+        case 'M':
+            move(prop);
+            break;
+        case 'E':
+            exchange(prop);
+            break;
     }
-
-    float u1 = rng->uniform();
-    if (u1 < 0.5f)
-    {
-        return rng->uniform() < deathProb(mDomain.size()) ? death(rng) : birth(rng);
-    }
-    return (u1 < 0.75f) ? move(rng) : exchange(rng);
-}
-
-float GibbsSampler::deathProb(uint64_t nAtoms) const
-{
-    double size = static_cast<double>(mDomainLength);
-    double term1 = (size - static_cast<double>(nAtoms)) / size;
-    double term2 = mAlpha * static_cast<double>(mNumBins) * term1;
-    return static_cast<double>(nAtoms) / (static_cast<double>(nAtoms) + term2);
 }
 
 // add an atom at a random position, calculate mass either with an
 // exponential distribution or with the gibbs mass distribution
-void GibbsSampler::birth(GapsRng *rng)
+void GibbsSampler::birth(AtomicProposal *prop)
 {
     uint64_t pos = mDomain.randomFreePosition(rng);
     unsigned row = getRow(pos);
