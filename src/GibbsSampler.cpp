@@ -119,138 +119,141 @@ void GibbsSampler::processProposal(AtomicProposal *prop)
 // exponential distribution or with the gibbs mass distribution
 void GibbsSampler::birth(AtomicProposal *prop)
 {
-    uint64_t pos = mDomain.randomFreePosition(rng);
-    unsigned row = getRow(pos);
-    unsigned col = getCol(pos);
+    unsigned row = getRow(prop->atom1->pos);
+    unsigned col = getCol(prop->atom1->pos);
 
     // calculate proposed mass
     float mass = canUseGibbs(col)
-        ? gibbsMass(alphaParameters(row, col), rng).value()
-        : rng->exponential(mLambda);
+        ? gibbsMass(alphaParameters(row, col), &(prop->rng)).value()
+        : prop->rng.exponential(mLambda);
 
     // accept mass as long as it's non-zero
     if (mass >= gaps::epsilon)
     {
-        mDomain.insert(pos, mass);
-        mMatrix(row, col) += mass;
-        updateAPMatrix(row, col, mass);
+        mQueue.acceptBirth();
+        prop->atom1->mass = mass;
+        changeMatrix(row, col, mass);
+    }
+    else
+    {
+        mQueue.rejectBirth();
+        mDomain.erase(prop->atom1->pos);
     }
 }
 
 // automatically accept death, attempt a rebirth at the same position, using
 // the original mass or the gibbs mass distribution
-void GibbsSampler::death(GapsRng *rng)
+void GibbsSampler::death(AtomicProposal *prop)
 {
-    // get random atom
-    Atom* atom = mDomain.randomAtom(rng);
-    unsigned row = getRow(atom->pos);
-    unsigned col = getCol(atom->pos);
+    unsigned row = getRow(prop->atom1->pos);
+    unsigned col = getCol(prop->atom1->pos);
 
     // calculate alpha parameters assuming atom dies
-    AlphaParameters alpha = alphaParametersWithChange(row, col, -atom->mass);
-    float rebirthMass = atom->mass;
-    bool useOriginalMass = true;
+    AlphaParameters alpha = alphaParametersWithChange(row, col, -prop->atom1->mass);
+
+    // try to calculate rebirth mass using gibbs distribution, otherwise exponetial
+    float rebirthMass = prop->atom1->mass;
     if (canUseGibbs(col))
     {
-        OptionalFloat gMass = gibbsMass(alpha, rng);
+        OptionalFloat gMass = gibbsMass(alpha, &(prop->rng));
         if (gMass.hasValue())
         {
             rebirthMass = gMass.value();
-            useOriginalMass = false;
         }
     }
 
     // accept/reject rebirth
-    if (std::log(rng->uniform()) < getDeltaLL(alpha, rebirthMass) * mAnnealingTemp)
+    float deltaLL = getDeltaLL(alpha, rebirthMass) * mAnnealingTemp;
+    if (std::log(prop->rng.uniform()) < deltaLL)
     {
-        if (!useOriginalMass)
+        mQueue.rejectDeath();
+        if (rebirthMass != prop->atom1->mass)
         {
-            safelyChangeMatrix(row, col, rebirthMass - atom->mass);
-            atom->mass = rebirthMass;
+            safelyChangeMatrix(row, col, rebirthMass - prop->atom1->mass);
         }
+        prop->atom1->mass = rebirthMass;
     }
     else
     {
-        safelyChangeMatrix(row, col, -atom->mass);
-        mDomain.erase(atom->pos);
+        mQueue.acceptDeath();
+        safelyChangeMatrix(row, col, -prop->atom1->mass);
+        mDomain.erase(prop->atom1->pos);
     }
 }
 
 // move mass from src to dest in the atomic domain
-void GibbsSampler::move(GapsRng *rng)
+void GibbsSampler::move(AtomicProposal *prop)
 {
-    AtomNeighborhood hood = mDomain.randomAtomWithNeighbors(rng);
-    uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
-    uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainLength;
-    uint64_t newLocation = rng->uniform64(lbound + 1, rbound - 1);
+    unsigned r1 = getRow(prop->atom1->pos);
+    unsigned c1 = getCol(prop->atom1->pos);
+    unsigned r2 = getRow(prop->pos);
+    unsigned c2 = getCol(prop->pos);
+    GAPS_ASSERT(r1 != r2 || c1 != c2);
 
-    unsigned r1 = getRow(hood.center->pos);
-    unsigned c1 = getCol(hood.center->pos);
-    unsigned r2 = getRow(newLocation);
-    unsigned c2 = getCol(newLocation);
-
-    if (r1 != r2 || c1 != c2)
+    AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
+    if (std::log(prop->rng.uniform()) < getDeltaLL(alpha, -prop->atom1->mass) * mAnnealingTemp)
     {
-        AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
-        if (std::log(rng->uniform()) < getDeltaLL(alpha, -hood.center->mass) * mAnnealingTemp)
-        {
-            hood.center->pos = newLocation;
-            safelyChangeMatrix(r1, c1, -hood.center->mass);
-            mMatrix(r2, c2) += hood.center->mass;
-            updateAPMatrix(r2, c2, hood.center->mass);
-        }
-    }
-    else
-    {
-        hood.center->pos = newLocation;
+        prop->atom1->pos = prop->pos;
+        safelyChangeMatrix(r1, c1, -prop->atom1->mass);
+        changeMatrix(r2, c2, prop->atom1->mass);
     }
 }
 
 // exchange some amount of mass between two positions, note it is possible
-// for one of the atoms to be deleted if it's mass becomes too small after
-// the exchange
-void GibbsSampler::exchange(GapsRng *rng)
+// for one of the atoms to be deleted if it's mass becomes too small
+void GibbsSampler::exchange(AtomicProposal *prop)
 {
-    AtomNeighborhood hood = mDomain.randomAtomWithRightNeighbor(rng);
-    Atom* a1 = hood.center;
-    Atom* a2 = hood.hasRight() ? hood.right : mDomain.front();
-
     unsigned r1 = getRow(a1->pos);
     unsigned c1 = getCol(a1->pos);
     unsigned r2 = getRow(a2->pos);
     unsigned c2 = getCol(a2->pos);
+    GAPS_ASSERT(r1 != r2 || c1 != c2);
 
-    if (r1 != r2 || c1 != c2)
+    // attempt gibbs distribution exchange
+    AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
+    if (canUseGibbs(c1, c2))
     {
-        AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
-        if (canUseGibbs(c1, c2))
+        OptionalFloat gMass = gibbsMass(alpha, prop->atom1->mass,
+            prop->atom2->mass, &(prop->rng));
+        if (gMass.hasValue())
         {
-            OptionalFloat gMass = gibbsMass(alpha, a1->mass, a2->mass, rng);
-            if (gMass.hasValue())
-            {
-                acceptExchange(a1, a2, gMass.value(), r1, c1, r2, c2);
-                return;
-            }
-        }
-
-        float newMass = rng->truncGammaUpper(a1->mass + a2->mass, 2.f, 1.f / mLambda);
-
-        // change larger mass
-        float delta = a1->mass > a2->mass ? newMass - a1->mass : a2->mass - newMass;
-        float oldMass = (2.f * newMass > a1->mass + a2->mass)
-            ? gaps::max(a1->mass, a2->mass)
-            : gaps::min(a1->mass, a2->mass);
-
-        float pNew = gaps::d_gamma(newMass, 2.f, 1.f / mLambda);
-        float pOld = gaps::d_gamma(oldMass, 2.f, 1.f / mLambda);
-
-        float deltaLL = getDeltaLL(alpha, delta);
-        float priorLL = (pNew == 0.f) ? 1.f : pOld / pNew;
-        if (priorLL == 0.f || std::log(rng->uniform() * priorLL) < deltaLL * mAnnealingTemp)
-        {
-            acceptExchange(a1, a2, delta, r1, c1, r2, c2);
+            acceptExchange(prop->atom1, prop->atom2, gMass.value(), r1, c1, r2, c2);
             return;
         }
+    }
+
+    // resort to metropolis-hastings if gibbs fails
+    exchangeUsingMetropolisHastings(prop, alpha, r1, c1, r2, c2);
+}
+
+void GibbsSampler::exchangeUsingMetropolisHastings(AtomicProposal *prop,
+AlphaParameters alpha, unsigned r1, unsigned c1, unsigned r2, unsigned c2)
+{
+    // compute amount of mass to be exchanged
+    float totalMass = prop->atom1->mass + prop->atom2->mass;
+    float newMass = prop->rng.truncGammaUpper(totalMass, 2.f, 1.f / mLambda);
+
+    // compute amount to change atom1 by - always change larger mass to newMass
+    float delta = (prop->atom1->mass > prop->atom2->mass)
+        ? newMass - prop->atom1->mass
+        : prop->atom2->mass - newMass;
+
+    // choose mass for priorLL calculation
+    float oldMass = (2.f * newMass > totalMass)
+        ? gaps::max(prop->atom1->mass, prop->atom2->mass)
+        : gaps::min(prop->atom1->mass, prop->atom2->mass);
+
+    // calculate priorLL
+    float pNew = gaps::d_gamma(newMass, 2.f, 1.f / mLambda);
+    float pOld = gaps::d_gamma(oldMass, 2.f, 1.f / mLambda);
+    float priorLL = (pNew == 0.f) ? 1.f : pOld / pNew;
+
+    // accept/reject
+    float deltaLL = getDeltaLL(alpha, delta) * mAnnealingTemp;
+    if (priorLL == 0.f || std::log(prop->rng.uniform() * priorLL) < deltaLL)
+    {
+        acceptExchange(prop->atom1, prop->atom2, delta, r1, c1, r2, c2);
+        return;
     }
 }
 
@@ -258,24 +261,14 @@ void GibbsSampler::exchange(GapsRng *rng)
 void GibbsSampler::acceptExchange(Atom *a1, Atom *a2, float delta,
 unsigned r1, unsigned c1, unsigned r2, unsigned c2)
 {
-    float d1 = updateAtomMass(a1, delta) ? delta : -a1->mass;
-    float d2 = updateAtomMass(a2, -delta) ? -delta : -a2->mass;
-
-    safelyChangeMatrix(r1, c1, d1);
-    safelyChangeMatrix(r2, c2, d2);
-}
-
-// helper function for acceptExchange, used to conditionally update the mass
-// at a single position, deleting the atom if the new mass is too small
-bool GibbsSampler::updateAtomMass(Atom *atom, float delta)
-{
-    if (atom->mass + delta < gaps::epsilon)
+    if (a1->mass + delta > gaps::epsilon && a2->mass - delta > gaps::epsilon)
     {
-        mDomain.erase(atom->pos);
-        return false;
+        a1->mass += delta;
+        a2->mass -= delta;
+
+        changeMatrix(r1, c1, delta);
+        changeMatrix(r2, c2, -delta);
     }
-    atom->mass += delta;
-    return true;
 }
 
 OptionalFloat GibbsSampler::gibbsMass(AlphaParameters alpha,

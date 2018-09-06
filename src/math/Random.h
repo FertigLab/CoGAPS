@@ -65,7 +65,7 @@ class GapsRng
 {
 public:
 
-    GapsRng(uint64_t seed, uint64_t stream=54);
+    GapsRng();
 
     float uniform();
     float uniform(float a, float b);
@@ -82,10 +82,13 @@ public:
     float inverseNormSample(float a, float b, float mean, float sd);
     float truncGammaUpper(float b, float shape, float scale);
 
+    static void setSeed(uint32_t sd);
+    static void save();
+    static void load(Archive &ar);
+    
 private:
 
     uint64_t mState;
-    uint64_t mStream;
 
     uint32_t next();
     void advance();
