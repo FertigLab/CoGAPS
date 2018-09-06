@@ -18,6 +18,8 @@
 const float maxU32AsFloat = static_cast<float>(std::numeric_limits<uint32_t>::max());
 const double maxU32AsDouble = static_cast<double>(std::numeric_limits<uint32_t>::max());
 
+static Xoroshiro128plus seeder;
+
 /////////////////////////////// OptionalFloat //////////////////////////////////
 
 OptionalFloat::OptionalFloat() : mHasValue(false), mValue(0.f) {}
@@ -50,16 +52,12 @@ void Xoroshiro128plus::seed(uint64_t seed)
 
 uint64_t Xoroshiro128plus::next()
 {
-    uint64_t result = 0;
-    #pragma omp critical(RngCreation)
-    {
-        const uint64_t s0 = mState[0];
-        uint64_t s1 = mState[1];
-        result = s0 + s1;
-        s1 ^= s0;
-        mState[0] = rotl(s0, 24) ^ s1 ^ (s1 << 16); // a, b
-        mState[1] = rotl(s1, 37); // c
-    }
+    const uint64_t s0 = mState[0];
+    uint64_t s1 = mState[1];
+    uint64_t result = s0 + s1;
+    s1 ^= s0;
+    mState[0] = rotl(s0, 24) ^ s1 ^ (s1 << 16); // a, b
+    mState[1] = rotl(s1, 37); // c
     return result;
 }
 
@@ -85,8 +83,25 @@ Archive& operator>>(Archive &ar, Xoroshiro128plus &gen)
 
 ////////////////////////////////// GapsRng /////////////////////////////////////
 
-GapsRng::GapsRng(uint64_t seed, uint64_t stream)
-    : mState(seed), mStream(54u)
+void GapsRng::setSeed(uint32_t sd)
+{
+    seeder.seed(sd);
+}
+
+Archive& GapsRng::save(Archive &ar)
+{
+    ar << seeder;
+    return ar;
+}
+
+Archive& GapsRng::load(Archive &ar)
+{
+    ar >> seeder;
+    return ar;
+}
+
+GapsRng::GapsRng()
+    : mState(seeder.next())
 {}
 
 uint32_t GapsRng::next()
@@ -97,7 +112,7 @@ uint32_t GapsRng::next()
 
 void GapsRng::advance()
 {
-    mState = mState * 6364136223846793005ull + (mStream|1);
+    mState = mState * 6364136223846793005ull + (54u|1);
 }
 
 uint32_t GapsRng::get() const

@@ -258,7 +258,15 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
     if (primaryIndex(a1->pos) == primaryIndex(a2->pos)
     && secondaryIndex(a1->pos) == secondaryIndex(a2->pos))
     {
-        return true; // TODO automatically accept exchanges in same bin
+        GapsRng rng;
+        float newMass = rng.truncGammaUpper(a1->mass + a2->mass, 2.f, 1.f / mLambda);
+        float delta = (a1->mass > a2->mass) ? newMass - a1->mass : a2->mass - newMass;
+        if (a1->mass + delta > gaps::epsilon && a2->mass - delta > gaps::epsilon)
+        {
+            a1->mass += delta;
+            a2->mass -= delta;
+        }        
+        return true;
     }
 
     if (mUsedIndices.contains(primaryIndex(a1->pos))

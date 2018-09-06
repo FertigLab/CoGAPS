@@ -56,8 +56,7 @@ private:
     const ColMatrix *mOtherMatrix; // pointer to P if this is A, and vice versa
 
     AtomicDomain mDomain; // data structure providing access to atoms
-
-    Xoroshiro128plus mSeeder; // used to generate seeds for individual proposals
+    ProposalQueue mQueue; // creates queue of proposals that get evaluated by sampler
 
     float mAlpha;
     float mLambda;
