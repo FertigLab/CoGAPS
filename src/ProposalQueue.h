@@ -12,17 +12,20 @@
 
 struct AtomicProposal
 {
-    uint64_t pos;
-    Atom *atom1; // used in death, move, exchange
-    Atom *atom2; // used in exchange
+    GapsRng rng; // used for consistency no matter number of threads 
+ 
+    uint64_t pos; // used for move
+    Atom *atom1; // used for birth/death/move/exchange
+    Atom *atom2; // used for exchange
 
-    mutable GapsRng rng;
+    uint32_t r1; // row of atom1
+    uint32_t c1; // col of atom1
+    uint32_t r2; // row of pos (move) or atom2 (exchange)
+    uint32_t c2; // col of pos (move) or atom2 (exchange)
 
-    char type;
+    char type; // birth (B), death (D), move (M), exchange (E)
 
-    AtomicProposal(char t, Atom *a); // birth/death
-    AtomicProposal(char t, Atom *a, uint64_t p); // move
-    AtomicProposal(char t, Atom *a1, Atom *a2); // exchange
+    AtomicProposal(char t);
 };
 
 class ProposalQueue
@@ -48,24 +51,25 @@ private:
 
     std::vector<AtomicProposal> mQueue; // not really a queue for now
     
-    IntFixedHashSet mUsedIndices;
-    IntDenseOrderedSet mUsedPositions;
-
-    uint64_t mMinAtoms;
-    uint64_t mMaxAtoms;
-
-    double mNumBins; // number of matrix elements
-    uint64_t mBinLength; // atomic length of one bin
-    uint64_t mSecondaryDimLength; // atomic length of one row (col) for A (P)
-    double mDomainLength; // length of entire atomic domain
-    unsigned mSecondaryDimSize; // number of cols (rows) for A (P)
-
-    float mAlpha;
+    FixedHashSetU32 mUsedMatrixIndices;
+    SmallHashSetU64 mUsedAtoms;
 
     mutable GapsRng mRng;
 
+    uint64_t mMinAtoms;
+    uint64_t mMaxAtoms;
+    uint64_t mBinLength; // atomic length of one bin
+    uint64_t mSecondaryDimLength; // atomic length of one row (col) for A (P)
+
+    double mDomainLength; // length of entire atomic domain
+    double mNumBins; // number of matrix elements
+
+    unsigned mSecondaryDimSize; // number of cols (rows) for A (P)
+
+    float mAlpha;
     float mU1;
     float mU2;
+
     bool mUseCachedRng;
 
     unsigned primaryIndex(uint64_t pos) const;

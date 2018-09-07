@@ -101,8 +101,13 @@ Archive& GapsRng::load(Archive &ar)
 }
 
 GapsRng::GapsRng()
-    : mState(seeder.next())
+    : mState(0)
 {}
+
+void GapsRng::init()
+{
+    mState = seeder.next();
+}
 
 uint32_t GapsRng::next()
 {
