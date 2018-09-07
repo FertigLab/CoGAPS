@@ -5,20 +5,10 @@
 //////////////////////////////// AtomicProposal ////////////////////////////////
 
 // birth/death
-AtomicProposal::AtomicProposal(char t, Atom* a)
-    : pos(0), atom1(a), atom2(NULL), type(t)
+AtomicProposal::AtomicProposal(char t)
+    : pos(0), atom1(NULL), atom2(NULL), type(t)
 {}
     
-// move
-AtomicProposal::AtomicProposal(char t, Atom *a, uint64_t p)
-    : pos(p), atom1(a), atom2(NULL), type(t)
-{}
-
-// exchange
-AtomicProposal::AtomicProposal(char t, Atom *a1, Atom *a2)
-    : pos(0), atom1(a1), atom2(a2), type(t)
-{}
-
 //////////////////////////////// ProposalQueue /////////////////////////////////
 
 ProposalQueue::ProposalQueue(unsigned primaryDimSize, unsigned secondaryDimSize)
@@ -100,107 +90,105 @@ void ProposalQueue::rejectBirth()
     mMaxAtoms--;
 }
 
-float ProposalQueue::deathProb(uint64_t nAtoms) const
+float ProposalQueue::deathProb(double nAtoms) const
 {
-    double size = static_cast<double>(mDomainLength);
-    double term1 = (size - static_cast<double>(nAtoms)) / size;
-    double term2 = mAlpha * static_cast<double>(mNumBins) * term1;
-    return static_cast<double>(nAtoms) / (static_cast<double>(nAtoms) + term2);
+    double numer = nAtoms * mDomainLength;
+    return numer / (numer + mAlpha * mNumBins * (mDomainLength - nAtoms));
 }
 
 bool ProposalQueue::makeProposal(AtomicDomain &domain)
 {
-    // special indeterminate cases
-    if ((mMinAtoms == 0 && mMaxAtoms > 0) || (mMinAtoms < 2 && mMaxAtoms >= 2))
+    // special indeterminate case
+    if (mMinAtoms < 2 && mMaxAtoms >= 2)
     {
         return false;
     }
 
     // always birth when no atoms exist
-    if (mMaxAtoms == 0)
+    if (mMaxAtoms < 2)
     {
         return birth(domain);
     }
-
-    float bdProb = mMaxAtoms < 2 ? 0.6667f : 0.5f;
 
     mU1 = mUseCachedRng ? mU1 : mRng.uniform();
     mU2 = mUseCachedRng ? mU2: mRng.uniform();
     mUseCachedRng = false;
 
-    float lowerBound = deathProb(mMinAtoms);
-    float upperBound = deathProb(mMaxAtoms);
+    float lowerBound = deathProb(static_cast<double>(mMinAtoms));
+    float upperBound = deathProb(static_cast<double>(mMaxAtoms));
 
-    if (mU1 <= bdProb)
+    if (mU1 < 0.5f)
     {
-        if (mU2 >= upperBound)
-        {
-            return birth(domain);
-        }
         if (mU2 < lowerBound)
         {
             return death(domain);
         }
+        if (mU2 >= upperBound)
+        {
+            return birth(domain);
+        }
         return false; // can't determine B/D since range is too wide
     }
-    return (mU1 < 0.75f || mMaxAtoms < 2) ? move(domain) : exchange(domain);
+    return (mU1 < 0.75f) ? move(domain) : exchange(domain);
 }
     
-unsigned ProposalQueue::primaryIndex(uint64_t pos) const
-{
-    return pos / mSecondaryDimLength;
-}
-
-unsigned ProposalQueue::secondaryIndex(uint64_t pos) const
-{
-    return (pos / mBinLength) % mSecondaryDimSize;
-}
-
-// TODO add atoms with empty mass? fill in mass in gibbssampler?
-// inserting invalidates previous pointers, but not inserting
-// prevents them from being selected for death
 bool ProposalQueue::birth(AtomicDomain &domain)
 {
-    uint64_t pos = domain.randomFreePosition();
-    if (mUsedIndices.contains(primaryIndex(pos)))
-    {
-        return false; // matrix conflict - can't compute gibbs mass
-    }
+    AtomicProposal prop('B');
+    prop.r1 = (prop.atom1->pos / mBinSize) / mNumCols;
+    prop.c1 = (prop.atom1->pos / mBinSize) % mNumCols;
 
-    mQueue.push_back(AtomicProposal('B', pos));
-    mUsedIndices.insert(primaryIndex(pos));
-    mUsedPositions.insert(pos);
+    prop.init(); // initialize rng
+
+    if (mUsedMatrixIndices.contains(prop.r1))
+    {
+        return false; // matrix conflict - can't compute alpha parameters
+    }
+    prop.atom1 = mDomain.insert(domain.randomFreePosition(), 0.f);
+
+    mUsedMatrixIndices.insert(prop.r1);
+    mUsedAtoms.insert(prop.atom1->pos);
+
+    mQueue.push_back(prop);
     ++mMaxAtoms;
     return true;
 }
 
 bool ProposalQueue::death(AtomicDomain &domain)
 {
-    Atom* a = domain.randomAtom();
-    if (mUsedIndices.contains(primaryIndex(a->pos)))
-    {
-        return false; // matrix conflict - can't compute gibbs mass or deltaLL
-    }
+    AtomicProposal prop('D');
+    prop->atom1 = domain.randomAtom();
+    prop.r1 = (prop.atom1->pos / mBinSize) / mNumCols;
+    prop.c1 = (prop.atom1->pos / mBinSize) % mNumCols;
 
-    mQueue.push_back(AtomicProposal('D', a));
-    mUsedIndices.insert(primaryIndex(a->pos));
-    mUsedPositions.insert(a->pos);
+    if (mUsedMatrixIndices.contains(prop.r1))
+    {
+        return false; // matrix conflict - can't compute alpha parameters
+    }
+    mUsedMatrixIndices.insert(prop.r1);
+    mUsedAtoms.insert(prop.atom1->pos);
+
+    prop.init(); // initialize rng
+    mQueue.push_back(prop);
     --mMinAtoms;
     return true;
 }
 
 bool ProposalQueue::move(AtomicDomain &domain)
 {
+    AtomicProposal prop('M');
+
     AtomNeighborhood hood = domain.randomAtomWithNeighbors();
+    
     uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
     uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainLength;
 
-    if (!mUsedPositions.isEmptyInterval(lbound, rbound))
+    uint64_t newLocation = mRng.uniform64(lbound + 1, rbound - 1);
+
+    if (mUsedAtoms.contains(lbound) || mUsedAtoms.contains(rbound))
     {
         return false; // atomic conflict - don't know neighbors
     }
-
-    uint64_t newLocation = mRng.uniform64(lbound + 1, rbound - 1);
 
     if (primaryIndex(hood.center->pos) == primaryIndex(newLocation)
     && secondaryIndex(hood.center->pos) == secondaryIndex(newLocation))

@@ -26,6 +26,7 @@ struct AtomNeighborhood
     Atom* left;
     Atom* right;
 
+    AtomNeighborhood();
     AtomNeighborhood(Atom *l, Atom *c, Atom *r);
 
     bool hasLeft();
@@ -37,6 +38,7 @@ class AtomicDomain
 public:
 
     AtomicDomain(uint64_t nBins);
+    ~AtomicDomain();
 
     // access atoms
     Atom* front();
@@ -44,11 +46,15 @@ public:
     AtomNeighborhood randomAtomWithNeighbors(GapsRng *rng);
     AtomNeighborhood randomAtomWithRightNeighbor(GapsRng *rng);
 
+    Atom* getLeftNeighbor(uint64_t pos);
+    Atom* getRightNeighbor(uint64_t pos);
+
     uint64_t randomFreePosition(GapsRng *rng) const;
     uint64_t size() const;
 
+    // these need to happen concurrently without invalidating pointers
     void erase(uint64_t pos);
-    void insert(uint64_t pos, float mass);
+    Atom* insert(uint64_t pos, float mass);
 
     // serialization
     friend Archive& operator<<(Archive &ar, AtomicDomain &domain);
@@ -62,7 +68,7 @@ private:
     uint64_t mDomainLength;
 
     // domain storage, sorted vector
-    std::vector<Atom> mAtoms;
+    std::vector<Atom*> mAtoms;
 };
 
-#endif
+#endif // __COGAPS_ATOMIC_DOMAIN_H__

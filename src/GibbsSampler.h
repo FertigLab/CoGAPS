@@ -86,9 +86,6 @@ private:
     void safelyChangeMatrix(unsigned row, unsigned col, float delta);
     void updateAPMatrix(unsigned row, unsigned col, float delta);
 
-    unsigned getRow(uint64_t pos) const;
-    unsigned getCol(uint64_t pos) const;
-
     bool canUseGibbs(unsigned col) const;
     bool canUseGibbs(unsigned c1, unsigned c2) const;
 
