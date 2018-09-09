@@ -11,6 +11,7 @@
 
 ^.git
 
+^src/Makevars((?!\.in))
 ^src/AtomicDomain.o
 ^src/Cogaps.o
 ^src/GapsRunner.o

@@ -8,8 +8,10 @@ OBJECTS =   AtomicDomain.o \
             GapsRunner.o \
             GapsStatistics.o \
             GibbsSampler.o \
+            ProposalQueue.o \
             RcppExports.o \
             test-runner.o \
+            data_structures/HashSets.o \
             data_structures/Matrix.o \
             data_structures/Vector.o \
             file_parser/CsvParser.o \
@@ -21,7 +23,6 @@ OBJECTS =   AtomicDomain.o \
             math/Random.o \
             cpp_tests/testAlgorithms.o \
             cpp_tests/testAtomicDomain.o \
-            cpp_tests/testEfficientSets.o \
             cpp_tests/testFileParsers.o \
             cpp_tests/testMatrix.o \
             cpp_tests/testRandom.o \

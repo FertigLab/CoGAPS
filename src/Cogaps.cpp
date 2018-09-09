@@ -62,6 +62,7 @@ unsigned getNumPatterns(const Rcpp::List &allParams)
     {
         std::string file(Rcpp::as<std::string>(allParams["checkpointInFile"]));
         Archive ar(file, ARCHIVE_READ);
+        GapsRng::load(ar);
         ar >> nPatterns;
         ar.close();
     }
@@ -99,6 +100,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
 {
     // calculate essential parameters needed for constructing GapsRunner
     const Rcpp::S4 &gapsParams(allParams["gaps"]);
+    GapsRng::setSeed(gapsParams.slot("seed"));
     unsigned nPatterns = getNumPatterns(allParams); // TODO clarify this sets the checkpoint seed as well
     bool printThreads = !processDistributedParameters(allParams).first;
     bool partitionRows = processDistributedParameters(allParams).second;
@@ -106,7 +108,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
 
     // construct GapsRunner
     GapsRunner runner(data, allParams["transposeData"], nPatterns,
-        partitionRows, cIndices, gapsParams.slot("seed"));
+        partitionRows, cIndices);
 
     // set uncertainty
     if (!isNull(uncertainty))
@@ -120,6 +122,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
     {
         std::string file(Rcpp::as<std::string>(allParams["checkpointInFile"]));
         Archive ar(file, ARCHIVE_READ);
+        GapsRng::load(ar);
         ar >> runner;
         ar.close();
     }
@@ -134,6 +137,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
         }
 
         // set parameters that would be saved in the checkpoint
+        runner.recordSeed(gapsParams.slot("seed"));
         runner.setMaxIterations(gapsParams.slot("nIterations"));
         runner.setSparsity(gapsParams.slot("alphaA"),
             gapsParams.slot("alphaP"), gapsParams.slot("singleCell"));

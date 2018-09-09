@@ -52,6 +52,9 @@ void Xoroshiro128plus::seed(uint64_t seed)
 
 uint64_t Xoroshiro128plus::next()
 {
+    mPreviousState[0] = mState[0];
+    mPreviousState[1] = mState[1];
+
     const uint64_t s0 = mState[0];
     uint64_t s1 = mState[1];
     uint64_t result = s0 + s1;
@@ -59,6 +62,12 @@ uint64_t Xoroshiro128plus::next()
     mState[0] = rotl(s0, 24) ^ s1 ^ (s1 << 16); // a, b
     mState[1] = rotl(s1, 37); // c
     return result;
+}
+
+void Xoroshiro128plus::rollBackOnce()
+{
+    mState[0] = mPreviousState[0];
+    mState[1] = mPreviousState[1];
 }
 
 void Xoroshiro128plus::warmup()
@@ -100,14 +109,14 @@ Archive& GapsRng::load(Archive &ar)
     return ar;
 }
 
-GapsRng::GapsRng()
-    : mState(0)
-{}
-
-void GapsRng::init()
+void GapsRng::rollBackOnce()
 {
-    mState = seeder.next();
+    seeder.rollBackOnce();
 }
+
+GapsRng::GapsRng()
+    : mState(seeder.next())
+{}
 
 uint32_t GapsRng::next()
 {
@@ -117,6 +126,7 @@ uint32_t GapsRng::next()
 
 void GapsRng::advance()
 {
+    mPreviousState = mState;
     mState = mState * 6364136223846793005ull + (54u|1);
 }
 
@@ -274,13 +284,13 @@ float GapsRng::truncGammaUpper(float b, float shape, float scale)
 
 Archive& operator<<(Archive &ar, GapsRng &gen)
 {
-    ar << gen.mState << gen.mStream;
+    ar << gen.mState;
     return ar;
 }
 
 Archive& operator>>(Archive &ar, GapsRng &gen)
 {
-    ar >> gen.mState >> gen.mStream;
+    ar >> gen.mState;
     return ar;
 }
 
