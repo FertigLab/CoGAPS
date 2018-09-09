@@ -24,6 +24,12 @@ static bool vecContains(const std::vector<Atom*> &vec, uint64_t pos)
     return std::binary_search(vec.begin(), vec.end(), &temp, compareAtom);
 }
 
+// check if a position in contained in a vector of positions
+static bool vecContains(const std::vector<uint64_t> &vec, uint64_t pos)
+{
+    return std::binary_search(vec.begin(), vec.end(), pos);
+}
+
 // used in debug mode to check if vector is always sorted
 static bool isSorted(const std::vector<Atom*> &vec)
 {
@@ -132,11 +138,16 @@ AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor(GapsRng *rng)
     return AtomNeighborhood(NULL, mAtoms[index], right);
 }
 
-uint64_t AtomicDomain::randomFreePosition(GapsRng *rng) const
+uint64_t AtomicDomain::randomFreePosition(GapsRng *rng,
+const std::vector<uint64_t> &possibleDeaths) const
 {
     uint64_t pos = rng->uniform64(1, mDomainLength);
     while (vecContains(mAtoms, pos))
     {
+        if (vecContains(possibleDeaths, pos))
+        {
+            return 0; // might actually be a free position
+        }
         pos = rng->uniform64(1, mDomainLength);
     }
     return pos;
@@ -161,6 +172,25 @@ void AtomicDomain::erase(uint64_t pos)
         mAtoms.erase(it);
     }
     delete a;
+}
+
+void AtomicDomain::move(uint64_t src, uint64_t dest)
+{
+    GAPS_ASSERT(size() > 0);
+    GAPS_ASSERT(vecContains(mAtoms, src));
+
+    #pragma omp critical(AtomicInsertOrErase)
+    {
+        std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(), mAtoms.end(), src, compareAtomLower);
+        unsigned ndx = std::distance(mAtoms.begin(), it);
+        while (ndx + 1 < mAtoms.size() && dest > mAtoms[ndx + 1]->pos)
+        {
+            Atom* temp = mAtoms[ndx];
+            mAtoms[ndx] = mAtoms[ndx + 1];
+            mAtoms[ndx + 1] = temp;
+            ++ndx;
+        }
+    }
 }
 
 Atom* AtomicDomain::insert(uint64_t pos, float mass)

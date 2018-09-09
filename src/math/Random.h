@@ -49,10 +49,13 @@ public:
 
     void seed(uint64_t seed);
     uint64_t next();
+    void rollBackOnce();
 
 private:
 
     uint64_t mState[2];
+    uint64_t mPreviousState[2];
+
     void warmup();
 
     friend Archive& operator<<(Archive &ar, Xoroshiro128plus &gen);
@@ -83,12 +86,14 @@ public:
     float truncGammaUpper(float b, float shape, float scale);
 
     static void setSeed(uint32_t sd);
-    static void save();
-    static void load(Archive &ar);
-    
+    static Archive& save(Archive &ar);
+    static Archive& load(Archive &ar);
+    static void rollBackOnce();
+   
 private:
 
     uint64_t mState;
+    uint32_t mPreviousState;
 
     uint32_t next();
     void advance();

@@ -2,6 +2,7 @@
 #define __COGAPS_GIBBS_SAMPLER_H__
 
 #include "AtomicDomain.h"
+#include "ProposalQueue.h"
 #include "data_structures/Matrix.h"
 #include "math/Algorithms.h"
 #include "math/Random.h"
@@ -27,7 +28,6 @@ public:
     void setMaxGibbsMass(float max);
     void setAnnealingTemp(float temp);
     void setMatrix(const Matrix &mat);
-    void setSeed(uint64_t seed);
 
     float chi2() const;
     uint64_t nAtoms() const;
@@ -68,21 +68,22 @@ private:
     uint64_t mBinSize;
     uint64_t mDomainLength;
 
-    void makeAndProcessProposal(GapsRng *rng);
+    void processProposal(const AtomicProposal &prop);
     float deathProb(uint64_t nAtoms) const;
 
-    void birth(GapsRng *rng);
-    void death(GapsRng *rng);
-    void move(GapsRng *rng);
-    void exchange(GapsRng *rng);
-
-    void acceptExchange(Atom *a1, Atom *a2, float d1, unsigned r1,
-        unsigned c1, unsigned r2, unsigned c2);
+    void birth(const AtomicProposal &prop);
+    void death(const AtomicProposal &prop);
+    void move(const AtomicProposal &prop);
+    void exchange(const AtomicProposal &prop);
+    void exchangeUsingMetropolisHastings(const AtomicProposal &prop,
+        AlphaParameters alpha);
+    void acceptExchange(const AtomicProposal &prop, float delta);
     bool updateAtomMass(Atom *atom, float delta);
 
     OptionalFloat gibbsMass(AlphaParameters alpha, GapsRng *rng);
     OptionalFloat gibbsMass(AlphaParameters alpha, float m1, float m2, GapsRng *rng);
 
+    void changeMatrix(unsigned row, unsigned col, float delta);
     void safelyChangeMatrix(unsigned row, unsigned col, float delta);
     void updateAPMatrix(unsigned row, unsigned col, float delta);
 
@@ -105,6 +106,7 @@ mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
 mMatrix(mDMatrix.nCol(), nPatterns),
 mOtherMatrix(NULL),
 mDomain(mMatrix.nRow() * mMatrix.nCol()),
+mQueue(mMatrix.nRow(), mMatrix.nCol()),
 mLambda(0.f),
 mMaxGibbsMass(100.f),
 mAnnealingTemp(1.f),

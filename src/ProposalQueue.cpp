@@ -1,6 +1,6 @@
-#include "GapsAssert.h"
 #include "ProposalQueue.h"
 #include "math/Random.h"
+#include "utils/GapsAssert.h"
 
 //////////////////////////////// AtomicProposal ////////////////////////////////
 
@@ -11,20 +11,24 @@ AtomicProposal::AtomicProposal(char t)
     
 //////////////////////////////// ProposalQueue /////////////////////////////////
 
-ProposalQueue::ProposalQueue(unsigned primaryDimSize, unsigned secondaryDimSize)
+ProposalQueue::ProposalQueue(unsigned nrow, unsigned ncol)
     :
-mMinAtoms(0), mMaxAtoms(0), mNumBins(primaryDimSize * secondaryDimSize),
-mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins),
-mSecondaryDimLength(mBinLength * secondaryDimSize),
-mDomainLength(mBinLength * mNumBins), mSecondaryDimSize(secondaryDimSize),
-mAlpha(0.f), mU1(0.f), mU2(0.f), mUseCachedRng(false)
-{
-    mUsedIndices.setDimensionSize(primaryDimSize);
-}
+mUsedMatrixIndices(nrow),
+mMinAtoms(0),
+mMaxAtoms(0),
+mBinLength(std::numeric_limits<uint64_t>::max() / static_cast<uint64_t>(nrow * ncol)),
+mNumCols(ncol),
+mAlpha(0.0),
+mDomainLength(static_cast<double>(mBinLength * static_cast<uint64_t>(nrow * ncol))),
+mNumBins(static_cast<double>(nrow * ncol)),
+mU1(0.f),
+mU2(0.f),
+mUseCachedRng(false)
+{}
 
 void ProposalQueue::setAlpha(float alpha)
 {
-    mAlpha = alpha;
+    mAlpha = static_cast<double>(alpha);
 }
 
 void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
@@ -36,9 +40,9 @@ void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
     bool success = true;
     while (nIter++ < limit && success)
     {
-        success = makeProposal(domain);
-        if (!success)
+        if (!makeProposal(domain))
         {
+            success = false;
             mUseCachedRng = true;
         }
     }
@@ -49,8 +53,8 @@ void ProposalQueue::clear()
     GAPS_ASSERT(mMinAtoms == mMaxAtoms);
 
     mQueue.clear();
-    mUsedPositions.clear();
-    mUsedIndices.clear();
+    mUsedMatrixIndices.clear();
+    mUsedAtoms.clear();
 }
 
 unsigned ProposalQueue::size() const
@@ -69,25 +73,25 @@ AtomicProposal& ProposalQueue::operator[](int n)
 void ProposalQueue::acceptDeath()
 {
     #pragma omp atomic
-    mMaxAtoms--;
+    --mMaxAtoms;
 }
 
 void ProposalQueue::rejectDeath()
 {
     #pragma omp atomic
-    mMinAtoms++;
+    ++mMinAtoms;
 }
 
 void ProposalQueue::acceptBirth()
 {
     #pragma omp atomic
-    mMinAtoms++;
+    ++mMinAtoms;
 }
 
 void ProposalQueue::rejectBirth()
 {
     #pragma omp atomic
-    mMaxAtoms--;
+    --mMaxAtoms;
 }
 
 float ProposalQueue::deathProb(double nAtoms) const
@@ -98,16 +102,14 @@ float ProposalQueue::deathProb(double nAtoms) const
 
 bool ProposalQueue::makeProposal(AtomicDomain &domain)
 {
-    // special indeterminate case
     if (mMinAtoms < 2 && mMaxAtoms >= 2)
     {
-        return false;
+        return false; // special indeterminate case
     }
 
-    // always birth when no atoms exist
     if (mMaxAtoms < 2)
     {
-        return birth(domain);
+        return birth(domain); // always birth when no atoms exist
     }
 
     mU1 = mUseCachedRng ? mU1 : mRng.uniform();
@@ -131,24 +133,29 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
     }
     return (mU1 < 0.75f) ? move(domain) : exchange(domain);
 }
-    
+
 bool ProposalQueue::birth(AtomicDomain &domain)
 {
     AtomicProposal prop('B');
-    prop.r1 = (prop.atom1->pos / mBinSize) / mNumCols;
-    prop.c1 = (prop.atom1->pos / mBinSize) % mNumCols;
+    uint64_t pos = domain.randomFreePosition(&(prop.rng), mUsedAtoms.vec());
+    if (pos == 0)
+    {
+        DEBUG_PING // want to notify since this event should have near 0 probability
+        GapsRng::rollBackOnce(); // ensure same proposal next time
+        return false; // atom conflict, might have open spot if atom moves/dies
+    }
 
-    prop.init(); // initialize rng
-
+    prop.r1 = (pos / mBinLength) / mNumCols;
+    prop.c1 = (pos / mBinLength) % mNumCols;
     if (mUsedMatrixIndices.contains(prop.r1))
     {
-        return false; // matrix conflict - can't compute alpha parameters
+        GapsRng::rollBackOnce(); // ensure same proposal next time
+        return false; // matrix conflict - can't compute gibbs mass
     }
-    prop.atom1 = mDomain.insert(domain.randomFreePosition(), 0.f);
+    prop.atom1 = domain.insert(pos, 0.f);
 
     mUsedMatrixIndices.insert(prop.r1);
     mUsedAtoms.insert(prop.atom1->pos);
-
     mQueue.push_back(prop);
     ++mMaxAtoms;
     return true;
@@ -157,18 +164,18 @@ bool ProposalQueue::birth(AtomicDomain &domain)
 bool ProposalQueue::death(AtomicDomain &domain)
 {
     AtomicProposal prop('D');
-    prop->atom1 = domain.randomAtom();
-    prop.r1 = (prop.atom1->pos / mBinSize) / mNumCols;
-    prop.c1 = (prop.atom1->pos / mBinSize) % mNumCols;
+    prop.atom1 = domain.randomAtom(&(prop.rng));
+    prop.r1 = (prop.atom1->pos / mBinLength) / mNumCols;
+    prop.c1 = (prop.atom1->pos / mBinLength) % mNumCols;
 
     if (mUsedMatrixIndices.contains(prop.r1))
     {
-        return false; // matrix conflict - can't compute alpha parameters
+        GapsRng::rollBackOnce(); // ensure same proposal next time
+        return false; // matrix conflict - can't compute gibbs mass or deltaLL
     }
+
     mUsedMatrixIndices.insert(prop.r1);
     mUsedAtoms.insert(prop.atom1->pos);
-
-    prop.init(); // initialize rng
     mQueue.push_back(prop);
     --mMinAtoms;
     return true;
@@ -177,107 +184,89 @@ bool ProposalQueue::death(AtomicDomain &domain)
 bool ProposalQueue::move(AtomicDomain &domain)
 {
     AtomicProposal prop('M');
+    AtomNeighborhood hood = domain.randomAtomWithNeighbors(&(prop.rng));
 
-    AtomNeighborhood hood = domain.randomAtomWithNeighbors();
-    
     uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
     uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainLength;
-
-    uint64_t newLocation = mRng.uniform64(lbound + 1, rbound - 1);
-
     if (mUsedAtoms.contains(lbound) || mUsedAtoms.contains(rbound))
     {
+        GapsRng::rollBackOnce();
         return false; // atomic conflict - don't know neighbors
     }
 
-    if (primaryIndex(hood.center->pos) == primaryIndex(newLocation)
-    && secondaryIndex(hood.center->pos) == secondaryIndex(newLocation))
-    {
-        hood.center->pos = newLocation; // automatically accept moves in same bin
-        return true;
-    }
+    prop.pos = prop.rng.uniform64(lbound + 1, rbound - 1);
+    prop.atom1 = hood.center;
+    prop.r1 = (prop.atom1->pos / mBinLength) / mNumCols;
+    prop.c1 = (prop.atom1->pos / mBinLength) % mNumCols;
+    prop.r2 = (prop.pos / mBinLength) / mNumCols;
+    prop.c2 = (prop.pos / mBinLength) % mNumCols;
 
-    if (mUsedIndices.contains(primaryIndex(hood.center->pos))
-    || mUsedIndices.contains(primaryIndex(newLocation)))
+    if (mUsedMatrixIndices.contains(prop.r1) || mUsedMatrixIndices.contains(prop.r2))
     {
+        GapsRng::rollBackOnce(); // ensure same proposal next time
         return false; // matrix conflict - can't compute deltaLL
     }
 
-    mQueue.push_back(AtomicProposal('M', hood.center, newLocation));
-    mUsedIndices.insert(primaryIndex(hood.center->pos));
-    mUsedIndices.insert(primaryIndex(newLocation));
-    mUsedPositions.insert(hood.center->pos);
-    mUsedPositions.insert(newLocation);
+    if (prop.r1 == prop.r2 && prop.c1 == prop.c2)
+    {
+        prop.atom1->pos = prop.pos; // automatically accept moves in same bin
+        return true;
+    }
+
+    mQueue.push_back(prop);
+    mUsedMatrixIndices.insert(prop.r1);
+    mUsedMatrixIndices.insert(prop.r2);
+    mUsedAtoms.insert(prop.atom1->pos);
+    mUsedAtoms.insert(prop.pos);
     return true;
 }
 
 bool ProposalQueue::exchange(AtomicDomain &domain)
 {
-    AtomNeighborhood hood = domain.randomAtomWithRightNeighbor();
-    Atom* a1 = hood.center;
-    Atom* a2 = hood.hasRight() ? hood.right : domain.front();
+    AtomicProposal prop('E');
+    AtomNeighborhood hood = domain.randomAtomWithRightNeighbor(&(prop.rng));
+    prop.atom1 = hood.center;
+    prop.atom2 = hood.hasRight() ? hood.right : domain.front();
 
-    if (hood.hasRight()) // has neighbor
+    prop.r1 = (prop.atom1->pos / mBinLength) / mNumCols;
+    prop.c1 = (prop.atom1->pos / mBinLength) % mNumCols;
+    prop.r2 = (prop.atom2->pos / mBinLength) / mNumCols;
+    prop.c2 = (prop.atom2->pos / mBinLength) % mNumCols;
+
+    if (mUsedMatrixIndices.contains(prop.r1) || mUsedMatrixIndices.contains(prop.r2))
     {
-        if (!mUsedPositions.isEmptyInterval(a1->pos, a2->pos))
-        {
-            return false; // atomic conflict - don't know right neighbor
-        }
-    }
-    else // exchange with first atom
-    {
-        if (!mUsedPositions.isEmptyInterval(a1->pos, mDomainLength))
-        {
-            return false; // atomic conflict - don't know right neighbor
-        }
-        
-        if (!mUsedPositions.isEmptyInterval(0, domain.front()->pos))
-        {
-            return false; // atomic conflict - don't know right neighbor
-        }
+        GapsRng::rollBackOnce(); // ensure same proposal next time
+        return false; // matrix conflict - can't compute deltaLL or gibbs mass
     }
 
-    if (primaryIndex(a1->pos) == primaryIndex(a2->pos)
-    && secondaryIndex(a1->pos) == secondaryIndex(a2->pos))
+    if (prop.r1 == prop.r2 && prop.c1 == prop.c2)
     {
-        GapsRng rng;
-        float newMass = rng.truncGammaUpper(a1->mass + a2->mass, 2.f, 1.f / mLambda);
-        float delta = (a1->mass > a2->mass) ? newMass - a1->mass : a2->mass - newMass;
-        if (a1->mass + delta > gaps::epsilon && a2->mass - delta > gaps::epsilon)
-        {
-            a1->mass += delta;
-            a2->mass -= delta;
-        }        
-        return true;
+        //float newMass = prop.rng.truncGammaUpper(a1->mass + a2->mass, 2.f, 1.f / mLambda);
+        //float delta = (a1->mass > a2->mass) ? newMass - a1->mass : a2->mass - newMass;
+        //if (a1->mass + delta > gaps::epsilon && a2->mass - delta > gaps::epsilon)
+        //{
+        //    a1->mass += delta;
+        //    a2->mass -= delta;
+        //}        
+        return true; // TODO automatically accept exchanges in same bin
     }
 
-    if (mUsedIndices.contains(primaryIndex(a1->pos))
-    || mUsedIndices.contains(primaryIndex(a2->pos)))
-    {
-        return false; // matrix conflict - can't compute gibbs mass or deltaLL
-    }
-
-    mQueue.push_back(AtomicProposal('E', a1, a2));
-    mUsedIndices.insert(primaryIndex(a1->pos));
-    mUsedIndices.insert(primaryIndex(a2->pos));
-    mUsedPositions.insert(a1->pos);
-    mUsedPositions.insert(a2->pos);
-    --mMinAtoms;
+    mQueue.push_back(prop);
+    mUsedMatrixIndices.insert(prop.r1);
+    mUsedMatrixIndices.insert(prop.r2);
     return true;
 }
 
 Archive& operator<<(Archive &ar, ProposalQueue &q)
 {
-    ar << q.mMinAtoms << q.mMaxAtoms << q.mNumBins << q.mBinLength
-        << q.mSecondaryDimLength << q.mDomainLength << q.mSecondaryDimSize
-        << q.mAlpha << q.mRng;
+    ar << q.mRng << q.mMinAtoms << q.mMaxAtoms << q.mBinLength << q.mNumCols
+        << q.mAlpha << q.mDomainLength << q.mNumBins;
     return ar;
 }
 
 Archive& operator>>(Archive &ar, ProposalQueue &q)
 {
-    ar >> q.mMinAtoms >> q.mMaxAtoms >> q.mNumBins >> q.mBinLength
-        >> q.mSecondaryDimLength >> q.mDomainLength >> q.mSecondaryDimSize
-        >> q.mAlpha >> q.mRng;
+    ar >> q.mRng >> q.mMinAtoms >> q.mMaxAtoms >> q.mBinLength >> q.mNumCols
+        >> q.mAlpha >> q.mDomainLength >> q.mNumBins;
     return ar;
 }

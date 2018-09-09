@@ -22,7 +22,7 @@ namespace gaps
     template <class T>
     std::string to_string(T a);
 
-    const float epsilon = 1.0e-10f;
+    const float epsilon = 1.0e-5f;
     const float pi = 3.1415926535897932384626433832795f;
     const float pi_double = 3.1415926535897932384626433832795;
 

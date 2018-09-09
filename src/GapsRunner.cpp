@@ -27,6 +27,11 @@ void GapsRunner::setFixedMatrix(char which, const Matrix &mat)
     }
 }
 
+void GapsRunner::recordSeed(uint32_t seed)
+{
+    mSeed = seed;
+}
+
 uint32_t GapsRunner::getSeed() const
 {
     return mSeed;

@@ -33,6 +33,8 @@ struct AtomNeighborhood
     bool hasRight();
 };
 
+class ProposalQueue; // needed for friend
+
 class AtomicDomain
 {
 public:
@@ -49,12 +51,13 @@ public:
     Atom* getLeftNeighbor(uint64_t pos);
     Atom* getRightNeighbor(uint64_t pos);
 
-    uint64_t randomFreePosition(GapsRng *rng) const;
+    uint64_t randomFreePosition(GapsRng *rng,
+        const std::vector<uint64_t> &possibleDeaths) const;
     uint64_t size() const;
 
     // these need to happen concurrently without invalidating pointers
     void erase(uint64_t pos);
-    Atom* insert(uint64_t pos, float mass);
+    void move(uint64_t src, uint64_t dest);
 
     // serialization
     friend Archive& operator<<(Archive &ar, AtomicDomain &domain);
@@ -63,6 +66,10 @@ public:
 #ifndef GAPS_INTERNAL_TESTS
 private:
 #endif
+
+    // only the proposal queue can insert
+    friend class ProposalQueue;
+    Atom* insert(uint64_t pos, float mass);
 
     // size of atomic domain to ensure all bins are equal length
     uint64_t mDomainLength;

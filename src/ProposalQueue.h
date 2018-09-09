@@ -1,10 +1,10 @@
 #ifndef __GAPS_PROPOSAL_QUEUE_H__
 #define __GAPS_PROPOSAL_QUEUE_H__
 
-#include "Archive.h"
 #include "AtomicDomain.h"
-#include "data_structures/EfficientSets.h"
+#include "data_structures/HashSets.h"
 #include "math/Random.h"
+#include "utils/Archive.h"
 
 #include <cstddef>
 #include <stdint.h>
@@ -12,7 +12,7 @@
 
 struct AtomicProposal
 {
-    GapsRng rng; // used for consistency no matter number of threads 
+    mutable GapsRng rng; // used for consistency no matter number of threads 
  
     uint64_t pos; // used for move
     Atom *atom1; // used for birth/death/move/exchange
@@ -32,7 +32,8 @@ class ProposalQueue
 {
 public:
 
-    ProposalQueue(unsigned primaryDimSize, unsigned secondaryDimSize);
+    // initialize
+    ProposalQueue(unsigned nrow, unsigned ncol);
     void setAlpha(float alpha);
 
     // modify/access queue
@@ -47,6 +48,10 @@ public:
     void acceptBirth();
     void rejectBirth();
 
+    // serialization
+    friend Archive& operator<<(Archive &ar, ProposalQueue &queue);
+    friend Archive& operator>>(Archive &ar, ProposalQueue &queue);
+
 private:
 
     std::vector<AtomicProposal> mQueue; // not really a queue for now
@@ -58,34 +63,25 @@ private:
 
     uint64_t mMinAtoms;
     uint64_t mMaxAtoms;
-    uint64_t mBinLength; // atomic length of one bin
-    uint64_t mSecondaryDimLength; // atomic length of one row (col) for A (P)
+    uint64_t mBinLength; // length of single bin
+    uint64_t mNumCols;
 
+    double mAlpha;
     double mDomainLength; // length of entire atomic domain
     double mNumBins; // number of matrix elements
 
-    unsigned mSecondaryDimSize; // number of cols (rows) for A (P)
-
-    float mAlpha;
     float mU1;
     float mU2;
 
     bool mUseCachedRng;
 
-    unsigned primaryIndex(uint64_t pos) const;
-    unsigned secondaryIndex(uint64_t pos) const;
+    float deathProb(double nAtoms) const;
 
-    float deathProb(uint64_t nAtoms) const;
+    bool makeProposal(AtomicDomain &domain);
     bool birth(AtomicDomain &domain);
     bool death(AtomicDomain &domain);
     bool move(AtomicDomain &domain);
     bool exchange(AtomicDomain &domain);
-
-    bool makeProposal(AtomicDomain &domain);
-
-    // serialization
-    friend Archive& operator<<(Archive &ar, ProposalQueue &queue);
-    friend Archive& operator>>(Archive &ar, ProposalQueue &queue);
 };
 
 #endif
