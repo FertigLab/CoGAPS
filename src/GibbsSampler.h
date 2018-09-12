@@ -135,7 +135,7 @@ public:
         unsigned nPatterns, bool partitionRows,
         const std::vector<unsigned> &indices);
 
-    void sync(PatternGibbsSampler &sampler);
+    void sync(PatternGibbsSampler &sampler, unsigned nCores=1);
     void recalculateAPMatrix();
 };
 
@@ -167,7 +167,7 @@ public:
         unsigned nPatterns, bool partitionRows,
         const std::vector<unsigned> &indices);
 
-    void sync(AmplitudeGibbsSampler &sampler);
+    void sync(AmplitudeGibbsSampler &sampler, unsigned nCores=1);
     void recalculateAPMatrix();
 };
 

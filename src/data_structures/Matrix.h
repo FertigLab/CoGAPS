@@ -73,6 +73,7 @@ public:
 
     RowMatrix& operator=(const RowMatrix &mat);
     RowMatrix& operator=(const ColMatrix &mat);
+    void overwriteWith(const ColMatrix &mat, unsigned nCores);
 
     // for single element access - do not loop over elements with this
     float& operator()(unsigned r, unsigned c);
@@ -106,6 +107,7 @@ public:
 
     ColMatrix& operator=(const ColMatrix &mat);
     ColMatrix& operator=(const RowMatrix &mat);
+    void overwriteWith(const RowMatrix &mat, unsigned nCores);
 
     // for single element access - do not loop over elements with this
     float& operator()(unsigned r, unsigned c);

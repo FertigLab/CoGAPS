@@ -3,10 +3,10 @@
 
 /******************** AmplitudeGibbsSampler Implementation ********************/
 
-void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler)
+void AmplitudeGibbsSampler::sync(PatternGibbsSampler &sampler, unsigned nCores)
 {
     mOtherMatrix = &(sampler.mMatrix);
-    mAPMatrix = sampler.mAPMatrix;
+    mAPMatrix.overwriteWith(sampler.mAPMatrix, nCores);
 }
 
 void AmplitudeGibbsSampler::recalculateAPMatrix()
@@ -102,10 +102,10 @@ void PatternGibbsSampler::recalculateAPMatrix()
     mAPMatrix = gaps::algo::matrixMultiplication(*mOtherMatrix, mMatrix);
 }
 
-void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler)
+void PatternGibbsSampler::sync(AmplitudeGibbsSampler &sampler, unsigned nCores)
 {
     mOtherMatrix = &(sampler.mMatrix);
-    mAPMatrix = sampler.mAPMatrix;
+    mAPMatrix.overwriteWith(sampler.mAPMatrix, nCores);
 }
 
 unsigned PatternGibbsSampler::getRow(uint64_t pos) const
