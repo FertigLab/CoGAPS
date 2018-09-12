@@ -59,6 +59,12 @@ public:
     void erase(uint64_t pos);
     void move(uint64_t src, uint64_t dest);
 
+    // iterators
+    std::vector<Atom*>::iterator begin() { return mAtoms.begin(); }
+    std::vector<Atom*>::iterator end() { return mAtoms.end(); }
+    
+    bool isSorted();
+
     // serialization
     friend Archive& operator<<(Archive &ar, AtomicDomain &domain);
     friend Archive& operator>>(Archive &ar, AtomicDomain &domain);
