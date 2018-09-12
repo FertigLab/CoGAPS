@@ -158,7 +158,7 @@ void GapsRunner::updateSampler(unsigned nA, unsigned nP)
         mASampler.update(nA, mMaxThreads);
         if (mFixedMatrix != 'P')
         {
-            mPSampler.sync(mASampler);
+            mPSampler.sync(mASampler, mMaxThreads);
         }
         GAPS_ASSERT(mASampler.internallyConsistent());
     }
@@ -169,7 +169,7 @@ void GapsRunner::updateSampler(unsigned nA, unsigned nP)
         mPSampler.update(nP, mMaxThreads);
         if (mFixedMatrix != 'A')
         {
-            mASampler.sync(mPSampler);
+            mASampler.sync(mPSampler, mMaxThreads);
         }
         GAPS_ASSERT(mPSampler.internallyConsistent());
     }
