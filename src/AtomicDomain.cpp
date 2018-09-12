@@ -31,12 +31,13 @@ static bool vecContains(const std::vector<uint64_t> &vec, uint64_t pos)
 }
 
 // used in debug mode to check if vector is always sorted
-static bool isSorted(const std::vector<Atom*> &vec)
+bool AtomicDomain::isSorted()
 {
-    for (unsigned i = 1; i < vec.size(); ++i)
+    for (unsigned i = 1; i < mAtoms.size(); ++i)
     {
-        if (vec[i]->pos <= vec[i-1]->pos)
+        if (mAtoms[i]->pos <= mAtoms[i-1]->pos)
         {
+            gaps_printf("unsorted\n%llu\n%llu\n", mAtoms[i-1]->pos, mAtoms[i]->pos);
             return false;
         }
     }
@@ -113,7 +114,7 @@ Atom* AtomicDomain::front()
 Atom* AtomicDomain::randomAtom(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
-    GAPS_ASSERT(isSorted(mAtoms));
+    GAPS_ASSERT(isSorted());
 
     unsigned index = rng->uniform32(0, mAtoms.size() - 1);
     return mAtoms[index];
@@ -181,7 +182,8 @@ void AtomicDomain::move(uint64_t src, uint64_t dest)
 
     #pragma omp critical(AtomicInsertOrErase)
     {
-        std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(), mAtoms.end(), src, compareAtomLower);
+        std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
+            mAtoms.end(), src, compareAtomLower);
         unsigned ndx = std::distance(mAtoms.begin(), it);
         while (ndx + 1 < mAtoms.size() && dest > mAtoms[ndx + 1]->pos)
         {
@@ -190,6 +192,14 @@ void AtomicDomain::move(uint64_t src, uint64_t dest)
             mAtoms[ndx + 1] = temp;
             ++ndx;
         }
+        while (ndx > 0 && dest < mAtoms[ndx - 1]->pos)
+        {
+            Atom* temp = mAtoms[ndx];
+            mAtoms[ndx] = mAtoms[ndx - 1];
+            mAtoms[ndx - 1] = temp;
+            --ndx;
+        }
+        mAtoms[ndx]->pos = dest;
     }
 }
 

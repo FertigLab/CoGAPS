@@ -23,6 +23,7 @@ void GibbsSampler::setSparsity(float alpha, bool singleCell)
         gaps::algo::mean(mDMatrix);
 
     mAlpha = alpha;
+    mQueue.setAlpha(alpha);
     mLambda = alpha * std::sqrt(mNumPatterns / meanD);
 }
 
@@ -82,6 +83,8 @@ void GibbsSampler::update(unsigned nSteps, unsigned nCores)
         }
         mQueue.clear();
     }
+    GAPS_ASSERT(internallyConsistent());
+    GAPS_ASSERT(mDomain.isSorted());
 }
 
 void GibbsSampler::processProposal(const AtomicProposal &prop)
@@ -170,7 +173,6 @@ void GibbsSampler::move(const AtomicProposal &prop)
     AlphaParameters alpha = alphaParameters(prop.r1, prop.c1, prop.r2, prop.c2);
     if (std::log(prop.rng.uniform()) < getDeltaLL(alpha, -prop.atom1->mass) * mAnnealingTemp)
     {
-        //prop.atom1->pos = prop.pos;
         mDomain.move(prop.atom1->pos, prop.pos);
         safelyChangeMatrix(prop.r1, prop.c1, -prop.atom1->mass);
         changeMatrix(prop.r2, prop.c2, prop.atom1->mass);
@@ -381,6 +383,42 @@ Archive& operator>>(Archive &ar, GibbsSampler &s)
 #ifdef GAPS_DEBUG
 bool GibbsSampler::internallyConsistent()
 {
-    return true;
+    if (mDomain.begin() == mDomain.end())
+    {
+        float sum = gaps::algo::sum(mMatrix);
+        if (sum != 0.f)
+        {
+            gaps_printf("non-zero matrix (%f) with zero domain\n", sum);
+        }        
+        return sum == 0.f;
+    }
+
+    std::vector<Atom*>::iterator it = mDomain.begin();
+    float current = (*it)->mass;
+    unsigned row = ((*it)->pos / mBinLength) / mNumPatterns;
+    unsigned col = ((*it)->pos / mBinLength) % mNumPatterns;
+    ++it;
+    
+    for (; it != mDomain.end(); ++it)
+    {
+        if (((*it)->pos / mBinLength) / mNumPatterns != row
+        || ((*it)->pos / mBinLength) % mNumPatterns != col)
+        {
+            if (std::abs(current - mMatrix(row, col)) > 0.1f)
+            {
+                Rprintf("mass difference detected at row %lu, column %lu: %f %f\n",
+                    row, col, current, mMatrix(row, col));
+                return false;
+            }
+            current = (*it)->mass;
+            row = ((*it)->pos / mBinLength) / mNumPatterns;
+            col = ((*it)->pos / mBinLength) % mNumPatterns;
+        }
+        else
+        {
+            current += (*it)->mass;
+        }
+    }   
+    return true;  
 }
 #endif // GAPS_DEBUG

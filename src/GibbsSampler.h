@@ -65,7 +65,7 @@ private:
     
     unsigned mNumPatterns;
     uint64_t mNumBins;
-    uint64_t mBinSize;
+    uint64_t mBinLength;
     uint64_t mDomainLength;
 
     void processProposal(const AtomicProposal &prop);
@@ -112,8 +112,8 @@ mMaxGibbsMass(100.f),
 mAnnealingTemp(1.f),
 mNumPatterns(mMatrix.nCol()),
 mNumBins(mMatrix.nRow() * mMatrix.nCol()),
-mBinSize(std::numeric_limits<uint64_t>::max() / mNumBins),
-mDomainLength(mBinSize * mNumBins)
+mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins),
+mDomainLength(mBinLength * mNumBins)
 {
     // default sparsity parameters
     setSparsity(0.01, false);
