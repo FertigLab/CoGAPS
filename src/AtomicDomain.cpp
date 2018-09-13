@@ -25,6 +25,7 @@ static bool vecContains(const std::vector<Atom> &vec, uint64_t pos)
 }
 
 // used in debug mode to check if vector is always sorted
+#ifdef GAPS_DEBUG
 static bool isSorted(const std::vector<Atom> &vec)
 {
     for (unsigned i = 1; i < vec.size(); ++i)
@@ -36,6 +37,7 @@ static bool isSorted(const std::vector<Atom> &vec)
     }
     return true;
 }
+#endif
 
 ////////////////////////////////// ATOM ////////////////////////////////////////
 

@@ -2,8 +2,8 @@
 #include "math/SIMD.h"
 
 #include <Rcpp.h>
-#include <string>
 #include <sstream>
+#include <string>
 
 // these are helper functions for converting matrix/vector types
 // to and from R objects
@@ -184,7 +184,7 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices=R_NilValue,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue,
 bool isMaster=true)
 {
-    std::string unc = ""; // interpreted as null, i.e. will be ignored
+    std::string unc; // interpreted as null, i.e. will be ignored
     if (uncertainty.isNotNull())
     {
         unc = Rcpp::as<std::string>(Rcpp::CharacterVector(uncertainty));

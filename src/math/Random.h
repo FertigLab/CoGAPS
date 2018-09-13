@@ -12,8 +12,8 @@ struct OptionalFloat
     float value;
     bool hasValue;
 
-    OptionalFloat() : hasValue(false), value(0.f) {}
-    OptionalFloat(float f) : hasValue(true), value(f) {}
+    OptionalFloat() : value(0.f), hasValue(false) {}
+    OptionalFloat(float f) : value(f), hasValue(true) {}
 };
 
 namespace gaps
