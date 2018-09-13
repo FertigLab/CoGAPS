@@ -4,7 +4,6 @@
 
 //////////////////////////////// AtomicProposal ////////////////////////////////
 
-// birth/death
 AtomicProposal::AtomicProposal(char t)
     : pos(0), atom1(NULL), atom2(NULL), type(t)
 {}
@@ -33,6 +32,9 @@ void ProposalQueue::setAlpha(float alpha)
 
 void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
 {
+    GAPS_ASSERT(mQueue.empty());
+    GAPS_ASSERT(mUsedAtoms.isEmpty());
+    GAPS_ASSERT(mUsedMatrixIndices.isEmpty());
     GAPS_ASSERT(mMinAtoms == mMaxAtoms);
     GAPS_ASSERT(mMaxAtoms == domain.size());
 
@@ -190,7 +192,7 @@ bool ProposalQueue::move(AtomicDomain &domain)
     uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainLength;
     if (mUsedAtoms.contains(lbound) || mUsedAtoms.contains(rbound))
     {
-        GapsRng::rollBackOnce();
+        GapsRng::rollBackOnce(); // ensure same proposal next time
         return false; // atomic conflict - don't know neighbors
     }
 
@@ -209,7 +211,7 @@ bool ProposalQueue::move(AtomicDomain &domain)
 
     if (prop.r1 == prop.r2 && prop.c1 == prop.c2)
     {
-        prop.atom1->pos = prop.pos; // automatically accept moves in same bin
+        //prop.atom1->pos = prop.pos; // automatically accept moves in same bin
         return true;
     }
 

@@ -72,7 +72,8 @@ void GibbsSampler::update(unsigned nSteps, unsigned nCores)
     while (n < nSteps)
     {
         // populate queue, prepare domain for this queue
-        mQueue.populate(mDomain, nSteps - n);
+        //mQueue.populate(mDomain, nSteps - n);
+        mQueue.populate(mDomain, 1);
         n += mQueue.size();
         
         // process all proposed updates
