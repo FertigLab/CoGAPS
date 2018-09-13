@@ -161,27 +161,30 @@ uint64_t AtomicDomain::size() const
 
 void AtomicDomain::erase(uint64_t pos)
 {
-    GAPS_ASSERT(size() > 0);
-    GAPS_ASSERT(vecContains(mAtoms, pos));
-
-    std::vector<Atom*>::iterator it;
     Atom *a = NULL;
     #pragma omp critical(AtomicInsertOrErase)
     {
-        it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
+        GAPS_ASSERT(size() > 0);
+        GAPS_ASSERT_MSG(vecContains(mAtoms, pos), pos);
+
+        std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
+            mAtoms.end(), pos, compareAtomLower);
         Atom *a = *it;
         mAtoms.erase(it);
+
+        GAPS_ASSERT(!vecContains(mAtoms, pos));
     }
     delete a;
 }
 
 void AtomicDomain::move(uint64_t src, uint64_t dest)
 {
-    GAPS_ASSERT(size() > 0);
-    GAPS_ASSERT(vecContains(mAtoms, src));
-
     #pragma omp critical(AtomicInsertOrErase)
     {
+        GAPS_ASSERT(size() > 0);
+        GAPS_ASSERT_MSG(vecContains(mAtoms, src), src);
+        GAPS_ASSERT(!vecContains(mAtoms, dest));
+
         std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
             mAtoms.end(), src, compareAtomLower);
         unsigned ndx = std::distance(mAtoms.begin(), it);
@@ -200,6 +203,9 @@ void AtomicDomain::move(uint64_t src, uint64_t dest)
             --ndx;
         }
         mAtoms[ndx]->pos = dest;
+
+        GAPS_ASSERT(!vecContains(mAtoms, src));
+        GAPS_ASSERT(vecContains(mAtoms, dest));
     }
 }
 
@@ -209,8 +215,12 @@ Atom* AtomicDomain::insert(uint64_t pos, float mass)
     std::vector<Atom*>::iterator it;
     #pragma omp critical(AtomicInsertOrErase)
     {
+        GAPS_ASSERT(!vecContains(mAtoms, pos));
+
         it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
         it = mAtoms.insert(it, newAtom);
+
+        GAPS_ASSERT(vecContains(mAtoms, pos));
     }
     return *it;
 }

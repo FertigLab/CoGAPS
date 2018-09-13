@@ -116,7 +116,9 @@ void GapsRng::rollBackOnce()
 
 GapsRng::GapsRng()
     : mState(seeder.next())
-{}
+{
+    next();
+}
 
 uint32_t GapsRng::next()
 {
