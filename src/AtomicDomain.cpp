@@ -116,7 +116,22 @@ Atom* AtomicDomain::randomAtom(GapsRng *rng)
     GAPS_ASSERT(size() > 0);
     GAPS_ASSERT(isSorted());
 
-    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
+    //unsigned index = rng->uniform32(0, mAtoms.size() - 1);
+    //gaps_printf("size: %d random index: %d\n", mAtoms.size(), index);
+    //return mAtoms[index];
+
+    uint64_t pos = rng->uniform64(1, mDomainLength);
+    std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
+        mAtoms.end(), pos, compareAtomLower);
+    unsigned index = std::distance(mAtoms.begin(), it);
+    unsigned leftIndex = index == 0 ? 0 : index - 1;
+    index = (index == mAtoms.size()) ? index - 1 : index;
+    if (std::abs(mAtoms[leftIndex]->pos - pos) < std::abs(mAtoms[index]->pos - pos))
+    {
+        index = leftIndex;
+    }
+
+    //gaps_printf("size: %d random index: %d\n", mAtoms.size(), index);
     return mAtoms[index];
 }
 
@@ -124,7 +139,18 @@ AtomNeighborhood AtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
 
-    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
+    //unsigned index = rng->uniform32(0, mAtoms.size() - 1);
+    uint64_t pos = rng->uniform64(1, mDomainLength);
+    std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
+        mAtoms.end(), pos, compareAtomLower);
+    unsigned index = std::distance(mAtoms.begin(), it);
+    unsigned leftIndex = index == 0 ? 0 : index - 1;
+    index = (index == mAtoms.size()) ? index - 1 : index;
+    if (std::abs(mAtoms[leftIndex]->pos - pos) < std::abs(mAtoms[index]->pos - pos))
+    {
+        index = leftIndex;
+    }
+
     Atom* left = (index == 0) ? NULL : mAtoms[index - 1];
     Atom* right = (index == mAtoms.size() - 1) ? NULL : mAtoms[index + 1];
     return AtomNeighborhood(left, mAtoms[index], right);
@@ -134,7 +160,18 @@ AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
 
-    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
+    //unsigned index = rng->uniform32(0, mAtoms.size() - 1);
+    uint64_t pos = rng->uniform64(1, mDomainLength);
+    std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
+        mAtoms.end(), pos, compareAtomLower);
+    unsigned index = std::distance(mAtoms.begin(), it);
+    unsigned leftIndex = index == 0 ? 0 : index - 1;
+    index = (index == mAtoms.size()) ? index - 1 : index;
+    if (std::abs(mAtoms[leftIndex]->pos - pos) < std::abs(mAtoms[index]->pos - pos))
+    {
+        index = leftIndex;
+    }
+
     Atom* right = (index == mAtoms.size() - 1) ? NULL : mAtoms[index + 1];
     return AtomNeighborhood(NULL, mAtoms[index], right);
 }
@@ -150,6 +187,10 @@ const std::vector<uint64_t> &possibleDeaths) const
             return 0; // might actually be a free position
         }
         pos = rng->uniform64(1, mDomainLength);
+    }
+    if (vecContains(possibleDeaths, pos))
+    {
+        return 0; // might actually be a free position
     }
     return pos;
 }
