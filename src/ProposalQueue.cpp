@@ -140,7 +140,7 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
     }
     //return false;
     //return (mU1 < 0.75f) ? move(domain) : exchange(domain);
-    return death(domain);
+    return exchange(domain);
 }
 
 bool ProposalQueue::birth(AtomicDomain &domain)
