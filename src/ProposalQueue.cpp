@@ -47,6 +47,10 @@ void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
             success = false;
             mUseCachedRng = true;
         }
+        else
+        {
+            //gaps_printf("%c %llu\n", mQueue.back().type, mQueue.back().atom1->pos);
+        }
     }
 }
 
@@ -104,6 +108,11 @@ float ProposalQueue::deathProb(double nAtoms) const
 
 bool ProposalQueue::makeProposal(AtomicDomain &domain)
 {
+    mU1 = mUseCachedRng ? mU1 : mRng.uniform();
+    mU2 = mUseCachedRng ? mU2: mRng.uniform();
+    //gaps_printf("u1=%f, u2=%f\n", mU1, mU2);
+    mUseCachedRng = false;
+
     if (mMinAtoms < 2 && mMaxAtoms >= 2)
     {
         return false; // special indeterminate case
@@ -113,10 +122,6 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
     {
         return birth(domain); // always birth when no atoms exist
     }
-
-    mU1 = mUseCachedRng ? mU1 : mRng.uniform();
-    mU2 = mUseCachedRng ? mU2: mRng.uniform();
-    mUseCachedRng = false;
 
     float lowerBound = deathProb(static_cast<double>(mMinAtoms));
     float upperBound = deathProb(static_cast<double>(mMaxAtoms));
@@ -133,7 +138,9 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
         }
         return false; // can't determine B/D since range is too wide
     }
-    return (mU1 < 0.75f) ? move(domain) : exchange(domain);
+    //return false;
+    //return (mU1 < 0.75f) ? move(domain) : exchange(domain);
+    return death(domain);
 }
 
 bool ProposalQueue::birth(AtomicDomain &domain)

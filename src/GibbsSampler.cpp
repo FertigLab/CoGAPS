@@ -117,6 +117,7 @@ void GibbsSampler::birth(const AtomicProposal &prop)
         : prop.rng.exponential(mLambda);
 
     // accept mass as long as it's non-zero
+    //gaps_printf("mass: %.16f, accept: %d\n", mass, mass >= gaps::epsilon);
     if (mass >= gaps::epsilon)
     {
         mQueue.acceptBirth();
@@ -151,6 +152,7 @@ void GibbsSampler::death(const AtomicProposal &prop)
 
     // accept/reject rebirth
     float deltaLL = getDeltaLL(alpha, rebirthMass) * mAnnealingTemp;
+    //gaps_printf("deltaLL: %.16f\n", deltaLL);
     if (std::log(prop.rng.uniform()) < deltaLL)
     {
         mQueue.rejectDeath();
