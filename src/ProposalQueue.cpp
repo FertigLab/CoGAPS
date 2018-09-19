@@ -112,10 +112,6 @@ float ProposalQueue::deathProb(double nAtoms) const
 
 bool ProposalQueue::makeProposal(AtomicDomain &domain)
 {
-    mU1 = mUseCachedRng ? mU1 : mRng.uniform();
-    mU2 = mUseCachedRng ? mU2: mRng.uniform();
-    mUseCachedRng = false;
-
     if (mMinAtoms < 2 && mMaxAtoms >= 2)
     {
         return false; // special indeterminate case
@@ -125,6 +121,10 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
     {
         return birth(domain); // always birth when no atoms exist
     }
+
+    mU1 = mUseCachedRng ? mU1 : mRng.uniform();
+    mU2 = mUseCachedRng ? mU2: mRng.uniform();
+    mUseCachedRng = false;
 
     float lowerBound = deathProb(static_cast<double>(mMinAtoms));
     float upperBound = deathProb(static_cast<double>(mMaxAtoms));
@@ -147,14 +147,7 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
 bool ProposalQueue::birth(AtomicDomain &domain)
 {
     AtomicProposal prop('B');
-    uint64_t pos = domain.randomFreePosition(&(prop.rng), mUsedAtoms.vec());
-
-    if (pos == 0)
-    {
-        DEBUG_PING // want to notify since this event should have near 0 probability
-        GapsRng::rollBackOnce(); // ensure same proposal next time
-        return false; // atom conflict, might have open spot if atom moves/dies
-    }
+    uint64_t pos = domain.randomFreePosition(&(prop.rng));
 
     if (mProposedMoves.overlap(pos))
     {
@@ -181,14 +174,7 @@ bool ProposalQueue::birth(AtomicDomain &domain)
 bool ProposalQueue::death(AtomicDomain &domain)
 {
     AtomicProposal prop('D');
-    prop.atom1 = domain.randomAtom(&(prop.rng), mProposedMoves);
-
-    if (prop.atom1 == NULL)
-    {
-        GapsRng::rollBackOnce(); // ensure same proposal next time
-        return false; // can't select atom
-    }
-        
+    prop.atom1 = domain.randomAtom(&(prop.rng));
     prop.r1 = (prop.atom1->pos / mBinLength) / mNumCols;
     prop.c1 = (prop.atom1->pos / mBinLength) % mNumCols;
 
@@ -249,14 +235,7 @@ bool ProposalQueue::move(AtomicDomain &domain)
 bool ProposalQueue::exchange(AtomicDomain &domain)
 {
     AtomicProposal prop('E');
-    AtomNeighborhood hood = domain.randomAtomWithRightNeighbor(&(prop.rng), mProposedMoves);
-
-    if (hood.center == NULL)
-    {
-        GapsRng::rollBackOnce(); // ensure same proposal next time
-        return false; // can't select atom
-    }
-
+    AtomNeighborhood hood = domain.randomAtomWithRightNeighbor(&(prop.rng));
     prop.atom1 = hood.center;
     prop.atom2 = hood.hasRight() ? hood.right : domain.front();
     prop.r1 = (prop.atom1->pos / mBinLength) / mNumCols;

@@ -94,10 +94,6 @@ GapsResult GapsRunner::run(bool printThreads)
     }
     #endif
 
-#ifdef __GAPS_DEBUG_NO_QUEUE__
-    gaps_printf("Running without a queue\n");
-#endif
-
     // cascade through phases, allows algorithm to be resumed in either phase
     GAPS_ASSERT(mPhase == 'C' || mPhase == 'S');
     switch (mPhase)

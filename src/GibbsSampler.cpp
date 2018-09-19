@@ -73,11 +73,7 @@ void GibbsSampler::update(unsigned nSteps, unsigned nCores)
     while (n < nSteps)
     {
         // populate queue, prepare domain for this queue
-        #ifdef __GAPS_DEBUG_NO_QUEUE__
-        mQueue.populate(mDomain, 1);
-        #else
         mQueue.populate(mDomain, nSteps - n);
-        #endif
         n += mQueue.size();
         
         // process all proposed updates
@@ -88,6 +84,7 @@ void GibbsSampler::update(unsigned nSteps, unsigned nCores)
         }
         mQueue.clear();
     }
+
     GAPS_ASSERT(internallyConsistent());
     GAPS_ASSERT(mDomain.isSorted());
 }
@@ -142,7 +139,7 @@ void GibbsSampler::death(const AtomicProposal &prop)
     AlphaParameters alpha = alphaParametersWithChange(prop.r1, prop.c1,
         -prop.atom1->mass);
 
-    // try to calculate rebirth mass using gibbs distribution, otherwise exponetial
+    // try to calculate rebirth mass using gibbs distribution, otherwise use original
     float rebirthMass = prop.atom1->mass;
     if (canUseGibbs(prop.c1))
     {

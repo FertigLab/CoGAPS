@@ -2,7 +2,8 @@ PKG_CPPFLAGS = @GAPS_CPP_FLAGS@
 PKG_CXXFLAGS = @GAPS_CXX_FLAGS@
 PKG_LIBS = @GAPS_LIBS@
 
-OBJECTS =   AtomicDomain.o \
+OBJECTS =   AtomAllocator.o \
+            AtomicDomain.o \
             Cogaps.o \
             GapsResult.o \
             GapsRunner.o \
