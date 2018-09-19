@@ -30,44 +30,6 @@ static bool vecContains(const std::vector<uint64_t> &vec, uint64_t pos)
     return std::binary_search(vec.begin(), vec.end(), pos);
 }
 
-// used in debug mode to check if vector is always sorted
-bool AtomicDomain::isSorted()
-{
-    for (unsigned i = 1; i < mAtoms.size(); ++i)
-    {
-        if (mAtoms[i]->pos <= mAtoms[i-1]->pos)
-        {
-            gaps_printf("unsorted\n%llu\n%llu\n", mAtoms[i-1]->pos, mAtoms[i]->pos);
-            return false;
-        }
-    }
-    return true;
-}
-
-////////////////////////////////// ATOM ////////////////////////////////////////
-
-Atom::Atom() : pos(0), mass(0.f) {}
-
-Atom::Atom(uint64_t p, float m) : pos(p), mass(m) {}
-
-void Atom::operator=(Atom other)
-{
-    pos = other.pos;
-    mass = other.mass;
-}
-
-Archive& operator<<(Archive &ar, Atom &a)
-{
-    ar << a.pos << a.mass;
-    return ar;
-}
-
-Archive& operator>>(Archive &ar, Atom &a)
-{
-    ar >> a.pos >> a.mass;
-    return ar;
-}
-
 //////////////////////////// ATOM NEIGHBORHOOD /////////////////////////////////
 
 AtomNeighborhood::AtomNeighborhood()
@@ -96,14 +58,6 @@ AtomicDomain::AtomicDomain(uint64_t nBins)
     mDomainLength = binLength * nBins;
 }
 
-AtomicDomain::~AtomicDomain()
-{
-    for (unsigned i = 0; i < mAtoms.size(); ++i)
-    {
-        delete mAtoms[i];
-    }
-}
-
 Atom* AtomicDomain::front()
 {
     GAPS_ASSERT(size() > 0);
@@ -111,33 +65,11 @@ Atom* AtomicDomain::front()
     return mAtoms.front();
 }
 
-Atom* AtomicDomain::randomAtom(GapsRng *rng, const SmallPairedHashSetU64 &moves)
+Atom* AtomicDomain::randomAtom(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
-    GAPS_ASSERT(isSorted());
 
-    //unsigned index = rng->uniform32(0, mAtoms.size() - 1);
-    //gaps_printf("size: %d random index: %d\n", mAtoms.size(), index);
-    //return mAtoms[index];
-
-    uint64_t pos = rng->uniform64(1, mDomainLength);
-    std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
-        mAtoms.end(), pos, compareAtomLower);
-    unsigned index = std::distance(mAtoms.begin(), it);
-    unsigned leftIndex = index == 0 ? 0 : index - 1;
-    index = (index == mAtoms.size()) ? index - 1 : index;
-
-    if (moves.contains(mAtoms[leftIndex]->pos) || moves.contains(mAtoms[index]->pos))
-    {
-        return NULL;
-    }
-
-    if (std::abs(mAtoms[leftIndex]->pos - pos) < std::abs(mAtoms[index]->pos - pos))
-    {
-        index = leftIndex;
-    }
-
-    //gaps_printf("size: %d random index: %d\n", mAtoms.size(), index);
+    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
     return mAtoms[index];
 }
 
@@ -145,66 +77,27 @@ AtomNeighborhood AtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
 
-    //unsigned index = rng->uniform32(0, mAtoms.size() - 1);
-    uint64_t pos = rng->uniform64(1, mDomainLength);
-    std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
-        mAtoms.end(), pos, compareAtomLower);
-    unsigned index = std::distance(mAtoms.begin(), it);
-    unsigned leftIndex = index == 0 ? 0 : index - 1;
-    index = (index == mAtoms.size()) ? index - 1 : index;
-    if (std::abs(mAtoms[leftIndex]->pos - pos) < std::abs(mAtoms[index]->pos - pos))
-    {
-        index = leftIndex;
-    }
-
-    //gaps_printf("index: %d, size: %d\n", index, mAtoms.size());
+    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
     Atom* left = (index == 0) ? NULL : mAtoms[index - 1];
     Atom* right = (index == mAtoms.size() - 1) ? NULL : mAtoms[index + 1];
     return AtomNeighborhood(left, mAtoms[index], right);
 }
 
-AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor(GapsRng *rng,
-const SmallPairedHashSetU64 &moves)
+AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
 
-    //unsigned index = rng->uniform32(0, mAtoms.size() - 1);
-    uint64_t pos = rng->uniform64(1, mDomainLength);
-    std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
-        mAtoms.end(), pos, compareAtomLower);
-    unsigned index = std::distance(mAtoms.begin(), it);
-    unsigned leftIndex = index == 0 ? 0 : index - 1;
-    index = (index == mAtoms.size()) ? index - 1 : index;
-
-    if (moves.contains(mAtoms[leftIndex]->pos) || moves.contains(mAtoms[index]->pos))
-    {
-        return AtomNeighborhood(NULL, NULL, NULL);
-    }
-
-    if (std::abs(mAtoms[leftIndex]->pos - pos) < std::abs(mAtoms[index]->pos - pos))
-    {
-        index = leftIndex;
-    }
-
+    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
     Atom* right = (index == mAtoms.size() - 1) ? NULL : mAtoms[index + 1];
     return AtomNeighborhood(NULL, mAtoms[index], right);
 }
 
-uint64_t AtomicDomain::randomFreePosition(GapsRng *rng,
-const std::vector<uint64_t> &possibleDeaths) const
+uint64_t AtomicDomain::randomFreePosition(GapsRng *rng) const
 {
     uint64_t pos = rng->uniform64(1, mDomainLength);
     while (vecContains(mAtoms, pos))
     {
-        if (vecContains(possibleDeaths, pos))
-        {
-            return 0; // might actually be a free position
-        }
         pos = rng->uniform64(1, mDomainLength);
-    }
-    if (vecContains(possibleDeaths, pos))
-    {
-        return 0; // might actually be a free position
     }
     return pos;
 }
@@ -216,23 +109,18 @@ uint64_t AtomicDomain::size() const
 
 Atom* AtomicDomain::insert(uint64_t pos, float mass)
 {
-    Atom *newAtom = new Atom(pos, mass);
+    GAPS_ASSERT(!vecContains(mAtoms, pos));
+
     std::vector<Atom*>::iterator it;
-    #pragma omp critical(AtomicInsertOrErase)
-    {
-        GAPS_ASSERT(!vecContains(mAtoms, pos));
+    it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
+    it = mAtoms.insert(it, mAllocator.createAtom(pos, mass));
 
-        it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
-        it = mAtoms.insert(it, newAtom);
-
-        GAPS_ASSERT(vecContains(mAtoms, pos));
-    }
+    GAPS_ASSERT(vecContains(mAtoms, pos));
     return *it;
 }
 
 void AtomicDomain::erase(uint64_t pos)
 {
-    Atom *a = NULL;
     #pragma omp critical(AtomicInsertOrErase)
     {
         GAPS_ASSERT(size() > 0);
@@ -240,46 +128,12 @@ void AtomicDomain::erase(uint64_t pos)
 
         std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
             mAtoms.end(), pos, compareAtomLower);
-        a = *it;
+        mAllocator.destroyAtom(*it);
         mAtoms.erase(it);
 
         GAPS_ASSERT(!vecContains(mAtoms, pos));
     }
-    delete a;
 }
-
-// for moving across a later birth (already present in domain)
-/*void AtomicDomain::move(uint64_t src, uint64_t dest)
-{
-    #pragma omp critical(AtomicInsertOrErase)
-    {
-        GAPS_ASSERT(size() > 0);
-        GAPS_ASSERT_MSG(vecContains(mAtoms, src), src);
-        GAPS_ASSERT(!vecContains(mAtoms, dest));
-
-        std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
-            mAtoms.end(), src, compareAtomLower);
-        unsigned ndx = std::distance(mAtoms.begin(), it);
-        while (ndx + 1 < mAtoms.size() && dest > mAtoms[ndx + 1]->pos)
-        {
-            Atom* temp = mAtoms[ndx];
-            mAtoms[ndx] = mAtoms[ndx + 1];
-            mAtoms[ndx + 1] = temp;
-            ++ndx;
-        }
-        while (ndx > 0 && dest < mAtoms[ndx - 1]->pos)
-        {
-            Atom* temp = mAtoms[ndx];
-            mAtoms[ndx] = mAtoms[ndx - 1];
-            mAtoms[ndx - 1] = temp;
-            --ndx;
-        }
-        mAtoms[ndx]->pos = dest;
-
-        GAPS_ASSERT(!vecContains(mAtoms, src));
-        GAPS_ASSERT(vecContains(mAtoms, dest));
-    }
-}*/
 
 Archive& operator<<(Archive &ar, AtomicDomain &domain)
 {
@@ -304,3 +158,34 @@ Archive& operator>>(Archive &ar, AtomicDomain &domain)
     }
     return ar;
 }
+
+////////////////////// ATOMIC DOMAIN DEBUG FUNCTIONS ///////////////////////////
+
+#ifdef GAPS_DEBUG
+
+std::vector<Atom*>::iterator AtomicDomain::begin()
+{
+    return mAtoms.begin();
+}
+
+std::vector<Atom*>::iterator AtomicDomain::end()
+{
+    return mAtoms.end();
+}
+
+// used in debug mode to check if vector is always sorted
+bool AtomicDomain::isSorted()
+{
+    for (unsigned i = 1; i < mAtoms.size(); ++i)
+    {
+        if (mAtoms[i]->pos <= mAtoms[i-1]->pos)
+        {
+            gaps_printf("unsorted\n%llu\n%llu\n", mAtoms[i-1]->pos, mAtoms[i]->pos);
+            return false;
+        }
+    }
+    return true;
+}
+
+#endif
+
