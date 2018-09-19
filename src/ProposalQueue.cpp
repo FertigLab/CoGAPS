@@ -1,4 +1,5 @@
 #include "ProposalQueue.h"
+#include "math/Algorithms.h"
 #include "math/Random.h"
 #include "utils/GapsAssert.h"
 
@@ -30,11 +31,17 @@ void ProposalQueue::setAlpha(float alpha)
     mAlpha = static_cast<double>(alpha);
 }
 
+void ProposalQueue::setLambda(float lambda)
+{
+    mLambda = lambda;
+}
+
 void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
 {
     GAPS_ASSERT(mQueue.empty());
     GAPS_ASSERT(mUsedAtoms.isEmpty());
     GAPS_ASSERT(mUsedMatrixIndices.isEmpty());
+    GAPS_ASSERT(mProposedMoves.isEmpty());
     GAPS_ASSERT(mMinAtoms == mMaxAtoms);
     GAPS_ASSERT(mMaxAtoms == domain.size());
 
@@ -47,10 +54,6 @@ void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
             success = false;
             mUseCachedRng = true;
         }
-        else
-        {
-            //gaps_printf("%c %llu\n", mQueue.back().type, mQueue.back().atom1->pos);
-        }
     }
 }
 
@@ -61,6 +64,7 @@ void ProposalQueue::clear()
     mQueue.clear();
     mUsedMatrixIndices.clear();
     mUsedAtoms.clear();
+    mProposedMoves.clear();
 }
 
 unsigned ProposalQueue::size() const
@@ -110,7 +114,6 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
 {
     mU1 = mUseCachedRng ? mU1 : mRng.uniform();
     mU2 = mUseCachedRng ? mU2: mRng.uniform();
-    //gaps_printf("u1=%f, u2=%f\n", mU1, mU2);
     mUseCachedRng = false;
 
     if (mMinAtoms < 2 && mMaxAtoms >= 2)
@@ -138,20 +141,25 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
         }
         return false; // can't determine B/D since range is too wide
     }
-    //return false;
-    //return (mU1 < 0.75f) ? move(domain) : exchange(domain);
-    return exchange(domain);
+    return (mU1 < 0.75f) ? move(domain) : exchange(domain);
 }
 
 bool ProposalQueue::birth(AtomicDomain &domain)
 {
     AtomicProposal prop('B');
     uint64_t pos = domain.randomFreePosition(&(prop.rng), mUsedAtoms.vec());
+
     if (pos == 0)
     {
         DEBUG_PING // want to notify since this event should have near 0 probability
         GapsRng::rollBackOnce(); // ensure same proposal next time
         return false; // atom conflict, might have open spot if atom moves/dies
+    }
+
+    if (mProposedMoves.overlap(pos))
+    {
+        GapsRng::rollBackOnce(); // ensure same proposal next time
+        return false; // this birth would break assumption moves doesn't re-order domain
     }
 
     prop.r1 = (pos / mBinLength) / mNumCols;
@@ -173,7 +181,14 @@ bool ProposalQueue::birth(AtomicDomain &domain)
 bool ProposalQueue::death(AtomicDomain &domain)
 {
     AtomicProposal prop('D');
-    prop.atom1 = domain.randomAtom(&(prop.rng));
+    prop.atom1 = domain.randomAtom(&(prop.rng), mProposedMoves);
+
+    if (prop.atom1 == NULL)
+    {
+        GapsRng::rollBackOnce(); // ensure same proposal next time
+        return false; // can't select atom
+    }
+        
     prop.r1 = (prop.atom1->pos / mBinLength) / mNumCols;
     prop.c1 = (prop.atom1->pos / mBinLength) % mNumCols;
 
@@ -196,7 +211,8 @@ bool ProposalQueue::move(AtomicDomain &domain)
     AtomNeighborhood hood = domain.randomAtomWithNeighbors(&(prop.rng));
 
     uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
-    uint64_t rbound = hood.hasRight() ? hood.right->pos : mDomainLength;
+    uint64_t rbound = hood.hasRight() ? hood.right->pos : static_cast<uint64_t>(mDomainLength);
+
     if (mUsedAtoms.contains(lbound) || mUsedAtoms.contains(rbound))
     {
         GapsRng::rollBackOnce(); // ensure same proposal next time
@@ -218,25 +234,31 @@ bool ProposalQueue::move(AtomicDomain &domain)
 
     if (prop.r1 == prop.r2 && prop.c1 == prop.c2)
     {
-        //prop.atom1->pos = prop.pos; // automatically accept moves in same bin
-        return true;
+        prop.atom1->pos = prop.pos;
+        return true; // automatically accept moves in same bin
     }
 
     mQueue.push_back(prop);
     mUsedMatrixIndices.insert(prop.r1);
     mUsedMatrixIndices.insert(prop.r2);
     mUsedAtoms.insert(prop.atom1->pos);
-    mUsedAtoms.insert(prop.pos);
+    mProposedMoves.insert(prop.atom1->pos, prop.pos);
     return true;
 }
 
 bool ProposalQueue::exchange(AtomicDomain &domain)
 {
     AtomicProposal prop('E');
-    AtomNeighborhood hood = domain.randomAtomWithRightNeighbor(&(prop.rng));
+    AtomNeighborhood hood = domain.randomAtomWithRightNeighbor(&(prop.rng), mProposedMoves);
+
+    if (hood.center == NULL)
+    {
+        GapsRng::rollBackOnce(); // ensure same proposal next time
+        return false; // can't select atom
+    }
+
     prop.atom1 = hood.center;
     prop.atom2 = hood.hasRight() ? hood.right : domain.front();
-
     prop.r1 = (prop.atom1->pos / mBinLength) / mNumCols;
     prop.c1 = (prop.atom1->pos / mBinLength) % mNumCols;
     prop.r2 = (prop.atom2->pos / mBinLength) / mNumCols;
@@ -250,14 +272,14 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
 
     if (prop.r1 == prop.r2 && prop.c1 == prop.c2)
     {
-        //float newMass = prop.rng.truncGammaUpper(a1->mass + a2->mass, 2.f, 1.f / mLambda);
-        //float delta = (a1->mass > a2->mass) ? newMass - a1->mass : a2->mass - newMass;
-        //if (a1->mass + delta > gaps::epsilon && a2->mass - delta > gaps::epsilon)
-        //{
-        //    a1->mass += delta;
-        //    a2->mass -= delta;
-        //}        
-        return true; // TODO automatically accept exchanges in same bin
+        float newMass = prop.rng.truncGammaUpper(prop.atom1->mass + prop.atom2->mass, 2.f, 1.f / mLambda);
+        float delta = (prop.atom1->mass > prop.atom2->mass) ? newMass - prop.atom1->mass : prop.atom2->mass - newMass;
+        if (prop.atom1->mass + delta > gaps::epsilon && prop.atom2->mass - delta > gaps::epsilon)
+        {
+            prop.atom1->mass += delta;
+            prop.atom2->mass -= delta;
+        }        
+        return true;
     }
 
     mQueue.push_back(prop);

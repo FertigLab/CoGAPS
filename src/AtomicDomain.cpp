@@ -111,7 +111,7 @@ Atom* AtomicDomain::front()
     return mAtoms.front();
 }
 
-Atom* AtomicDomain::randomAtom(GapsRng *rng)
+Atom* AtomicDomain::randomAtom(GapsRng *rng, const SmallPairedHashSetU64 &moves)
 {
     GAPS_ASSERT(size() > 0);
     GAPS_ASSERT(isSorted());
@@ -126,6 +126,12 @@ Atom* AtomicDomain::randomAtom(GapsRng *rng)
     unsigned index = std::distance(mAtoms.begin(), it);
     unsigned leftIndex = index == 0 ? 0 : index - 1;
     index = (index == mAtoms.size()) ? index - 1 : index;
+
+    if (moves.contains(mAtoms[leftIndex]->pos) || moves.contains(mAtoms[index]->pos))
+    {
+        return NULL;
+    }
+
     if (std::abs(mAtoms[leftIndex]->pos - pos) < std::abs(mAtoms[index]->pos - pos))
     {
         index = leftIndex;
@@ -151,12 +157,14 @@ AtomNeighborhood AtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
         index = leftIndex;
     }
 
+    //gaps_printf("index: %d, size: %d\n", index, mAtoms.size());
     Atom* left = (index == 0) ? NULL : mAtoms[index - 1];
     Atom* right = (index == mAtoms.size() - 1) ? NULL : mAtoms[index + 1];
     return AtomNeighborhood(left, mAtoms[index], right);
 }
 
-AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor(GapsRng *rng)
+AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor(GapsRng *rng,
+const SmallPairedHashSetU64 &moves)
 {
     GAPS_ASSERT(size() > 0);
 
@@ -167,6 +175,12 @@ AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor(GapsRng *rng)
     unsigned index = std::distance(mAtoms.begin(), it);
     unsigned leftIndex = index == 0 ? 0 : index - 1;
     index = (index == mAtoms.size()) ? index - 1 : index;
+
+    if (moves.contains(mAtoms[leftIndex]->pos) || moves.contains(mAtoms[index]->pos))
+    {
+        return AtomNeighborhood(NULL, NULL, NULL);
+    }
+
     if (std::abs(mAtoms[leftIndex]->pos - pos) < std::abs(mAtoms[index]->pos - pos))
     {
         index = leftIndex;
@@ -200,6 +214,22 @@ uint64_t AtomicDomain::size() const
     return mAtoms.size();
 }
 
+Atom* AtomicDomain::insert(uint64_t pos, float mass)
+{
+    Atom *newAtom = new Atom(pos, mass);
+    std::vector<Atom*>::iterator it;
+    #pragma omp critical(AtomicInsertOrErase)
+    {
+        GAPS_ASSERT(!vecContains(mAtoms, pos));
+
+        it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
+        it = mAtoms.insert(it, newAtom);
+
+        GAPS_ASSERT(vecContains(mAtoms, pos));
+    }
+    return *it;
+}
+
 void AtomicDomain::erase(uint64_t pos)
 {
     Atom *a = NULL;
@@ -210,7 +240,7 @@ void AtomicDomain::erase(uint64_t pos)
 
         std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
             mAtoms.end(), pos, compareAtomLower);
-        Atom *a = *it;
+        a = *it;
         mAtoms.erase(it);
 
         GAPS_ASSERT(!vecContains(mAtoms, pos));
@@ -218,7 +248,8 @@ void AtomicDomain::erase(uint64_t pos)
     delete a;
 }
 
-void AtomicDomain::move(uint64_t src, uint64_t dest)
+// for moving across a later birth (already present in domain)
+/*void AtomicDomain::move(uint64_t src, uint64_t dest)
 {
     #pragma omp critical(AtomicInsertOrErase)
     {
@@ -248,23 +279,7 @@ void AtomicDomain::move(uint64_t src, uint64_t dest)
         GAPS_ASSERT(!vecContains(mAtoms, src));
         GAPS_ASSERT(vecContains(mAtoms, dest));
     }
-}
-
-Atom* AtomicDomain::insert(uint64_t pos, float mass)
-{
-    Atom *newAtom = new Atom(pos, mass);
-    std::vector<Atom*>::iterator it;
-    #pragma omp critical(AtomicInsertOrErase)
-    {
-        GAPS_ASSERT(!vecContains(mAtoms, pos));
-
-        it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
-        it = mAtoms.insert(it, newAtom);
-
-        GAPS_ASSERT(vecContains(mAtoms, pos));
-    }
-    return *it;
-}
+}*/
 
 Archive& operator<<(Archive &ar, AtomicDomain &domain)
 {

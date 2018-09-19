@@ -8,7 +8,7 @@
 
 #include <boost/unordered_set.hpp>
 
-#ifdef __GAPS_OPENMP__
+#ifdef __GAPS_OPENMP__ // defined in global config
 #include <omp.h>
 #endif
 
@@ -44,6 +44,31 @@ public:
 private:
 
     std::vector<uint64_t> mSet;
+};
+
+struct PositionPair
+{
+    uint64_t a;
+    uint64_t b;
+
+    PositionPair(uint64_t inA, uint64_t inB) : a(inA), b(inB) {}
+};
+
+class SmallPairedHashSetU64
+{
+public:
+
+    SmallPairedHashSetU64();
+
+    void insert(uint64_t a, uint64_t b);
+    void clear();
+    bool contains(uint64_t pos) const;
+    bool overlap(uint64_t pos);
+    bool isEmpty();
+
+private:
+
+    std::vector<PositionPair> mSet;
 };
 
 #endif // __COGAPS_HASH_SETS_H__

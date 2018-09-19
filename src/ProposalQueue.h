@@ -35,6 +35,7 @@ public:
     // initialize
     ProposalQueue(unsigned nrow, unsigned ncol);
     void setAlpha(float alpha);
+    void setLambda(float lambda);
 
     // modify/access queue
     void populate(AtomicDomain &domain, unsigned limit);
@@ -58,6 +59,7 @@ private:
     
     FixedHashSetU32 mUsedMatrixIndices;
     SmallHashSetU64 mUsedAtoms;
+    SmallPairedHashSetU64 mProposedMoves;
 
     mutable GapsRng mRng;
 
@@ -70,6 +72,7 @@ private:
     double mDomainLength; // length of entire atomic domain
     double mNumBins; // number of matrix elements
 
+    float mLambda;
     float mU1;
     float mU2;
 
