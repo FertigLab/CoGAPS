@@ -1,8 +1,9 @@
 #ifndef __COGAPS_ATOMIC_DOMAIN_H__
 #define __COGAPS_ATOMIC_DOMAIN_H__
 
-#include "utils/Archive.h"
+#include "data_structures/HashSets.h"
 #include "math/Random.h"
+#include "utils/Archive.h"
 
 #include <vector>
 
@@ -44,9 +45,9 @@ public:
 
     // access atoms
     Atom* front();
-    Atom* randomAtom(GapsRng *rng);
+    Atom* randomAtom(GapsRng *rng, const SmallPairedHashSetU64 &moves);
     AtomNeighborhood randomAtomWithNeighbors(GapsRng *rng);
-    AtomNeighborhood randomAtomWithRightNeighbor(GapsRng *rng);
+    AtomNeighborhood randomAtomWithRightNeighbor(GapsRng *rng, const SmallPairedHashSetU64 &moves);
 
     Atom* getLeftNeighbor(uint64_t pos);
     Atom* getRightNeighbor(uint64_t pos);
@@ -57,7 +58,7 @@ public:
 
     // these need to happen concurrently without invalidating pointers
     void erase(uint64_t pos);
-    void move(uint64_t src, uint64_t dest);
+    //void move(uint64_t src, uint64_t dest);
 
     // iterators
     std::vector<Atom*>::iterator begin() { return mAtoms.begin(); }

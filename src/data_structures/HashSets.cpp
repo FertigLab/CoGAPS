@@ -70,3 +70,49 @@ const std::vector<uint64_t>& SmallHashSetU64::vec()
 {
     return mSet;
 }
+
+///////////////////////////// SmallPairedHashSetU64 ////////////////////////////
+
+SmallPairedHashSetU64::SmallPairedHashSetU64() {}
+
+
+void SmallPairedHashSetU64::insert(uint64_t a, uint64_t b)
+{
+    mSet.push_back(a < b ? PositionPair(a, b) : PositionPair(b, a));
+}
+
+void SmallPairedHashSetU64::clear()
+{
+    mSet.clear();
+}
+
+bool SmallPairedHashSetU64::overlap(uint64_t pos)
+{
+    unsigned sz = mSet.size();
+    for (unsigned i = 0; i < sz; ++i)
+    {
+        if (mSet[i].a < pos && pos < mSet[i].b)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SmallPairedHashSetU64::contains(uint64_t pos) const
+{
+    unsigned sz = mSet.size();
+    for (unsigned i = 0; i < sz; ++i)
+    {
+        if (mSet[i].a == pos || mSet[i].b == pos)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SmallPairedHashSetU64::isEmpty()
+{
+    return mSet.empty();
+}

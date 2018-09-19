@@ -22,9 +22,9 @@ static Xoroshiro128plus seeder;
 
 /////////////////////////////// OptionalFloat //////////////////////////////////
 
-OptionalFloat::OptionalFloat() : mHasValue(false), mValue(0.f) {}
+OptionalFloat::OptionalFloat() : mValue(0.f), mHasValue(false) {}
 
-OptionalFloat::OptionalFloat(float f) : mHasValue(true), mValue(f) {}
+OptionalFloat::OptionalFloat(float f) : mValue(f), mHasValue(true) {}
 
 float OptionalFloat::value()
 {

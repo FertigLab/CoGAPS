@@ -23,8 +23,9 @@ void GibbsSampler::setSparsity(float alpha, bool singleCell)
         gaps::algo::mean(mDMatrix);
 
     mAlpha = alpha;
-    mQueue.setAlpha(alpha);
     mLambda = alpha * std::sqrt(mNumPatterns / meanD);
+    mQueue.setAlpha(alpha);
+    mQueue.setLambda(mLambda);
 }
 
 void GibbsSampler::setMaxGibbsMass(float max)
@@ -72,8 +73,11 @@ void GibbsSampler::update(unsigned nSteps, unsigned nCores)
     while (n < nSteps)
     {
         // populate queue, prepare domain for this queue
+        #ifdef __GAPS_DEBUG_NO_QUEUE__
+        mQueue.populate(mDomain, 1);
+        #else
         mQueue.populate(mDomain, nSteps - n);
-        //mQueue.populate(mDomain, 1);
+        #endif
         n += mQueue.size();
         
         // process all proposed updates
@@ -117,7 +121,6 @@ void GibbsSampler::birth(const AtomicProposal &prop)
         : prop.rng.exponential(mLambda);
 
     // accept mass as long as it's non-zero
-    //gaps_printf("mass: %.16f, accept: %d\n", mass, mass >= gaps::epsilon);
     if (mass >= gaps::epsilon)
     {
         mQueue.acceptBirth();
@@ -152,7 +155,6 @@ void GibbsSampler::death(const AtomicProposal &prop)
 
     // accept/reject rebirth
     float deltaLL = getDeltaLL(alpha, rebirthMass) * mAnnealingTemp;
-    //gaps_printf("deltaLL: %.16f\n", deltaLL);
     if (std::log(prop.rng.uniform()) < deltaLL)
     {
         mQueue.rejectDeath();
@@ -176,7 +178,7 @@ void GibbsSampler::move(const AtomicProposal &prop)
     AlphaParameters alpha = alphaParameters(prop.r1, prop.c1, prop.r2, prop.c2);
     if (std::log(prop.rng.uniform()) < getDeltaLL(alpha, -prop.atom1->mass) * mAnnealingTemp)
     {
-        mDomain.move(prop.atom1->pos, prop.pos);
+        prop.atom1->pos = prop.pos;
         safelyChangeMatrix(prop.r1, prop.c1, -prop.atom1->mass);
         changeMatrix(prop.r2, prop.c2, prop.atom1->mass);
     }
