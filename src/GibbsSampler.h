@@ -24,8 +24,7 @@ public:
     unsigned dataRows() const;
     unsigned dataCols() const;
     
-    void setSparsity(float alpha, bool singleCell);
-    void setMaxGibbsMass(float max);
+    void setSparsity(float alpha, float maxGibbsMass, bool singleCell);
     void setAnnealingTemp(float temp);
     void setMatrix(const Matrix &mat);
 
@@ -80,9 +79,6 @@ private:
     void acceptExchange(const AtomicProposal &prop, float delta);
     bool updateAtomMass(Atom *atom, float delta);
 
-    OptionalFloat gibbsMass(AlphaParameters alpha, GapsRng *rng);
-    OptionalFloat gibbsMass(AlphaParameters alpha, float m1, float m2, GapsRng *rng);
-
     void changeMatrix(unsigned row, unsigned col, float delta);
     void safelyChangeMatrix(unsigned row, unsigned col, float delta);
     void updateAPMatrix(unsigned row, unsigned col, float delta);
@@ -108,7 +104,7 @@ mOtherMatrix(NULL),
 mDomain(mMatrix.nRow() * mMatrix.nCol()),
 mQueue(mMatrix.nRow(), mMatrix.nCol()),
 mLambda(0.f),
-mMaxGibbsMass(100.f),
+mMaxGibbsMass(0.f),
 mAnnealingTemp(1.f),
 mNumPatterns(mMatrix.nCol()),
 mNumBins(mMatrix.nRow() * mMatrix.nCol()),
@@ -116,7 +112,7 @@ mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins),
 mDomainLength(mBinLength * mNumBins)
 {
     // default sparsity parameters
-    setSparsity(0.01, false);
+    setSparsity(0.01, 100.f, false);
 }
 
 template <class DataType>

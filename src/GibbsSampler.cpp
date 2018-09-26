@@ -7,6 +7,18 @@ static float getDeltaLL(AlphaParameters alpha, float mass)
     return mass * (alpha.s_mu - alpha.s * mass / 2.f);
 }
 
+static OptionalFloat gibbsMass(AlphaParameters alpha, float a, float b,
+float lambda, GapsRng *rng)
+{
+    if (alpha.s > gaps::epsilon)
+    {
+        float mean = (alpha.s_mu - lambda) / alpha.s;
+        float sd = 1.f / std::sqrt(alpha.s);
+        return rng->truncNormal(a, b, mean, sd);
+    }
+    return OptionalFloat();
+}
+
 unsigned GibbsSampler::dataRows() const
 {
     return mDMatrix.nRow();
@@ -17,7 +29,7 @@ unsigned GibbsSampler::dataCols() const
     return mDMatrix.nCol();
 }
 
-void GibbsSampler::setSparsity(float alpha, bool singleCell)
+void GibbsSampler::setSparsity(float alpha, float maxGibbsMass, bool singleCell)
 {
     float meanD = singleCell ? gaps::algo::nonZeroMean(mDMatrix) :
         gaps::algo::mean(mDMatrix);
@@ -26,11 +38,7 @@ void GibbsSampler::setSparsity(float alpha, bool singleCell)
     mLambda = alpha * std::sqrt(mNumPatterns / meanD);
     mQueue.setAlpha(alpha);
     mQueue.setLambda(mLambda);
-}
-
-void GibbsSampler::setMaxGibbsMass(float max)
-{
-    mMaxGibbsMass = max;
+    mMaxGibbsMass = maxGibbsMass / mLambda;
 }
 
 void GibbsSampler::setAnnealingTemp(float temp)
@@ -113,9 +121,16 @@ void GibbsSampler::processProposal(const AtomicProposal &prop)
 void GibbsSampler::birth(const AtomicProposal &prop)
 {
     // calculate proposed mass
-    float mass = canUseGibbs(prop.c1)
-        ? gibbsMass(alphaParameters(prop.r1, prop.c1), &(prop.rng)).value()
-        : prop.rng.exponential(mLambda);
+    float mass = 0.f;
+    if (canUseGibbs(prop.c1))
+    {
+        mass = gibbsMass(alphaParameters(prop.r1, prop.c1) * mAnnealingTemp,
+            0.f, mMaxGibbsMass, mLambda, &(prop.rng)).value();
+    }
+    else
+    {
+        mass = prop.rng.exponential(mLambda);
+    }
 
     // accept mass as long as it's non-zero
     if (mass >= gaps::epsilon)
@@ -143,7 +158,8 @@ void GibbsSampler::death(const AtomicProposal &prop)
     float rebirthMass = prop.atom1->mass;
     if (canUseGibbs(prop.c1))
     {
-        OptionalFloat gMass = gibbsMass(alpha, &(prop.rng));
+        OptionalFloat gMass = gibbsMass(alpha * mAnnealingTemp, 0.f,
+            mMaxGibbsMass, mLambda, &(prop.rng));
         if (gMass.hasValue())
         {
             rebirthMass = gMass.value();
@@ -152,7 +168,7 @@ void GibbsSampler::death(const AtomicProposal &prop)
 
     // accept/reject rebirth
     float deltaLL = getDeltaLL(alpha, rebirthMass) * mAnnealingTemp;
-    if (std::log(prop.rng.uniform()) < deltaLL)
+    if (std::log(prop.rng.uniform()) < deltaLL) // accept rebirth
     {
         mQueue.rejectDeath();
         if (rebirthMass != prop.atom1->mass)
@@ -161,7 +177,7 @@ void GibbsSampler::death(const AtomicProposal &prop)
         }
         prop.atom1->mass = rebirthMass;
     }
-    else
+    else // reject rebirth
     {
         mQueue.acceptDeath();
         safelyChangeMatrix(prop.r1, prop.c1, -prop.atom1->mass);
@@ -189,8 +205,8 @@ void GibbsSampler::exchange(const AtomicProposal &prop)
     AlphaParameters alpha = alphaParameters(prop.r1, prop.c1, prop.r2, prop.c2);
     if (canUseGibbs(prop.c1, prop.c2))
     {
-        OptionalFloat gMass = gibbsMass(alpha, prop.atom1->mass,
-            prop.atom2->mass, &(prop.rng));
+        OptionalFloat gMass = gibbsMass(alpha * mAnnealingTemp,
+            -prop.atom1->mass, prop.atom2->mass, 0.f, &(prop.rng));
         if (gMass.hasValue())
         {
             acceptExchange(prop, gMass.value());
@@ -244,54 +260,6 @@ void GibbsSampler::acceptExchange(const AtomicProposal &prop, float delta)
         changeMatrix(prop.r1, prop.c1, delta);
         changeMatrix(prop.r2, prop.c2, -delta);
     }
-}
-
-OptionalFloat GibbsSampler::gibbsMass(AlphaParameters alpha,
-GapsRng *rng)
-{        
-    alpha.s *= mAnnealingTemp;
-    alpha.s_mu *= mAnnealingTemp;
-
-    if (alpha.s > gaps::epsilon)
-    {
-        float mean = (alpha.s_mu - mLambda) / alpha.s;
-        float sd = 1.f / std::sqrt(alpha.s);
-        float pLower = gaps::p_norm(0.f, mean, sd);
-
-        if (pLower < 1.f)
-        {
-            float m = rng->inverseNormSample(pLower, 1.f, mean, sd);
-            float gMass = gaps::min(m, mMaxGibbsMass / mLambda);
-            if (gMass >= gaps::epsilon)
-            {
-                return OptionalFloat(gMass);
-            }
-        }
-    }
-    return OptionalFloat();
-}
-
-OptionalFloat GibbsSampler::gibbsMass(AlphaParameters alpha,
-float m1, float m2, GapsRng *rng)
-{
-    alpha.s *= mAnnealingTemp;
-    alpha.s_mu *= mAnnealingTemp;
-
-    if (alpha.s > gaps::epsilon)
-    {
-        float mean = alpha.s_mu / alpha.s; // lambda cancels out
-        float sd = 1.f / std::sqrt(alpha.s);
-        float pLower = gaps::p_norm(-m1, mean, sd);
-        float pUpper = gaps::p_norm(m2, mean, sd);
-
-        if (!(pLower >  0.95f || pUpper < 0.05f))
-        {
-            float delta = rng->inverseNormSample(pLower, pUpper, mean, sd);
-            float gMass = gaps::min(gaps::max(-m1, delta), m2); // conserve mass
-            return OptionalFloat(gMass);
-        }
-    }
-    return OptionalFloat();
 }
 
 // here mass + delta is guaranteed to be positive

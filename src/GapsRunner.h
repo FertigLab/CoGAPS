@@ -64,8 +64,8 @@ public:
     uint32_t getSeed() const;
 
     void setMaxIterations(unsigned nIterations);
-    void setSparsity(float alphaA, float alphaP, bool singleCell);
-    void setMaxGibbsMass(float maxA, float maxP);
+    void setSparsity(float alphaA, float alphaP, float maxA, float maxP,
+        bool singleCell);
     
     void setMaxThreads(unsigned nThreads);
     void setPrintMessages(bool print);
