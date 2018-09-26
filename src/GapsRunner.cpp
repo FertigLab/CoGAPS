@@ -42,16 +42,11 @@ void GapsRunner::setMaxIterations(unsigned nIterations)
     mMaxIterations = nIterations;
 }
 
-void GapsRunner::setSparsity(float alphaA, float alphaP, bool singleCell)
+void GapsRunner::setSparsity(float alphaA, float alphaP, float maxA, float maxP,
+bool singleCell)
 {
-    mASampler.setSparsity(alphaA, singleCell);
-    mPSampler.setSparsity(alphaP, singleCell);
-}
-
-void GapsRunner::setMaxGibbsMass(float maxA, float maxP)
-{
-    mASampler.setMaxGibbsMass(maxA);
-    mPSampler.setMaxGibbsMass(maxP);
+    mASampler.setSparsity(alphaA, maxA, singleCell);
+    mPSampler.setSparsity(alphaP, maxP, singleCell);
 }
 
 void GapsRunner::setMaxThreads(unsigned nThreads)

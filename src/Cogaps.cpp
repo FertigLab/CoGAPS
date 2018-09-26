@@ -139,10 +139,9 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
         // set parameters that would be saved in the checkpoint
         runner.recordSeed(gapsParams.slot("seed"));
         runner.setMaxIterations(gapsParams.slot("nIterations"));
-        runner.setSparsity(gapsParams.slot("alphaA"),
-            gapsParams.slot("alphaP"), gapsParams.slot("singleCell"));
-        runner.setMaxGibbsMass(gapsParams.slot("maxGibbsMassA"),
-            gapsParams.slot("maxGibbsMassP"));
+        runner.setSparsity(gapsParams.slot("alphaA"), gapsParams.slot("alphaP"),
+            gapsParams.slot("maxGibbsMassA"), gapsParams.slot("maxGibbsMassP"),
+            gapsParams.slot("singleCell"));
     }
 
     // set parameters that aren't saved in the checkpoint

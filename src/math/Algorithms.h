@@ -14,6 +14,7 @@ struct AlphaParameters
     AlphaParameters(float inS, float inS_mu);
 
     AlphaParameters operator+(const AlphaParameters &other) const;
+    AlphaParameters operator*(float v) const;
     void operator*=(float v);
 };
 

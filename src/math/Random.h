@@ -82,7 +82,7 @@ public:
     int poisson(double lambda);
     float exponential(float lambda);
 
-    float inverseNormSample(float a, float b, float mean, float sd);
+    OptionalFloat truncNormal(float a, float b, float mean, float sd);
     float truncGammaUpper(float b, float shape, float scale);
 
     static void setSeed(uint32_t sd);

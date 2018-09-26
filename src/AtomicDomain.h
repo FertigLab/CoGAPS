@@ -47,8 +47,8 @@ public:
     friend Archive& operator>>(Archive &ar, AtomicDomain &domain);
    
 #ifdef GAPS_DEBUG
-    std::vector<Atom*>::iterator begin() { return mAtoms.begin(); }
-    std::vector<Atom*>::iterator end() { return mAtoms.end(); }
+    std::vector<Atom*>::iterator begin();
+    std::vector<Atom*>::iterator end();
     bool isSorted();
 #endif
 
