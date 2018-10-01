@@ -1,6 +1,9 @@
 #ifndef __COGAPS_GIBBS_SAMPLER_H__
 #define __COGAPS_GIBBS_SAMPLER_H__
 
+#define DEFAULT_ALPHA           0.01f
+#define DEFAULT_MAX_GIBBS_MASS  100.f
+
 #include "AtomicDomain.h"
 #include "ProposalQueue.h"
 #include "data_structures/Matrix.h"
@@ -112,7 +115,7 @@ mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins),
 mDomainLength(mBinLength * mNumBins)
 {
     // default sparsity parameters
-    setSparsity(0.01, 100.f, false);
+    setSparsity(DEFAULT_ALPHA, DEFAULT_MAX_GIBBS_MASS, false);
 }
 
 template <class DataType>

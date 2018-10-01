@@ -181,8 +181,8 @@ Archive& operator>>(Archive &ar, ColMatrix &mat)
     // should already by allocated
     unsigned nr = 0, nc = 0;
     ar >> nr >> nc;
-    GAPS_ASSERT(nr == mat.mNumRows);
-    GAPS_ASSERT(nc == mat.mNumCols);
+    GAPS_ASSERT_MSG(nr == mat.mNumRows, nr << " != " << mat.mNumRows);
+    GAPS_ASSERT_MSG(nc == mat.mNumCols, nc << " != " << mat.mNumCols);
 
     // read in data
     for (unsigned i = 0; i < mat.mNumCols; ++i)

@@ -27,19 +27,20 @@ namespace gaps
 {
     double lgamma(double x);
 
+    // fast enough with default implementation
     float d_gamma(float d, float shape, float scale);
     float p_gamma(float p, float shape, float scale);
+
+    // standard functions
     float q_gamma(float q, float shape, float scale);
     float d_norm(float d, float mean, float sd);
-    float q_norm(float q, float mean, float sd);
     float p_norm(float p, float mean, float sd);
+    float q_norm(float q, float mean, float sd);
 
-    float d_gamma_fast(float d, float shape, float scale);
-    float p_gamma_fast(float p, float shape, float scale);
-    float q_gamma_fast(float q, float shape, float scale);
-    float d_norm_fast(float d, float mean, float sd);
+    // fast versions, mostly using lookup tables
     float p_norm_fast(float p, float mean, float sd);
     float q_norm_fast(float q, float mean, float sd);
+
 }
 
 // used for seeding individual rngs
@@ -83,7 +84,7 @@ public:
     float exponential(float lambda);
 
     OptionalFloat truncNormal(float a, float b, float mean, float sd);
-    float truncGammaUpper(float b, float shape, float scale);
+    float truncGammaUpper(float b, float scale); // shape hardcoded to 2
 
     static void setSeed(uint32_t sd);
     static Archive& save(Archive &ar);

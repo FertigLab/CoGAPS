@@ -4,10 +4,11 @@
 #include "../GibbsSampler.h"
 #include "../math/Random.h"
 
-#if 0
-
 TEST_CASE("Test utils/Archive.h")
 {
+    GapsRng::setSeed(123);
+    GapsRng rng;
+
     SECTION("Reading/Writing to an Archive")
     {
         Archive ar1("test_ar.temp", ARCHIVE_WRITE);
@@ -59,13 +60,13 @@ TEST_CASE("Test utils/Archive.h")
         REQUIRE(d_read == d_write);
         REQUIRE(b_read == b_write);
     }
-    
+
     SECTION("Vector Serialization")
     {
         Vector vec_read(100), vec_write(100);
         for (unsigned i = 0; i < 100; ++i)
         {
-            vec_write[i] = gaps::random::uniform(0.0, 2.0);
+            vec_write[i] = rng.uniform(0.f, 2.f);
         }
 
         Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
@@ -86,30 +87,24 @@ TEST_CASE("Test utils/Archive.h")
 
     SECTION("Matrix Serialization")
     {
-        RowMatrix rMat_read(100,100), rMat_write(100,100);
         ColMatrix cMat_read(100,100), cMat_write(100,100);
 
         for (unsigned i = 0; i < 100; ++i)
         {
             for (unsigned j = 0; j < 100; ++j)
             {
-                rMat_write(i,j) = gaps::random::uniform(0.0, 2.0);
-                cMat_write(i,j) = gaps::random::uniform(0.0, 2.0);
+                cMat_write(i,j) = rng.uniform(0.f, 2.f);
             }
         }
 
         Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
-        arWrite << rMat_write;
         arWrite << cMat_write;
         arWrite.close();
 
         Archive arRead("test_ar.temp", ARCHIVE_READ);
-        arRead >> rMat_read;
         arRead >> cMat_read;
         arRead.close();
 
-        REQUIRE(rMat_read.nRow() == rMat_write.nRow());
-        REQUIRE(rMat_read.nCol() == rMat_write.nCol());
         REQUIRE(cMat_read.nRow() == cMat_write.nRow());
         REQUIRE(cMat_read.nCol() == cMat_write.nCol());
     
@@ -117,7 +112,6 @@ TEST_CASE("Test utils/Archive.h")
         {
             for (unsigned j = 0; j < 100; ++j)
             {
-                REQUIRE(rMat_read(i,j) == rMat_write(i,j));
                 REQUIRE(cMat_read(i,j) == cMat_write(i,j));
             }
         }
@@ -125,9 +119,34 @@ TEST_CASE("Test utils/Archive.h")
 
     SECTION("GibbsSampler Serialization")
     {
-        //TODO
+        Rcpp::Environment env = Rcpp::Environment::global_env();
+        std::string csvPath = Rcpp::as<std::string>(env["gistCsvPath"]);
+
+        GibbsSampler Asampler(csvPath, false, 7, false, std::vector<unsigned>());
+        GibbsSampler Psampler(csvPath, true, 7, false, std::vector<unsigned>());
+        Asampler.sync(Psampler);
+        Psampler.sync(Asampler);
+        
+        Asampler.update(10000, 1);
+
+        Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
+        arWrite << Asampler;
+        arWrite.close();
+
+        GibbsSampler savedAsampler(csvPath, false, 7, false, std::vector<unsigned>());
+        Archive arRead("test_ar.temp", ARCHIVE_READ);
+        arRead >> savedAsampler;
+        arRead.close();
     }
 
+#ifdef GAPS_INTERNAL_TESTS    
+    SECTION("AtomicDomain Serialization")
+    {
+
+    }
+#endif
+
+/*
     SECTION("Random Generator Serialization")
     {
         std::vector<float> randSequence;
@@ -163,9 +182,7 @@ TEST_CASE("Test utils/Archive.h")
             REQUIRE(gaps::random::exponential(5.5) == randSequence[i]);
         }
     }
-
+*/
     // cleanup directory
     std::remove("test_ar.temp");
 }
-
-#endif

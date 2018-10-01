@@ -26,6 +26,7 @@ namespace gaps
     const float epsilon = 1.0e-5f;
     const float pi = 3.1415926535897932384626433832795f;
     const float pi_double = 3.1415926535897932384626433832795;
+    const float sqrt2 = 1.4142135623730950488016887242097f;
 
     float min(float a, float b);
     unsigned min(unsigned a, unsigned b);

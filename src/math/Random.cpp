@@ -20,6 +20,41 @@ const double maxU32AsDouble = static_cast<double>(std::numeric_limits<uint32_t>:
 
 static Xoroshiro128plus seeder;
 
+////////////////////////////// Lookup Tables ///////////////////////////////////
+
+static float erf_lookup_table[3001];
+static float erfinv_lookup_table[5001];
+static float qgamma_lookup_table[5001];
+
+static void initLookupTables()
+{
+    // erf
+    for (unsigned i = 0; i < 3001; ++i)
+    {
+        float x = static_cast<float>(i) / 1000.f;
+        erf_lookup_table[i] = 2.f * gaps::p_norm(x * gaps::sqrt2, 0.f, 1.f) - 1.f;
+    }
+
+    // erfinv
+    for (unsigned i = 0; i < 5000; ++i)
+    {
+        float x = static_cast<float>(i) / 5000.f;
+        erfinv_lookup_table[i] = gaps::q_norm((1.f + x) / 2.f, 0.f, 1.f) / gaps::sqrt2;
+    }
+    erfinv_lookup_table[5000] = gaps::q_norm(1.9998f / 2.f, 0.f, 1.f) / gaps::sqrt2;
+
+    // qgamma
+    qgamma_lookup_table[0] = 0.f;
+    for (unsigned i = 1; i < 5000; ++i)
+    {
+        float x = static_cast<float>(i) / 5000.f;
+        qgamma_lookup_table[i] = gaps::q_gamma(x, 2.f, 1.f);
+    }
+    qgamma_lookup_table[5000] = gaps::q_gamma(0.9998f, 2.f, 1.f);
+
+    GAPS_ASSERT(erf_lookup_table[3000] < 1.f);
+}
+
 /////////////////////////////// OptionalFloat //////////////////////////////////
 
 OptionalFloat::OptionalFloat() : mValue(0.f), mHasValue(false) {}
@@ -94,6 +129,7 @@ Archive& operator>>(Archive &ar, Xoroshiro128plus &gen)
 
 void GapsRng::setSeed(uint32_t sd)
 {
+    initLookupTables();
     seeder.seed(sd);
 }
 
@@ -105,6 +141,7 @@ Archive& GapsRng::save(Archive &ar)
 
 Archive& GapsRng::load(Archive &ar)
 {
+    initLookupTables();
     ar >> seeder;
     return ar;
 }
@@ -204,14 +241,7 @@ uint64_t GapsRng::uniform64(uint64_t a, uint64_t b)
 
 int GapsRng::poisson(double lambda)
 {
-    if (lambda <= 5.0)
-    {
-        return poissonSmall(lambda);
-    }
-    else
-    {
-        return poissonLarge(lambda);
-    }
+    return lambda <= 5.0 ? poissonSmall(lambda) : poissonLarge(lambda);
 }
 
 // lambda <= 5
@@ -263,33 +293,29 @@ float GapsRng::exponential(float lambda)
     return -1.f * std::log(uniform()) / lambda;
 }
 
+// fails if too far in tail
 OptionalFloat GapsRng::truncNormal(float a, float b, float mean, float sd)
 {
-    float pLower = gaps::p_norm(a, mean, sd);
-    float pUpper = gaps::p_norm(b, mean, sd);
+    float pLower = gaps::p_norm_fast(a, mean, sd);
+    float pUpper = gaps::p_norm_fast(b, mean, sd);
     if (!(pLower > 0.95f || pUpper < 0.05f)) // too far in tail
     {
-        float u = uniform(pLower, pUpper);
-        while (u == 0.f || u == 1.f)
-        {
-            u = uniform(pLower, pUpper);
-        }
-        float m = gaps::q_norm(u, mean, sd); 
-        m = gaps::max(a, gaps::min(m, b));
-        return m;
+        GAPS_ASSERT(pLower > 0.f);
+        GAPS_ASSERT(pUpper < 1.f);
+
+        float z = gaps::q_norm_fast(uniform(pLower, pUpper), mean, sd); 
+        z = gaps::max(a, gaps::min(z, b));
+        return z;
     }
     return OptionalFloat();
 }
 
-float GapsRng::truncGammaUpper(float b, float shape, float scale)
+// shape is hardcoded to 2 since it never changes
+float GapsRng::truncGammaUpper(float b, float scale)
 {
-    float upper = gaps::p_gamma(b, shape, scale);
-    float u = uniform(0.f, upper);
-    while (u == 0.f || u == 1.f)
-    {
-        u = uniform(0.f, upper);
-    }
-    return gaps::q_gamma(u, shape, scale);
+    float upper = 1.f - std::exp(-b / scale) * (1.f + b / scale);
+    unsigned ndx = static_cast<unsigned>(uniform(0.f, upper * 5000.f));
+    return qgamma_lookup_table[ndx] * scale;
 }
 
 Archive& operator<<(Archive &ar, GapsRng &gen)
@@ -346,13 +372,39 @@ float gaps::p_norm(float p, float mean, float sd)
     return cdf(norm, p);
 }
 
+float gaps::p_norm_fast(float p, float mean, float sd)
+{
+    float term = (p - mean) / (sd * gaps::sqrt2);
+    float erf = 0.f;
+    if (term < 0.f)
+    {
+        term = gaps::max(term, -3.f);
+        erf = -erf_lookup_table[static_cast<unsigned>(-term * 1000.f)];
+    }
+    else
+    {
+        term = gaps::min(term, 3.f);
+        erf = erf_lookup_table[static_cast<unsigned>(term * 1000.f)];
+    }
+    return 0.5f * (1.f + erf);
+}
+
+float gaps::q_norm_fast(float q, float mean, float sd)
+{
+    float term = 2.f * q - 1.f;
+    float erfinv = 0.f;
+    if (term < 0.f)
+    {
+        erfinv = -erfinv_lookup_table[static_cast<unsigned>(-term * 5000.f)];
+    }
+    else
+    {
+        erfinv = erfinv_lookup_table[static_cast<unsigned>(term * 5000.f)];
+    }
+    return mean + sd * gaps::sqrt2 * erfinv;
+}
+
 double gaps::lgamma(double x)
 {
     return boost::math::lgamma(x);
-}
-
-float gaps::d_norm_fast(float d, float mean, float sd)
-{
-    return std::exp((d - mean) * (d - mean) / (-2.f * sd * sd))
-        / std::sqrt(2.f * gaps::pi * sd * sd);
 }

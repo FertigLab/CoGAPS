@@ -120,24 +120,18 @@ void GibbsSampler::processProposal(const AtomicProposal &prop)
 // exponential distribution or with the gibbs mass distribution
 void GibbsSampler::birth(const AtomicProposal &prop)
 {
-    // calculate proposed mass
-    float mass = 0.f;
-    if (canUseGibbs(prop.c1))
-    {
-        mass = gibbsMass(alphaParameters(prop.r1, prop.c1) * mAnnealingTemp,
-            0.f, mMaxGibbsMass, mLambda, &(prop.rng)).value();
-    }
-    else
-    {
-        mass = prop.rng.exponential(mLambda);
-    }
+    // try to get mass using gibbs, resort to exponential if needed
+    OptionalFloat mass = canUseGibbs(prop.c1)
+        ? gibbsMass(alphaParameters(prop.r1, prop.c1) * mAnnealingTemp, 0.f,
+            mMaxGibbsMass, mLambda, &(prop.rng))
+        : prop.rng.exponential(mLambda);
 
-    // accept mass as long as it's non-zero
-    if (mass >= gaps::epsilon)
+    // accept mass as long as gibbs succeded or it's non-zero
+    if (mass.hasValue() && mass.value() >= gaps::epsilon)
     {
         mQueue.acceptBirth();
-        prop.atom1->mass = mass;
-        changeMatrix(prop.r1, prop.c1, mass);
+        prop.atom1->mass = mass.value();
+        changeMatrix(prop.r1, prop.c1, mass.value());
     }
     else
     {
@@ -154,7 +148,6 @@ void GibbsSampler::death(const AtomicProposal &prop)
     AlphaParameters alpha = alphaParametersWithChange(prop.r1, prop.c1,
         -prop.atom1->mass);
 
-    // try to calculate rebirth mass using gibbs distribution, otherwise use original
     float rebirthMass = prop.atom1->mass;
     if (canUseGibbs(prop.c1))
     {
@@ -223,7 +216,7 @@ AlphaParameters alpha)
 {
     // compute amount of mass to be exchanged
     float totalMass = prop.atom1->mass + prop.atom2->mass;
-    float newMass = prop.rng.truncGammaUpper(totalMass, 2.f, 1.f / mLambda);
+    float newMass = prop.rng.truncGammaUpper(totalMass, 1.f / mLambda);
 
     // compute amount to change atom1 by - always change larger mass to newMass
     float delta = (prop.atom1->mass > prop.atom2->mass)
@@ -266,8 +259,9 @@ void GibbsSampler::acceptExchange(const AtomicProposal &prop, float delta)
 void GibbsSampler::changeMatrix(unsigned row, unsigned col, float delta)
 {
     mMatrix(row, col) += delta;
-    GAPS_ASSERT(mMatrix(row, col) >= 0.f);
     updateAPMatrix(row, col, delta);
+
+    GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
 // delta could be negative, this is needed to prevent negative values in matrix
@@ -340,13 +334,17 @@ unsigned col, float ch)
 
 Archive& operator<<(Archive &ar, GibbsSampler &s)
 {
-    // TODO
+    ar << s.mMatrix << s.mDomain << s.mQueue << s.mAlpha
+        << s.mLambda << s.mMaxGibbsMass << s.mAnnealingTemp << s.mNumPatterns
+        << s.mNumBins << s.mBinLength << s.mDomainLength;
     return ar;
 }
 
 Archive& operator>>(Archive &ar, GibbsSampler &s)
 {
-    // TODO
+    ar >> s.mMatrix >> s.mDomain >> s.mQueue >> s.mAlpha
+        >> s.mLambda >> s.mMaxGibbsMass >> s.mAnnealingTemp >> s.mNumPatterns
+        >> s.mNumBins >> s.mBinLength >> s.mDomainLength;
     return ar;
 }
 
