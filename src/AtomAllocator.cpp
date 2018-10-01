@@ -76,31 +76,34 @@ void IndexFlagSet::release(uint64_t n)
 
 AtomPool::AtomPool()
 {
-    mPool = new Atom[POOL_SIZE];
+    //mPool = new Atom[POOL_SIZE];
 }
 
 AtomPool::~AtomPool()
 {
-    delete[] mPool;
+    //delete[] mPool;
 }
 
 Atom* AtomPool::alloc()
 {
-    unsigned n = mIndexFlags.getFirstFree();
-    mIndexFlags.set(n);
-    Atom *a = &(mPool[n]);
-    a->poolIndex = n;
-    return a;
+    //unsigned n = mIndexFlags.getFirstFree();
+    //mIndexFlags.set(n);
+    //Atom *a = &(mPool[n]);
+    //a->poolIndex = n;
+    //return a;
+    return new Atom();
 }
 
 void AtomPool::free(Atom* a)
 {
-    mIndexFlags.release(a->poolIndex);
+    //mIndexFlags.release(a->poolIndex);
+    delete a;
 }
 
 bool AtomPool::depleted() const
 {
-    return !mIndexFlags.isAnyFree();
+    //return !mIndexFlags.isAnyFree();
+    return false;
 }
 
 ////////////////////////////// AtomAllocator ///////////////////////////////////

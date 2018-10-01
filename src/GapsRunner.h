@@ -84,7 +84,7 @@ template <class DataType>
 GapsRunner::GapsRunner(const DataType &data, bool transposeData,
 unsigned nPatterns, bool partitionRows, const std::vector<unsigned> &indices)
     :
-mASampler(data, !transposeData, nPatterns,!partitionRows, indices),
+mASampler(data, !transposeData, nPatterns, !partitionRows, indices),
 mPSampler(data, transposeData, nPatterns, partitionRows, indices),
 mStatistics(mPSampler.dataRows(), mPSampler.dataCols(), nPatterns),
 mFixedMatrix('N'), mMaxIterations(1000), mMaxThreads(1), mPrintMessages(true),

@@ -4,6 +4,9 @@
 
 TEST_CASE("AtomicDomain")
 {
+    GapsRng::setSeed(123);
+    GapsRng rng;
+
     SECTION("Construction")
     {
         AtomicDomain domain(10);
@@ -47,7 +50,7 @@ TEST_CASE("AtomicDomain")
         for (unsigned i = 0; i < 1000; ++i)
         {
             domain.insert(i, static_cast<float>(i));
-            REQUIRE_NOTHROW(domain.randomFreePosition());
+            REQUIRE_NOTHROW(domain.randomFreePosition(&rng));
         }
     }
 
@@ -60,10 +63,10 @@ TEST_CASE("AtomicDomain")
             domain.insert(i, static_cast<float>(i));
             
             // single random atom
-            REQUIRE(domain.randomAtom()->pos < i + 1);
+            REQUIRE(domain.randomAtom(&rng)->pos < i + 1);
 
             // random atom for exchange
-            AtomNeighborhood hood = domain.randomAtomWithRightNeighbor();
+            AtomNeighborhood hood = domain.randomAtomWithRightNeighbor(&rng);
             REQUIRE(hood.center->pos < i + 1);
 
             REQUIRE(!hood.hasLeft());
@@ -78,7 +81,7 @@ TEST_CASE("AtomicDomain")
             }
 
             // random atom for move
-            hood = domain.randomAtomWithNeighbors();
+            hood = domain.randomAtomWithNeighbors(&rng);
             REQUIRE(hood.center->pos < i + 1);
 
             if (hood.center->pos == 0)

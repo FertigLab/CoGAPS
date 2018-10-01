@@ -251,14 +251,14 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
 
     if (prop.r1 == prop.r2 && prop.c1 == prop.c2)
     {
-        float newMass = prop.rng.truncGammaUpper(prop.atom1->mass + prop.atom2->mass, 2.f, 1.f / mLambda);
+        float newMass = prop.rng.truncGammaUpper(prop.atom1->mass + prop.atom2->mass, 1.f / mLambda);
         float delta = (prop.atom1->mass > prop.atom2->mass) ? newMass - prop.atom1->mass : prop.atom2->mass - newMass;
         if (prop.atom1->mass + delta > gaps::epsilon && prop.atom2->mass - delta > gaps::epsilon)
         {
             prop.atom1->mass += delta;
             prop.atom2->mass -= delta;
         }        
-        return true;
+        return true; // automatically accept exchanges in same bin
     }
 
     mQueue.push_back(prop);
