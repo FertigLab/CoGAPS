@@ -42,7 +42,7 @@ public:
         }
     }
 
-    void close()
+    ~Archive()
     {
         mStream.close();
     }

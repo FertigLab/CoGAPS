@@ -6,8 +6,12 @@
 
 #include <vector>
 
-class ColMatrix;
-typedef ColMatrix Matrix; // when we don't care about row/col major order
+class DenseColMatrix;
+class DenseRowMatrix;
+class SparseColMatrix;
+class HybridColMatrix;
+
+typedef DenseColMatrix Matrix; // when we don't care about storage
 
 class ColMatrix
 {
