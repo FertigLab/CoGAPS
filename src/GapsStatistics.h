@@ -8,10 +8,10 @@ class GapsStatistics
 {
 private:
 
-    ColMatrix mAMeanMatrix;
-    ColMatrix mAStdMatrix;
-    ColMatrix mPMeanMatrix;
-    ColMatrix mPStdMatrix;
+    Matrix mAMeanMatrix;
+    Matrix mAStdMatrix;
+    Matrix mPMeanMatrix;
+    Matrix mPStdMatrix;
     
     unsigned mStatUpdates;
     unsigned mNumPatterns;
@@ -20,14 +20,14 @@ public:
 
     GapsStatistics(unsigned nRow, unsigned nCol, unsigned nPatterns);
 
-    void update(const GibbsSampler &ASampler, const GibbsSampler &PSampler);
+    void update(const GibbsSampler *ASampler, const GibbsSampler *PSampler);
 
-    ColMatrix Amean() const;
-    ColMatrix Pmean() const;
-    ColMatrix Asd() const;
-    ColMatrix Psd() const;
+    Matrix Amean() const;
+    Matrix Pmean() const;
+    Matrix Asd() const;
+    Matrix Psd() const;
 
-    float meanChiSq(const GibbsSampler &PSampler) const;
+    float meanChiSq(const GibbsSampler *PSampler) const;
 
     // serialization
     friend Archive& operator<<(Archive &ar, GapsStatistics &stat);

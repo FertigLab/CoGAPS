@@ -237,6 +237,33 @@ unsigned nUpdates)
     return stdMat;
 }
 
+// vec is a column of either A or P
+AlphaParameters gaps::algo::alphaParameters(const Sparsevector &D,
+const Sparsevector &vec, const float *A, const float *P, unsigned size)
+{
+    // initialize
+    float s = -1.f * Z_1[column] * beta;
+    float su = 0.f;
+    for (unsigned i = 0; i < size; ++i)
+    {
+        su += A[i] * Z_2[column, i];
+    }
+    su *= -1.f * beta;
+
+    // iterate over common non-zero entries
+    Sparsevector it(D, vec);
+    while (!it.atEnd())
+    {
+        float term1 = it.firstValue() / it.secondValue();
+        float term2 = term1 * term1 + it.firstValue() * it.firstValue() * beta;
+        float term3 = beta * it.firstValue() - alpha * term1 / it.secondValue();
+        s += alpha * term2;
+        s_mu += alpha * term1 + term3 * gaps::algo::dotProduct(A, P, size);
+        it.next();
+    }
+    return AlphaParameters(s, s_mu);
+}
+
 AlphaParameters gaps::algo::alphaParameters(unsigned size, const float *D,
 const float *S, const float *AP, const float *mat)
 {
