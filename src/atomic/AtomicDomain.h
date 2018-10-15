@@ -2,10 +2,9 @@
 #define __COGAPS_ATOMIC_DOMAIN_H__
 
 #include "AtomAllocator.h"
-#include "data_structures/HashSets.h"
-#include "math/Random.h"
-#include "math/SIMD.h"
-#include "utils/Archive.h"
+#include "../data_structures/HashSets.h"
+#include "../math/Random.h"
+#include "../utils/Archive.h"
 
 #include <vector>
 

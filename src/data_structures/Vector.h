@@ -10,6 +10,7 @@
 namespace bal = boost::alignment;
 typedef std::vector<float, bal::aligned_allocator<float,32> > aligned_vector;
 
+// no iterator access, only random access
 class Vector
 {
 public:
@@ -17,28 +18,22 @@ public:
     explicit Vector(unsigned size);
     explicit Vector(const std::vector<float> &v);
 
+    float operator[](unsigned i) const;
+    float& operator[](unsigned i);
+
+    const float* ptr() const;
+    float* ptr();
+
     unsigned size() const;
 
-    float* ptr();
-    const float* ptr() const;
-
-    float& operator[](unsigned i);
-    float operator[](unsigned i) const;
-
-    void operator+=(const Vector &vec);
-    Vector operator-(Vector v) const;
-    Vector operator*(float val) const;
-    Vector operator/(float val) const;
-
-    void operator*=(float val);
-    void operator/=(float val);
-
+    void operator+=(const Vector &v);
+    
     friend Archive& operator<<(Archive &ar, Vector &vec);
     friend Archive& operator>>(Archive &ar, Vector &vec);
 
 private:
 
-    aligned_vector mValues;
+    aligned_vector mData;
 };
 
-#endif // __COGAPS_VECTOR_H__
+#endif

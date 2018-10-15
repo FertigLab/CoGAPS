@@ -2,7 +2,7 @@
 
 #include "Random.h"
 
-#include "Algorithms.h"
+#include "Math.h"
 #include "../utils/GapsAssert.h"
 
 #include <boost/math/distributions/exponential.hpp>

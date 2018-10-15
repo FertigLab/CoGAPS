@@ -1,5 +1,5 @@
 #include "GapsStatistics.h"
-#include "math/Algorithms.h"
+#include "math/Math.h"
 
 GapsStatistics::GapsStatistics(unsigned nRow, unsigned nCol, unsigned nPatterns)
     :
@@ -8,56 +8,72 @@ mPMeanMatrix(nCol, nPatterns), mPStdMatrix(nCol, nPatterns),
 mStatUpdates(0), mNumPatterns(nPatterns)
 {}
 
-void GapsStatistics::update(const GibbsSampler &ASampler,
-const GibbsSampler &PSampler)
+Matrix GapsStatistics::Amean() const
 {
-    mStatUpdates++;
+    return mAMeanMatrix / static_cast<float>(mStatUpdates);
+}
 
-    // update     
-    for (unsigned j = 0; j < mNumPatterns; ++j)
+Matrix GapsStatistics::Asd() const
+{
+    Matrix mat(mAStdMatrix.nRow(), mAStdMatrix.nCol());
+    for (unsigned i = 0; i < mat.nRow(); ++i)
     {
-        float norm = gaps::algo::max(PSampler.mMatrix.getCol(j));
-        norm = norm == 0.f ? 1.f : norm;
-
-        Vector quot(PSampler.mMatrix.getCol(j) / norm);
-        mPMeanMatrix.getCol(j) += quot;
-        mPStdMatrix.getCol(j) += gaps::algo::elementSq(quot);
-
-        Vector prod(ASampler.mMatrix.getCol(j) * norm);
-        mAMeanMatrix.getCol(j) += prod;
-        mAStdMatrix.getCol(j) += gaps::algo::elementSq(prod); // precision loss? use double?
+        for (unsigned j = 0; j < mat.nCol(); ++j)
+        {
+            float meanTerm = GAPS_SQ(mAMeanMatrix(i,j)) / static_cast<float>(mStatUpdates);
+            float numer = gaps::max(0.f, mAStdMatrix(i,j) - meanTerm);
+            mat(i,j) = std::sqrt(numer / (static_cast<float>(mStatUpdates) - 1.f));
+        }
     }
+    return mat;
 }
 
-ColMatrix GapsStatistics::Amean() const
+Matrix GapsStatistics::Pmean() const
 {
-    return mAMeanMatrix / mStatUpdates;
+    return mPMeanMatrix / static_cast<float>(mStatUpdates);
 }
 
-ColMatrix GapsStatistics::Asd() const
+Matrix GapsStatistics::Psd() const
 {
-    return gaps::algo::computeStdDev(mAStdMatrix, mAMeanMatrix,
-        mStatUpdates);
+    Matrix mat(mPStdMatrix.nRow(), mPStdMatrix.nCol());
+    for (unsigned i = 0; i < mat.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < mat.nCol(); ++j)
+        {
+            float meanTerm = GAPS_SQ(mPMeanMatrix(i,j)) / static_cast<float>(mStatUpdates);
+            float numer = gaps::max(0.f, mPStdMatrix(i,j) - meanTerm);
+            mat(i,j) = std::sqrt(numer / (static_cast<float>(mStatUpdates) - 1.f));
+        }
+    }
+    return mat;
 }
 
-ColMatrix GapsStatistics::Pmean() const
+float GapsStatistics::meanChiSq(const DenseGibbsSampler &PSampler) const
 {
-    return mPMeanMatrix / mStatUpdates;
+    Matrix A(mAMeanMatrix / static_cast<float>(mStatUpdates));
+    Matrix P(mPMeanMatrix / static_cast<float>(mStatUpdates));
+    
+    float chisq = 0.f;
+    for (unsigned i = 0; i < PSampler.mDMatrix.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < PSampler.mDMatrix.nCol(); ++j)
+        {
+            float m = 0.f;
+            for (unsigned k = 0; k < A.nCol(); ++k)
+            {
+                m += A(i,k) * P(j,k);
+            }
+            chisq += GAPS_SQ((PSampler.mDMatrix(i,j) - m) / PSampler.mSMatrix(i,j));
+        }
+    }
+    return chisq;
 }
 
-ColMatrix GapsStatistics::Psd() const
+float GapsStatistics::meanChiSq(const SparseGibbsSampler &PSampler) const
 {
-    return gaps::algo::computeStdDev(mPStdMatrix, mPMeanMatrix,
-        mStatUpdates);
-}
-
-float GapsStatistics::meanChiSq(const GibbsSampler &PSampler) const
-{
-    ColMatrix A = mAMeanMatrix / mStatUpdates;
-    ColMatrix P = mPMeanMatrix / mStatUpdates;
-    ColMatrix M(gaps::algo::matrixMultiplication(A, P));
-    return 2.f * gaps::algo::loglikelihood(PSampler.mDMatrix, PSampler.mSMatrix,
-        M);
+    Matrix A(mAMeanMatrix / static_cast<float>(mStatUpdates));
+    Matrix P(mPMeanMatrix / static_cast<float>(mStatUpdates));
+    return 0.f; // TODO
 }
 
 Archive& operator<<(Archive &ar, GapsStatistics &stat)

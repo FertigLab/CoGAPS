@@ -3,6 +3,14 @@
 #include "GapsStatistics.h"
 #include "file_parser/FileParser.h"
 
+template <class T>
+static std::string to_string(T a)
+{
+    std::stringstream ss;
+    ss << a;
+    return ss.str();
+}
+
 GapsResult::GapsResult(const GapsStatistics &stat)
     :
 Amean(stat.Amean()), Asd(stat.Asd()), Pmean(stat.Pmean()),
@@ -26,7 +34,7 @@ void GapsResult::writeToFile(const std::string &fullPath)
 void GapsResult::writeCsv(const std::string &path)
 {
     unsigned nPatterns = Amean.nCol();
-    std::string label("_" + gaps::to_string(nPatterns) + "_");
+    std::string label("_" + to_string(nPatterns) + "_");
     FileParser::writeToCsv(path + label + "Amean.csv", Amean);
     FileParser::writeToCsv(path + label + "Pmean.csv", Pmean);
     FileParser::writeToCsv(path + label + "Asd.csv", Asd);
@@ -36,7 +44,7 @@ void GapsResult::writeCsv(const std::string &path)
 void GapsResult::writeTsv(const std::string &path)
 {
     unsigned nPatterns = Amean.nCol();
-    std::string label("_" + gaps::to_string(nPatterns) + "_");
+    std::string label("_" + to_string(nPatterns) + "_");
     FileParser::writeToCsv(path + label + "Amean.tsv", Amean);
     FileParser::writeToCsv(path + label + "Pmean.tsv", Pmean);
     FileParser::writeToCsv(path + label + "Asd.tsv", Asd);
@@ -46,7 +54,7 @@ void GapsResult::writeTsv(const std::string &path)
 void GapsResult::writeGct(const std::string &path)
 {
     unsigned nPatterns = Amean.nCol();
-    std::string label("_" + gaps::to_string(nPatterns) + "_");
+    std::string label("_" + to_string(nPatterns) + "_");
     FileParser::writeToCsv(path + label + "Amean.gct", Amean);
     FileParser::writeToCsv(path + label + "Pmean.gct", Pmean);
     FileParser::writeToCsv(path + label + "Asd.gct", Asd);

@@ -6,8 +6,6 @@
 #include <stdint.h>
 #include <vector>
 
-#include <boost/unordered_set.hpp>
-
 #ifdef __GAPS_OPENMP__ // defined in global config
 #include <omp.h>
 #endif
@@ -39,7 +37,6 @@ public:
     void clear();
     bool contains(uint64_t pos);
     bool isEmpty();
-    const std::vector<uint64_t>& vec();
 
 private:
 
@@ -62,8 +59,8 @@ public:
 
     void insert(uint64_t a, uint64_t b);
     void clear();
-    bool contains(uint64_t pos) const;
-    bool overlap(uint64_t pos);
+    bool contains(uint64_t pos) const; // endpoint of pair
+    bool overlap(uint64_t pos); // this position in between pair
     bool isEmpty();
 
 private:

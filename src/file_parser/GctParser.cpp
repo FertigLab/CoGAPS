@@ -1,6 +1,6 @@
 #include "GctParser.h"
 #include "../utils/GapsAssert.h"
-#include "../math/Algorithms.h"
+#include "../math/Math.h"
 
 #include <fstream>
 #include <iostream>

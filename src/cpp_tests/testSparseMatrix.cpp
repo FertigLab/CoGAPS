@@ -1,5 +1,5 @@
 #include "catch.h"
-#include "../data_structures/Matrix.h"
+#include "../data_structures/SparseMatrix.h"
 #include "../file_parser/CsvParser.h"
 #include "../file_parser/TsvParser.h"
 #include "../file_parser/MtxParser.h"
@@ -22,7 +22,7 @@ static void testFullConstructor(float expectedSum, unsigned nr, unsigned nc,
 const DataType &data, bool transpose=false, bool partitionRows=false,
 const std::vector<unsigned> &indices=std::vector<unsigned>())
 {
-    Matrix mat(data, transpose, partitionRows, indices);
+    SparseMatrix mat(data, transpose, partitionRows, indices);
 
     REQUIRE(mat.nRow() == nr);
     REQUIRE(mat.nCol() == nc);
@@ -56,15 +56,17 @@ unsigned nc, unsigned nIndices, float sum1, float sum2, float sum3)
         sequentialVector(nIndices));
 }
 
-TEST_CASE("Test Writing/Reading Matrices from File")
+TEST_CASE("Test Writing/Reading Sparse Matrices from File")
 {
     // matrix to use for testing
     Matrix ref(25, 50);
+    GapsRng::setSeed(123);
+    GapsRng rng;
     for (unsigned i = 0; i < ref.nRow(); ++i)
     {
         for (unsigned j = 0; j < ref.nCol(); ++j)
         {
-            ref(i,j) = i + j;
+            ref(i,j) = (i + j) * (rng.uniform() < 0.5f ? 0.f : 1.f);
         }
     }
 
@@ -74,10 +76,10 @@ TEST_CASE("Test Writing/Reading Matrices from File")
     FileParser::writeToMtx("testMatWrite.mtx", ref);
 
     // read matrices from file
-    Matrix mat(ref, false, false, sequentialVector(0));
-    Matrix matTsv("testMatWrite.tsv", false, false, sequentialVector(0));
-    Matrix matCsv("testMatWrite.csv", false, false, sequentialVector(0));
-    Matrix matMtx("testMatWrite.mtx", false, false, sequentialVector(0));
+    SparseMatrix mat(ref, false, false, sequentialVector(0));
+    SparseMatrix matTsv("testMatWrite.tsv", false, false, sequentialVector(0));
+    SparseMatrix matCsv("testMatWrite.csv", false, false, sequentialVector(0));
+    SparseMatrix matMtx("testMatWrite.mtx", false, false, sequentialVector(0));
 
     // delete files
     std::remove("testMatWrite.tsv");
@@ -91,24 +93,9 @@ TEST_CASE("Test Writing/Reading Matrices from File")
     REQUIRE(gaps::sum(matMtx) == gaps::sum(ref));
 }
 
-TEST_CASE("Test Matrix.h")
+TEST_CASE("Test SparseMatrix.h")
 {
     GapsRng::setSeed(123);
-
-    SECTION("Default Constructor")
-    {
-        Matrix mat;
-        REQUIRE(mat.empty());
-    }
-
-    SECTION("Size Constructor")
-    {
-        Matrix mat(100, 250);
-        REQUIRE(!mat.empty());
-        REQUIRE(mat.nRow() == 100);
-        REQUIRE(mat.nCol() == 250);
-        REQUIRE(gaps::isVectorZero(mat.getCol(14)));
-    }
 
     SECTION("Full Constructor")
     {

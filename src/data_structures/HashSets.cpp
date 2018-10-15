@@ -66,11 +66,6 @@ bool SmallHashSetU64::isEmpty()
     return mSet.empty();
 }
 
-const std::vector<uint64_t>& SmallHashSetU64::vec()
-{
-    return mSet;
-}
-
 ///////////////////////////// SmallPairedHashSetU64 ////////////////////////////
 
 SmallPairedHashSetU64::SmallPairedHashSetU64() {}

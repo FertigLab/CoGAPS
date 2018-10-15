@@ -1,5 +1,5 @@
 #include "AtomicDomain.h"
-#include "utils/GapsAssert.h"
+#include "../utils/GapsAssert.h"
 
 #include <vector>
 

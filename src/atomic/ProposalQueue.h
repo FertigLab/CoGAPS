@@ -2,9 +2,9 @@
 #define __GAPS_PROPOSAL_QUEUE_H__
 
 #include "AtomicDomain.h"
-#include "data_structures/HashSets.h"
-#include "math/Random.h"
-#include "utils/Archive.h"
+#include "../data_structures/HashSets.h"
+#include "../math/Random.h"
+#include "../utils/Archive.h"
 
 #include <cstddef>
 #include <stdint.h>
