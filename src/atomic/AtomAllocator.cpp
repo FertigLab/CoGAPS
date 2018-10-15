@@ -76,76 +76,75 @@ void IndexFlagSet::release(uint64_t n)
 
 AtomPool::AtomPool()
 {
-    //mPool = new Atom[POOL_SIZE];
+    mPool = new Atom[POOL_SIZE];
 }
 
 AtomPool::~AtomPool()
 {
-    //delete[] mPool;
+    delete[] mPool;
 }
 
 Atom* AtomPool::alloc()
 {
-    //unsigned n = mIndexFlags.getFirstFree();
-    //mIndexFlags.set(n);
-    //Atom *a = &(mPool[n]);
-    //a->poolIndex = n;
-    //return a;
-    return new Atom();
+    unsigned n = mIndexFlags.getFirstFree();
+    mIndexFlags.set(n);
+    Atom *a = &(mPool[n]);
+    a->poolIndex = n;
+    return a;
 }
 
 void AtomPool::free(Atom* a)
 {
-    //mIndexFlags.release(a->poolIndex);
-    delete a;
+    mIndexFlags.release(a->poolIndex);
 }
 
 bool AtomPool::depleted() const
 {
-    //return !mIndexFlags.isAnyFree();
-    return false;
+    return !mIndexFlags.isAnyFree();
 }
 
 ////////////////////////////// AtomAllocator ///////////////////////////////////
 
 AtomAllocator::AtomAllocator()
 {
-    mIndex = 0;
-    mPools.push_back(new AtomPool());
+    //mIndex = 0;
+    //mPools.push_back(new AtomPool());
 }
 
 AtomAllocator::~AtomAllocator()
 {
-    std::vector<AtomPool*>::iterator it = mPools.begin();
-    for (; it != mPools.end(); ++it)
-    {
-        delete *it;
-    }
+    //std::vector<AtomPool*>::iterator it = mPools.begin();
+    //for (; it != mPools.end(); ++it)
+    //{
+    //    delete *it;
+    //}
 }
 
 Atom* AtomAllocator::createAtom(uint64_t pos, float mass)
 {
-    GAPS_ASSERT(mPools.size() < 65536);
+    //GAPS_ASSERT(mPools.size() < 65536);
 
-    if (mPools[mIndex]->depleted() && mIndex == mPools.size() - 1)
-    {
-        mPools.push_back(new AtomPool());
-        mIndex = 0; // loop back around all pools before getting to new one
-    }
+    //if (mPools[mIndex]->depleted() && mIndex == mPools.size() - 1)
+    //{
+    //    mPools.push_back(new AtomPool());
+    //    mIndex = 0; // loop back around all pools before getting to new one
+    //}
 
-    while (mPools[mIndex]->depleted())
-    {
-        ++mIndex;
-    }
+    //while (mPools[mIndex]->depleted())
+    //{
+    //    ++mIndex;
+    //}
 
-    Atom *a = mPools[mIndex]->alloc();
-    a->allocatorIndex = mIndex;
-    a->pos = pos;
-    a->mass = mass;
-    return a;
+    //Atom *a = mPools[mIndex]->alloc();
+    //a->allocatorIndex = mIndex;
+    //a->pos = pos;
+    //a->mass = mass;
+    //return a;
+    return new Atom(pos, mass);
 }
 
 void AtomAllocator::destroyAtom(Atom *a)
 {
-    mPools[a->allocatorIndex]->free(a);
+    //mPools[a->allocatorIndex]->free(a);
+    delete a;
 }

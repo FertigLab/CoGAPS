@@ -1,116 +1,62 @@
 #include "Vector.h"
 
-#include "../utils/GapsAssert.h"
+Vector::Vector(unsigned size) : mData(size, 0.f) {}
 
-Vector::Vector(unsigned size)
-    : mValues(aligned_vector(size, 0.f))
-{}
-
-Vector::Vector(const std::vector<float> &v) : mValues(v.size())
+Vector::Vector(const std::vector<float> &v) : mData(v.size(), 0.f)
 {
-    unsigned sz = v.size();
-    for (unsigned i = 0; i < sz; ++i)
+    for (unsigned i = 0; i < v.size(); ++i)
     {
-        mValues[i] = v[i];
+        mData[i] = v[i];
     }
-}
-
-unsigned Vector::size() const
-{
-    return mValues.size();
-}
-
-float* Vector::ptr()
-{
-    return &mValues[0];
-}
-
-const float* Vector::ptr() const
-{
-    return &mValues[0];
-}
-
-float& Vector::operator[](unsigned i)
-{
-    return mValues[i];
 }
 
 float Vector::operator[](unsigned i) const
 {
-    return mValues[i];
+    return mData[i];
 }
 
-void Vector::operator+=(const Vector &vec)
+float& Vector::operator[](unsigned i)
 {
-    unsigned sz = size();
-    for (unsigned i = 0; i < sz; ++i)
+    return mData[i];
+}
+
+float* Vector::ptr()
+{
+    return &(mData[0]);
+}
+
+const float* Vector::ptr() const
+{
+    return &(mData[0]);
+}
+
+unsigned Vector::size() const
+{
+    return mData.size();
+}
+
+void Vector::operator+=(const Vector &v)
+{
+    for (unsigned i = 0; i < mData.size(); ++i)
     {
-        mValues[i] += vec[i];
-    }
-}
-
-Vector Vector::operator-(Vector v) const
-{
-    unsigned sz = size();
-    for (unsigned i = 0; i < sz; ++i)
-    {
-        v[i] = mValues[i] - v[i];
-    }
-    return v;
-}
-
-Vector Vector::operator*(float val) const
-{
-    Vector vec(*this);
-    vec *= val;
-    return vec;
-}
-
-Vector Vector::operator/(float val) const
-{
-    Vector vec(*this);
-    vec /= val;
-    return vec;
-}
-
-void Vector::operator*=(float val)
-{
-    unsigned sz = size();
-    for (unsigned i = 0; i < sz; ++i)
-    {
-        mValues[i] *= val;
-    }
-}
-
-void Vector::operator/=(float val)
-{
-    unsigned sz = size();
-    for (unsigned i = 0; i < sz; ++i)
-    {
-        mValues[i] /= val;
+        mData[i] += v[i];
     }
 }
 
 Archive& operator<<(Archive &ar, Vector &vec)
 {
-    unsigned sz = vec.size();
-    ar << sz;
-    for (unsigned i = 0; i < sz; ++i)
+    for (unsigned i = 0; i < vec.mData.size(); ++i)
     {
-        ar << vec[i];
+        ar << vec.mData[i];
     }
     return ar;
 }
 
 Archive& operator>>(Archive &ar, Vector &vec)
 {
-    unsigned sz = 0;
-    ar >> sz;
-    GAPS_ASSERT(sz == vec.size());
-
-    for (unsigned i = 0; i < sz; ++i)
+    for (unsigned i = 0; i < vec.mData.size(); ++i)
     {
-        ar >> vec.mValues[i];
+        ar >> vec.mData[i];
     }
     return ar;
 }

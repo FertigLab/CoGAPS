@@ -25,7 +25,7 @@ private:
 public:
 
     explicit TsvParser(const std::string &path);
-    ~TsvParser() {}
+    ~TsvParser() { mFile.close(); }
 
     unsigned nRow() const { return mNumRows; }
     unsigned nCol() const { return mNumCols; }

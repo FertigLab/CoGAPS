@@ -40,7 +40,6 @@ namespace gaps
     // fast versions, mostly using lookup tables
     float p_norm_fast(float p, float mean, float sd);
     float q_norm_fast(float q, float mean, float sd);
-
 }
 
 // used for seeding individual rngs

@@ -24,8 +24,7 @@ private:
 public:
 
     Archive(const std::string &path, std::ios_base::openmode flags)
-        :
-    mStream(path.c_str(), std::ios::binary | flags)
+        : mStream(path.c_str(), std::ios::binary | flags)
     {
         if (flags == ARCHIVE_WRITE)
         {

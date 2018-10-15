@@ -1,7 +1,7 @@
 #include "ProposalQueue.h"
-#include "math/Algorithms.h"
-#include "math/Random.h"
-#include "utils/GapsAssert.h"
+#include "../math/Math.h"
+#include "../math/Random.h"
+#include "../utils/GapsAssert.h"
 
 //////////////////////////////// AtomicProposal ////////////////////////////////
 

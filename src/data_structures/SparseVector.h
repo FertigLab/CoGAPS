@@ -1,70 +1,42 @@
-// can access without iterator, can set elements with accesor
-class Vector
-{
-public:
+#ifndef __COGAPS_SPARSE_VECTOR_H__
+#define __COGAPS_SPARSE_VECTOR_H__
 
-    explicit Vector(unsigned size);
-    explicit Vector(const std::vector<float> &v);
+#include "Vector.h"
+#include "../utils/Archive.h"
 
-    float& operator()(unsigned i, unsigned j); // set value
-    const float* ptr() const; // access without iterator
+#include <vector>
 
-    friend Archive& operator<<(Archive &ar, Vector &vec);
-    friend Archive& operator>>(Archive &ar, Vector &vec);
+class SparseMatrix;
 
-private:
-
-    aligned_vector mData;
-};
-
-// can only access through iterator, all data is const
 class SparseVector
 {
 public:
 
+    friend class SparseIterator;
+    friend class SparseIteratorTwo;
+    friend class SparseIteratorThree;
+    friend class SparseMatrix; // for inserting values
+
     explicit SparseVector(unsigned size);
     explicit SparseVector(const std::vector<float> &v);
+    explicit SparseVector(const Vector &v);
 
-    friend Archive& operator<<(Archive &ar, Vector &vec);
-    friend Archive& operator>>(Archive &ar, Vector &vec);
+    unsigned size() const;
 
+    Vector getDense() const;
+
+    friend Archive& operator<<(Archive &ar, SparseVector &vec);
+    friend Archive& operator>>(Archive &ar, SparseVector &vec);
+
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
     
     std::vector<uint64_t> mIndexBitFlags;
     std::vector<float> mData;
+    unsigned mSize;
+
+    void insert(unsigned i, float v);
 };
 
-// stored as a dense vector (efficient setting of values) but maintains
-// index bit flags of non-zeros so it can be used with SparseIterator
-class HybridVector
-{
-public:
-
-    explicit HybridVector(unsigned size);
-    explicit HybridVector(const std::vector<float> &v);
-
-    void change(unsigned i, unsigned j, float v);
-
-    friend Archive& operator<<(Archive &ar, Vector &vec);
-    friend Archive& operator>>(Archive &ar, Vector &vec);
-
-private:
-
-    std::vector<uint64_t> mIndexBitFlags;
-    std::vector<float> mData;
-};
-
-class SparseIterator
-{
-public:
-
-    SparseIterator(const HybridVector &A, const SparseVector &B);
-
-    bool atEnd() const;
-    void next();
-    float firstValue();
-    float secondValue();
-    unsigned firstIndex();
-    unsigned secondIndex();
-};
-
+#endif // __COGAPS_SPARSE_VECTOR_H__

@@ -9,10 +9,10 @@
 
 struct GapsResult
 {
-    ColMatrix Amean;
-    ColMatrix Asd;
-    ColMatrix Pmean;
-    ColMatrix Psd;
+    Matrix Amean;
+    Matrix Asd;
+    Matrix Pmean;
+    Matrix Psd;
     
     float meanChiSq;
     uint32_t seed;

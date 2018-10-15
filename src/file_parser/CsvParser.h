@@ -25,7 +25,7 @@ private:
 public:
 
     explicit CsvParser(const std::string &path);
-    ~CsvParser() {}
+    ~CsvParser() { mFile.close(); }
 
     unsigned nRow() const { return mNumRows; }
     unsigned nCol() const { return mNumCols; }

@@ -64,3 +64,4 @@ GapsFileType FileParser::fileType(const std::string &path)
 
     return GAPS_INVALID_FILE_TYPE;
 }
+

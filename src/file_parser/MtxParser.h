@@ -22,7 +22,7 @@ private:
 public:
 
     explicit MtxParser(const std::string &path);
-    ~MtxParser() {}
+    ~MtxParser() { mFile.close(); }
 
     unsigned nRow() const { return mNumRows; }
     unsigned nCol() const { return mNumCols; }

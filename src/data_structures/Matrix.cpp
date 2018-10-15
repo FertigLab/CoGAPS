@@ -1,193 +1,177 @@
+#include "SparseVector.h"
 #include "Matrix.h"
-#include "../file_parser/CsvParser.h"
+#include "../file_parser/FileParser.h"
 #include "../file_parser/MatrixElement.h"
 #include "../utils/GapsAssert.h"
 
-ColMatrix::ColMatrix(unsigned nrow, unsigned ncol)
+#include <iterator>
+
+Matrix::Matrix() : mNumRows(0), mNumCols(0) {}
+
+Matrix::Matrix(unsigned nrow, unsigned ncol)
     :
-mNumRows(nrow), mNumCols(ncol)
+mCols(ncol, Vector(nrow)),
+mNumRows(nrow),
+mNumCols(ncol)
+{}
+
+// constructor from data set read in as a matrix
+Matrix::Matrix(const Matrix &mat, bool genesInCols, bool subsetGenes,
+std::vector<unsigned> indices)
 {
-    allocate();
+    bool subsetData = !indices.empty();
+
+    unsigned nGenes = (subsetData && subsetGenes)
+        ? indices.size()
+        : genesInCols ? mat.nCol() : mat.nRow();
+    unsigned nSamples = (subsetData && !subsetGenes)
+        ? indices.size()
+        : genesInCols ? mat.nRow() : mat.nCol();
+    
+    for (unsigned j = 0; j < nSamples; ++j)
+    {
+        mCols.push_back(Vector(nGenes));
+        for (unsigned i = 0; i < nGenes; ++i)
+        {
+            unsigned dataRow = (subsetData && (subsetGenes != genesInCols))
+                ? indices[genesInCols ? j : i]
+                : genesInCols ? j : i;
+
+            unsigned dataCol = (subsetData && (subsetGenes == genesInCols))
+                ? indices[genesInCols ? i : j]
+                : genesInCols ? i : j;
+
+            mCols[j][i] = mat(dataRow, dataCol);
+        }
+    }
+    mNumRows = nGenes;
+    mNumCols = nSamples;
 }
 
-ColMatrix::ColMatrix(const ColMatrix &mat, bool transpose, bool partitionRows,
-const std::vector<unsigned> &indices)
+// constructor from data set given as a file path
+Matrix::Matrix(const std::string &path, bool genesInCols, bool subsetGenes,
+std::vector<unsigned> indices)
 {
-    if (indices.size() <= 1)
-    {
-        mNumRows = transpose ? mat.nCol() : mat.nRow();
-        mNumCols = transpose ? mat.nRow() : mat.nCol();
-        allocate();
+    FileParser fp(path);
 
-        for (unsigned i = 0; i < mNumRows; ++i)
+    // calculate the number of rows and columns
+    bool subsetData = !indices.empty();
+    mNumRows = (subsetData && subsetGenes) // nGenes
+        ? indices.size()
+        : genesInCols ? fp.nCol() : fp.nRow();
+    mNumCols = (subsetData && !subsetGenes) // nSamples
+        ? indices.size()
+        : genesInCols ? fp.nRow() : fp.nCol();
+
+    // allocate space for the data
+    for (unsigned j = 0; j < mNumCols; ++j)
+    {
+        mCols.push_back(Vector(mNumRows));
+    }
+
+    // read from file
+    if (!subsetData)
+    {
+        while (fp.hasNext())
         {
-            for (unsigned j = 0; j < mNumCols; ++j)
-            {
-                this->operator()(i,j) = transpose ? mat(j,i) : mat(i,j);
-            }
+            MatrixElement e(fp.getNext());
+            unsigned row = genesInCols ? e.col : e.row;
+            unsigned col = genesInCols ? e.row : e.col;
+            mCols[col][row] = e.value;
         }
     }
     else
     {
-        // create matrix
-        mNumRows = partitionRows ? indices.size() : (transpose ? mat.nCol() : mat.nRow());
-        mNumCols = partitionRows ? (transpose ? mat.nRow() : mat.nCol()) : indices.size();
-        allocate();
-
-        // fill matrix, TODO use binary search on indices
-        for (unsigned i = 0; i < mat.nRow(); ++i)
+        std::sort(indices.begin(), indices.end());
+        while (fp.hasNext())
         {
-            for (unsigned j = 0; j < mat.nCol(); ++j)
+            MatrixElement e(fp.getNext());
+            unsigned searchIndex = (subsetGenes != genesInCols) ? e.row : e.col;
+            std::vector<unsigned>::iterator pos = 
+                std::lower_bound(indices.begin(), indices.end(), searchIndex);
+        
+            // this index is included in the subset
+            if (pos != indices.end() && *pos == searchIndex)
             {
-                unsigned dataIndex = transpose ? (partitionRows ? j : i) : (partitionRows ? i : j);
-                std::vector<unsigned>::const_iterator pos = std::find(indices.begin(), indices.end(), dataIndex);
-                if (pos != indices.end())
-                {
-                    unsigned index = std::distance(indices.begin(), pos);
-                    unsigned row = partitionRows ? index : (transpose ? j : i);
-                    unsigned col = partitionRows ? (transpose ? i : j) : index;
-                    this->operator()(row,col) = mat(i,j);
-                }
+                unsigned row = subsetGenes
+                    ? std::distance(indices.begin(), pos)
+                    : genesInCols ? e.col : e.row;
+                unsigned col = !subsetGenes
+                    ? std::distance(indices.begin(), pos)
+                    : genesInCols ? e.row : e.col;
+                mCols[col][row] = e.value;
             }
         }
     }
 }
 
-// apply transpose first, then partition either rows or columns
-ColMatrix::ColMatrix(const std::string &path, bool transpose, bool partitionRows,
-const std::vector<unsigned> &indices)
-{
-    FileParser parser(path);
-    if (indices.size() <= 1)
-    {
-        mNumRows = transpose ? parser.nCol() : parser.nRow();
-        mNumCols = transpose ? parser.nRow() : parser.nCol();
-        allocate();
-
-        while (parser.hasNext())
-        {
-            MatrixElement e(parser.getNext());
-            unsigned row = transpose ? e.col : e.row;
-            unsigned col = transpose ? e.row : e.col;
-            this->operator()(row,col) = e.value;
-        }
-    }
-    else
-    {
-        // create matrix
-        mNumRows = partitionRows ? indices.size() : (transpose ? parser.nCol() : parser.nRow());
-        mNumCols = partitionRows ? (transpose ? parser.nRow() : parser.nCol()) : indices.size();
-        allocate();
-
-        // fill matrix
-        while (parser.hasNext())
-        {
-            MatrixElement e(parser.getNext());
-            unsigned dataIndex = transpose ? (partitionRows ? e.col : e.row) : (partitionRows ? e.row : e.col);
-            std::vector<unsigned>::const_iterator pos = std::find(indices.begin(), indices.end(), dataIndex);
-            if (pos != indices.end())
-            {
-                unsigned index = std::distance(indices.begin(), pos);
-                unsigned row = partitionRows ? index : (transpose ? e.col : e.row);
-                unsigned col = partitionRows ? (transpose ? e.row : e.col) : index;
-                this->operator()(row, col) = e.value;
-            }
-        }
-    }
-}
-
-void ColMatrix::allocate()
-{
-    for (unsigned i = 0; i < mNumCols; ++i)
-    {
-        mData.push_back(Vector(mNumRows));
-    }
-}
-
-unsigned ColMatrix::nRow() const
+unsigned Matrix::nRow() const
 {
     return mNumRows;
 }
 
-unsigned ColMatrix::nCol() const
+unsigned Matrix::nCol() const
 {
     return mNumCols;
 }
 
-ColMatrix ColMatrix::operator*(float val) const
+float Matrix::operator()(unsigned i, unsigned j) const
 {
-    ColMatrix mat(*this);
-    for (unsigned i = 0; i < mNumCols; ++i)
+    return mCols[j][i];
+}
+
+float& Matrix::operator()(unsigned i, unsigned j)
+{
+    return mCols[j][i];
+}
+
+Vector& Matrix::getCol(unsigned col)
+{
+    return mCols[col];
+}
+
+const Vector& Matrix::getCol(unsigned col) const
+{
+    return mCols[col];
+}
+
+/*
+const float* Matrix::colPtr(unsigned col) const
+{
+    return mCols[col].ptr();
+}
+
+float* Matrix::colPtr(unsigned col)
+{
+    return mCols[col].ptr();
+}
+*/
+
+bool Matrix::empty() const
+{
+    return mNumRows == 0;
+}
+
+Archive& operator<<(Archive &ar, Matrix &vec)
+{
+    ar << vec.mNumRows << vec.mNumCols;
+    for (unsigned j = 0; j < vec.mNumCols; ++j)
     {
-        mat.mData[i] *= val;
-    }
-    return mat;
-}
-
-ColMatrix ColMatrix::operator/(float val) const
-{
-    ColMatrix mat(*this);
-    for (unsigned i = 0; i < mNumCols; ++i)
-    {
-        mat.mData[i] /= val;
-    }
-    return mat;
-}
-
-float& ColMatrix::operator()(unsigned r, unsigned c)
-{
-    return mData[c][r];
-}
-
-float ColMatrix::operator()(unsigned r, unsigned c) const
-{
-    return mData[c][r];
-}
-
-Vector& ColMatrix::getCol(unsigned col)
-{
-    return mData[col];
-}
-
-const Vector& ColMatrix::getCol(unsigned col) const
-{
-    return mData[col];
-}
-
-float* ColMatrix::colPtr(unsigned col)
-{
-    GAPS_ASSERT(col < mNumCols);
-    return mData[col].ptr();
-}
-
-const float* ColMatrix::colPtr(unsigned col) const
-{
-    GAPS_ASSERT(col < mNumCols);
-    return mData[col].ptr();
-}
-
-Archive& operator<<(Archive &ar, ColMatrix &mat)
-{
-    ar << mat.mNumRows << mat.mNumCols;
-    for (unsigned i = 0; i < mat.mNumCols; ++i)
-    {
-        ar << mat.mData[i];
+        ar << vec.mCols[j];
     }
     return ar;
 }
 
-Archive& operator>>(Archive &ar, ColMatrix &mat)
+Archive& operator>>(Archive &ar, Matrix &vec)
 {
-    // should already by allocated
     unsigned nr = 0, nc = 0;
     ar >> nr >> nc;
-    GAPS_ASSERT_MSG(nr == mat.mNumRows, nr << " != " << mat.mNumRows);
-    GAPS_ASSERT_MSG(nc == mat.mNumCols, nc << " != " << mat.mNumCols);
+    GAPS_ASSERT(nr == vec.mNumRows);
+    GAPS_ASSERT(nc == vec.mNumCols);
 
-    // read in data
-    for (unsigned i = 0; i < mat.mNumCols; ++i)
+    for (unsigned j = 0; j < vec.mNumCols; ++j)
     {
-        ar >> mat.mData[i];
+        ar >> vec.mCols[j];
     }
-    return ar;   
+    return ar;
 }

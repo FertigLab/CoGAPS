@@ -45,19 +45,21 @@ static Rcpp::NumericMatrix createRMatrix(const GenericMatrix &mat)
 
 ////////// converts R parameters to single GapsParameters struct ///////////////
 
-GapsParameters getGapsParameters(const Rpp::List &allParams, bool isMaster,
+template <class DataType>
+GapsParameters getGapsParameters(const DataType &data,
+const Rcpp::List &allParams, bool isMaster,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix,
 const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
 {
     // Standard CoGAPS parameters struct
-    GapsParameters params;
+    GapsParameters params(data);
 
     // get configuration parameters
     params.maxThreads = allParams["nThreads"];
     params.printMessages = allParams["messages"] && isMaster;
     params.transposeData = allParams["transposeData"];
     params.outputFrequency = allParams["outputFrequency"];
-    params.checkpointOutFile = allParams["checkpointOutFile"];
+    params.checkpointOutFile = Rcpp::as<std::string>(allParams["checkpointOutFile"]);
     params.checkpointInterval = allParams["checkpointInterval"];
 
     // extract model specific parameters from list
@@ -103,7 +105,6 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
     return params;
 }
 
-
 ////////// main function that creates a GapsRunner and runs CoGAPS /////////////
 
 // note uncertainty matrix gets special treatment since it's the same size as
@@ -116,11 +117,12 @@ const DataType &uncertainty, const Rcpp::Nullable<Rcpp::IntegerVector> &indices,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
 {
     // convert R parameters to GapsParameters struct
-    GapsParameters gapsParams(getGapsParameters(allParams, isMaster,
+    GapsParameters gapsParams(getGapsParameters(data, allParams, isMaster,
         fixedMatrix, indices));
 
     // create GapsRunner, note we must first initialize the random generator
-    GapsRng::setSeed(params.seed);
+    GapsRng::setSeed(gapsParams.seed);
+    gaps_printf("Loading Data...");
     GapsRunner runner(data, gapsParams);
 
     // set uncertainty
@@ -128,6 +130,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
     {
         runner.setUncertainty(uncertainty, gapsParams);
     }
+    gaps_printf("Done!\n");
     
     // run cogaps
     GapsResult result(runner.run());
@@ -144,7 +147,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
         Rcpp::Named("Pmean") = createRMatrix(result.Pmean),
         Rcpp::Named("Asd") = createRMatrix(result.Asd),
         Rcpp::Named("Psd") = createRMatrix(result.Psd),
-        Rcpp::Named("seed") = params.seed,
+        Rcpp::Named("seed") = gapsParams.seed,
         Rcpp::Named("meanChiSq") = result.meanChiSq,
         Rcpp::Named("geneNames") = allParams["geneNames"],
         Rcpp::Named("sampleNames") = allParams["sampleNames"],

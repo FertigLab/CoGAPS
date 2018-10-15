@@ -1,7 +1,7 @@
 #ifndef __COGAPS_ATOM_ALLOCATOR_H__
 #define __COGAPS_ATOM_ALLOCATOR_H__
 
-#include "utils/Archive.h"
+#include "../utils/Archive.h"
 
 #include <stdint.h>
 #include <vector>

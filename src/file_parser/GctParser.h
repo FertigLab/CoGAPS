@@ -25,7 +25,7 @@ private:
 public:
 
     explicit GctParser(const std::string &path);
-    ~GctParser() {}
+    ~GctParser() { mFile.close(); }
 
     unsigned nRow() const { return mNumRows; }
     unsigned nCol() const { return mNumCols; }
