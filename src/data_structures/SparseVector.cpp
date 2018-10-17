@@ -1,26 +1,31 @@
 #include "SparseVector.h"
 #include "Vector.h"
 
+// counts number of bits set below position
+// internal expression clears all bits as high as pos or higher
+// number of remaning bits is returned
+static unsigned countLowerBits(uint64_t u, unsigned pos)
+{
+    return __builtin_popcountll(u & ((1ull << pos) - 1ull));
+}
+
 SparseVector::SparseVector(unsigned size)
     :
 mSize(size),
-mIndexBitFlags(size / 64 + 1, 0),
-mIndexStart(mIndexBitFlags.size(), 0)
+mIndexBitFlags(size / 64 + 1, 0)
 {}
 
 SparseVector::SparseVector(const std::vector<float> &v)
     :
 mSize(v.size()),
-mIndexBitFlags(v.size() / 64 + 1, 0),
-mIndexStart(mIndexBitFlags.size(), 0)
+mIndexBitFlags(v.size() / 64 + 1, 0)
 {
     for (unsigned i = 0; i < v.size(); ++i)
     {
         if (v[i] > 0.f)
         {
             mData.push_back(v[i]);
-            mIndexBitFlags[i / 64] ^= (1ull << (i % 64));
-            propogate(i / 64);
+            mIndexBitFlags[i / 64] |= (1ull << (i % 64));
         }
     }
 }
@@ -28,16 +33,14 @@ mIndexStart(mIndexBitFlags.size(), 0)
 SparseVector::SparseVector(const Vector &v)
     :
 mSize(v.size()),
-mIndexBitFlags(v.size() / 64 + 1, 0),
-mIndexStart(mIndexBitFlags.size(), 0)
+mIndexBitFlags(v.size() / 64 + 1, 0)
 {
     for (unsigned i = 0; i < v.size(); ++i)
     {
         if (v[i] > 0.f)
         {
             mData.push_back(v[i]);
-            mIndexBitFlags[i / 64] ^= (1ull << (i % 64));
-            propogate(i / 64);
+            mIndexBitFlags[i / 64] |= (1ull << (i % 64));
         }
     }
 }
@@ -45,14 +48,6 @@ mIndexStart(mIndexBitFlags.size(), 0)
 unsigned SparseVector::size() const
 {
     return mSize;
-}
-
-// counts number of bits set below position
-// internal expression clears all bits as high as pos or higher
-// number of remaning bits is returned
-static unsigned countLowerBits(uint64_t u, unsigned pos)
-{
-    return __builtin_popcountll(u & ((1ull << pos) - 1ull));
 }
 
 void SparseVector::insert(unsigned i, float v)
@@ -69,31 +64,22 @@ void SparseVector::insert(unsigned i, float v)
 
     mData.insert(mData.begin() + dataIndex, v);
     mIndexBitFlags[i / 64] |= (1ull << (i % 64));
-    propogate(i / 64);
-}
-
-void SparseVector::propogate(unsigned ndx)
-{
-    for (unsigned i = ndx + 1; i < mIndexStart.size(); ++i)
-    {
-        ++mIndexStart[i];
-    }
 }
 
 Vector SparseVector::getDense() const
 {
     Vector v(mSize);
     unsigned sparseNdx = 0;
-    for (unsigned i = 0; i < mSize; ++i)
+    for (unsigned i = 0; i < mIndexBitFlags.size(); ++i)
     {
-        if (mIndexBitFlags[i / 64] & (1ull << (i % 64)))
+        uint64_t flags = mIndexBitFlags[i];
+        while (flags)
         {
-            v[i] = mData[sparseNdx++];
+            unsigned ndx = __builtin_ffsll(flags) - 1;
+            GAPS_ASSERT(sparseNdx < mData.size());
+            v[64 * i + ndx] = mData[sparseNdx++];
+            flags ^= 1ull << ndx;
         }
-        else
-        {
-            v[i] = 0.f;
-        }       
     }
     return v;
 }
