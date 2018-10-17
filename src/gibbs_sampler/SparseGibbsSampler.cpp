@@ -58,28 +58,6 @@ AlphaParameters SparseGibbsSampler::alphaParameters(unsigned row, unsigned col)
             mOtherMatrix->getRow(i)));
     }
     return AlphaParameters(s, s_mu);
-
-#if 0
-    float s = Z1(col);
-    float s_mu = 0.f;
-    for (unsigned i = 0; i < mNumPatterns; ++i)
-    {
-        s_mu += mMatrix(row,i) * Z2(col,i);
-    }
-    s_mu *= -1.f;
-
-    SparseIteratorTwo it(mDMatrix.getCol(row), mOtherMatrix->getCol(col));
-    while (!it.atEnd())
-    {
-        float term1 = it.getValue_2() / it.getValue_1();
-        float term2 = it.getValue_2() - term1 / it.getValue_1();
-        s += term1 * term1 - it.getValue_2() * it.getValue_2();
-        s_mu += term1 + term2 * gaps::dot(mMatrix.getRow(row),
-            mOtherMatrix->getRow(it.getIndex()));
-        it.next();
-    }
-    return AlphaParameters(s, s_mu) * mBeta;
-#endif
 }
 
 AlphaParameters SparseGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
@@ -108,27 +86,17 @@ unsigned r2, unsigned c2)
 AlphaParameters SparseGibbsSampler::alphaParametersWithChange(unsigned row,
 unsigned col, float ch)
 {
-    float s = Z1(col);
-    float s_mu = 0.f;
-    for (unsigned i = 0; i < mNumPatterns; ++i)
+    Vector Dvec(mDMatrix.getCol(row).getDense());
+    Vector Svec(gaps::pmax(Dvec, 0.1f));
+    float s = 0.f, s_mu = 0.f;
+    for (unsigned i = 0; i < Dvec.size(); ++i)
     {
-       s_mu += mMatrix(row,i) * Z2(col,i);
+        float ratio = mOtherMatrix->operator()(i,col) / (Svec[i] * Svec[i]);
+        s += mOtherMatrix->operator()(i,col) * ratio;
+        s_mu += ratio * (Dvec[i] - gaps::dot(mMatrix.getRow(row),
+            mOtherMatrix->getRow(i)) - mOtherMatrix->operator()(i,col) * ch);
     }
-    s_mu += ch * Z2(col,col);
-    s_mu *= -1.f;
-
-    SparseIteratorTwo it(mDMatrix.getCol(row), mOtherMatrix->getCol(col));
-    while (!it.atEnd())
-    {
-       float term1 = it.getValue_2() / it.getValue_1();
-       float term2 = it.getValue_2() - term1 / it.getValue_1();
-       s += term1 * term1 - it.getValue_2() * it.getValue_2();
-       s_mu += term1 + term2 * gaps::dot(mMatrix.getRow(row),
-           mOtherMatrix->getRow(it.getIndex()));
-       s_mu += term2 * mOtherMatrix->operator()(it.getIndex(), col) * ch;
-       it.next();
-    }
-    return AlphaParameters(s, s_mu) * mBeta;
+    return AlphaParameters(s, s_mu);
 }
 
 float& SparseGibbsSampler::Z1(unsigned pattern)
