@@ -72,6 +72,7 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
     params.maxGibbsMassA = gapsParams.slot("maxGibbsMassA");
     params.maxGibbsMassP = gapsParams.slot("maxGibbsMassP");
     params.singleCell = gapsParams.slot("singleCell");
+    params.useSparseOptimization = gapsParams.slot("useSparseOptimization");
 
     // check if using fixed matrix
     if (fixedMatrix.isNotNull())

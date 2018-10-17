@@ -47,6 +47,11 @@ GapsResult AbstractGapsRunner::run()
 
     mStartTime = bpt_now();
 
+    // check if running in debug mode
+    #ifdef GAPS_DEBUG
+    gaps_printf("Running in debug mode\n");
+    #endif
+
     // calculate appropiate number of threads if compiled with openmp
     #ifdef __GAPS_OPENMP__
     if (mPrintMessages && mPrintThreadUsage)

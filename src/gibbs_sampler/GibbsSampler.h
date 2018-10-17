@@ -51,7 +51,9 @@ public:
     bool internallyConsistent() const;
 #endif
 
+#ifndef GAPS_INTERNAL_TESTS
 protected:
+#endif
 
     DataMatrix mDMatrix; // samples by genes for A, genes by samples for P
     FactorMatrix mMatrix; // genes by patterns for A, samples by patterns for P
@@ -257,6 +259,8 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::death(const AtomicProposal
 template <class Derived, class DataMatrix, class FactorMatrix>
 void GibbsSampler<Derived, DataMatrix, FactorMatrix>::move(const AtomicProposal &prop)
 {
+    GAPS_ASSERT(prop.r1 != prop.r2 || prop.c1 != prop.c2);
+
     AlphaParameters alpha = impl()->alphaParameters(prop.r1, prop.c1, prop.r2, prop.c2);
     if (std::log(prop.rng.uniform()) < getDeltaLL(alpha, -prop.atom1->mass) * mAnnealingTemp)
     {
@@ -271,6 +275,8 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::move(const AtomicProposal 
 template <class Derived, class DataMatrix, class FactorMatrix>
 void GibbsSampler<Derived, DataMatrix, FactorMatrix>::exchange(const AtomicProposal &prop)
 {
+    GAPS_ASSERT(prop.r1 != prop.r2 || prop.c1 != prop.c2);
+
     // attempt gibbs distribution exchange
     AlphaParameters alpha = impl()->alphaParameters(prop.r1, prop.c1, prop.r2, prop.c2);
     if (canUseGibbs(prop.c1, prop.c2))

@@ -7,6 +7,8 @@
 #include "../data_structures/HybridMatrix.h"
 #include "../data_structures/SparseIterator.h"
 
+#include <bitset>
+
 TEST_CASE("Test SparseIterator.h - One Dimensional")
 {
 #ifdef GAPS_INTERNAL_TESTS
@@ -85,6 +87,112 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
         REQUIRE(it.getValue_2() == 6.f);
         it.next();
         REQUIRE(it.atEnd());
+    }
+
+    SECTION("First overlap happens after 64 entries")
+    {
+        SparseVector sv(100);
+        sv.insert(1, 1.f);
+        sv.insert(2, 2.f);
+        sv.insert(3, 3.f);
+        sv.insert(4, 4.f);
+        sv.insert(5, 5.f);
+        sv.insert(74, 74.f);
+        sv.insert(75, 75.f);
+        sv.insert(76, 76.f);
+
+        HybridVector hv(100);
+        hv.add(6, 7.f);
+        hv.add(7, 8.f);
+        hv.add(8, 9.f);
+        hv.add(75, 76.f);
+
+        SparseIteratorTwo it(sv, hv);
+        REQUIRE(it.getValue_1() == 75.f);
+        REQUIRE(it.getValue_2() == 76.f);
+        it.next();
+        REQUIRE(it.atEnd());
+    }
+
+    SECTION("Test Dot Product with gap")
+    {
+        SparseVector sv(300);
+        HybridVector hv(300);
+        Vector dv1(300), dv2(300);
+    
+        // fill vectors
+        GapsRng::setSeed(123);
+        GapsRng rng;
+
+        for (unsigned i = 0; i < 30; ++i)
+        {
+            float val = rng.uniform(50.f,500.f);
+            sv.insert(i, val);
+            dv1[i] = val;
+        }
+
+        for (unsigned i = 32; i < 60; ++i)
+        {
+            float val = rng.uniform(50.f,500.f);
+            hv.add(i, val);
+            dv2[i] = val;
+        }
+
+        for (unsigned i = 70; i < 120; i+=3)
+        {
+            float v1 = rng.uniform(50.f,500.f);
+            sv.insert(i, v1);
+            dv1[i] = v1;   
+
+            float v2 = rng.uniform(50.f,500.f);
+            hv.add(i, v2);
+            dv2[i] = v2;
+        }
+
+        // this part needs to be accounted for
+        for (unsigned i = 128; i < 196; ++i)
+        {
+            float val = rng.uniform(5.f,10.f);
+            sv.insert(i, val);
+            dv1[i] = val;
+        }
+
+        for (unsigned i = 200; i < 300; ++i)
+        {   
+            float v1 = rng.uniform(50.f,500.f);
+            sv.insert(i, v1);
+            dv1[i] = v1;   
+
+            float v2 = rng.uniform(50.f,500.f);
+            hv.add(i, v2);
+            dv2[i] = v2;
+        }
+
+        // calculate dot product
+        float sdot = 0.f, ddot = 0.f;
+        SparseIteratorTwo it(sv, hv);
+        unsigned i = 0;
+        while (!it.atEnd())
+        {
+            while (dv1[i] == 0.f || dv2[i] == 0.f)
+            {
+                ++i;
+            }
+
+            if (i < dv1.size())
+            {
+                ddot += dv1[i] * dv2[i];
+                REQUIRE(dv1[i] == it.getValue_1());
+                REQUIRE(dv2[i] == it.getValue_2());
+                ++i;
+            }
+
+            sdot += it.getValue_1() * it.getValue_2();
+
+            it.next();
+        }
+        REQUIRE(ddot == gaps::dot(dv1, dv2));
+        REQUIRE(sdot == ddot);        
     }
 #endif
 

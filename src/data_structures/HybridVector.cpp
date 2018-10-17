@@ -1,14 +1,21 @@
 #include "HybridVector.h"
 #include "../math/Math.h"
+#include "../math/SIMD.h"
+
+#define PAD_SIZE_FOR_SIMD(x) (gaps::simd::Index::increment() * (1 + ((x) - 1) / gaps::simd::Index::increment()))
 
 HybridVector::HybridVector(unsigned size)
-    : mIndexBitFlags(size / 64 + 1, 0), mData(size, 0.f)
+    :
+mIndexBitFlags(size / 64 + 1, 0),
+mData(PAD_SIZE_FOR_SIMD(size), 0.f),
+mSize(size)
 {}
 
 HybridVector::HybridVector(const std::vector<float> &v)
     :
 mIndexBitFlags(v.size() / 64 + 1, 0),
-mData(v.size(), 0.f)
+mData(PAD_SIZE_FOR_SIMD(v.size()), 0.f),
+mSize(v.size())
 {
     for (unsigned i = 0; i < v.size(); ++i)
     {
@@ -34,7 +41,7 @@ bool HybridVector::empty() const
 
 unsigned HybridVector::size() const
 {
-    return mData.size();
+    return mSize;
 }
 
 bool HybridVector::add(unsigned i, float v)
@@ -65,13 +72,13 @@ const float* HybridVector::densePtr() const
 
 Archive& operator<<(Archive &ar, HybridVector &vec)
 {
-    ar << vec.mData.size();
+    ar << vec.mSize;
     for (unsigned i = 0; i < vec.mIndexBitFlags.size(); ++i)
     {
         ar << vec.mIndexBitFlags[i];
     }
 
-    for (unsigned i = 0; i < vec.mData.size(); ++i)
+    for (unsigned i = 0; i < vec.mSize; ++i)
     {
         ar << vec.mData[i];
     }
@@ -82,14 +89,14 @@ Archive& operator>>(Archive &ar, HybridVector &vec)
 {
     unsigned sz = 0;
     ar >> sz;
-    GAPS_ASSERT(sz == vec.mData.size());
+    GAPS_ASSERT(sz == vec.size());
 
     for (unsigned i = 0; i < vec.mIndexBitFlags.size(); ++i)
     {
         ar >> vec.mIndexBitFlags[i];
     }
 
-    for (unsigned i = 0; i < vec.mData.size(); ++i)
+    for (unsigned i = 0; i < vec.mSize; ++i)
     {
         ar >> vec.mData[i];
     }

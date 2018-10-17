@@ -103,6 +103,8 @@ outputToFile=NULL, ...)
         stop("uncertainty must be a matrix unless data is a file path")
     if (!is(data, "character"))
         checkDataMatrix(data, uncertainty, allParams$gaps)
+    if (!is.null(uncertainty) & allParams$gaps@useSparseOptimization)
+        stop("must use default uncertainty when enabling useSparseOptimization")
 
     # check single cell parameter
     if (!is.null(allParams$gaps@distributed))

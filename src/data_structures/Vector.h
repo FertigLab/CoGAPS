@@ -34,6 +34,7 @@ public:
 private:
 
     aligned_vector mData;
+    unsigned mSize;
 };
 
 #endif

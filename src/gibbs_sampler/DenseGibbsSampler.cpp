@@ -80,27 +80,19 @@ AlphaParameters DenseGibbsSampler::alphaParameters(unsigned row, unsigned col)
     const float *mat = mOtherMatrix->getCol(col).ptr();
 
     gaps::simd::PackedFloat pMat, pD, pAP, pS;
-    gaps::simd::PackedFloat partialS(0.f), partialS_mu(0.f);
+    gaps::simd::PackedFloat s(0.f), s_mu(0.f);
     gaps::simd::Index i(0);
-    for (; i <= size - i.increment(); ++i)
+    for (; i < size; ++i)
     {   
         pMat.load(mat + i);
         pD.load(D + i);
         pAP.load(AP + i);
         pS.load(S + i);
         gaps::simd::PackedFloat ratio(pMat / (pS * pS));
-        partialS += pMat * ratio;
-        partialS_mu += ratio * (pD - pAP);
+        s += pMat * ratio;
+        s_mu += ratio * (pD - pAP);
     }
-
-    float s = partialS.scalar(), s_mu = partialS_mu.scalar();
-    for (unsigned j = i.value(); j < size; ++j)
-    {
-        float ratio = mat[j] / (S[j] * S[j]);
-        s += mat[j] * ratio;
-        s_mu += ratio * (D[j] - AP[j]);
-    }
-    return AlphaParameters(s, s_mu);
+    return AlphaParameters(s.scalar(), s_mu.scalar());
 }
 
 // PERFORMANCE_CRITICAL
@@ -117,28 +109,20 @@ unsigned r2, unsigned c2)
         const float *mat2 = mOtherMatrix->getCol(c2).ptr();
 
         gaps::simd::PackedFloat pMat1, pMat2, pD, pAP, pS;
-        gaps::simd::PackedFloat partialS(0.f), partialS_mu(0.f);
+        gaps::simd::PackedFloat s(0.f), s_mu(0.f);
         gaps::simd::Index i(0);
-        for (; i <= size - i.increment(); ++i)
-        {   
+        for (; i < size; ++i)
+        {
             pMat1.load(mat1 + i);
             pMat2.load(mat2 + i);
             pD.load(D + i);
             pAP.load(AP + i);
             pS.load(S + i);
             gaps::simd::PackedFloat ratio((pMat1 - pMat2) / (pS * pS));
-            partialS += (pMat1 - pMat2) * ratio;
-            partialS_mu += ratio * (pD - pAP);
+            s += (pMat1 - pMat2) * ratio;
+            s_mu += ratio * (pD - pAP);
         }
-
-        float s = partialS.scalar(), s_mu = partialS_mu.scalar();
-        for (unsigned j = i.value(); j < size; ++j)
-        {
-            float ratio = (mat1[j] - mat2[j]) / (S[j] * S[j]);
-            s += (mat1[j] - mat2[j]) * ratio;
-            s_mu += ratio * (D[j] - AP[j]);
-        }
-        return AlphaParameters(s, s_mu);
+        return AlphaParameters(s.scalar(), s_mu.scalar());
     }
     return alphaParameters(r1, c1) + alphaParameters(r2, c2);
 }
@@ -155,28 +139,19 @@ unsigned col, float ch)
 
     gaps::simd::PackedFloat pCh(ch);
     gaps::simd::PackedFloat pMat, pD, pAP, pS;
-    gaps::simd::PackedFloat partialS(0.f), partialS_mu(0.f);
+    gaps::simd::PackedFloat s(0.f), s_mu(0.f);
     gaps::simd::Index i(0);
-    for (; i <= size - i.increment(); ++i)
+    for (; i < size; ++i)
     {   
         pMat.load(mat + i);
         pD.load(D + i);
         pAP.load(AP + i);
         pS.load(S + i);
         gaps::simd::PackedFloat ratio(pMat / (pS * pS));
-        partialS += pMat * ratio;
-        partialS_mu += ratio * (pD - (pAP + pCh * pMat));
+        s += pMat * ratio;
+        s_mu += ratio * (pD - (pAP + pCh * pMat));
     }
-
-    float s = partialS.scalar(), s_mu = partialS_mu.scalar();
-    for (unsigned j = i.value(); j < size; ++j)
-    {
-        float ratio = mat[j] / (S[j] * S[j]);
-        s += mat[j] * ratio;
-        s_mu += ratio * (D[j] - (AP[j] + ch * mat[j]));
-    }
-    return AlphaParameters(s, s_mu);
-
+    return AlphaParameters(s.scalar(), s_mu.scalar());
 }
 
 // PERFORMANCE_CRITICAL
@@ -187,19 +162,14 @@ void DenseGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
     unsigned size = mAPMatrix.nRow();
 
     gaps::simd::PackedFloat pOther, pAP;
-    gaps::simd::Index i(0);
     gaps::simd::PackedFloat pDelta(delta);
-    for (; i <= size - i.increment(); ++i)
+    gaps::simd::Index i(0);
+    for (; i < size; ++i)
     {
         pOther.load(other + i);
         pAP.load(ap + i);
         pAP += pDelta * pOther;
         pAP.store(ap + i);
-    }
-
-    for (unsigned j = i.value(); j < size; ++j)
-    {
-        ap[j] += delta * other[j];
     }
 }
 

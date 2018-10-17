@@ -6,7 +6,6 @@
     #define __GAPS_AVX__
     #include <immintrin.h>
     typedef __m256 gaps_packed_t;
-    const unsigned index_increment = 8;
     #define SET_SCALAR(x) _mm256_set1_ps(x)
     #define LOAD_PACKED(x) _mm256_load_ps(x)
     #define STORE_PACKED(p,x) _mm256_store_ps(p,x)
@@ -20,7 +19,6 @@
     #define __GAPS_SSE__
     #include <nmmintrin.h>
     typedef __m128 gaps_packed_t;
-    const unsigned index_increment = 4;
     #define SET_SCALAR(x) _mm_set1_ps(x)
     #define LOAD_PACKED(x) _mm_load_ps(x)
     #define STORE_PACKED(p,x) _mm_store_ps(p,x)
@@ -32,7 +30,6 @@
 #else
 
     typedef float gaps_packed_t;
-    const unsigned index_increment = 1;
     #define SET_SCALAR(x) x
     #define LOAD_PACKED(x) *(x)
     #define STORE_PACKED(p,x) *(p) = (x)
@@ -56,9 +53,19 @@ public:
     Index& operator=(unsigned val) { index = val; return *this; }
     bool operator<(unsigned comp) const { return index < comp; }
     bool operator<=(unsigned comp) const { return index <= comp; }
-    void operator++() { index += index_increment; }
+    void operator++() { index += gaps::simd::Index::increment(); }
     unsigned value() const { return index; }
-    unsigned increment() const { return index_increment; }
+    
+    static unsigned increment()
+    {
+    #if defined( __GAPS_AVX__ )
+        return 8;
+    #elif defined( __GAPS_SSE__ )
+        return 4;
+    #else
+        return 1;
+    #endif
+    }
 
     friend const float* operator+(const float *ptr, Index ndx);
     friend float* operator+(float *ptr, Index ndx);
