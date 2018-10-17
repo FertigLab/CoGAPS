@@ -47,6 +47,19 @@ unsigned col, float delta)
 
 AlphaParameters SparseGibbsSampler::alphaParameters(unsigned row, unsigned col)
 {
+    Vector Dvec(mDMatrix.getCol(row).getDense());
+    Vector Svec(gaps::pmax(Dvec, 0.1f));
+    float s = 0.f, s_mu = 0.f;
+    for (unsigned i = 0; i < Dvec.size(); ++i)
+    {
+        float ratio = mOtherMatrix->operator()(i,col) / (Svec[i] * Svec[i]);
+        s += mOtherMatrix->operator()(i,col) * ratio;
+        s_mu += ratio * (Dvec[i] - gaps::dot(mMatrix.getRow(row),
+            mOtherMatrix->getRow(i)));
+    }
+    return AlphaParameters(s, s_mu);
+
+#if 0
     float s = Z1(col);
     float s_mu = 0.f;
     for (unsigned i = 0; i < mNumPatterns; ++i)
@@ -66,6 +79,7 @@ AlphaParameters SparseGibbsSampler::alphaParameters(unsigned row, unsigned col)
         it.next();
     }
     return AlphaParameters(s, s_mu) * mBeta;
+#endif
 }
 
 AlphaParameters SparseGibbsSampler::alphaParameters(unsigned r1, unsigned c1,

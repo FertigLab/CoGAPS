@@ -34,11 +34,9 @@ private:
     
     unsigned mSize;
     std::vector<uint64_t> mIndexBitFlags;
-    std::vector<unsigned> mIndexStart;
     std::vector<float> mData;
 
     void insert(unsigned i, float v);
-    void propogate(unsigned ndx);
 };
 
 #endif // __COGAPS_SPARSE_VECTOR_H__
