@@ -11,7 +11,11 @@ static unsigned countLowerBits(uint64_t u, unsigned pos)
 // clears all bits as low as pos or lower
 static uint64_t clearLowerBits(uint64_t u, unsigned pos)
 {
-    return u & ~((1ull << (pos + 1ull)) - 1ull);    
+    if (pos == 63)
+    {
+        return 0; // TODO understand this bug - should happen automatically
+    }
+    return u & ~((1ull << (pos + 1ull)) - 1ull);
 }
 
 SparseIterator::SparseIterator(const SparseVector &v)
@@ -49,8 +53,9 @@ mSparseIndex(0),
 mAtEnd(false)
 {   
     GAPS_ASSERT(v1.size() == v2.size());
+
     next();
-    mSparseIndex -= 1; // this gets advanced one too far
+    mSparseIndex -= 1; // next puts us at position 1, this resets to 0
 }
 
 bool SparseIteratorTwo::atEnd() const
@@ -60,17 +65,23 @@ bool SparseIteratorTwo::atEnd() const
 
 void SparseIteratorTwo::next()
 {
+    // get the common indices in this chunk
+    mCommon = mFlags_1 & mFlags_2;
+
+    // if nothing common in this chunk, find a chunk that has common indices
     while (!mCommon)
     {
-        // no common values in this chunk, go to next one
-        ++mBigIndex;
-        if (mBigIndex == mTotalIndices)
+        // first count how many sparse indices we are skipping
+        mSparseIndex += __builtin_popcountll(mFlags_1);
+        
+        // advance to next chunk
+        if (++mBigIndex == mTotalIndices)
         {   
             mAtEnd = true;
             return;
         }
 
-        // check if we have any common values here
+        // update the flags
         mFlags_1 = mSparse.mIndexBitFlags[mBigIndex];
         mFlags_2 = mHybrid.mIndexBitFlags[mBigIndex];
         mCommon = mFlags_1 & mFlags_2;
@@ -83,11 +94,7 @@ void SparseIteratorTwo::next()
     mSparseIndex += 1 + countLowerBits(mFlags_1, mSmallIndex);
 
     // clear out all skipped indices and the current index from the bitflags
-    // this is needed so that countLowerBits is accurate in the next iteration
     mFlags_1 = clearLowerBits(mFlags_1, mSmallIndex);
-
-    // clear out this bit from common
-    mCommon ^= (1ull << mSmallIndex);
 }
 
 float SparseIteratorTwo::getValue_1() const
@@ -123,8 +130,9 @@ mAtEnd(false)
 {   
     GAPS_ASSERT(v1.size() == v2.size());
     GAPS_ASSERT(v2.size() == v3.size());
+
     next();
-    mSparseIndex -= 1; // this gets advanced one too far
+    mSparseIndex -= 1;
 }
 
 bool SparseIteratorThree::atEnd() const
@@ -134,17 +142,23 @@ bool SparseIteratorThree::atEnd() const
 
 void SparseIteratorThree::next()
 {
+    // get the common indices in this chunk
+    mCommon = mFlags_1 & mFlags_2 & mFlags_3;
+
+    // if nothing common in this chunk, find a chunk that has common indices
     while (!mCommon)
     {
-        // no common values in this chunk, go to next one
-        ++mBigIndex;
-        if (mBigIndex == mTotalIndices)
+        // first count how many sparse indices we are skipping
+        mSparseIndex += __builtin_popcountll(mFlags_1);
+
+        // advance to next chunk
+        if (++mBigIndex == mTotalIndices)
         {   
             mAtEnd = true;
             return;
         }
 
-        // check if we have any common values here
+        // update the flags
         mFlags_1 = mSparse.mIndexBitFlags[mBigIndex];
         mFlags_2 = mHybrid_1.mIndexBitFlags[mBigIndex];
         mFlags_3 = mHybrid_2.mIndexBitFlags[mBigIndex];
@@ -158,11 +172,7 @@ void SparseIteratorThree::next()
     mSparseIndex += 1 + countLowerBits(mFlags_1, mSmallIndex);
 
     // clear out all skipped indices and the current index from the bitflags
-    // this is needed so that countLowerBits is accurate in the next iteration
     mFlags_1 = clearLowerBits(mFlags_1, mSmallIndex);
-
-    // clear out this bit from common
-    mCommon ^= (1ull << mSmallIndex);
 }
 
 float SparseIteratorThree::getValue_1() const

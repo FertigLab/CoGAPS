@@ -22,6 +22,7 @@ namespace gaps
     float sum(const HybridVector &v);
 
     Vector elementSq(Vector v);
+    Vector pmax(Vector v, float p);
 }
 
 Vector operator*(Vector v, float f);

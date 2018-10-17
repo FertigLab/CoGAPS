@@ -5,6 +5,7 @@
 
 #include "../data_structures/HybridMatrix.h"
 #include "../data_structures/SparseMatrix.h"
+#include "../data_structures/SparseIterator.h"
 
 #include <vector>
 
@@ -27,7 +28,9 @@ public:
     friend Archive& operator<<(Archive &ar, SparseGibbsSampler &s);
     friend Archive& operator>>(Archive &ar, SparseGibbsSampler &s);
 
-private :
+#ifndef GAPS_INTERNAL_TESTS
+private:
+#endif
 
     std::vector<float> mZ1;
     std::vector<float> mZ2;
@@ -53,7 +56,25 @@ SparseGibbsSampler::SparseGibbsSampler(const DataType &data, bool transpose,
 bool subsetRows, float alpha, float maxGibbsMass, const GapsParameters &params)
     :
 GibbsSampler(data, transpose, subsetRows, alpha, maxGibbsMass, params),
+mZ1(params.nPatterns, 0.f),
+mZ2((params.nPatterns * (params.nPatterns + 1)) / 2),
 mBeta(100.f)
-{}
+{
+    // check data for values less than 1
+    for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
+    {
+        SparseIterator it(mDMatrix.getCol(j));
+        while (!it.atEnd())
+        {
+            if (it.getValue() < 1.f)
+            {
+                gaps_printf("\nError: Non-zero values less than 1 detected\n");
+                gaps_printf("\n       Not allowed when useSparseOptimization is enabled\n");
+                gaps_stop();
+            }
+            it.next();
+        }
+    }
+}
 
 #endif // __COGAPS_SPARSE_GIIBS_SAMPLER_H__

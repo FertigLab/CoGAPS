@@ -4,13 +4,15 @@
 SparseVector::SparseVector(unsigned size)
     :
 mSize(size),
-mIndexBitFlags(size / 64 + 1, 0)
+mIndexBitFlags(size / 64 + 1, 0),
+mIndexStart(mIndexBitFlags.size(), 0)
 {}
 
 SparseVector::SparseVector(const std::vector<float> &v)
     :
 mSize(v.size()),
-mIndexBitFlags(v.size() / 64 + 1, 0)
+mIndexBitFlags(v.size() / 64 + 1, 0),
+mIndexStart(mIndexBitFlags.size(), 0)
 {
     for (unsigned i = 0; i < v.size(); ++i)
     {
@@ -18,6 +20,7 @@ mIndexBitFlags(v.size() / 64 + 1, 0)
         {
             mData.push_back(v[i]);
             mIndexBitFlags[i / 64] ^= (1ull << (i % 64));
+            propogate(i / 64);
         }
     }
 }
@@ -25,7 +28,8 @@ mIndexBitFlags(v.size() / 64 + 1, 0)
 SparseVector::SparseVector(const Vector &v)
     :
 mSize(v.size()),
-mIndexBitFlags(v.size() / 64 + 1, 0)
+mIndexBitFlags(v.size() / 64 + 1, 0),
+mIndexStart(mIndexBitFlags.size(), 0)
 {
     for (unsigned i = 0; i < v.size(); ++i)
     {
@@ -33,6 +37,7 @@ mIndexBitFlags(v.size() / 64 + 1, 0)
         {
             mData.push_back(v[i]);
             mIndexBitFlags[i / 64] ^= (1ull << (i % 64));
+            propogate(i / 64);
         }
     }
 }
@@ -64,6 +69,15 @@ void SparseVector::insert(unsigned i, float v)
 
     mData.insert(mData.begin() + dataIndex, v);
     mIndexBitFlags[i / 64] |= (1ull << (i % 64));
+    propogate(i / 64);
+}
+
+void SparseVector::propogate(unsigned ndx)
+{
+    for (unsigned i = ndx + 1; i < mIndexStart.size(); ++i)
+    {
+        ++mIndexStart[i];
+    }
 }
 
 Vector SparseVector::getDense() const

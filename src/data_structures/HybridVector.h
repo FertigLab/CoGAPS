@@ -40,6 +40,7 @@ private:
 
     std::vector<uint64_t> mIndexBitFlags;
     aligned_vector mData;
+    unsigned mSize;
 };
 
 #endif // __COGAPS_HYBRID_VECTOR_H__

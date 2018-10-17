@@ -1,8 +1,18 @@
 #include "Vector.h"
+#include "../math/SIMD.h"
 
-Vector::Vector(unsigned size) : mData(size, 0.f) {}
+#define PAD_SIZE_FOR_SIMD(x) (gaps::simd::Index::increment() * (1 + ((x) - 1) / gaps::simd::Index::increment()))
 
-Vector::Vector(const std::vector<float> &v) : mData(v.size(), 0.f)
+Vector::Vector(unsigned size)
+    :
+mData(PAD_SIZE_FOR_SIMD(size), 0.f),
+mSize(size)
+{}
+
+Vector::Vector(const std::vector<float> &v)
+    :
+mData(PAD_SIZE_FOR_SIMD(v.size()), 0.f),
+mSize(v.size())
 {
     for (unsigned i = 0; i < v.size(); ++i)
     {
@@ -32,12 +42,12 @@ const float* Vector::ptr() const
 
 unsigned Vector::size() const
 {
-    return mData.size();
+    return mSize;
 }
 
 void Vector::operator+=(const Vector &v)
 {
-    for (unsigned i = 0; i < mData.size(); ++i)
+    for (unsigned i = 0; i < mSize; ++i)
     {
         mData[i] += v[i];
     }
@@ -45,7 +55,7 @@ void Vector::operator+=(const Vector &v)
 
 Archive& operator<<(Archive &ar, Vector &vec)
 {
-    for (unsigned i = 0; i < vec.mData.size(); ++i)
+    for (unsigned i = 0; i < vec.mSize; ++i)
     {
         ar << vec.mData[i];
     }
@@ -54,7 +64,7 @@ Archive& operator<<(Archive &ar, Vector &vec)
 
 Archive& operator>>(Archive &ar, Vector &vec)
 {
-    for (unsigned i = 0; i < vec.mData.size(); ++i)
+    for (unsigned i = 0; i < vec.mSize; ++i)
     {
         ar >> vec.mData[i];
     }

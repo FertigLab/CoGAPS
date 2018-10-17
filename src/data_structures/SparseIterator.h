@@ -35,7 +35,9 @@ public:
     float getValue_2() const;
     unsigned getIndex() const;
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     const SparseVector &mSparse;
     const HybridVector &mHybrid;

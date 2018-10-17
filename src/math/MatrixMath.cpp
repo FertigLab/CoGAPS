@@ -16,6 +16,19 @@ float gaps::sum(const Matrix &mat)
     return sum;
 }
 
+float gaps::sum(const HybridMatrix &mat)
+{
+    float sum = 0.f;
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        for (unsigned i = 0; i < mat.nRow(); ++i)
+        {
+            sum += mat(i,j);
+        }   
+    }
+    return sum;
+}
+
 float gaps::sum(const SparseMatrix &mat)
 {
     float sum = 0.f;

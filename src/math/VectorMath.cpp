@@ -1,23 +1,18 @@
+#include "Math.h"
 #include "VectorMath.h"
 #include "SIMD.h"
 
 static float dot_helper(const float *v1, const float *v2, unsigned size)
 {
-    gaps::simd::PackedFloat p1, p2, partialSum(0.f);
+    gaps::simd::PackedFloat pp1, pp2, sum(0.f);
     gaps::simd::Index i(0);
-    for (; i <= size - i.increment(); ++i)
+    for (; i < size; ++i)
     {
-        p1.load(v1 + i);
-        p2.load(v2 + i);
-        partialSum += p1 * p2;
+        pp1.load(v1 + i);
+        pp2.load(v2 + i);
+        sum += pp1 * pp2;
     }
-
-    float sum = partialSum.scalar();
-    for (unsigned j = i.value(); j < size; ++j)
-    {
-        sum += v1[j] * v2[j];
-    }
-    return sum;
+    return sum.scalar();
 }
 
 float gaps::min(const Vector &v)
@@ -99,7 +94,7 @@ float gaps::dot(const Vector &v1, const Vector &v2)
 float gaps::dot(const HybridVector &v1, const HybridVector &v2)
 {
     GAPS_ASSERT(v1.size() == v2.size());
-    
+
     return dot_helper(v1.densePtr(), v2.densePtr(), v1.size());
 }
 
@@ -166,6 +161,15 @@ Vector operator/(const HybridVector &hv, float f)
     for (unsigned i = 0; i < hv.size(); ++i)
     {
         v[i] = hv[i] / f;
+    }
+    return v;
+}
+
+Vector gaps::pmax(Vector v, float p)
+{
+    for (unsigned i = 0; i < v.size(); ++i)
+    {
+        v[i] = gaps::max(v[i] * p, p);
     }
     return v;
 }

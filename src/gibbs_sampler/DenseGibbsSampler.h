@@ -28,7 +28,9 @@ public:
     friend Archive& operator<<(Archive &ar, DenseGibbsSampler &s);
     friend Archive& operator>>(Archive &ar, DenseGibbsSampler &s);
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     Matrix mSMatrix; // uncertainty values for each data point
     Matrix mAPMatrix; // cached product of A and P

@@ -47,4 +47,5 @@ OBJECTS =   Cogaps.o \
             cpp_tests/testSparseVector.o \
             cpp_tests/testVector.o \
             cpp_tests/testFileParsers.o \
-            cpp_tests/testDenseGibbsSampler.o
+            cpp_tests/testDenseGibbsSampler.o \
+            cpp_tests/testSparseGibbsSampler.o
