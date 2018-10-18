@@ -148,7 +148,7 @@ unsigned r2, unsigned c2)
         gaps::simd::PackedFloat pMat1, pMat2, pD, pAP, pS;
         gaps::simd::PackedFloat partialS(0.f), partialS_mu(0.f);
         gaps::simd::Index i(0);
-        for (; i <= size - i.increment(); ++i)
+        for (; i <= size - gaps::simd::Index::increment(); ++i)
         {   
             pMat1.load(mat1 + i);
             pMat2.load(mat2 + i);
@@ -186,7 +186,7 @@ unsigned col, float ch)
     gaps::simd::PackedFloat pMat, pD, pAP, pS;
     gaps::simd::PackedFloat partialS(0.f), partialS_mu(0.f);
     gaps::simd::Index i(0);
-    for (; i <= size - i.increment(); ++i)
+    for (; i <= size - gaps::simd::Index::increment(); ++i)
     {   
         pMat.load(mat + i);
         pD.load(D + i);
@@ -218,7 +218,7 @@ void DenseGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
     gaps::simd::PackedFloat pOther, pAP;
     gaps::simd::Index i(0);
     gaps::simd::PackedFloat pDelta(delta);
-    for (; i <= size - i.increment(); ++i)
+    for (; i <= size - gaps::simd::Index::increment(); ++i)
     {
         pOther.load(other + i);
         pAP.load(ap + i);

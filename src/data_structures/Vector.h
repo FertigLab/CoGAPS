@@ -15,7 +15,7 @@ class Vector
 {
 public:
 
-    explicit Vector(unsigned size);
+    explicit Vector(unsigned sz);
     explicit Vector(const std::vector<float> &v);
 
     float operator[](unsigned i) const;

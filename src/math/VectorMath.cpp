@@ -4,15 +4,12 @@
 
 static float dot_helper(const float *v1, const float *v2, unsigned size)
 {
-    gaps::simd::PackedFloat pp1, pp2, sum(0.f);
-    gaps::simd::Index i(0);
-    for (; i < size; ++i)
+    float dot = 0.f;
+    for (unsigned i = 0; i < size; ++i)
     {
-        pp1.load(v1 + i);
-        pp2.load(v2 + i);
-        sum += pp1 * pp2;
+        dot += v1[i] * v2[i];
     }
-    return sum.scalar();
+    return dot;
 }
 
 float gaps::min(const Vector &v)
