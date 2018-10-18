@@ -1,17 +1,15 @@
 #include "Vector.h"
 #include "../math/SIMD.h"
 
-#define PAD_SIZE_FOR_SIMD(x) (gaps::simd::Index::increment() * (1 + ((x) - 1) / gaps::simd::Index::increment()))
-
-Vector::Vector(unsigned size)
+Vector::Vector(unsigned sz)
     :
-mData(PAD_SIZE_FOR_SIMD(size), 0.f),
-mSize(size)
+mData(sz, 0.f),
+mSize(sz)
 {}
 
 Vector::Vector(const std::vector<float> &v)
     :
-mData(PAD_SIZE_FOR_SIMD(v.size()), 0.f),
+mData(v.size(), 0.f),
 mSize(v.size())
 {
     for (unsigned i = 0; i < v.size(); ++i)

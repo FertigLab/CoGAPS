@@ -2,19 +2,17 @@
 #include "../math/Math.h"
 #include "../math/SIMD.h"
 
-#define PAD_SIZE_FOR_SIMD(x) (gaps::simd::Index::increment() * (1 + ((x) - 1) / gaps::simd::Index::increment()))
-
-HybridVector::HybridVector(unsigned size)
+HybridVector::HybridVector(unsigned sz)
     :
-mIndexBitFlags(size / 64 + 1, 0),
-mData(PAD_SIZE_FOR_SIMD(size), 0.f),
-mSize(size)
+mIndexBitFlags(sz / 64 + 1, 0),
+mData(sz, 0.f),
+mSize(sz)
 {}
 
 HybridVector::HybridVector(const std::vector<float> &v)
     :
 mIndexBitFlags(v.size() / 64 + 1, 0),
-mData(PAD_SIZE_FOR_SIMD(v.size()), 0.f),
+mData(v.size(), 0.f),
 mSize(v.size())
 {
     for (unsigned i = 0; i < v.size(); ++i)
