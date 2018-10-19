@@ -20,14 +20,14 @@ TEST_CASE("Test SparseIterator.h - One Dimensional")
         v.insert(7, 8.f);
         v.insert(9, 10.f);
 
-        SparseIterator it(v);
-        REQUIRE(it.getValue() == 1.f);
+        TemplatedSparseIterator<1> it(v);
+        REQUIRE(get<1>(it) == 1.f);
         it.next();
-        REQUIRE(it.getValue() == 5.f);
+        REQUIRE(get<1>(it) == 5.f);
         it.next();
-        REQUIRE(it.getValue() == 8.f);
+        REQUIRE(get<1>(it) == 8.f);
         it.next();
-        REQUIRE(it.getValue() == 10.f);
+        REQUIRE(get<1>(it) == 10.f);
         it.next();
         REQUIRE(it.atEnd());
     }
@@ -51,10 +51,10 @@ TEST_CASE("Test SparseIterator.h - One Dimensional")
         for (unsigned j = 0; j < ref.nCol(); ++j)
         {
             float colSum = 0.f;
-            SparseIterator it(mat.getCol(j));
+            TemplatedSparseIterator<1> it(mat.getCol(j));
             while (!it.atEnd())
             {
-                colSum += it.getValue();
+                colSum += get<1>(it);
                 it.next();
             }
             REQUIRE(colSum == gaps::sum(ref.getCol(j)));
@@ -79,12 +79,12 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
         hv.add(6, 5.f);
         hv.add(7, 6.f);
         
-        SparseIteratorTwo it(sv, hv);
-        REQUIRE(it.getValue_1() == 5.f);
-        REQUIRE(it.getValue_2() == 3.f);
+        TemplatedSparseIterator<2> it(sv, hv);
+        REQUIRE(get<1>(it) == 5.f);
+        REQUIRE(get<2>(it) == 3.f);
         it.next();
-        REQUIRE(it.getValue_1() == 8.f);
-        REQUIRE(it.getValue_2() == 6.f);
+        REQUIRE(get<1>(it) == 8.f);
+        REQUIRE(get<2>(it) == 6.f);
         it.next();
         REQUIRE(it.atEnd());
     }
@@ -107,9 +107,9 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
         hv.add(8, 9.f);
         hv.add(75, 76.f);
 
-        SparseIteratorTwo it(sv, hv);
-        REQUIRE(it.getValue_1() == 75.f);
-        REQUIRE(it.getValue_2() == 76.f);
+        TemplatedSparseIterator<2> it(sv, hv);
+        REQUIRE(get<1>(it) == 75.f);
+        REQUIRE(get<2>(it) == 76.f);
         it.next();
         REQUIRE(it.atEnd());
     }
@@ -170,7 +170,7 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
 
         // calculate dot product
         float sdot = 0.f, ddot = 0.f;
-        SparseIteratorTwo it(sv, hv);
+        TemplatedSparseIterator<2> it(sv, hv);
         unsigned i = 0;
         while (!it.atEnd())
         {
@@ -182,12 +182,12 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
             if (i < dv1.size())
             {
                 ddot += dv1[i] * dv2[i];
-                REQUIRE(dv1[i] == it.getValue_1());
-                REQUIRE(dv2[i] == it.getValue_2());
+                REQUIRE(dv1[i] == get<1>(it));
+                REQUIRE(dv2[i] == get<2>(it));
                 ++i;
             }
 
-            sdot += it.getValue_1() * it.getValue_2();
+            sdot += get<1>(it) * get<2>(it);
 
             it.next();
         }
@@ -218,10 +218,10 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
             for (unsigned j2 = j1; j2 < ref.nCol(); ++j2)
             {
                 float dot = 0.f;
-                SparseIteratorTwo it(sMat.getCol(j1), hMat.getCol(j2));
+                TemplatedSparseIterator<2> it(sMat.getCol(j1), hMat.getCol(j2));
                 while (!it.atEnd())
                 {
-                    dot += it.getValue_1() * it.getValue_2();
+                    dot += get<1>(it) * get<2>(it);
                     it.next();
                 }
                 REQUIRE(dot == gaps::dot(ref.getCol(j1), ref.getCol(j2)));
@@ -265,14 +265,14 @@ TEST_CASE("Test SparseIterator.h - Three Dimensional")
         hv2.add(8, 7.f);
         hv2.add(9, 8.f);
         
-        SparseIteratorThree it(sv, hv1, hv2);
-        REQUIRE(it.getValue_1() == 5.f); // 4
-        REQUIRE(it.getValue_2() == 3.f);
-        REQUIRE(it.getValue_3() == 6.f);
+        TemplatedSparseIterator<3> it(sv, hv1, hv2);
+        REQUIRE(get<1>(it) == 5.f); // 4
+        REQUIRE(get<2>(it) == 3.f);
+        REQUIRE(get<3>(it) == 6.f);
         it.next();
-        REQUIRE(it.getValue_1() == 10.f); // 9
-        REQUIRE(it.getValue_2() == 7.f);
-        REQUIRE(it.getValue_3() == 8.f);
+        REQUIRE(get<1>(it) == 10.f); // 9
+        REQUIRE(get<2>(it) == 7.f);
+        REQUIRE(get<3>(it) == 8.f);
         it.next();
         REQUIRE(it.atEnd());
     }
@@ -301,11 +301,11 @@ TEST_CASE("Test SparseIterator.h - Three Dimensional")
                 for (unsigned j3 = j2; j3 < ref.nCol(); ++j3)
                 {
                     float prod = 0.f;
-                    SparseIteratorThree it(sMat.getCol(j1), hMat.getCol(j2),
+                    TemplatedSparseIterator<3> it(sMat.getCol(j1), hMat.getCol(j2),
                         hMat.getCol(j3));
                     while (!it.atEnd())
                     {
-                        prod += it.getValue_1() * it.getValue_2() * it.getValue_3();
+                        prod += get<1>(it) * get<2>(it) * get<3>(it);
                         it.next();
                     }
                     REQUIRE(prod == tripleProduct(ref.getCol(j1),
