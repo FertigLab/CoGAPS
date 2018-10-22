@@ -68,6 +68,8 @@ void DenseGibbsSampler::safelyChangeMatrix(unsigned row, unsigned col, float del
     float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
     updateAPMatrix(row, col, newVal - mMatrix(row, col));
     mMatrix(row, col) = newVal;
+
+    GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
 // PERFORMANCE_CRITICAL
@@ -245,3 +247,20 @@ Archive& operator>>(Archive &ar, DenseGibbsSampler &s)
         >> s.mAnnealingTemp >> s.mNumPatterns >> s.mNumBins >> s.mBinLength;
     return ar;
 }
+
+#ifdef GAPS_DEBUG
+bool DenseGibbsSampler::internallyConsistent() const
+{
+    for (unsigned j = 0; j < mMatrix.nCol(); ++j)
+    {
+        for (unsigned i = 0; i < mMatrix.nRow(); ++i)
+        {
+            if (mMatrix(i,j) < 0.f)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+#endif

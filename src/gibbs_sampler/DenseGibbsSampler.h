@@ -28,6 +28,10 @@ public:
     friend Archive& operator<<(Archive &ar, DenseGibbsSampler &s);
     friend Archive& operator>>(Archive &ar, DenseGibbsSampler &s);
 
+#ifdef GAPS_DEBUG
+    bool internallyConsistent() const;
+#endif
+
 #ifndef GAPS_INTERNAL_TESTS
 private:
 #endif

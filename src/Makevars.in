@@ -8,11 +8,10 @@ OBJECTS =   Cogaps.o \
             GapsRunner.o \
             GapsStatistics.o \
             RcppExports.o \
-\
+            test-runner.o \
             atomic/AtomAllocator.o \
             atomic/AtomicDomain.o \
             atomic/ProposalQueue.o \
-\
             data_structures/HashSets.o \
             data_structures/HybridMatrix.o \
             data_structures/HybridVector.o \
@@ -21,22 +20,17 @@ OBJECTS =   Cogaps.o \
             data_structures/SparseMatrix.o \
             data_structures/SparseVector.o \
             data_structures/Vector.o \
-\
             file_parser/CsvParser.o \
             file_parser/GctParser.o \
             file_parser/FileParser.o \
             file_parser/TsvParser.o \
             file_parser/MtxParser.o \
-\
             gibbs_sampler/DenseGibbsSampler.o \
             gibbs_sampler/SparseGibbsSampler.o \
-\
             math/Math.o \
             math/MatrixMath.o \
             math/Random.o \
             math/VectorMath.o \
-\
-            cpp_tests/test-runner.o \
             cpp_tests/testAtomicDomain.o \
             cpp_tests/testHashSets.o \
             cpp_tests/testHybridMatrix.o \

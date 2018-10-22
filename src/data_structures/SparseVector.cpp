@@ -84,6 +84,16 @@ Vector SparseVector::getDense() const
     return v;
 }
 
+float SparseVector::at(unsigned n) const
+{
+    return mData[n];
+}
+
+unsigned SparseVector::nElements() const
+{
+    return mData.size();
+}
+
 Archive& operator<<(Archive &ar, SparseVector &vec)
 {
     ar << vec.mSize;

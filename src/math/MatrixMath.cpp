@@ -3,15 +3,32 @@
 #include "Math.h"
 #include "../data_structures/SparseIterator.h"
 
+float gaps::min(const Matrix &mat)
+{
+    float mn = mat(0,0);
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        mn = gaps::min(gaps::min(mat.getCol(j)), mn);
+    }
+    return mn;
+}
+
+float gaps::max(const Matrix &mat)
+{
+    float mx = mat(0,0);
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        mx = gaps::max(gaps::max(mat.getCol(j)), mx);
+    }
+    return mx;
+}
+
 float gaps::sum(const Matrix &mat)
 {
     float sum = 0.f;
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
-        for (unsigned i = 0; i < mat.nRow(); ++i)
-        {
-            sum += mat(i,j);
-        }   
+        sum += gaps::sum(mat.getCol(j));
     }
     return sum;
 }

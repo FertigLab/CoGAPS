@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_RUNNER
-#include "catch.h"
+#include "cpp_tests/catch.h"
 
 // [[Rcpp::export]]
 int run_catch_unit_tests()

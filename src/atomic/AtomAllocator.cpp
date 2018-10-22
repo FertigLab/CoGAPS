@@ -51,11 +51,22 @@ unsigned IndexFlagSet::getFirstFree() const
     return 0; // ERROR IF REACHED
 }
 
-// manually check this is consistent with NUM_INDEX_CHUNKS
 bool IndexFlagSet::isAnyFree() const
 {
+#if (NUM_INDEX_CHUNKS == 8)
     return (parts[0] | parts[1] | parts[2] | parts[3] | parts[4] | parts[5]
         | parts[6] | parts[7]) != 0;
+#else
+    #warning "non-standard size for atom pool"
+    for (unsigned i = 0; i < NUM_INDEX_CHUNKS; ++i)
+    {
+        if (parts[i] != 0)
+        {
+            return true;
+        }
+    }
+    return false;
+#endif
 }
 
 // set position n to 0
@@ -105,46 +116,59 @@ bool AtomPool::depleted() const
 
 ////////////////////////////// AtomAllocator ///////////////////////////////////
 
+// for debugging
+#define __USE_CUSTOM_ALLOCATOR__ 1
+
 AtomAllocator::AtomAllocator()
 {
-    //mIndex = 0;
-    //mPools.push_back(new AtomPool());
+#if __USE_CUSTOM_ALLOCATOR__
+    mIndex = 0;
+    mPools.push_back(new AtomPool());
+#endif
 }
 
 AtomAllocator::~AtomAllocator()
 {
-    //std::vector<AtomPool*>::iterator it = mPools.begin();
-    //for (; it != mPools.end(); ++it)
-    //{
-    //    delete *it;
-    //}
+#if __USE_CUSTOM_ALLOCATOR__
+    std::vector<AtomPool*>::iterator it = mPools.begin();
+    for (; it != mPools.end(); ++it)
+    {
+        delete *it;
+    }
+#endif
 }
 
 Atom* AtomAllocator::createAtom(uint64_t pos, float mass)
 {
-    //GAPS_ASSERT(mPools.size() < 65536);
+#if __USE_CUSTOM_ALLOCATOR__
+    GAPS_ASSERT(mPools.size() < 65536);
 
-    //if (mPools[mIndex]->depleted() && mIndex == mPools.size() - 1)
-    //{
-    //    mPools.push_back(new AtomPool());
-    //    mIndex = 0; // loop back around all pools before getting to new one
-    //}
+    if (mPools[mIndex]->depleted() && mIndex == mPools.size() - 1)
+    {
+        mPools.push_back(new AtomPool());
+        mIndex = 0; // loop back around all pools before getting to new one
+    }
 
-    //while (mPools[mIndex]->depleted())
-    //{
-    //    ++mIndex;
-    //}
+    while (mPools[mIndex]->depleted())
+    {
+        ++mIndex;
+    }
 
-    //Atom *a = mPools[mIndex]->alloc();
-    //a->allocatorIndex = mIndex;
-    //a->pos = pos;
-    //a->mass = mass;
-    //return a;
+    Atom *a = mPools[mIndex]->alloc();
+    a->allocatorIndex = mIndex;
+    a->pos = pos;
+    a->mass = mass;
+    return a;
+#else
     return new Atom(pos, mass);
+#endif
 }
 
 void AtomAllocator::destroyAtom(Atom *a)
 {
-    //mPools[a->allocatorIndex]->free(a);
+#if __USE_CUSTOM_ALLOCATOR__
+    mPools[a->allocatorIndex]->free(a);
+#else
     delete a;
+#endif
 }

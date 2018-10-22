@@ -149,3 +149,10 @@ Archive& operator>>(Archive &ar, SparseGibbsSampler &s)
         >> s.mBeta;
     return ar;
 }
+
+#ifdef GAPS_DEBUG
+bool SparseGibbsSampler::internallyConsistent() const
+{
+    return true;
+}
+#endif

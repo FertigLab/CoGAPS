@@ -51,6 +51,24 @@ void Vector::operator+=(const Vector &v)
     }
 }
 
+void Vector::operator*=(float f)
+{
+    for (unsigned i = 0; i < mData.size(); ++i)
+    {
+        GAPS_ASSERT_MSG(mData[i] >= 0.f, mData[i]);
+        mData[i] *= f;
+    }
+}
+
+void Vector::operator/=(float f)
+{
+    for (unsigned i = 0; i < mData.size(); ++i)
+    {
+        GAPS_ASSERT_MSG(mData[i] >= 0.f, i << " , " << mData.size() << " : " << mData[i]);
+        mData[i] /= f;
+    }
+}
+
 Archive& operator<<(Archive &ar, Vector &vec)
 {
     for (unsigned i = 0; i < vec.mSize; ++i)

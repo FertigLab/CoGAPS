@@ -55,25 +55,25 @@ void gotoNextCommon(Iter &it)
 template<>
 float get<1>(const TemplatedSparseIterator<1> &it)
 {
-    return it.mSparse.mData[it.mSparseIndex];
+    return it.mSparse.at(it.mSparseIndex);
 }
 
 template<>
 float get<1>(const TemplatedSparseIterator<2> &it)
 {
-    return it.mSparse.mData[it.mSparseIndex];
+    return it.mSparse.at(it.mSparseIndex);
 }
 
 template<>
 float get<1>(const TemplatedSparseIterator<3> &it)
 {
-    return it.mSparse.mData[it.mSparseIndex];
+    return it.mSparse.at(it.mSparseIndex);
 }
 
 template<>
 float get<2>(const TemplatedSparseIterator<2> &it)
 {
-    return it.mHybrid_1[64 * it.mBigIndex + it.mSmallIndex];
+    return it.mHybrid[64 * it.mBigIndex + it.mSmallIndex];
 }
 
 template<>
@@ -97,7 +97,7 @@ mSparseIndex(0)
 
 bool TemplatedSparseIterator<1>::atEnd() const
 {
-    return mSparseIndex == mSparse.mData.size();
+    return mSparseIndex == mSparse.nElements();
 }
 
 void TemplatedSparseIterator<1>::next()
@@ -108,9 +108,9 @@ void TemplatedSparseIterator<1>::next()
 TemplatedSparseIterator<2>::TemplatedSparseIterator(const SparseVector &v, const HybridVector &h)
     :
 mSparse(v),
-mHybrid_1(h),
+mHybrid(h),
 mSparseFlags(v.mIndexBitFlags[0]),
-mHybridFlags_1(h.mIndexBitFlags[0]),
+mHybridFlags(h.mIndexBitFlags[0]),
 mCommonFlags(v.mIndexBitFlags[0] & h.mIndexBitFlags[0]),
 mTotalIndices(v.mIndexBitFlags.size()),
 mBigIndex(0),
@@ -136,13 +136,13 @@ void TemplatedSparseIterator<2>::next()
 
 void TemplatedSparseIterator<2>::calculateCommonFlags()
 {
-    mCommonFlags = mSparseFlags & mHybridFlags_1;
+    mCommonFlags = mSparseFlags & mHybridFlags;
 }
 
 void TemplatedSparseIterator<2>::getFlags()
 {
     mSparseFlags = mSparse.mIndexBitFlags[mBigIndex];
-    mHybridFlags_1 = mHybrid_1.mIndexBitFlags[mBigIndex];
+    mHybridFlags = mHybrid.mIndexBitFlags[mBigIndex];
 }
 
 TemplatedSparseIterator<3>::TemplatedSparseIterator(const SparseVector &v,

@@ -22,6 +22,7 @@ static Xoroshiro128plus seeder;
 
 ////////////////////////////// Lookup Tables ///////////////////////////////////
 
+static bool tables_are_initialized = false;
 static float erf_lookup_table[3001];
 static float erfinv_lookup_table[5001];
 static float qgamma_lookup_table[5001];
@@ -129,7 +130,9 @@ Archive& operator>>(Archive &ar, Xoroshiro128plus &gen)
 
 void GapsRng::setSeed(uint32_t sd)
 {
+    GAPS_ASSERT(!tables_are_initialized);
     initLookupTables();
+    tables_are_initialized = true;
     seeder.seed(sd);
 }
 

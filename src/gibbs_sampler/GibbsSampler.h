@@ -47,10 +47,6 @@ public:
 
     void update(unsigned nSteps, unsigned nThreads);
 
-#ifdef GAPS_DEBUG
-    bool internallyConsistent() const;
-#endif
-
 #ifndef GAPS_INTERNAL_TESTS
 protected:
 #endif
@@ -170,7 +166,7 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::update(unsigned nSteps, un
         mQueue.clear();
     }
 
-    GAPS_ASSERT(internallyConsistent());
+    GAPS_ASSERT(impl()->internallyConsistent());
     GAPS_ASSERT(mDomain.isSorted());
 }
 
@@ -352,13 +348,5 @@ bool GibbsSampler<Derived, DataMatrix, FactorMatrix>::canUseGibbs(unsigned c1, u
 {
     return canUseGibbs(c1) || canUseGibbs(c2);
 }
-
-#ifdef GAPS_DEBUG
-template <class Derived, class DataMatrix, class FactorMatrix>
-bool GibbsSampler<Derived, DataMatrix, FactorMatrix>::internallyConsistent() const
-{
-    return true;
-}
-#endif
 
 #endif // __COGAPS_GIBBS_SAMPLER_H__

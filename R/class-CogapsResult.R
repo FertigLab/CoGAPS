@@ -29,9 +29,9 @@ function(.Object, Amean, Pmean, Asd, Psd, meanChiSq, geneNames,
 sampleNames, diagnostics=NULL, ...)
 {
     if (is.null(geneNames))
-        warning("no gene names given")
+        stop("no gene names given")
     if (is.null(sampleNames))
-        warning("no sample names given")
+        stop("no sample names given")
 
     .Object@featureLoadings <- Amean
     .Object@sampleFactors <- Pmean
@@ -39,6 +39,11 @@ sampleNames, diagnostics=NULL, ...)
     .Object@sampleStdDev <- Psd
 
     patternNames <- paste("Pattern", 1:ncol(Amean), sep="_")
+
+    if (length(geneNames) != nrow(.Object@featureLoadings))
+        stop("number of gene names doesn't match data size")
+    if (length(sampleNames) != nrow(.Object@sampleFactors))
+        stop("number of sample names doesn't match data size")
 
     rownames(.Object@featureLoadings) <- geneNames
     colnames(.Object@featureLoadings) <- patternNames
@@ -55,6 +60,8 @@ sampleNames, diagnostics=NULL, ...)
     .Object@metadata[["meanChiSq"]] <- meanChiSq
     .Object@metadata <- append(.Object@metadata, diagnostics)
 
+    .Object@factorData <- new("DataFrame", nrows=ncol(.Object@sampleFactors))
+
     .Object <- callNextMethod(.Object, ...)
     .Object
 })
@@ -62,10 +69,14 @@ sampleNames, diagnostics=NULL, ...)
 setValidity("CogapsResult",
     function(object)
     {
+        if (any(is.na(object@featureLoadings)) | any(object@featureLoadings == Inf) | any(object@featureLoadings == -Inf))
+            "NA/Inf values in feature matrix"
+        if (any(is.na(object@sampleFactors)) | any(object@sampleFactors == Inf) | any(object@sampleFactors == -Inf))
+            "NA/Inf values in sample matrix"
         if (sum(object@featureLoadings < 0) > 0 | sum(object@featureStdDev < 0) > 0)
-            "fatal error - negative values in feature x factor Matrix"
+            "negative values in feature Matrix"
         if (sum(object@sampleFactors < 0) > 0 | sum(object@sampleStdDev < 0) > 0)
-            "fatal error - negative values in factor x sample Matrix"
+            "negative values in sample Matrix"
     }
 )    
 
