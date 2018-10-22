@@ -22,9 +22,11 @@ distributedCogaps <- function(data, allParams, uncertainty)
         internal <- ifelse(is(data, "character"), cogaps_cpp_from_file, cogaps_cpp)
         raw <- internal(data, allParams, uncertainty, sets[[index]],
             fixedMatrix, index == 1)
-        new("CogapsResult", Amean=raw$Amean, Asd=raw$Asd, Pmean=raw$Pmean,
+        res <- new("CogapsResult", Amean=raw$Amean, Asd=raw$Asd, Pmean=raw$Pmean,
             Psd=raw$Psd, meanChiSq=raw$meanChiSq, geneNames=geneNames,
             sampleNames=sampleNames)
+        validObject(res)
+        return(res)
     }
 
     # randomly sample either rows or columns into subsets to break the data up
@@ -185,6 +187,13 @@ corcut <- function(allPatterns, cut, minNS)
 {
     corr.dist <- cor(allPatterns)
     corr.dist <- 1 - corr.dist
+
+    if (any(is.na(corr.dist)))
+    {
+        print(allPatterns)
+        print(corr.dist)
+        stop("NA values in correlation of patterns")
+    }
 
     clusterSummary <- cluster::agnes(x=corr.dist, diss=TRUE, "complete")
     clusterIds <- stats::cutree(stats::as.hclust(clusterSummary), k=cut)

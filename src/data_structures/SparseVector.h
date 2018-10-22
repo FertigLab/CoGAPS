@@ -15,6 +15,10 @@ public:
     friend class SparseIterator;
     friend class SparseIteratorTwo;
     friend class SparseIteratorThree;
+
+    template <unsigned N>
+    friend class TemplatedSparseIterator;
+    
     friend class SparseMatrix; // for inserting values
 
     explicit SparseVector(unsigned size);
@@ -24,6 +28,9 @@ public:
     unsigned size() const;
 
     Vector getDense() const;
+    
+    float at(unsigned n) const;
+    unsigned nElements() const;
 
     friend Archive& operator<<(Archive &ar, SparseVector &vec);
     friend Archive& operator>>(Archive &ar, SparseVector &vec);

@@ -51,19 +51,37 @@ const Rcpp::List &allParams, bool isMaster,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix,
 const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
 {
-    // Standard CoGAPS parameters struct
-    GapsParameters params(data);
+    // check if subsetting data
+    const Rcpp::S4 &gapsParams(allParams["gaps"]);
+    bool subsetData = false;
+    bool printThreadUsage = true;
+    bool subsetGenes = false;
+    char whichFixedMatrix = 'N';
+    std::vector<unsigned> subset;
+    if (indices.isNotNull())
+    {
+        subsetData = true;
+        printThreadUsage = false;
+        std::string d(Rcpp::as<std::string>(gapsParams.slot("distributed")));
+        subsetGenes = (d == "genome-wide");
+        whichFixedMatrix = (d == "genome-wide") ? 'P' : 'A';
+        subset = Rcpp::as< std::vector<unsigned> >(Rcpp::IntegerVector(indices));
+    }
+
+    // create standard CoGAPS parameters struct
+    GapsParameters params(data, allParams["transposeData"], subsetData,
+        subsetGenes, subset);
+    params.printThreadUsage = printThreadUsage;
+    params.whichFixedMatrix = whichFixedMatrix;
 
     // get configuration parameters
     params.maxThreads = allParams["nThreads"];
     params.printMessages = allParams["messages"] && isMaster;
-    params.transposeData = allParams["transposeData"];
     params.outputFrequency = allParams["outputFrequency"];
     params.checkpointOutFile = Rcpp::as<std::string>(allParams["checkpointOutFile"]);
     params.checkpointInterval = allParams["checkpointInterval"];
 
     // extract model specific parameters from list
-    const Rcpp::S4 &gapsParams(allParams["gaps"]);
     params.seed = gapsParams.slot("seed");
     params.nPatterns = gapsParams.slot("nPatterns");
     params.nIterations = gapsParams.slot("nIterations");
@@ -72,27 +90,13 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
     params.maxGibbsMassA = gapsParams.slot("maxGibbsMassA");
     params.maxGibbsMassP = gapsParams.slot("maxGibbsMassP");
     params.singleCell = gapsParams.slot("singleCell");
-    params.useSparseOptimization = gapsParams.slot("useSparseOptimization");
+    params.useSparseOptimization = gapsParams.slot("sparseOptimization");
 
     // check if using fixed matrix
     if (fixedMatrix.isNotNull())
     {
         params.useFixedMatrix = true;
         params.fixedMatrix = convertRMatrix(Rcpp::NumericMatrix(fixedMatrix));
-    }
-
-    // check if subsetting data
-    if (indices.isNotNull())
-    {
-        params.subsetData = true;
-        params.printThreadUsage = false;
-
-        std::string d(Rcpp::as<std::string>(gapsParams.slot("distributed")));
-        params.subsetGenes = (d == "genome-wide");
-        params.whichFixedMatrix = (d == "genome-wide") ? 'P' : 'A';
-
-        params.dataIndicesSubset =
-            Rcpp::as< std::vector<unsigned> >(Rcpp::IntegerVector(indices));
     }
 
     // check if using checkpoint file, peek at the saved parameters

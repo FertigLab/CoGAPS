@@ -27,6 +27,9 @@ public:
     unsigned size() const;
 
     void operator+=(const Vector &v);
+
+    void operator*=(float f);
+    void operator/=(float f);
     
     friend Archive& operator<<(Archive &ar, Vector &vec);
     friend Archive& operator>>(Archive &ar, Vector &vec);

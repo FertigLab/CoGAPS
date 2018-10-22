@@ -10,6 +10,7 @@ mStatUpdates(0), mNumPatterns(nPatterns)
 
 Matrix GapsStatistics::Amean() const
 {
+    GAPS_ASSERT(gaps::min(mAMeanMatrix / static_cast<float>(mStatUpdates)) >= 0.f);
     return mAMeanMatrix / static_cast<float>(mStatUpdates);
 }
 
@@ -30,6 +31,7 @@ Matrix GapsStatistics::Asd() const
 
 Matrix GapsStatistics::Pmean() const
 {
+    GAPS_ASSERT(gaps::min(mPMeanMatrix / static_cast<float>(mStatUpdates)) >= 0.f);
     return mPMeanMatrix / static_cast<float>(mStatUpdates);
 }
 

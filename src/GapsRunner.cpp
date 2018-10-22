@@ -252,7 +252,6 @@ void DenseGapsRunner::updateSampler(unsigned nA, unsigned nP)
         {
             mPSampler.sync(mASampler, mMaxThreads);
         }
-        GAPS_ASSERT(mASampler.internallyConsistent());
     }
 
     if (mFixedMatrix != 'P')
@@ -263,7 +262,6 @@ void DenseGapsRunner::updateSampler(unsigned nA, unsigned nP)
         {
             mASampler.sync(mPSampler, mMaxThreads);
         }
-        GAPS_ASSERT(mPSampler.internallyConsistent());
     }
 }
 
@@ -331,7 +329,6 @@ void SparseGapsRunner::updateSampler(unsigned nA, unsigned nP)
         {
             mPSampler.sync(mASampler, mMaxThreads);
         }
-        GAPS_ASSERT(mASampler.internallyConsistent());
     }
 
     if (mFixedMatrix != 'P')
@@ -342,7 +339,6 @@ void SparseGapsRunner::updateSampler(unsigned nA, unsigned nP)
         {
             mASampler.sync(mPSampler, mMaxThreads);
         }
-        GAPS_ASSERT(mPSampler.internallyConsistent());
     }
 }
 

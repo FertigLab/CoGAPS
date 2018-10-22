@@ -126,19 +126,13 @@ Vector gaps::elementSq(Vector v)
 
 Vector operator*(Vector v, float f)
 {
-    for (unsigned i = 0; i < v.size(); ++i)
-    {
-        v[i] *= f;
-    }
+    v *= f;
     return v;
 }
 
 Vector operator/(Vector v, float f)
 {
-    for (unsigned i = 0; i < v.size(); ++i)
-    {
-        v[i] /= f;
-    }
+    v /= f;
     return v;
 }
 

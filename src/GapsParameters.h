@@ -12,7 +12,9 @@ struct GapsParameters
 public:
 
     template <class DataType>
-    GapsParameters(const DataType &data);
+    explicit GapsParameters(const DataType &data, bool t_transposeData=false,
+        bool t_subsetData=false, bool t_subsetGenes=false,
+        const std::vector<unsigned> t_dataIndicesSubset=std::vector<unsigned>());
 
     void peekCheckpoint(const std::string &file);
 
@@ -57,10 +59,12 @@ private:
 };
 
 template <class DataType>
-GapsParameters::GapsParameters(const DataType &data)
+GapsParameters::GapsParameters(const DataType &data, bool t_transposeData,
+bool t_subsetData, bool t_subsetGenes,
+const std::vector<unsigned> t_dataIndicesSubset)
     :
 fixedMatrix(Matrix()),
-dataIndicesSubset(std::vector<unsigned>()),
+dataIndicesSubset(t_dataIndicesSubset),
 checkpointFile(std::string()),
 checkpointOutFile("gaps_checkpoint.out"),
 seed(0),
@@ -76,12 +80,12 @@ alphaP(0.01f),
 maxGibbsMassA(100.f),
 maxGibbsMassP(100.f),
 useFixedMatrix(false),
-subsetData(false),
+subsetData(t_subsetData),
 useCheckPoint(false),
-transposeData(false),
+transposeData(t_transposeData),
 singleCell(false),
 printMessages(true),
-subsetGenes(false),
+subsetGenes(t_subsetGenes),
 printThreadUsage(true),
 useSparseOptimization(false),
 whichFixedMatrix('N')

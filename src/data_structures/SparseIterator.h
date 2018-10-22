@@ -54,10 +54,10 @@ private:
     friend float get<2>(const TemplatedSparseIterator<2> &it);
 
     const SparseVector &mSparse;  
-    const HybridVector &mHybrid_1;
+    const HybridVector &mHybrid;
 
     uint64_t mSparseFlags;
-    uint64_t mHybridFlags_1;
+    uint64_t mHybridFlags;
     uint64_t mCommonFlags;
 
     unsigned mTotalIndices;
