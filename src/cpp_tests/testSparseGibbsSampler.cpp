@@ -96,8 +96,8 @@ TEST_CASE("Test SparseGibbsSampler")
         sparse_PSampler.sync(sparse_ASampler);
         dense_ASampler.sync(dense_PSampler);
         dense_PSampler.sync(dense_ASampler);
-        dense_ASampler.recalculateAPMatrix();
-        dense_PSampler.recalculateAPMatrix();
+        dense_ASampler.extraInitialization();
+        dense_PSampler.extraInitialization();
 
 ///////////////// test that alphaParameters are the same ///////////////////////
         for (unsigned i = 0; i < data.nRow(); ++i)

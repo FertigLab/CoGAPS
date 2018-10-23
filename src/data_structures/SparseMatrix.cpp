@@ -7,6 +7,14 @@
 SparseMatrix::SparseMatrix(const Matrix &mat, bool genesInCols,
 bool subsetGenes, std::vector<unsigned> indices)
 {
+#ifdef GAPS_DEBUG
+    for (unsigned i = 0; i < indices.size(); ++i)
+    {
+        GAPS_ASSERT_MSG(indices[i] > 0,
+            "index 0 detected in subset: R indices should start at 1\n");
+    }
+#endif
+
     bool subsetData = !indices.empty();
 
     unsigned nGenes = (subsetData && subsetGenes)
@@ -22,11 +30,11 @@ bool subsetGenes, std::vector<unsigned> indices)
         for (unsigned i = 0; i < nGenes; ++i)
         {
             unsigned dataRow = (subsetData && (subsetGenes != genesInCols))
-                ? indices[genesInCols ? j : i]
+                ? indices[genesInCols ? j : i] - 1
                 : genesInCols ? j : i;
 
             unsigned dataCol = (subsetData && (subsetGenes == genesInCols))
-                ? indices[genesInCols ? i : j]
+                ? indices[genesInCols ? i : j] - 1
                 : genesInCols ? i : j;
 
             values.push_back(mat(dataRow, dataCol));
@@ -41,6 +49,14 @@ bool subsetGenes, std::vector<unsigned> indices)
 SparseMatrix::SparseMatrix(const std::string &path, bool genesInCols,
 bool subsetGenes, std::vector<unsigned> indices)
 {
+#ifdef GAPS_DEBUG
+    for (unsigned i = 0; i < indices.size(); ++i)
+    {
+        GAPS_ASSERT_MSG(indices[i] > 0,
+            "index 0 detected in subset: R indices should start at 1\n");
+    }
+#endif
+
     FileParser fp(path);
 
     // calculate the number of rows and columns
@@ -75,7 +91,7 @@ bool subsetGenes, std::vector<unsigned> indices)
         while (fp.hasNext())
         {
             MatrixElement e(fp.getNext());
-            unsigned searchIndex = (subsetGenes != genesInCols) ? e.row : e.col;
+            unsigned searchIndex = 1 + ((subsetGenes != genesInCols) ? e.row : e.col);
             std::vector<unsigned>::iterator pos = 
                 std::lower_bound(indices.begin(), indices.end(), searchIndex);
         

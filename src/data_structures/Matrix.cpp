@@ -19,6 +19,14 @@ mNumCols(ncol)
 Matrix::Matrix(const Matrix &mat, bool genesInCols, bool subsetGenes,
 std::vector<unsigned> indices)
 {
+#ifdef GAPS_DEBUG
+    for (unsigned i = 0; i < indices.size(); ++i)
+    {
+        GAPS_ASSERT_MSG(indices[i] > 0,
+            "index 0 detected in subset: R indices should start at 1\n");
+    }
+#endif
+
     bool subsetData = !indices.empty();
 
     unsigned nGenes = (subsetData && subsetGenes)
@@ -34,11 +42,11 @@ std::vector<unsigned> indices)
         for (unsigned i = 0; i < nGenes; ++i)
         {
             unsigned dataRow = (subsetData && (subsetGenes != genesInCols))
-                ? indices[genesInCols ? j : i]
+                ? indices[genesInCols ? j : i] - 1
                 : genesInCols ? j : i;
 
             unsigned dataCol = (subsetData && (subsetGenes == genesInCols))
-                ? indices[genesInCols ? i : j]
+                ? indices[genesInCols ? i : j] - 1
                 : genesInCols ? i : j;
 
             mCols[j][i] = mat(dataRow, dataCol);
@@ -52,6 +60,14 @@ std::vector<unsigned> indices)
 Matrix::Matrix(const std::string &path, bool genesInCols, bool subsetGenes,
 std::vector<unsigned> indices)
 {
+#ifdef GAPS_DEBUG
+    for (unsigned i = 0; i < indices.size(); ++i)
+    {
+        GAPS_ASSERT_MSG(indices[i] > 0,
+            "index 0 detected in subset: R indices should start at 1\n");
+    }
+#endif
+
     FileParser fp(path);
 
     // calculate the number of rows and columns
@@ -62,9 +78,6 @@ std::vector<unsigned> indices)
     mNumCols = (subsetData && !subsetGenes) // nSamples
         ? indices.size()
         : genesInCols ? fp.nRow() : fp.nCol();
-
-    gaps_printf("Reading from %d rows and %d columns\n", fp.nRow(), fp.nCol());
-    gaps_printf("Reading into %d rows and %d columns\n", mNumRows, mNumCols);
 
     // allocate space for the data
     for (unsigned j = 0; j < mNumCols; ++j)
@@ -89,7 +102,7 @@ std::vector<unsigned> indices)
         while (fp.hasNext())
         {
             MatrixElement e(fp.getNext());
-            unsigned searchIndex = (subsetGenes != genesInCols) ? e.row : e.col;
+            unsigned searchIndex = 1 + ((subsetGenes != genesInCols) ? e.row : e.col);
             std::vector<unsigned>::iterator pos = 
                 std::lower_bound(indices.begin(), indices.end(), searchIndex);
         
@@ -120,41 +133,29 @@ unsigned Matrix::nCol() const
 
 float Matrix::operator()(unsigned i, unsigned j) const
 {
-    GAPS_ASSERT(i < mNumRows);
-    GAPS_ASSERT(j < mNumCols);
+    GAPS_ASSERT_MSG(i < mNumRows, i << " : " << mNumRows);
+    GAPS_ASSERT_MSG(j < mNumCols, j << " : " << mNumCols);
     return mCols[j][i];
 }
 
 float& Matrix::operator()(unsigned i, unsigned j)
 {
-    GAPS_ASSERT(i < mNumRows);
-    GAPS_ASSERT(j < mNumCols);
+    GAPS_ASSERT_MSG(i < mNumRows, i << " : " << mNumRows);
+    GAPS_ASSERT_MSG(j < mNumCols, j << " : " << mNumCols);
     return mCols[j][i];
 }
 
 Vector& Matrix::getCol(unsigned col)
 {
-    GAPS_ASSERT(col < mNumCols);
+    GAPS_ASSERT_MSG(col < mNumCols, col << " : " << mNumCols);
     return mCols[col];
 }
 
 const Vector& Matrix::getCol(unsigned col) const
 {
-    GAPS_ASSERT_MSG(col < mNumCols, col << " , " << mNumCols);
+    GAPS_ASSERT_MSG(col < mNumCols, col << " : " << mNumCols);
     return mCols[col];
 }
-
-/*
-const float* Matrix::colPtr(unsigned col) const
-{
-    return mCols[col].ptr();
-}
-
-float* Matrix::colPtr(unsigned col)
-{
-    return mCols[col].ptr();
-}
-*/
 
 bool Matrix::empty() const
 {
