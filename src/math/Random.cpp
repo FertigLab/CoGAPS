@@ -28,8 +28,8 @@ bool OptionalFloat::hasValue() const
 
 GapsRng::GapsRng(GapsRandomState *randState)
 :
-mState(randState->nextSeed()),
-mRandState(randState)
+mRandState(randState),
+mState(randState->nextSeed())
 {
     advance();
 }

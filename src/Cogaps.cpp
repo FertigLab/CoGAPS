@@ -16,9 +16,9 @@
 static Matrix convertRMatrix(const Rcpp::NumericMatrix &rmat)
 {
     Matrix mat(rmat.nrow(), rmat.ncol());
-    for (unsigned i = 0; i < rmat.nrow(); ++i)
+    for (unsigned i = 0; i < mat.nRow(); ++i)
     {
-        for (unsigned j = 0; j < rmat.ncol(); ++j)
+        for (unsigned j = 0; j < mat.nCol(); ++j)
         {
             mat(i,j) = rmat(i,j);
         }

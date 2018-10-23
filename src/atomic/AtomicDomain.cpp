@@ -24,12 +24,6 @@ static bool vecContains(const std::vector<Atom*> &vec, uint64_t pos)
     return std::binary_search(vec.begin(), vec.end(), &temp, compareAtom);
 }
 
-// check if a position in contained in a vector of positions
-static bool vecContains(const std::vector<uint64_t> &vec, uint64_t pos)
-{
-    return std::binary_search(vec.begin(), vec.end(), pos);
-}
-
 //////////////////////////// ATOM NEIGHBORHOOD /////////////////////////////////
 
 AtomNeighborhood::AtomNeighborhood()

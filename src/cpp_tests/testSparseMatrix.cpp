@@ -10,7 +10,7 @@
 static std::vector<unsigned> sequentialVector(unsigned n)
 {
     std::vector<unsigned> vec;
-    for (unsigned i = 0; i < n; ++i)
+    for (unsigned i = 1; i <= n; ++i) // mimic R indices
     {
         vec.push_back(i);
     }

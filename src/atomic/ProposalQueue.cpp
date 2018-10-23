@@ -78,7 +78,7 @@ unsigned ProposalQueue::size() const
 AtomicProposal& ProposalQueue::operator[](int n)
 {
     GAPS_ASSERT(mQueue.size() > 0);
-    GAPS_ASSERT(n < mQueue.size());
+    GAPS_ASSERT(static_cast<unsigned>(n) < mQueue.size());
 
     return mQueue[n];
 }

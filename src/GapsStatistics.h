@@ -47,31 +47,26 @@ void GapsStatistics::update(const Sampler &ASampler, const Sampler &PSampler)
 {
     mStatUpdates++;
 
-    // update     
-    // precision loss? use double?
-    DEBUG_PING
     GAPS_ASSERT(mNumPatterns == ASampler.mMatrix.nCol());
     GAPS_ASSERT(mNumPatterns == PSampler.mMatrix.nCol());
 
+    // precision loss? use double?
     for (unsigned j = 0; j < mNumPatterns; ++j)
     {
         float norm = gaps::max(PSampler.mMatrix.getCol(j));
         norm = norm == 0.f ? 1.f : norm;
         GAPS_ASSERT(norm > 0.f);
 
-        DEBUG_PING
         Vector quot(PSampler.mMatrix.getCol(j) / norm);
         GAPS_ASSERT(gaps::min(quot) >= 0.f);
         mPMeanMatrix.getCol(j) += quot;
         mPStdMatrix.getCol(j) += gaps::elementSq(quot);
 
-        DEBUG_PING
         Vector prod(ASampler.mMatrix.getCol(j) * norm);
         GAPS_ASSERT(gaps::min(prod) >= 0.f);
         mAMeanMatrix.getCol(j) += prod;
         mAStdMatrix.getCol(j) += gaps::elementSq(prod);
     }
-    DEBUG_PING
 }
 
 #endif

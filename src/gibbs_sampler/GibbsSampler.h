@@ -47,7 +47,8 @@ public:
 
     void update(unsigned nSteps, unsigned nThreads);
 
-#ifndef GAPS_INTERNAL_TESTS
+//#ifndef GAPS_INTERNAL_TESTS
+#if 0
 protected:
 #endif
 
@@ -171,12 +172,12 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::update(unsigned nSteps, un
     GAPS_ASSERT(mDomain.isSorted());
 }
 
-static float getDeltaLL(AlphaParameters alpha, float mass)
+inline float getDeltaLL(AlphaParameters alpha, float mass)
 {
     return mass * (alpha.s_mu - alpha.s * mass / 2.f);
 }
 
-static OptionalFloat gibbsMass(AlphaParameters alpha, float a, float b,
+inline OptionalFloat gibbsMass(AlphaParameters alpha, float a, float b,
 float lambda, GapsRng *rng)
 {
     if (alpha.s > gaps::epsilon)

@@ -139,19 +139,19 @@ template <class Sampler>
 static void updateSampler(const GapsParameters &params, Sampler &ASampler,
 Sampler &PSampler, unsigned nA, unsigned nP)
 {
-    if (params.whichFixedMatrix != 'A')
+    if (!params.useFixedMatrix || params.whichFixedMatrix != 'A')
     {
         ASampler.update(nA, params.maxThreads);
-        if (params.whichFixedMatrix != 'P')
+        if (!params.useFixedMatrix || params.whichFixedMatrix != 'P')
         {
             PSampler.sync(ASampler, params.maxThreads);
         }
     }
 
-    if (params.whichFixedMatrix != 'P')
+    if (!params.useFixedMatrix || params.whichFixedMatrix != 'P')
     {
         PSampler.update(nP, params.maxThreads);
-        if (params.whichFixedMatrix != 'A')
+        if (!params.useFixedMatrix || params.whichFixedMatrix != 'A')
         {
             ASampler.sync(PSampler, params.maxThreads);
         }
@@ -224,7 +224,10 @@ const DataType &uncertainty, GapsRandomState *randState)
 {
     // check if running in debug mode
     #ifdef GAPS_DEBUG
-    gaps_printf("Running in debug mode\n");
+    if (params.printMessages)
+    {
+        gaps_printf("Running in debug mode\n");
+    }
     #endif
 
     // load data into gibbs samplers
@@ -232,11 +235,14 @@ const DataType &uncertainty, GapsRandomState *randState)
     // is symmetrical for each sampler, this simplifies the code 
     // within the sampler, note the subsetting genes/samples flag must be
     // flipped if we are flipping the transpose flag
-    gaps_printf("Loading Data...");
+    if (params.printMessages)
+    {
+        gaps_printf("Loading Data...");
+    }
     Sampler ASampler(data, !params.transposeData, !params.subsetGenes,
         params.alphaA, params.maxGibbsMassA, params, randState);
     Sampler PSampler(data, params.transposeData, params.subsetGenes,
-        params.alphaA, params.maxGibbsMassA, params, randState);
+        params.alphaP, params.maxGibbsMassP, params, randState);
 
     // read in the uncertainty matrix if one is provided
     if (!uncertainty.empty())
@@ -246,7 +252,10 @@ const DataType &uncertainty, GapsRandomState *randState)
         PSampler.setUncertainty(uncertainty, params.transposeData,
             params.subsetGenes, params);
     }
-    gaps_printf("Done!\n");
+    if (params.printMessages)
+    {
+        gaps_printf("Done!\n");
+    }
 
     // these variables will get overwritten by checkpoint if provided
     GapsRng rng(randState);
@@ -254,11 +263,21 @@ const DataType &uncertainty, GapsRandomState *randState)
     unsigned currentIter = 0;
 
     // check if we're fixing a matrix
-    switch (params.whichFixedMatrix)
+    if (params.useFixedMatrix)
     {
-        case 'A' : ASampler.setMatrix(params.fixedMatrix); break;
-        case 'P' : PSampler.setMatrix(params.fixedMatrix); break;
-        default: break; // 'N' for none
+        switch (params.whichFixedMatrix)
+        {
+            GAPS_ASSERT(params.fixedMatrix.nCol() == params.nPatterns);
+            case 'A' :
+                GAPS_ASSERT(params.fixedMatrix.nRow() == params.nGenes);
+                ASampler.setMatrix(params.fixedMatrix);
+                break;
+            case 'P' :
+                GAPS_ASSERT(params.fixedMatrix.nRow() == params.nSamples);
+                PSampler.setMatrix(params.fixedMatrix);
+                break;
+            default: break; // 'N' for none
+        }
     }
      
     // check if running from checkpoint, get all saved data
