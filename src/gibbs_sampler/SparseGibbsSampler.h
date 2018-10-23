@@ -20,12 +20,18 @@ public:
 
     template <class DataType>
     SparseGibbsSampler(const DataType &data, bool transpose, bool subsetRows,
-        float alpha, float maxGibbsMass, const GapsParameters &params);
+        float alpha, float maxGibbsMass, const GapsParameters &params,
+        GapsRandomState *randState);
+
+    template <class DataType>
+    void setUncertainty(const DataType &data, bool transpose, bool subsetRows,
+        const GapsParameters &params);
 
     float chiSq() const;
     void sync(const SparseGibbsSampler &sampler, unsigned nThreads=1);
+    void extraInitialization();
 
-    friend Archive& operator<<(Archive &ar, SparseGibbsSampler &s);
+    friend Archive& operator<<(Archive &ar, const SparseGibbsSampler &s);
     friend Archive& operator>>(Archive &ar, SparseGibbsSampler &s);
 
 #ifdef GAPS_DEBUG
@@ -57,9 +63,10 @@ private:
 
 template <class DataType>
 SparseGibbsSampler::SparseGibbsSampler(const DataType &data, bool transpose,
-bool subsetRows, float alpha, float maxGibbsMass, const GapsParameters &params)
+bool subsetRows, float alpha, float maxGibbsMass, const GapsParameters &params,
+GapsRandomState *randState)
     :
-GibbsSampler(data, transpose, subsetRows, alpha, maxGibbsMass, params),
+GibbsSampler(data, transpose, subsetRows, alpha, maxGibbsMass, params, randState),
 mZ1(params.nPatterns, 0.f),
 mZ2((params.nPatterns * (params.nPatterns + 1)) / 2),
 mBeta(100.f)
@@ -79,6 +86,14 @@ mBeta(100.f)
             it.next();
         }
     }
+}
+
+// required function for the GibbsSampler interface
+template <class DataType>
+void SparseGibbsSampler::setUncertainty(const DataType &data, bool transpose,
+bool subsetRows, const GapsParameters &params)
+{
+    // nop - SparseGibbsSampler assumes default uncertainty always
 }
 
 #endif // __COGAPS_SPARSE_GIIBS_SAMPLER_H__

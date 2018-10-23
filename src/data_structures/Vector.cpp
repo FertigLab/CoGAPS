@@ -20,11 +20,13 @@ mSize(v.size())
 
 float Vector::operator[](unsigned i) const
 {
+    GAPS_ASSERT(i < mData.size());
     return mData[i];
 }
 
 float& Vector::operator[](unsigned i)
 {
+    GAPS_ASSERT(i < mData.size());
     return mData[i];
 }
 
@@ -69,7 +71,7 @@ void Vector::operator/=(float f)
     }
 }
 
-Archive& operator<<(Archive &ar, Vector &vec)
+Archive& operator<<(Archive &ar, const Vector &vec)
 {
     for (unsigned i = 0; i < vec.mSize; ++i)
     {

@@ -28,6 +28,12 @@ void SparseGibbsSampler::sync(const SparseGibbsSampler &sampler, unsigned nThrea
     generateLookupTables();
 }
 
+// required for GibbsSampler interface
+void SparseGibbsSampler::extraInitialization()
+{
+    // nop - not needed
+}
+
 void SparseGibbsSampler::changeMatrix(unsigned row, unsigned col,
 float delta)
 {
@@ -134,7 +140,7 @@ void SparseGibbsSampler::generateLookupTables()
     }
 }
 
-Archive& operator<<(Archive &ar, SparseGibbsSampler &s)
+Archive& operator<<(Archive &ar, const SparseGibbsSampler &s)
 {
     ar << s.mMatrix << s.mDomain << s.mAlpha << s.mLambda << s.mMaxGibbsMass
         << s.mAnnealingTemp << s.mNumPatterns << s.mNumBins << s.mBinLength

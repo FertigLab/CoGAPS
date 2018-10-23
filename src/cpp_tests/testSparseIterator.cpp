@@ -35,8 +35,8 @@ TEST_CASE("Test SparseIterator.h - One Dimensional")
 
     SECTION("Test Identical Sums")
     {
-        GapsRng::setSeed(123);
-        GapsRng rng;
+        GapsRandomState randState(123);
+        GapsRng rng(&randState);
         Matrix ref(10, 15);
         for (unsigned i = 0; i < ref.nRow(); ++i)
         {
@@ -121,8 +121,8 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
         Vector dv1(300), dv2(300);
     
         // fill vectors
-        GapsRng::setSeed(123);
-        GapsRng rng;
+        GapsRandomState randState(123);
+        GapsRng rng(&randState);
 
         for (unsigned i = 0; i < 30; ++i)
         {
@@ -199,8 +199,8 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
     // could this fail because of SIMD?
     SECTION("Test Identical Dot Products")
     {
-        GapsRng::setSeed(123);
-        GapsRng rng;
+        GapsRandomState randState(123);
+        GapsRng rng(&randState);
         Matrix ref(100, 25);
         HybridMatrix hMat(ref.nRow(), ref.nCol());
         for (unsigned i = 0; i < ref.nRow(); ++i)
@@ -280,8 +280,8 @@ TEST_CASE("Test SparseIterator.h - Three Dimensional")
 
     SECTION("Test Identical Triple Products")
     {
-        GapsRng::setSeed(123);
-        GapsRng rng;
+        GapsRandomState randState(123);
+        GapsRng rng(&randState);
         Matrix ref(100, 25);
         HybridMatrix hMat(ref.nRow(), ref.nCol());
         for (unsigned i = 0; i < ref.nRow(); ++i)

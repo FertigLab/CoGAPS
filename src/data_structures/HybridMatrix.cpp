@@ -55,7 +55,7 @@ void HybridMatrix::operator=(const Matrix &mat)
     }    
 }
 
-Archive& operator<<(Archive &ar, HybridMatrix &vec)
+Archive& operator<<(Archive &ar, const HybridMatrix &vec)
 {
     ar << vec.mNumRows << vec.mNumCols;
     for (unsigned i = 0; i < vec.mRows.size(); ++i)

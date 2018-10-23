@@ -12,7 +12,7 @@ void Atom::operator=(Atom other)
     mass = other.mass;
 }
 
-Archive& operator<<(Archive &ar, Atom &a)
+Archive& operator<<(Archive &ar, const Atom &a)
 {
     ar << a.pos << a.mass;
     return ar;

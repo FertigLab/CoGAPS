@@ -60,8 +60,8 @@ TEST_CASE("Test Writing/Reading Sparse Matrices from File")
 {
     // matrix to use for testing
     Matrix ref(25, 50);
-    GapsRng::setSeed(123);
-    GapsRng rng;
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
     for (unsigned i = 0; i < ref.nRow(); ++i)
     {
         for (unsigned j = 0; j < ref.nCol(); ++j)
@@ -95,8 +95,6 @@ TEST_CASE("Test Writing/Reading Sparse Matrices from File")
 
 TEST_CASE("Test SparseMatrix.h")
 {
-    GapsRng::setSeed(123);
-
     SECTION("Full Constructor")
     {
         Matrix ref(10, 25);

@@ -32,7 +32,7 @@ public:
     float at(unsigned n) const;
     unsigned nElements() const;
 
-    friend Archive& operator<<(Archive &ar, SparseVector &vec);
+    friend Archive& operator<<(Archive &ar, const SparseVector &vec);
     friend Archive& operator>>(Archive &ar, SparseVector &vec);
 
 #ifndef GAPS_INTERNAL_TESTS

@@ -68,7 +68,7 @@ const float* HybridVector::densePtr() const
     return &(mData[0]);
 }
 
-Archive& operator<<(Archive &ar, HybridVector &vec)
+Archive& operator<<(Archive &ar, const HybridVector &vec)
 {
     ar << vec.mSize;
     for (unsigned i = 0; i < vec.mIndexBitFlags.size(); ++i)

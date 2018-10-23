@@ -17,11 +17,12 @@ TEST_CASE("Test SparseGibbsSampler")
             }
         }
 
+        GapsRandomState randState(123);
         GapsParameters params(data);
         SparseGibbsSampler ASampler(data, true, false, params.alphaA,
-            params.maxGibbsMassA, params);
+            params.maxGibbsMassA, params, &randState);
         SparseGibbsSampler PSampler(data, false, false, params.alphaP,
-            params.maxGibbsMassP, params);
+            params.maxGibbsMassP, params, &randState);
     
         ASampler.sync(PSampler);
         PSampler.sync(ASampler);
@@ -40,8 +41,8 @@ TEST_CASE("Test SparseGibbsSampler")
     {
         // create the "data"
         Matrix data(100, 75);
-        GapsRng::setSeed(123);
-        GapsRng rng;
+        GapsRandomState randState(123);
+        GapsRng rng(&randState);
         for (unsigned i = 0; i < data.nRow(); ++i)
         {
             for (unsigned j = 0; j < data.nCol(); ++j)
@@ -53,17 +54,17 @@ TEST_CASE("Test SparseGibbsSampler")
         // create pair of sparse gibbs samplers
         GapsParameters params(data);
         SparseGibbsSampler sparse_ASampler(data, true, false, params.alphaA,
-            params.maxGibbsMassA, params);
+            params.maxGibbsMassA, params, &randState);
         SparseGibbsSampler sparse_PSampler(data, false, false, params.alphaP,
-            params.maxGibbsMassP, params);
+            params.maxGibbsMassP, params, &randState);
         sparse_ASampler.sync(sparse_PSampler);
         sparse_PSampler.sync(sparse_ASampler);
 
         // create pair of dense gibbs samplers
         DenseGibbsSampler dense_ASampler(data, true, false, params.alphaA,
-            params.maxGibbsMassA, params);
+            params.maxGibbsMassA, params, &randState);
         DenseGibbsSampler dense_PSampler(data, false, false, params.alphaP,
-            params.maxGibbsMassP, params);
+            params.maxGibbsMassP, params, &randState);
         dense_ASampler.sync(dense_PSampler);
         dense_PSampler.sync(dense_ASampler);
 

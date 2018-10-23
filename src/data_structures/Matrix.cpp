@@ -63,6 +63,9 @@ std::vector<unsigned> indices)
         ? indices.size()
         : genesInCols ? fp.nRow() : fp.nCol();
 
+    gaps_printf("Reading from %d rows and %d columns\n", fp.nRow(), fp.nCol());
+    gaps_printf("Reading into %d rows and %d columns\n", mNumRows, mNumCols);
+
     // allocate space for the data
     for (unsigned j = 0; j < mNumCols; ++j)
     {
@@ -117,21 +120,27 @@ unsigned Matrix::nCol() const
 
 float Matrix::operator()(unsigned i, unsigned j) const
 {
+    GAPS_ASSERT(i < mNumRows);
+    GAPS_ASSERT(j < mNumCols);
     return mCols[j][i];
 }
 
 float& Matrix::operator()(unsigned i, unsigned j)
 {
+    GAPS_ASSERT(i < mNumRows);
+    GAPS_ASSERT(j < mNumCols);
     return mCols[j][i];
 }
 
 Vector& Matrix::getCol(unsigned col)
 {
+    GAPS_ASSERT(col < mNumCols);
     return mCols[col];
 }
 
 const Vector& Matrix::getCol(unsigned col) const
 {
+    GAPS_ASSERT_MSG(col < mNumCols, col << " , " << mNumCols);
     return mCols[col];
 }
 
@@ -152,7 +161,7 @@ bool Matrix::empty() const
     return mNumRows == 0;
 }
 
-Archive& operator<<(Archive &ar, Matrix &vec)
+Archive& operator<<(Archive &ar, const Matrix &vec)
 {
     ar << vec.mNumRows << vec.mNumCols;
     for (unsigned j = 0; j < vec.mNumCols; ++j)

@@ -14,19 +14,20 @@ TEST_CASE("Test DenseGibbsSampler")
             }
         }
 
+        GapsRandomState randState(123);
         GapsParameters params(data);
         DenseGibbsSampler ASampler(data, true, false, params.alphaA,
-            params.maxGibbsMassA, params);
+            params.maxGibbsMassA, params, &randState);
         DenseGibbsSampler PSampler(data, false, false, params.alphaP,
-            params.maxGibbsMassP, params);
+            params.maxGibbsMassP, params, &randState);
     
         REQUIRE(ASampler.chiSq() == 100.f * data.nRow() * data.nCol());
         REQUIRE(PSampler.chiSq() == 100.f * data.nRow() * data.nCol());
     
         ASampler.sync(PSampler);
         PSampler.sync(ASampler);
-        ASampler.recalculateAPMatrix();
-        PSampler.recalculateAPMatrix();
+        ASampler.extraInitialization();
+        PSampler.extraInitialization();
 
         REQUIRE(ASampler.chiSq() == 100.f * data.nRow() * data.nCol());
         REQUIRE(PSampler.chiSq() == 100.f * data.nRow() * data.nCol());

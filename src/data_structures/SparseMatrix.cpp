@@ -122,7 +122,7 @@ void SparseMatrix::operator=(const Matrix &mat)
     }
 }
 
-Archive& operator<<(Archive &ar, SparseMatrix &vec)
+Archive& operator<<(Archive &ar, const SparseMatrix &vec)
 {
     ar << vec.mNumRows << vec.mNumCols;
     for (unsigned j = 0; j < vec.mNumCols; ++j)

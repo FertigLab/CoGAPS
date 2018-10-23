@@ -36,7 +36,7 @@ public:
 
     const float* densePtr() const;
 
-    friend Archive& operator<<(Archive &ar, HybridVector &vec);
+    friend Archive& operator<<(Archive &ar, const HybridVector &vec);
     friend Archive& operator>>(Archive &ar, HybridVector &vec);
 
 private:

@@ -93,7 +93,8 @@ TEST_CASE("Test Writing/Reading Matrices from File")
 
 TEST_CASE("Test Matrix.h")
 {
-    GapsRng::setSeed(123);
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
 
     SECTION("Default Constructor")
     {
