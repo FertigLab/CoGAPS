@@ -27,7 +27,7 @@ public:
 
     void operator=(Atom other);
 
-    friend Archive& operator<<(Archive& ar, Atom &a);
+    friend Archive& operator<<(Archive& ar, const Atom &a);
     friend Archive& operator>>(Archive& ar, Atom &a);
 
 private:

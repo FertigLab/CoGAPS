@@ -1,5 +1,7 @@
 #include "GapsRunner.h"
 
+#include "utils/Archive.h"
+
 #ifdef __GAPS_R_BUILD__
 #include <Rcpp.h>
 #endif
@@ -8,116 +10,60 @@
 #include <omp.h>
 #endif
 
-///////////////////////////// RAII wrapper /////////////////////////////////////
+// boost time helpers
+#include <boost/date_time/posix_time/posix_time.hpp>
+namespace bpt = boost::posix_time;
+#define bpt_now() bpt::microsec_clock::local_time()
 
-GapsRunner::~GapsRunner()
+// forward declaration
+template <class Sampler, class DataType>
+static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &params,
+    const DataType &uncertainty, GapsRandomState *randState);
+
+////////////////////////////////////////////////////////////////////////////////
+
+// helper function, this dispatches the correct run function depending
+// on the type of GibbsSampler needed for the given parameters
+template <class DataType>
+static GapsResult run_helper(const DataType &data, GapsParameters &params,
+const DataType &uncertainty, GapsRandomState *randState)
 {
-    delete mRunner;
-}
-
-GapsResult GapsRunner::run()
-{
-    return mRunner->run();
-}
-
-///////////////////////// Abstract Interface ///////////////////////////////////
-
-AbstractGapsRunner::AbstractGapsRunner(const GapsParameters &params)
-    :
-mStatistics(params.nGenes, params.nSamples, params.nPatterns),
-mCheckpointOutFile(params.checkpointOutFile),
-mCurrentIteration(0),
-mMaxIterations(params.nIterations),
-mMaxThreads(params.maxThreads),
-mOutputFrequency(params.outputFrequency),
-mCheckpointInterval(params.checkpointInterval),
-mNumPatterns(params.nPatterns),
-mNumUpdatesA(0),
-mNumUpdatesP(0),
-mSeed(params.seed),
-mPrintMessages(params.printMessages),
-mPrintThreadUsage(params.printThreadUsage),
-mPhase('C'),
-mFixedMatrix(params.whichFixedMatrix)
-{}
-
-GapsResult AbstractGapsRunner::run()
-{
-    GAPS_ASSERT(mPhase == 'C' || mPhase == 'S');
-
-    mStartTime = bpt_now();
-
-    // check if running in debug mode
-    #ifdef GAPS_DEBUG
-    gaps_printf("Running in debug mode\n");
-    #endif
-
-    // calculate appropiate number of threads if compiled with openmp
-    #ifdef __GAPS_OPENMP__
-    if (mPrintMessages && mPrintThreadUsage)
+    // fetch parameters from checkpoint - some are used in initialization
+    if (params.useCheckPoint)
     {
-        unsigned availableThreads = omp_get_max_threads();
-        mMaxThreads = gaps::min(availableThreads, mMaxThreads);
-        gaps_printf("Running on %d out of %d available threads\n",
-            mMaxThreads, availableThreads);
+        Archive ar(params.checkpointFile, ARCHIVE_READ);
+        ar >> params;
+        ar >> *randState;
     }
-    #endif
 
-    // cascade through phases, allows algorithm to be resumed in either phase
-    switch (mPhase)
+    if (params.useSparseOptimization)
     {
-        case 'C':
-            if (mPrintMessages)
-            {
-                gaps_printf("-- Calibration Phase --\n");
-            }
-            runOnePhase();
-            mPhase = 'S';
-            mCurrentIteration = 0;
-
-        case 'S':
-            if (mPrintMessages)
-            {
-                gaps_printf("-- Sampling Phase --\n");
-            }
-            runOnePhase();
-            break;
+        return runCoGAPSAlgorithm<SparseGibbsSampler>(data, params,
+            uncertainty, randState);
     }
-    GapsResult result(mStatistics);
-    result.meanChiSq = meanChiSq();
-    return result;    
-}
-
-void AbstractGapsRunner::runOnePhase()
-{
-    for (; mCurrentIteration < mMaxIterations; ++mCurrentIteration)
+    else
     {
-        createCheckpoint();
-
-        #ifdef __GAPS_R_BUILD__
-        Rcpp::checkUserInterrupt();
-        #endif
-        
-        // set annealing temperature in calibration phase
-        if (mPhase == 'C')
-        {        
-            float temp = static_cast<float>(2 * mCurrentIteration)
-                / static_cast<float>(mMaxIterations);
-            setAnnealingTemp(gaps::min(1.f, temp));
-        }
-    
-        // number of updates per iteration is poisson 
-        unsigned nA = mRng.poisson(gaps::max(nAtoms('A'), 10));
-        unsigned nP = mRng.poisson(gaps::max(nAtoms('P'), 10));
-        updateSampler(nA, nP);
-
-        if (mPhase == 'S')
-        {
-            updateStatistics();
-        }
-        displayStatus();
+        return runCoGAPSAlgorithm<DenseGibbsSampler>(data, params,
+            uncertainty, randState);
     }
 }
+
+// these two functions are the top-level functions exposed to the C++
+// code that is being wrapped by any given language
+
+GapsResult gaps::run(const Matrix &data, GapsParameters &params,
+const Matrix &uncertainty, GapsRandomState *randState)
+{
+    return run_helper(data, params, uncertainty, randState);
+}
+
+GapsResult gaps::run(const std::string &data, GapsParameters &params,
+const std::string &uncertainty, GapsRandomState *randState)
+{
+    return run_helper(data, params, uncertainty, randState);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 // sum coef * log(i) for i = 1 to total, fit coef from number of atoms
 // approximates sum of number of atoms (stirling approx to factorial)
@@ -129,19 +75,21 @@ static double estimatedNumUpdates(double current, double total, float nAtoms)
         total * coef * std::log(total) - total * coef;
 }
 
-
-double AbstractGapsRunner::estimatedPercentComplete() const
+template <class Sampler>
+static double estimatedPercentComplete(const GapsParameters &params,
+const Sampler &ASampler, const Sampler &PSampler, bpt::ptime startTime,
+char phase, unsigned iter)
 {
-    double nIter = static_cast<double>(mCurrentIteration);
-    double nAtomsA = static_cast<double>(nAtoms('A'));
-    double nAtomsP = static_cast<double>(nAtoms('P'));
+    double nIter = static_cast<double>(iter);
+    double nAtomsA = static_cast<double>(ASampler.nAtoms());
+    double nAtomsP = static_cast<double>(PSampler.nAtoms());
     
-    if (mPhase == 'S')
+    if (phase == 'S')
     {
-        nIter += mMaxIterations;
+        nIter += params.nIterations;
     }
 
-    double totalIter = 2.0 * static_cast<double>(mMaxIterations);
+    double totalIter = 2.0 * static_cast<double>(params.nIterations);
 
     double estimatedCompleted = estimatedNumUpdates(nIter, nIter, nAtomsA) + 
         estimatedNumUpdates(nIter, nIter, nAtomsP);
@@ -152,13 +100,19 @@ double AbstractGapsRunner::estimatedPercentComplete() const
     return estimatedCompleted / estimatedTotal;
 }
 
-void AbstractGapsRunner::displayStatus()
+template <class Sampler>
+static void displayStatus(const GapsParameters &params,
+const Sampler &ASampler, const Sampler &PSampler, bpt::ptime startTime,
+char phase, unsigned iter)
 {
-    if (mPrintMessages && mOutputFrequency > 0 && ((mCurrentIteration + 1) % mOutputFrequency) == 0)
+    if (params.printMessages && params.outputFrequency > 0
+    && ((iter + 1) % params.outputFrequency) == 0)
     {
-        bpt::time_duration diff = bpt_now() - mStartTime;
+        bpt::time_duration diff = bpt_now() - startTime;
+        double perComplete = estimatedPercentComplete(params, ASampler,
+            PSampler, startTime, phase, iter);
         double nSecondsCurrent = diff.total_seconds();
-        double nSecondsTotal = nSecondsCurrent / estimatedPercentComplete();
+        double nSecondsTotal = nSecondsCurrent / perComplete;
 
         unsigned elapsedSeconds = static_cast<unsigned>(nSecondsCurrent);
         unsigned totalSeconds = static_cast<unsigned>(nSecondsTotal);
@@ -174,180 +128,201 @@ void AbstractGapsRunner::displayStatus()
         totalSeconds -= totalMinutes * 60;
 
         gaps_printf("%d of %d, Atoms: %lu(%lu), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
-            mCurrentIteration + 1, mMaxIterations, nAtoms('A'),
-            nAtoms('P'), chiSq(), elapsedHours, elapsedMinutes,
+            iter + 1, params.nIterations, ASampler.nAtoms(),
+            PSampler.nAtoms(), PSampler.chiSq(), elapsedHours, elapsedMinutes,
             elapsedSeconds, totalHours, totalMinutes, totalSeconds);
         gaps_flush();
     }
 }
 
-void AbstractGapsRunner::createCheckpoint()
+template <class Sampler>
+static void updateSampler(const GapsParameters &params, Sampler &ASampler,
+Sampler &PSampler, unsigned nA, unsigned nP)
 {
-    if (mCheckpointInterval > 0 && ((mCurrentIteration + 1) % mCheckpointInterval) == 0)
+    if (params.whichFixedMatrix != 'A')
+    {
+        ASampler.update(nA, params.maxThreads);
+        if (params.whichFixedMatrix != 'P')
+        {
+            PSampler.sync(ASampler, params.maxThreads);
+        }
+    }
+
+    if (params.whichFixedMatrix != 'P')
+    {
+        PSampler.update(nP, params.maxThreads);
+        if (params.whichFixedMatrix != 'A')
+        {
+            ASampler.sync(PSampler, params.maxThreads);
+        }
+    }
+}
+
+template <class Sampler>
+static void createCheckpoint(const GapsParameters &params,
+const Sampler &ASampler, const Sampler &PSampler, const GapsRandomState *randState,
+const GapsRng &rng, char phase, unsigned iter)
+{
+    if (params.checkpointInterval > 0
+    && ((iter + 1) % params.checkpointInterval) == 0)
     {
         // create backup file
-        std::rename(mCheckpointOutFile.c_str(), (mCheckpointOutFile + ".backup").c_str());
+        std::rename(params.checkpointOutFile.c_str(),
+            (params.checkpointOutFile + ".backup").c_str());
     
         // create checkpoint file
-        Archive ar(mCheckpointOutFile, ARCHIVE_WRITE);
-        ar << mNumPatterns << mSeed << mMaxIterations << mFixedMatrix << mPhase
-            << mCurrentIteration << mNumUpdatesA << mNumUpdatesP << mRng;
-        writeSamplers(ar);
-        GapsRng::save(ar);
-
+        Archive ar(params.checkpointOutFile, ARCHIVE_WRITE);
+        ar << params;
+        ar << *randState;
+        ar << ASampler << PSampler << phase << iter << rng;
+        
         // delete backup file
-        std::remove((mCheckpointOutFile + ".backup").c_str());
+        std::remove((params.checkpointOutFile + ".backup").c_str());
     }
 }
 
-///////////////////// DenseGapsRunner Implementation ///////////////////////////
-
-float DenseGapsRunner::chiSq() const
+template <class Sampler>
+static void runOnePhase(const GapsParameters &params, Sampler &ASampler,
+Sampler &PSampler, GapsStatistics &stats, const GapsRandomState *randState,
+GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
 {
-    // doesn't matter which sampler is called
-    return mPSampler.chiSq();
-}
-
-float DenseGapsRunner::meanChiSq() const
-{
-    // need to pass P sampler (due to configuration of internal data)
-    return mStatistics.meanChiSq(mPSampler);
-}
-
-unsigned DenseGapsRunner::nAtoms(char which) const
-{
-    return which == 'A' ? mASampler.nAtoms() : mPSampler.nAtoms();
-}
-
-void DenseGapsRunner::setAnnealingTemp(float temp)
-{
-    mASampler.setAnnealingTemp(temp);
-    mPSampler.setAnnealingTemp(temp);
-}
-
-void DenseGapsRunner::updateStatistics()
-{
-    mStatistics.update(mASampler, mPSampler);
-}
-
-Archive& DenseGapsRunner::readSamplers(Archive &ar)
-{
-    ar >> mASampler >> mPSampler;
-    return ar;
-}
-
-Archive& DenseGapsRunner::writeSamplers(Archive &ar)
-{
-    ar << mASampler << mPSampler;
-    return ar;
-}
-
-void DenseGapsRunner::updateSampler(unsigned nA, unsigned nP)
-{
-    if (mFixedMatrix != 'A')
+    for (; currentIter < params.nIterations; ++currentIter)
     {
-        mNumUpdatesA += nA;
-        mASampler.update(nA, mMaxThreads);
-        if (mFixedMatrix != 'P')
-        {
-            mPSampler.sync(mASampler, mMaxThreads);
-        }
-    }
+        #ifdef __GAPS_R_BUILD__
+        Rcpp::checkUserInterrupt();
+        #endif
 
-    if (mFixedMatrix != 'P')
+        createCheckpoint(params, ASampler, PSampler, randState, rng, phase,
+            currentIter);
+        
+        // set annealing temperature in calibration phase
+        if (phase == 'C')
+        {        
+            float temp = static_cast<float>(2 * currentIter)
+                / static_cast<float>(params.nIterations);
+            ASampler.setAnnealingTemp(gaps::min(1.f, temp));
+            PSampler.setAnnealingTemp(gaps::min(1.f, temp));
+        }
+    
+        // number of updates per iteration is poisson 
+        unsigned nA = rng.poisson(gaps::max(ASampler.nAtoms(), 10));
+        unsigned nP = rng.poisson(gaps::max(PSampler.nAtoms(), 10));
+        updateSampler(params, ASampler, PSampler, nA, nP);
+
+        if (phase == 'S')
+        {
+            stats.update(ASampler, PSampler);
+        }
+        displayStatus(params, ASampler, PSampler, startTime, phase, currentIter);
+    }
+}
+
+// here is the CoGAPS algorithm
+template <class Sampler, class DataType>
+static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &params,
+const DataType &uncertainty, GapsRandomState *randState)
+{
+    // check if running in debug mode
+    #ifdef GAPS_DEBUG
+    gaps_printf("Running in debug mode\n");
+    #endif
+
+    // load data into gibbs samplers
+    // we transpose the data in the A sampler so that the update step
+    // is symmetrical for each sampler, this simplifies the code 
+    // within the sampler, note the subsetting genes/samples flag must be
+    // flipped if we are flipping the transpose flag
+    gaps_printf("Loading Data...");
+    Sampler ASampler(data, !params.transposeData, !params.subsetGenes,
+        params.alphaA, params.maxGibbsMassA, params, randState);
+    Sampler PSampler(data, params.transposeData, params.subsetGenes,
+        params.alphaA, params.maxGibbsMassA, params, randState);
+
+    // read in the uncertainty matrix if one is provided
+    if (!uncertainty.empty())
     {
-        mNumUpdatesP += nP;
-        mPSampler.update(nP, mMaxThreads);
-        if (mFixedMatrix != 'A')
-        {
-            mASampler.sync(mPSampler, mMaxThreads);
-        }
+        ASampler.setUncertainty(uncertainty, !params.transposeData,
+            !params.subsetGenes, params);
+        PSampler.setUncertainty(uncertainty, params.transposeData,
+            params.subsetGenes, params);
     }
-}
+    gaps_printf("Done!\n");
 
-void DenseGapsRunner::setUncertainty(const Matrix &unc, const GapsParameters &params)
-{
-    mASampler.setUncertainty(unc, !params.transposeData, !params.subsetGenes, params);
-    mPSampler.setUncertainty(unc, params.transposeData, params.subsetGenes, params);
-}
+    // these variables will get overwritten by checkpoint if provided
+    GapsRng rng(randState);
+    char phase = 'C';
+    unsigned currentIter = 0;
 
-void DenseGapsRunner::setUncertainty(const std::string &unc, const GapsParameters &params)
-{
-    mASampler.setUncertainty(unc, !params.transposeData, !params.subsetGenes, params);
-    mPSampler.setUncertainty(unc, params.transposeData, params.subsetGenes, params);
-}
-
-///////////////////// SparseGapsRunner Implementation //////////////////////////
-
-float SparseGapsRunner::chiSq() const
-{
-    // doesn't matter which sampler is called
-    return mPSampler.chiSq();
-}
-
-float SparseGapsRunner::meanChiSq() const
-{
-    // need to pass P sampler (due to configuration of internal data)
-    return mStatistics.meanChiSq(mPSampler);
-}
-
-unsigned SparseGapsRunner::nAtoms(char which) const
-{
-    return which == 'A' ? mASampler.nAtoms() : mPSampler.nAtoms();
-}
-
-void SparseGapsRunner::setAnnealingTemp(float temp)
-{
-    mASampler.setAnnealingTemp(temp);
-    mPSampler.setAnnealingTemp(temp);
-}
-
-void SparseGapsRunner::updateStatistics()
-{
-    mStatistics.update(mASampler, mPSampler);
-}
-
-Archive& SparseGapsRunner::readSamplers(Archive &ar)
-{
-    ar >> mASampler >> mPSampler;
-    return ar;
-}
-
-Archive& SparseGapsRunner::writeSamplers(Archive &ar)
-{
-    ar << mASampler << mPSampler;
-    return ar;
-}
-
-void SparseGapsRunner::updateSampler(unsigned nA, unsigned nP)
-{
-    if (mFixedMatrix != 'A')
+    // check if we're fixing a matrix
+    switch (params.whichFixedMatrix)
     {
-        mNumUpdatesA += nA;
-        mASampler.update(nA, mMaxThreads);
-        if (mFixedMatrix != 'P')
-        {
-            mPSampler.sync(mASampler, mMaxThreads);
-        }
+        case 'A' : ASampler.setMatrix(params.fixedMatrix); break;
+        case 'P' : PSampler.setMatrix(params.fixedMatrix); break;
+        default: break; // 'N' for none
     }
-
-    if (mFixedMatrix != 'P')
+     
+    // check if running from checkpoint, get all saved data
+    if (params.useCheckPoint)
     {
-        mNumUpdatesP += nP;
-        mPSampler.update(nP, mMaxThreads);
-        if (mFixedMatrix != 'A')
-        {
-            mASampler.sync(mPSampler, mMaxThreads);
-        }
+        Archive ar(params.checkpointFile, ARCHIVE_READ);
+        ar >> params;
+        ar >> *randState;
+        ar >> ASampler >> PSampler >> phase >> currentIter >> rng;
     }
+
+    // sync samplers, second parameter indicates this should be a full sync
+    ASampler.sync(PSampler);
+    PSampler.sync(ASampler);
+
+    // sampler may need to run additional initialization after parameters set
+    ASampler.extraInitialization();
+    PSampler.extraInitialization();
+
+    // calculate appropiate number of threads if compiled with openmp
+    #ifdef __GAPS_OPENMP__
+    if (params.printMessages && params.printThreadUsage)
+    {
+        unsigned availableThreads = omp_get_max_threads();
+        params.maxThreads = gaps::min(availableThreads, params.maxThreads);
+        gaps_printf("Running on %d out of %d available threads\n",
+            params.maxThreads, availableThreads);
+    }
+    #endif
+
+    // record start time
+    bpt::ptime startTime = bpt_now();
+
+    // cascade through phases, allows algorithm to be resumed in either phase
+    GapsStatistics stats(params.nGenes, params.nSamples, params.nPatterns);
+    GAPS_ASSERT(phase == 'C' || phase == 'S');
+    switch (phase)
+    {
+        case 'C':
+            if (params.printMessages)
+            {
+                gaps_printf("-- Calibration Phase --\n");
+            }
+            runOnePhase(params, ASampler, PSampler, stats, randState, rng,
+                startTime, phase, currentIter);
+            phase = 'S';
+            currentIter = 0;
+
+
+
+        case 'S':
+            if (params.printMessages)
+            {
+                gaps_printf("-- Sampling Phase --\n");
+            }
+            runOnePhase(params, ASampler, PSampler, stats, randState, rng,
+                startTime, phase, currentIter);
+
+        default: break;
+    }
+    
+    // get result
+    GapsResult result(stats);
+    result.meanChiSq = stats.meanChiSq(PSampler);
+    return result;
 }
 
-void SparseGapsRunner::setUncertainty(const Matrix &unc, const GapsParameters &params)
-{
-    // nothing happens - SparseGibbsSampler assumes default uncertainty always
-}
-
-void SparseGapsRunner::setUncertainty(const std::string &unc, const GapsParameters &params)
-{
-    // nothing happens - SparseGibbsSampler assumes default uncertainty always
-}

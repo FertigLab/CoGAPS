@@ -28,7 +28,7 @@ public:
     
     bool empty() const;
 
-    friend Archive& operator<<(Archive &ar, Matrix &vec);
+    friend Archive& operator<<(Archive &ar, const Matrix &vec);
     friend Archive& operator>>(Archive &ar, Matrix &vec);
 
 private:

@@ -4,13 +4,13 @@
 
 TEST_CASE("Test HashSets.h - FixedHashSetU32")
 {
-    GapsRng::setSeed(123);
+    GapsRandomState randState(123);
 
     FixedHashSetU32 hSet(1000);
     REQUIRE(hSet.isEmpty());
 
     // burn in
-    GapsRng rng;
+    GapsRng rng(&randState);
     for (unsigned n = 0; n < 1000; ++n)
     {
         uint64_t u = 0;
@@ -28,11 +28,13 @@ TEST_CASE("Test HashSets.h - FixedHashSetU32")
 
 TEST_CASE("Test HashSets.h - SmallHashSetU64")
 {
+    GapsRandomState randState(123);
+
     SmallHashSetU64 hSet;
     REQUIRE(hSet.isEmpty());
 
     // burn in
-    GapsRng rng;
+    GapsRng rng(&randState);
     for (unsigned n = 0; n < 1000; ++n)
     {
         uint64_t u = 0;
@@ -53,7 +55,8 @@ TEST_CASE("Test HashSets.h - SmallPairedHashSetU64")
     SmallPairedHashSetU64 hSet;
     REQUIRE(hSet.isEmpty());
 
-    GapsRng rng;
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
     for (unsigned n = 0; n < 1000; ++n)
     {
         for (unsigned i = 0; i < 100; ++i)

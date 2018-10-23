@@ -31,7 +31,7 @@ public:
 
     void operator=(const Matrix &mat);
 
-    friend Archive& operator<<(Archive &ar, HybridMatrix &vec);
+    friend Archive& operator<<(Archive &ar, const HybridMatrix &vec);
     friend Archive& operator>>(Archive &ar, HybridMatrix &vec);
 
 private:

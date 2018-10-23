@@ -43,7 +43,7 @@ public:
     void erase(uint64_t pos);
 
     // serialization
-    friend Archive& operator<<(Archive &ar, AtomicDomain &domain);
+    friend Archive& operator<<(Archive &ar, const AtomicDomain &domain);
     friend Archive& operator>>(Archive &ar, AtomicDomain &domain);
    
 #ifdef GAPS_DEBUG

@@ -94,7 +94,7 @@ unsigned SparseVector::nElements() const
     return mData.size();
 }
 
-Archive& operator<<(Archive &ar, SparseVector &vec)
+Archive& operator<<(Archive &ar, const SparseVector &vec)
 {
     ar << vec.mSize;
     for (unsigned i = 0; i < vec.mIndexBitFlags.size(); ++i)

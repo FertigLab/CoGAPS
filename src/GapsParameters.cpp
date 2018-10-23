@@ -1,9 +1,19 @@
 #include "GapsParameters.h"
 
-void GapsParameters::peekCheckpoint(const std::string &file)
+Archive& operator<<(Archive &ar, const GapsParameters &p)
 {
-    Archive ar(file, ARCHIVE_READ);
-    ar >> nPatterns >> seed >> nIterations >> whichFixedMatrix;
+    ar << p.seed << p.nGenes << p.nSamples << p.nPatterns << p.nIterations
+        << p.alphaA << p.alphaP << p.maxGibbsMassA << p.maxGibbsMassP
+        << p.singleCell << p.useSparseOptimization;
+    return ar;
+}
+
+Archive& operator>>(Archive &ar, GapsParameters &p)
+{
+    ar >> p.seed >> p.nGenes >> p.nSamples >> p.nPatterns >> p.nIterations
+        >> p.alphaA >> p.alphaP >> p.maxGibbsMassA >> p.maxGibbsMassP
+        >> p.singleCell >> p.useSparseOptimization;
+    return ar;
 }
     
 void GapsParameters::calculateDataDimensions(const std::string &file)

@@ -20,6 +20,16 @@ namespace gaps
     unsigned max(unsigned a, unsigned b);
     uint64_t max(uint64_t a, uint64_t b);
 
+    // distribution calculations (cdf, pdf, quantile)
+    float d_gamma(float d, float shape, float scale);
+    float p_gamma(float p, float shape, float scale);
+    float q_gamma(float q, float shape, float scale);
+    float d_norm(float d, float mean, float sd);
+    float p_norm(float p, float mean, float sd);
+    float q_norm(float q, float mean, float sd);
+
+    double lgamma(double x);
+
 } // namespace gaps
 
 #endif // __COGAPS_MATH_H__

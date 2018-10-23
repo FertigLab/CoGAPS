@@ -25,7 +25,7 @@ struct AtomicProposal
 
     char type; // birth (B), death (D), move (M), exchange (E)
 
-    AtomicProposal(char t);
+    AtomicProposal(char t, GapsRandomState *randState);
 };
 
 class ProposalQueue
@@ -33,7 +33,7 @@ class ProposalQueue
 public:
 
     // initialize
-    ProposalQueue(unsigned nrow, unsigned ncol);
+    ProposalQueue(unsigned nrow, unsigned ncol, GapsRandomState *randState);
     void setAlpha(float alpha);
     void setLambda(float lambda);
 
@@ -50,7 +50,7 @@ public:
     void rejectBirth();
 
     // serialization
-    friend Archive& operator<<(Archive &ar, ProposalQueue &queue);
+    friend Archive& operator<<(Archive &ar, const ProposalQueue &queue);
     friend Archive& operator>>(Archive &ar, ProposalQueue &queue);
 
 private:
@@ -61,6 +61,7 @@ private:
     SmallHashSetU64 mUsedAtoms;
     SmallPairedHashSetU64 mProposedMoves;
 
+    GapsRandomState *mRandState;
     mutable GapsRng mRng;
 
     uint64_t mMinAtoms;

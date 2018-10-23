@@ -31,7 +31,7 @@ public:
     void operator*=(float f);
     void operator/=(float f);
     
-    friend Archive& operator<<(Archive &ar, Vector &vec);
+    friend Archive& operator<<(Archive &ar, const Vector &vec);
     friend Archive& operator>>(Archive &ar, Vector &vec);
 
 private:

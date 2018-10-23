@@ -7,6 +7,10 @@
 #include <stdint.h>
 #include <vector>
 
+class GapsRng;
+class Xoroshiro128plus;
+class GapsRandomState;
+
 struct OptionalFloat
 {
 public :
@@ -23,52 +27,13 @@ private :
     bool mHasValue;
 };
 
-namespace gaps
-{
-    double lgamma(double x);
-
-    // fast enough with default implementation
-    float d_gamma(float d, float shape, float scale);
-    float p_gamma(float p, float shape, float scale);
-
-    // standard functions
-    float q_gamma(float q, float shape, float scale);
-    float d_norm(float d, float mean, float sd);
-    float p_norm(float p, float mean, float sd);
-    float q_norm(float q, float mean, float sd);
-
-    // fast versions, mostly using lookup tables
-    float p_norm_fast(float p, float mean, float sd);
-    float q_norm_fast(float q, float mean, float sd);
-}
-
-// used for seeding individual rngs
-class Xoroshiro128plus
-{
-public:
-
-    void seed(uint64_t seed);
-    uint64_t next();
-    void rollBackOnce();
-
-private:
-
-    uint64_t mState[2];
-    uint64_t mPreviousState[2];
-
-    void warmup();
-
-    friend Archive& operator<<(Archive &ar, Xoroshiro128plus &gen);
-    friend Archive& operator>>(Archive &ar, Xoroshiro128plus &gen);
-};
-
 // PCG random number generator
-// This is constructed with a seed pulled from the global seeder
+// This is constructed with a seed pulled from the global state
 class GapsRng
 {
 public:
 
-    GapsRng();
+    GapsRng(GapsRandomState *mRandState);
 
     float uniform();
     float uniform(float a, float b);
@@ -85,13 +50,12 @@ public:
     OptionalFloat truncNormal(float a, float b, float mean, float sd);
     float truncGammaUpper(float b, float scale); // shape hardcoded to 2
 
-    static void setSeed(uint32_t sd);
-    static Archive& save(Archive &ar);
-    static Archive& load(Archive &ar);
-    static void rollBackOnce();
-   
+    friend Archive& operator<<(Archive &ar, const GapsRng &gen);
+    friend Archive& operator>>(Archive &ar, GapsRng &gen);
+
 private:
 
+    const GapsRandomState *mRandState;
     uint64_t mState;
     uint32_t mPreviousState;
 
@@ -102,9 +66,61 @@ private:
     double uniformd();
     int poissonSmall(double lambda);
     int poissonLarge(double lambda);
+};
 
-    friend Archive& operator<<(Archive &ar, GapsRng &gen);
-    friend Archive& operator>>(Archive &ar, GapsRng &gen);
+// private class used by GapsRandomState for seeding individual rngs
+class Xoroshiro128plus
+{
+private:
+
+    friend class GapsRandomState;
+
+    Xoroshiro128plus(uint64_t seed);
+
+    uint64_t next();
+    void rollBackOnce();
+
+    friend Archive& operator<<(Archive &ar, const Xoroshiro128plus &gen);
+    friend Archive& operator>>(Archive &ar, Xoroshiro128plus &gen);
+
+    uint64_t mState[2];
+    uint64_t mPreviousState[2];
+};
+
+// manages random seed and lookup tables for distribution functions, need to
+// avoid global variables for multi-threading issues - this random state
+// is created at the beginning of execution and passed down to the classes
+// that need it
+class GapsRandomState
+{
+public:
+
+    GapsRandomState(unsigned t_seed);
+
+    uint64_t nextSeed();
+    void rollBackOnce();
+
+    // fast distribution calculations using lookup tables
+    float p_norm_fast(float p, float mean, float sd) const;
+    float q_norm_fast(float q, float mean, float sd) const;
+
+    friend Archive& operator<<(Archive &ar, const GapsRandomState &s);
+    friend Archive& operator>>(Archive &ar, GapsRandomState &s);
+    
+private:
+
+    friend GapsRng;
+
+    Xoroshiro128plus mSeeder;
+
+    float mErfLookupTable[3001];
+    float mErfinvLookupTable[5001];
+    float mQgammaLookupTable[5001];
+
+    void initLookupTables();
+
+    GapsRandomState(const GapsRandomState&); // = delete (no c++11)
+    GapsRandomState& operator=(const GapsRandomState&); // = delete (no c++11)
 };
 
 #endif // __COGAPS_RANDOM_H__

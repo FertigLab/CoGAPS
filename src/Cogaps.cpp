@@ -8,9 +8,7 @@
 // this file contains the blueprint for creating a wrapper around the C++
 // interface used for running CoGAPS. It exposes some functions to R, has a
 // method for converting the R parameters to the standard GapsParameters
-// struct, and creates a GapsRunner object. The GapsRunner class manages
-// all information from a CoGAPS run and is used to set off the run
-// and get return data.
+// and calls gaps::run
 
 ////////////////// functions for converting matrix types ///////////////////////
 
@@ -53,26 +51,20 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
 {
     // check if subsetting data
     const Rcpp::S4 &gapsParams(allParams["gaps"]);
-    bool subsetData = false;
-    bool printThreadUsage = true;
     bool subsetGenes = false;
-    char whichFixedMatrix = 'N';
     std::vector<unsigned> subset;
     if (indices.isNotNull())
     {
-        subsetData = true;
-        printThreadUsage = false;
         std::string d(Rcpp::as<std::string>(gapsParams.slot("distributed")));
         subsetGenes = (d == "genome-wide");
-        whichFixedMatrix = (d == "genome-wide") ? 'P' : 'A';
         subset = Rcpp::as< std::vector<unsigned> >(Rcpp::IntegerVector(indices));
     }
 
     // create standard CoGAPS parameters struct
-    GapsParameters params(data, allParams["transposeData"], subsetData,
+    GapsParameters params(data, allParams["transposeData"], indices.isNotNull(),
         subsetGenes, subset);
-    params.printThreadUsage = printThreadUsage;
-    params.whichFixedMatrix = whichFixedMatrix;
+    params.printThreadUsage = !indices.isNotNull();
+    params.whichFixedMatrix = indices.isNotNull() ? (subsetGenes ? 'P' : 'A') : 'N';
 
     // get configuration parameters
     params.maxThreads = allParams["nThreads"];
@@ -104,13 +96,12 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
     {
         params.checkpointFile = Rcpp::as<std::string>(allParams["checkpointInFile"]);
         params.useCheckPoint = true;
-        params.peekCheckpoint(params.checkpointFile);
     }
 
     return params;
 }
 
-////////// main function that creates a GapsRunner and runs CoGAPS /////////////
+////////////////////// main function that runs CoGAPS //////////////////////////
 
 // note uncertainty matrix gets special treatment since it's the same size as
 // the data (potentially large), so we want to avoid copying it into the 
@@ -122,23 +113,12 @@ const DataType &uncertainty, const Rcpp::Nullable<Rcpp::IntegerVector> &indices,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
 {
     // convert R parameters to GapsParameters struct
-    GapsParameters gapsParams(getGapsParameters(data, allParams, isMaster,
+    GapsParameters params(getGapsParameters(data, allParams, isMaster,
         fixedMatrix, indices));
 
     // create GapsRunner, note we must first initialize the random generator
-    GapsRng::setSeed(gapsParams.seed);
-    gaps_printf("Loading Data...");
-    GapsRunner runner(data, gapsParams);
-
-    // set uncertainty
-    if (!uncertainty.empty())
-    {
-        runner.setUncertainty(uncertainty, gapsParams);
-    }
-    gaps_printf("Done!\n");
-    
-    // run cogaps
-    GapsResult result(runner.run());
+    GapsRandomState randState(params.seed);
+    GapsResult result(gaps::run(data, params, uncertainty, &randState));
 
     // write result to file if requested
     if (allParams["outputToFile"] != R_NilValue)
@@ -152,7 +132,7 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
         Rcpp::Named("Pmean") = createRMatrix(result.Pmean),
         Rcpp::Named("Asd") = createRMatrix(result.Asd),
         Rcpp::Named("Psd") = createRMatrix(result.Psd),
-        Rcpp::Named("seed") = gapsParams.seed,
+        Rcpp::Named("seed") = params.seed,
         Rcpp::Named("meanChiSq") = result.meanChiSq,
         Rcpp::Named("geneNames") = allParams["geneNames"],
         Rcpp::Named("sampleNames") = allParams["sampleNames"],

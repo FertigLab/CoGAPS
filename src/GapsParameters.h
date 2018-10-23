@@ -16,8 +16,6 @@ public:
         bool t_subsetData=false, bool t_subsetGenes=false,
         const std::vector<unsigned> t_dataIndicesSubset=std::vector<unsigned>());
 
-    void peekCheckpoint(const std::string &file);
-
     Matrix fixedMatrix;
 
     std::vector<unsigned> dataIndicesSubset;
@@ -57,6 +55,9 @@ private:
     void calculateDataDimensions(const std::string &file);
     void calculateDataDimensions(const Matrix &mat);
 };
+
+Archive& operator<<(Archive &ar, const GapsParameters &p);
+Archive& operator>>(Archive &ar, GapsParameters &p);
 
 template <class DataType>
 GapsParameters::GapsParameters(const DataType &data, bool t_transposeData,

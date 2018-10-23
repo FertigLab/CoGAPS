@@ -6,7 +6,7 @@
 
 TEST_CASE("Test SparseVector.h")
 {
-    GapsRng::setSeed(123);
+    GapsRandomState randState(123);
 
     SECTION("Test size constructor")
     {
@@ -21,7 +21,7 @@ TEST_CASE("Test SparseVector.h")
 
     SECTION("Test std::vector constructor")
     {   
-        GapsRng rng;
+        GapsRng rng(&randState);
         std::vector<float> in_v;
         for (unsigned n = 0; n < 1000; ++n)
         {
@@ -39,7 +39,7 @@ TEST_CASE("Test SparseVector.h")
 
     SECTION("Test Vector constructor")
     {
-        GapsRng rng;
+        GapsRng rng(&randState);
         std::vector<float> in_v;
         for (unsigned n = 0; n < 1000; ++n)
         {

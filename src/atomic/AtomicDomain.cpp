@@ -135,7 +135,7 @@ void AtomicDomain::erase(uint64_t pos)
     }
 }
 
-Archive& operator<<(Archive &ar, AtomicDomain &domain)
+Archive& operator<<(Archive &ar, const AtomicDomain &domain)
 {
     ar << domain.mDomainLength << domain.mAtoms.size();
     

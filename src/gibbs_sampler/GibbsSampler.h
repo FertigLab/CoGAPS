@@ -70,7 +70,8 @@ protected:
     // can't be constructed outside of derived classes
     template <class DataType>
     GibbsSampler(const DataType &data, bool transpose, bool subsetRows,
-        float alpha, float maxGibbsMass, const GapsParameters &params);
+        float alpha, float maxGibbsMass, const GapsParameters &params,
+        GapsRandomState *randState);
 
     Derived* impl();
 
@@ -92,13 +93,13 @@ template <class Derived, class DataMatrix, class FactorMatrix>
 template <class DataType>
 GibbsSampler<Derived, DataMatrix, FactorMatrix>::GibbsSampler(const DataType &data,
 bool transpose, bool subsetRows, float alpha, float maxGibbsMass,
-const GapsParameters &params)
+const GapsParameters &params, GapsRandomState *randState)
     :
 mDMatrix(data, transpose, subsetRows, params.dataIndicesSubset),
 mMatrix(mDMatrix.nCol(), params.nPatterns),
 mOtherMatrix(NULL),
 mDomain(mMatrix.nRow() * params.nPatterns),
-mQueue(mMatrix.nRow(), params.nPatterns),
+mQueue(mMatrix.nRow(), params.nPatterns, randState),
 mAlpha(alpha),
 mLambda(0.f),
 mMaxGibbsMass(0.f),

@@ -4,8 +4,8 @@
 
 TEST_CASE("AtomicDomain")
 {
-    GapsRng::setSeed(123);
-    GapsRng rng;
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
 
     SECTION("Construction")
     {

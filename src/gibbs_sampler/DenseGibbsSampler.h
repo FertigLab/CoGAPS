@@ -15,7 +15,8 @@ public:
 
     template <class DataType>
     DenseGibbsSampler(const DataType &data, bool transpose, bool subsetRows,
-        float alpha, float maxGibbsMass, const GapsParameters &params);
+        float alpha, float maxGibbsMass, const GapsParameters &params,
+        GapsRandomState *randState);
 
     template <class DataType>
     void setUncertainty(const DataType &data, bool transpose, bool subsetRows,
@@ -23,9 +24,9 @@ public:
 
     float chiSq() const;
     void sync(const DenseGibbsSampler &sampler, unsigned nThreads=1);
-    void recalculateAPMatrix();
+    void extraInitialization();
 
-    friend Archive& operator<<(Archive &ar, DenseGibbsSampler &s);
+    friend Archive& operator<<(Archive &ar, const DenseGibbsSampler &s);
     friend Archive& operator>>(Archive &ar, DenseGibbsSampler &s);
 
 #ifdef GAPS_DEBUG
@@ -53,9 +54,10 @@ private:
 
 template <class DataType>
 DenseGibbsSampler::DenseGibbsSampler(const DataType &data, bool transpose,
-bool subsetRows, float alpha, float maxGibbsMass, const GapsParameters &params)
+bool subsetRows, float alpha, float maxGibbsMass, const GapsParameters &params,
+GapsRandomState *randState)
     :
-GibbsSampler(data, transpose, subsetRows, alpha, maxGibbsMass, params),
+GibbsSampler(data, transpose, subsetRows, alpha, maxGibbsMass, params, randState),
 mSMatrix(gaps::pmax(mDMatrix, 0.1f)),
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol())
 {}

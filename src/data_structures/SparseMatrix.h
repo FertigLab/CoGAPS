@@ -26,7 +26,7 @@ public:
 
     void operator=(const Matrix &mat);
 
-    friend Archive& operator<<(Archive &ar, SparseMatrix &vec);
+    friend Archive& operator<<(Archive &ar, const SparseMatrix &vec);
     friend Archive& operator>>(Archive &ar, SparseMatrix &vec);
 
 private:

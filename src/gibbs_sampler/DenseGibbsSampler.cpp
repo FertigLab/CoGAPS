@@ -34,9 +34,11 @@ void DenseGibbsSampler::sync(const DenseGibbsSampler &sampler, unsigned nThreads
         }
     }
     mOtherMatrix = &(sampler.mMatrix); // update pointer
+    GAPS_ASSERT_MSG(mOtherMatrix->nCol() == mMatrix.nCol(),
+        mOtherMatrix->nCol() << " != " << mMatrix.nCol());
 }
 
-void DenseGibbsSampler::recalculateAPMatrix()
+void DenseGibbsSampler::extraInitialization()
 {
     GAPS_ASSERT(mOtherMatrix->nRow() == mAPMatrix.nRow());
     GAPS_ASSERT(mOtherMatrix->nCol() == mMatrix.nCol());
@@ -138,7 +140,7 @@ AlphaParameters DenseGibbsSampler::alphaParameters(unsigned row, unsigned col)
 AlphaParameters DenseGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
-    if (r1 == r2)
+    if (r1 == r2) // expect false ?
     {
         unsigned size = mDMatrix.nRow();
         const float *D = mDMatrix.getCol(r1).ptr();
@@ -234,7 +236,7 @@ void DenseGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
     }
 }
 
-Archive& operator<<(Archive &ar, DenseGibbsSampler &s)
+Archive& operator<<(Archive &ar, const DenseGibbsSampler &s)
 {
     ar << s.mMatrix << s.mDomain << s.mAlpha << s.mLambda << s.mMaxGibbsMass
         << s.mAnnealingTemp << s.mNumPatterns << s.mNumBins << s.mBinLength;

@@ -6,7 +6,7 @@
 
 TEST_CASE("Test HybridVector.h")
 {
-    GapsRng::setSeed(123);
+    GapsRandomState randState(123);
 
     SECTION("Test size constructor")
     {
@@ -18,7 +18,7 @@ TEST_CASE("Test HybridVector.h")
 
     SECTION("Test std::vector constructor")
     {   
-        GapsRng rng;
+        GapsRng rng(&randState);
         std::vector<float> in_v;
         for (unsigned n = 0; n < 1000; ++n)
         {
@@ -35,7 +35,7 @@ TEST_CASE("Test HybridVector.h")
     SECTION("TEST add function")
     {
         // create vector
-        GapsRng rng;
+        GapsRng rng(&randState);
         HybridVector v(1000);
 
         // add tons of values to it, occasionally erasing

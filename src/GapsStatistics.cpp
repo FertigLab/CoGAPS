@@ -78,7 +78,7 @@ float GapsStatistics::meanChiSq(const SparseGibbsSampler &PSampler) const
     return 0.f; // TODO
 }
 
-Archive& operator<<(Archive &ar, GapsStatistics &stat)
+Archive& operator<<(Archive &ar, const GapsStatistics &stat)
 {
     ar << stat.mAMeanMatrix << stat.mAStdMatrix << stat.mPMeanMatrix
         << stat.mPStdMatrix << stat.mStatUpdates << stat.mNumPatterns;
