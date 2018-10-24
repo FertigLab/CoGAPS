@@ -42,8 +42,8 @@ public:
 private:
 #endif
 
-    std::vector<float> mZ1;
-    std::vector<float> mZ2;
+    Vector mZ1;
+    Matrix mZ2;
 
     float mBeta;
 
@@ -53,8 +53,6 @@ private:
     AlphaParameters alphaParameters(unsigned r1, unsigned c1, unsigned r2, unsigned c2);
     AlphaParameters alphaParametersWithChange(unsigned row, unsigned col, float ch);
 
-    float& Z1(unsigned pattern);
-    float& Z2(unsigned pattern1, unsigned pattern2);
     void generateLookupTables();
 
     SparseGibbsSampler(const SparseGibbsSampler&); // = delete
@@ -67,8 +65,8 @@ bool subsetRows, float alpha, float maxGibbsMass, const GapsParameters &params,
 GapsRandomState *randState)
     :
 GibbsSampler(data, transpose, subsetRows, alpha, maxGibbsMass, params, randState),
-mZ1(params.nPatterns, 0.f),
-mZ2((params.nPatterns * (params.nPatterns + 1)) / 2),
+mZ1(params.nPatterns),
+mZ2(params.nPatterns, params.nPatterns),
 mBeta(100.f)
 {
     // check data for values less than 1

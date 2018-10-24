@@ -44,6 +44,7 @@ public:
     void next();
     void calculateCommonFlags();
     void getFlags();
+    unsigned getIndex() const;
 
 private:
 
@@ -79,6 +80,7 @@ public:
     void next();
     void calculateCommonFlags();
     void getFlags();
+    unsigned getIndex() const;
 
 private:
 
