@@ -145,6 +145,11 @@ void TemplatedSparseIterator<2>::getFlags()
     mHybridFlags = mHybrid.mIndexBitFlags[mBigIndex];
 }
 
+unsigned TemplatedSparseIterator<2>::getIndex() const
+{
+    return 64 * mBigIndex + mSmallIndex;
+}
+
 TemplatedSparseIterator<3>::TemplatedSparseIterator(const SparseVector &v,
 const HybridVector &h1, const HybridVector &h2)
     :
@@ -188,6 +193,11 @@ void TemplatedSparseIterator<3>::getFlags()
     mSparseFlags = mSparse.mIndexBitFlags[mBigIndex];
     mHybridFlags_1 = mHybrid_1.mIndexBitFlags[mBigIndex];
     mHybridFlags_2 = mHybrid_2.mIndexBitFlags[mBigIndex];
+}
+
+unsigned TemplatedSparseIterator<3>::getIndex() const
+{
+    return 64 * mBigIndex + mSmallIndex;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
