@@ -23,7 +23,7 @@ public:
     friend class SparseIteratorThree;
     
     template <unsigned N>
-    friend class TemplatedSparseIterator;
+    friend class SparseIterator;
 
     explicit HybridVector(unsigned size);
     explicit HybridVector(const std::vector<float> &v);

@@ -48,10 +48,10 @@ float gaps::sum(const SparseMatrix &mat)
     float sum = 0.f;
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
-        SparseIterator it(mat.getCol(j));
+        SparseIterator<1> it(mat.getCol(j));
         while (!it.atEnd())
         {
-            sum += it.getValue();
+            sum += get<1>(it);
             it.next();
         }
     }
@@ -92,10 +92,10 @@ float gaps::nonZeroMean(const SparseMatrix &mat)
     unsigned nNonZeroes = 0;
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
-        SparseIterator it(mat.getCol(j));
+        SparseIterator<1> it(mat.getCol(j));
         while (!it.atEnd())
         {
-            sum += it.getValue();
+            sum += get<1>(it);
             ++nNonZeroes;
             it.next();
         }

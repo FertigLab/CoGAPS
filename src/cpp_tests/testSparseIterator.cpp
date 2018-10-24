@@ -20,7 +20,7 @@ TEST_CASE("Test SparseIterator.h - One Dimensional")
         v.insert(7, 8.f);
         v.insert(9, 10.f);
 
-        TemplatedSparseIterator<1> it(v);
+        SparseIterator<1> it(v);
         REQUIRE(get<1>(it) == 1.f);
         it.next();
         REQUIRE(get<1>(it) == 5.f);
@@ -51,7 +51,7 @@ TEST_CASE("Test SparseIterator.h - One Dimensional")
         for (unsigned j = 0; j < ref.nCol(); ++j)
         {
             float colSum = 0.f;
-            TemplatedSparseIterator<1> it(mat.getCol(j));
+            SparseIterator<1> it(mat.getCol(j));
             while (!it.atEnd())
             {
                 colSum += get<1>(it);
@@ -79,7 +79,7 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
         hv.add(6, 5.f);
         hv.add(7, 6.f);
         
-        TemplatedSparseIterator<2> it(sv, hv);
+        SparseIterator<2> it(sv, hv);
         REQUIRE(get<1>(it) == 5.f);
         REQUIRE(get<2>(it) == 3.f);
         it.next();
@@ -107,7 +107,7 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
         hv.add(8, 9.f);
         hv.add(75, 76.f);
 
-        TemplatedSparseIterator<2> it(sv, hv);
+        SparseIterator<2> it(sv, hv);
         REQUIRE(get<1>(it) == 75.f);
         REQUIRE(get<2>(it) == 76.f);
         it.next();
@@ -170,7 +170,7 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
 
         // calculate dot product
         float sdot = 0.f, ddot = 0.f;
-        TemplatedSparseIterator<2> it(sv, hv);
+        SparseIterator<2> it(sv, hv);
         unsigned i = 0;
         while (!it.atEnd())
         {
@@ -218,7 +218,7 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
             for (unsigned j2 = j1; j2 < ref.nCol(); ++j2)
             {
                 float dot = 0.f;
-                TemplatedSparseIterator<2> it(sMat.getCol(j1), hMat.getCol(j2));
+                SparseIterator<2> it(sMat.getCol(j1), hMat.getCol(j2));
                 while (!it.atEnd())
                 {
                     dot += get<1>(it) * get<2>(it);
@@ -265,7 +265,7 @@ TEST_CASE("Test SparseIterator.h - Three Dimensional")
         hv2.add(8, 7.f);
         hv2.add(9, 8.f);
         
-        TemplatedSparseIterator<3> it(sv, hv1, hv2);
+        SparseIterator<3> it(sv, hv1, hv2);
         REQUIRE(get<1>(it) == 5.f); // 4
         REQUIRE(get<2>(it) == 3.f);
         REQUIRE(get<3>(it) == 6.f);
@@ -301,7 +301,7 @@ TEST_CASE("Test SparseIterator.h - Three Dimensional")
                 for (unsigned j3 = j2; j3 < ref.nCol(); ++j3)
                 {
                     float prod = 0.f;
-                    TemplatedSparseIterator<3> it(sMat.getCol(j1), hMat.getCol(j2),
+                    SparseIterator<3> it(sMat.getCol(j1), hMat.getCol(j2),
                         hMat.getCol(j3));
                     while (!it.atEnd())
                     {

@@ -56,7 +56,7 @@ AlphaParameters SparseGibbsSampler::alphaParameters(unsigned row, unsigned col)
     float s = mZ1[col];
     float s_mu = -1.f * gaps::dot(mMatrix.getRow(row), mZ2.getCol(col));
 
-    TemplatedSparseIterator<2> it(mDMatrix.getCol(row), mOtherMatrix->getCol(col));
+    SparseIterator<2> it(mDMatrix.getCol(row), mOtherMatrix->getCol(col));
     while (!it.atEnd())
     {
         s += (get<2>(it) * get<2>(it)) / (get<1>(it) * get<1>(it))
@@ -79,7 +79,7 @@ unsigned r2, unsigned c2)
         AlphaParameters a2 = alphaParameters(r2, c2);
         float s = -2.f * mBeta * mZ2(c1,c2) + a1.s + a2.s;
 
-        TemplatedSparseIterator<3> it(mDMatrix.getCol(r1), mOtherMatrix->getCol(c1),
+        SparseIterator<3> it(mDMatrix.getCol(r1), mOtherMatrix->getCol(c1),
             mOtherMatrix->getCol(c2));
         while (!it.atEnd())
         {
@@ -100,7 +100,7 @@ unsigned col, float ch)
     float s_mu = -1.f * gaps::dot(mMatrix.getRow(row), mZ2.getCol(col));
     s_mu -= ch * mZ2(col,col);
 
-    TemplatedSparseIterator<2> it(mDMatrix.getCol(row), mOtherMatrix->getCol(col));
+    SparseIterator<2> it(mDMatrix.getCol(row), mOtherMatrix->getCol(col));
     while (!it.atEnd())
     {
         s += (get<2>(it) * get<2>(it))
