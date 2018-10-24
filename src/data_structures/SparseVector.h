@@ -12,12 +12,8 @@ class SparseVector
 {
 public:
 
-    friend class SparseIterator;
-    friend class SparseIteratorTwo;
-    friend class SparseIteratorThree;
-
     template <unsigned N>
-    friend class TemplatedSparseIterator;
+    friend class SparseIterator;
     
     friend class SparseMatrix; // for inserting values
 

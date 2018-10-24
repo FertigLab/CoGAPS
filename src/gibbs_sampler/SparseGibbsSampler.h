@@ -72,10 +72,10 @@ mBeta(100.f)
     // check data for values less than 1
     for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
     {
-        SparseIterator it(mDMatrix.getCol(j));
+        SparseIterator<1> it(mDMatrix.getCol(j));
         while (!it.atEnd())
         {
-            if (it.getValue() < 1.f)
+            if (get<1>(it) < 1.f)
             {
                 gaps_printf("\nError: Non-zero values less than 1 detected\n");
                 gaps_printf("\n       Not allowed when useSparseOptimization is enabled\n");

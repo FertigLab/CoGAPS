@@ -4,10 +4,19 @@
 
 static float dot_helper(const float *v1, const float *v2, unsigned size)
 {
-    float dot = 0.f;
-    for (unsigned i = 0; i < size; ++i)
+    gaps::simd::PackedFloat partialDot(0.f), p1, p2;
+    gaps::simd::Index i(0);
+    for (; i <= size - gaps::simd::Index::increment(); ++i)
     {
-        dot += v1[i] * v2[i];
+        p1.load(v1 + i);
+        p2.load(v2 + i);
+        partialDot += p1 * p2;
+    }
+
+    float dot = partialDot.scalar();
+    for (unsigned j = i.value(); j < size; ++j)
+    {
+        dot += v1[j] * v2[j];
     }
     return dot;
 }
