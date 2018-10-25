@@ -2,8 +2,8 @@
 #include "utils/GlobalConfig.h"
 
 #include <Rcpp.h>
-#include <string>
 #include <sstream>
+#include <string>
 
 // this file contains the blueprint for creating a wrapper around the C++
 // interface used for running CoGAPS. It exposes some functions to R, has a

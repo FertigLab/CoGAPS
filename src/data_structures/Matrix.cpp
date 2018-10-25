@@ -193,3 +193,18 @@ Archive& operator>>(Archive &ar, Matrix &mat)
     }
     return ar;
 }
+
+void ColMatrix::overwriteWith(const RowMatrix &mat, unsigned nCores)
+{
+    GAPS_ASSERT_MSG(mat.nRow() == nRow(), mat.nRow() << " " << nRow());
+    GAPS_ASSERT_MSG(mat.nCol() == nCol(), mat.nCol() << " " << nCol());
+
+    #pragma omp parallel for num_threads(nCores)
+    for (unsigned i = 0; i < mNumRows; ++i)
+    {
+        for (unsigned j = 0; j < mNumCols; ++j)
+        {
+            this->operator()(i,j) = mat(i,j);
+        }
+    }
+}
