@@ -20,6 +20,7 @@
 ^src/ProposalQueue.o
 ^src/RcppExports.o
 ^src/test-runner.o
+^src/data_structures/HashSets.o
 ^src/data_structures/Matrix.o
 ^src/data_structures/Vector.o
 ^src/file_parser/FileParser.o
@@ -30,6 +31,7 @@
 ^src/math/Algorithms.o
 ^src/math/Math.o
 ^src/math/Random.o
+^src/math/SIMD.o
 ^src/cpp_tests/testAlgorithms.o
 ^src/cpp_tests/testAtomicDomain.o
 ^src/cpp_tests/testEfficientSets.o
