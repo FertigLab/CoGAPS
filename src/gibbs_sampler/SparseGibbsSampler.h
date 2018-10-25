@@ -34,6 +34,8 @@ public:
     friend Archive& operator<<(Archive &ar, const SparseGibbsSampler &s);
     friend Archive& operator>>(Archive &ar, SparseGibbsSampler &s);
 
+    float apSum() const { return 0.f; }
+
 #ifdef GAPS_DEBUG
     bool internallyConsistent() const;
 #endif

@@ -25,7 +25,9 @@ public:
     bool atEnd() const;
     void next();
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     friend float get<1>(const SparseIterator<1> &it);
 
@@ -46,7 +48,9 @@ public:
     void getFlags();
     unsigned getIndex() const;
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     template <class Iter>
     friend void gotoNextCommon(Iter &it);
@@ -82,7 +86,9 @@ public:
     void getFlags();
     unsigned getIndex() const;
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     template <class Iter>
     friend void gotoNextCommon(Iter &it);

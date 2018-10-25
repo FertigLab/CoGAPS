@@ -18,11 +18,6 @@ enum GapsFileType
 // file parser interface
 class AbstractFileParser
 {
-private:
-
-    AbstractFileParser(const AbstractFileParser &p); // don't allow copies
-    AbstractFileParser& operator=(const AbstractFileParser &p); // don't allow copies
-
 public:
 
     AbstractFileParser() {}
@@ -36,18 +31,16 @@ public:
 
     virtual bool hasNext() = 0;
     virtual MatrixElement getNext() = 0;
+
+private:
+
+    AbstractFileParser(const AbstractFileParser &p); // don't allow copies
+    AbstractFileParser& operator=(const AbstractFileParser &p); // don't allow copies
 };
 
 // wrap the pointer to the parser implementation
 class FileParser
 {
-private:
-
-    AbstractFileParser *mParser;
-
-    FileParser(const FileParser &p); // don't allow copies
-    FileParser& operator=(const FileParser &p); // don't allow copies
-
 public:
 
     explicit FileParser(const std::string &path);
@@ -72,6 +65,15 @@ public:
 
     template <class MatrixType>
     static void writeToGct(const std::string &path, const MatrixType &mat);
+
+#ifndef GAPS_INTERNAL_TESTS
+private:
+#endif
+
+    AbstractFileParser *mParser;
+
+    FileParser(const FileParser &p); // don't allow copies
+    FileParser& operator=(const FileParser &p); // don't allow copies
 };
 
 // temporary solution - should be moved into specific file parsers, ok for now

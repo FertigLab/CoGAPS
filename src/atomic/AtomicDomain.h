@@ -56,7 +56,7 @@ public:
 private:
 #endif
 
-    // only the proposal queue can insert
+    // only the proposal queue can insert, insert not thread-safe
     friend class ProposalQueue;
     Atom* insert(uint64_t pos, float mass);
 

@@ -15,6 +15,14 @@
 namespace bpt = boost::posix_time;
 #define bpt_now() bpt::microsec_clock::local_time()
 
+// for conditionally printing status messages
+#define GAPS_MESSAGE(b, m) \
+    do { \
+        if (b) { \
+            gaps_printf(m); \
+        } \
+    } while(0)
+
 // forward declaration
 template <class Sampler, class DataType>
 static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &params,
@@ -160,11 +168,12 @@ Sampler &PSampler, unsigned nA, unsigned nP)
 
 template <class Sampler>
 static void createCheckpoint(const GapsParameters &params,
-const Sampler &ASampler, const Sampler &PSampler, const GapsRandomState *randState,
-const GapsRng &rng, char phase, unsigned iter)
+Sampler &ASampler, Sampler &PSampler, const GapsRandomState *randState,
+const GapsStatistics &stats, const GapsRng &rng, char phase, unsigned iter)
 {
     if (params.checkpointInterval > 0
-    && ((iter + 1) % params.checkpointInterval) == 0)
+    && ((iter + 1) % params.checkpointInterval) == 0
+    && !params.subsetData)
     {
         // create backup file
         std::rename(params.checkpointOutFile.c_str(),
@@ -174,10 +183,28 @@ const GapsRng &rng, char phase, unsigned iter)
         Archive ar(params.checkpointOutFile, ARCHIVE_WRITE);
         ar << params;
         ar << *randState;
-        ar << ASampler << PSampler << phase << iter << rng;
+        ar << ASampler << PSampler << stats << phase << iter << rng;
         
         // delete backup file
         std::remove((params.checkpointOutFile + ".backup").c_str());
+
+        ASampler.extraInitialization();
+        PSampler.extraInitialization();
+    }
+}
+
+template <class Sampler>
+static void processCheckpoint(GapsParameters &params, Sampler &ASampler,
+Sampler &PSampler, GapsRandomState *randState, GapsStatistics &stats,
+GapsRng &rng, char &phase, unsigned &currentIter)
+{    
+    // check if running from checkpoint, get all saved data
+    if (params.useCheckPoint)
+    {
+        Archive ar(params.checkpointFile, ARCHIVE_READ);
+        ar >> params;
+        ar >> *randState;
+        ar >> ASampler >> PSampler >> stats >> phase >> currentIter >> rng;
     }
 }
 
@@ -192,8 +219,8 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
         Rcpp::checkUserInterrupt();
         #endif
 
-        createCheckpoint(params, ASampler, PSampler, randState, rng, phase,
-            currentIter);
+        createCheckpoint(params, ASampler, PSampler, randState, stats,
+            rng, phase, currentIter);
         
         // set annealing temperature in calibration phase
         if (phase == 'C')
@@ -217,51 +244,10 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
     }
 }
 
-// here is the CoGAPS algorithm
-template <class Sampler, class DataType>
-static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &params,
-const DataType &uncertainty, GapsRandomState *randState)
+template <class Sampler>
+static void processFixedMatrix(const GapsParameters &params, Sampler &ASampler,
+Sampler &PSampler)
 {
-    // check if running in debug mode
-    #ifdef GAPS_DEBUG
-    if (params.printMessages)
-    {
-        gaps_printf("Running in debug mode\n");
-    }
-    #endif
-
-    // load data into gibbs samplers
-    // we transpose the data in the A sampler so that the update step
-    // is symmetrical for each sampler, this simplifies the code 
-    // within the sampler, note the subsetting genes/samples flag must be
-    // flipped if we are flipping the transpose flag
-    if (params.printMessages)
-    {
-        gaps_printf("Loading Data...");
-    }
-    Sampler ASampler(data, !params.transposeData, !params.subsetGenes,
-        params.alphaA, params.maxGibbsMassA, params, randState);
-    Sampler PSampler(data, params.transposeData, params.subsetGenes,
-        params.alphaP, params.maxGibbsMassP, params, randState);
-
-    // read in the uncertainty matrix if one is provided
-    if (!uncertainty.empty())
-    {
-        ASampler.setUncertainty(uncertainty, !params.transposeData,
-            !params.subsetGenes, params);
-        PSampler.setUncertainty(uncertainty, params.transposeData,
-            params.subsetGenes, params);
-    }
-    if (params.printMessages)
-    {
-        gaps_printf("Done!\n");
-    }
-
-    // these variables will get overwritten by checkpoint if provided
-    GapsRng rng(randState);
-    char phase = 'C';
-    unsigned currentIter = 0;
-
     // check if we're fixing a matrix
     if (params.useFixedMatrix)
     {
@@ -279,24 +265,10 @@ const DataType &uncertainty, GapsRandomState *randState)
             default: break; // 'N' for none
         }
     }
-     
-    // check if running from checkpoint, get all saved data
-    if (params.useCheckPoint)
-    {
-        Archive ar(params.checkpointFile, ARCHIVE_READ);
-        ar >> params;
-        ar >> *randState;
-        ar >> ASampler >> PSampler >> phase >> currentIter >> rng;
-    }
+}
 
-    // sync samplers, second parameter indicates this should be a full sync
-    ASampler.sync(PSampler);
-    PSampler.sync(ASampler);
-
-    // sampler may need to run additional initialization after parameters set
-    ASampler.extraInitialization();
-    PSampler.extraInitialization();
-
+static void calculateNumberOfThreads(GapsParameters params)
+{
     // calculate appropiate number of threads if compiled with openmp
     #ifdef __GAPS_OPENMP__
     if (params.printMessages && params.printThreadUsage)
@@ -307,36 +279,79 @@ const DataType &uncertainty, GapsRandomState *randState)
             params.maxThreads, availableThreads);
     }
     #endif
+}
+
+template <class Sampler, class DataType>
+static void processUncertainty(const GapsParameters params, Sampler &ASampler,
+Sampler &PSampler, const DataType &uncertainty)
+{
+    // read in the uncertainty matrix if one is provided
+    if (!uncertainty.empty())
+    {
+        ASampler.setUncertainty(uncertainty, !params.transposeData,
+            !params.subsetGenes, params);
+        PSampler.setUncertainty(uncertainty, params.transposeData,
+            params.subsetGenes, params);
+    }
+}
+
+// here is the CoGAPS algorithm
+template <class Sampler, class DataType>
+static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &params,
+const DataType &uncertainty, GapsRandomState *randState)
+{
+    // check if running in debug mode
+    #ifdef GAPS_DEBUG
+    GAPS_MESSAGE(params.printMessages, "Running in debug mode\n");
+    #endif
+
+    // load data into gibbs samplers
+    // we transpose the data in the A sampler so that the update step
+    // is symmetrical for each sampler, this simplifies the code 
+    // within the sampler, note the subsetting genes/samples flag must be
+    // flipped if we are flipping the transpose flag
+    GAPS_MESSAGE(params.printMessages, "Loading Data...");
+    Sampler ASampler(data, !params.transposeData, !params.subsetGenes,
+        params.alphaA, params.maxGibbsMassA, params, randState);
+    Sampler PSampler(data, params.transposeData, params.subsetGenes,
+        params.alphaP, params.maxGibbsMassP, params, randState);
+    processUncertainty(params, ASampler, PSampler, uncertainty);
+    processFixedMatrix(params, ASampler, PSampler);
+    GAPS_MESSAGE(params.printMessages, "Done!\n");
+
+    // these variables will get overwritten by checkpoint if provided
+    GapsStatistics stats(params.nGenes, params.nSamples, params.nPatterns);
+    GapsRng rng(randState);
+    char phase = 'C';
+    unsigned currentIter = 0;
+    processCheckpoint(params, ASampler, PSampler, randState, stats, rng,
+        phase, currentIter);
+    calculateNumberOfThreads(params);
+
+    // sync samplers and run any additional initialization needed
+    ASampler.sync(PSampler);
+    PSampler.sync(ASampler);
+    ASampler.extraInitialization();
+    PSampler.extraInitialization();
 
     // record start time
     bpt::ptime startTime = bpt_now();
 
-    // cascade through phases, allows algorithm to be resumed in either phase
-    GapsStatistics stats(params.nGenes, params.nSamples, params.nPatterns);
+    // fallthrough through phases, allows algorithm to be resumed in any phase
     GAPS_ASSERT(phase == 'C' || phase == 'S');
     switch (phase)
     {
         case 'C':
-            if (params.printMessages)
-            {
-                gaps_printf("-- Calibration Phase --\n");
-            }
+            GAPS_MESSAGE(params.printMessages, "-- Calibration Phase --\n");
             runOnePhase(params, ASampler, PSampler, stats, randState, rng,
                 startTime, phase, currentIter);
             phase = 'S';
             currentIter = 0;
 
-
-
         case 'S':
-            if (params.printMessages)
-            {
-                gaps_printf("-- Sampling Phase --\n");
-            }
+            GAPS_MESSAGE(params.printMessages, "-- Sampling Phase --\n");
             runOnePhase(params, ASampler, PSampler, stats, randState, rng,
                 startTime, phase, currentIter);
-
-        default: break;
     }
     
     // get result

@@ -9,7 +9,20 @@
 
 class GctParser : public AbstractFileParser
 {
+public:
+
+    explicit GctParser(const std::string &path);
+    ~GctParser() { mFile.close(); }
+
+    unsigned nRow() const { return mNumRows; }
+    unsigned nCol() const { return mNumCols; }
+
+    bool hasNext();
+    MatrixElement getNext();
+
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     std::ifstream mFile;
 
@@ -21,17 +34,6 @@ private:
 
     GctParser(const GctParser &p); // don't allow copies
     GctParser& operator=(const GctParser &p); // don't allow copies
-
-public:
-
-    explicit GctParser(const std::string &path);
-    ~GctParser() { mFile.close(); }
-
-    unsigned nRow() const { return mNumRows; }
-    unsigned nCol() const { return mNumCols; }
-
-    bool hasNext();
-    MatrixElement getNext();
 };
 
 #endif

@@ -9,16 +9,6 @@
 
 class MtxParser : public AbstractFileParser
 {
-private:
-
-    std::ifstream mFile;
-
-    unsigned mNumRows;
-    unsigned mNumCols;
-
-    MtxParser(const MtxParser &p); // don't allow copies
-    MtxParser& operator=(const MtxParser &p); // don't allow copies
-
 public:
 
     explicit MtxParser(const std::string &path);
@@ -29,6 +19,18 @@ public:
 
     bool hasNext();
     MatrixElement getNext();
+
+#ifndef GAPS_INTERNAL_TESTS
+private:
+#endif
+
+    std::ifstream mFile;
+
+    unsigned mNumRows;
+    unsigned mNumCols;
+
+    MtxParser(const MtxParser &p); // don't allow copies
+    MtxParser& operator=(const MtxParser &p); // don't allow copies
 };
 
 #endif

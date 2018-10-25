@@ -15,7 +15,8 @@ float SparseGibbsSampler::chiSq() const
         Vector S(gaps::pmax(D, 0.1f));
         for (unsigned i = 0; i < D.size(); ++i)
         {
-            float ap = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(i));
+            //float ap = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(i));
+            float ap = 0.f;
             chisq += GAPS_SQ(D[i] - ap) / GAPS_SQ(S[i]);
         }
     }
@@ -103,8 +104,7 @@ unsigned col, float ch)
     SparseIterator<2> it(mDMatrix.getCol(row), mOtherMatrix->getCol(col));
     while (!it.atEnd())
     {
-        s += (get<2>(it) * get<2>(it))
-            / (get<1>(it) * get<1>(it))
+        s += (get<2>(it) * get<2>(it)) / (get<1>(it) * get<1>(it))
             - (get<2>(it) * get<2>(it));
 
         s_mu += get<2>(it) / get<1>(it)

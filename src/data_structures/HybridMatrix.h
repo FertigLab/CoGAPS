@@ -34,7 +34,9 @@ public:
     friend Archive& operator<<(Archive &ar, const HybridMatrix &vec);
     friend Archive& operator>>(Archive &ar, HybridMatrix &vec);
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     std::vector<Vector> mRows;
     std::vector<HybridVector> mCols;

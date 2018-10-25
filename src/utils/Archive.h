@@ -17,10 +17,6 @@
 
 class Archive
 {
-private:
-
-    std::fstream mStream;
-
 public:
 
     Archive(const std::string &path, std::ios_base::openmode flags)
@@ -83,6 +79,10 @@ public:
     friend Archive& operator>>(Archive &ar, int64_t &val)  { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, float &val)    { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, double &val)   { return readFromArchive(ar, val); }
+
+private:
+
+    std::fstream mStream;
 };
 
 #endif // __COGAPS_ARCHIVE_H__

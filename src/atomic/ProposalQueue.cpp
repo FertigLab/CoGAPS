@@ -6,7 +6,8 @@
 //////////////////////////////// AtomicProposal ////////////////////////////////
 
 AtomicProposal::AtomicProposal(char t, GapsRandomState *randState)
-    : rng(randState), pos(0), atom1(NULL), atom2(NULL), type(t)
+    : rng(randState), pos(0), atom1(NULL), atom2(NULL), r1(0), c1(0), r2(0),
+    c2(0), type(t)
 {}
     
 //////////////////////////////// ProposalQueue /////////////////////////////////
@@ -46,7 +47,7 @@ void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
     GAPS_ASSERT(mUsedMatrixIndices.isEmpty());
     GAPS_ASSERT(mProposedMoves.isEmpty());
     GAPS_ASSERT(mMinAtoms == mMaxAtoms);
-    GAPS_ASSERT(mMaxAtoms == domain.size());
+    GAPS_ASSERT_MSG(mMaxAtoms == domain.size(), mMaxAtoms << " != " << domain.size());
 
     unsigned nIter = 0;
     bool success = true;
@@ -115,6 +116,10 @@ float ProposalQueue::deathProb(double nAtoms) const
 
 bool ProposalQueue::makeProposal(AtomicDomain &domain)
 {
+    mU1 = mUseCachedRng ? mU1 : mRng.uniform();
+    mU2 = mUseCachedRng ? mU2: mRng.uniform();
+    mUseCachedRng = false;
+
     if (mMinAtoms < 2 && mMaxAtoms >= 2)
     {
         return false; // special indeterminate case
@@ -124,10 +129,6 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
     {
         return birth(domain); // always birth when no atoms exist
     }
-
-    mU1 = mUseCachedRng ? mU1 : mRng.uniform();
-    mU2 = mUseCachedRng ? mU2: mRng.uniform();
-    mUseCachedRng = false;
 
     float lowerBound = deathProb(static_cast<double>(mMinAtoms));
     float upperBound = deathProb(static_cast<double>(mMaxAtoms));
@@ -273,13 +274,15 @@ bool ProposalQueue::exchange(AtomicDomain &domain)
 Archive& operator<<(Archive &ar, const ProposalQueue &q)
 {
     ar << q.mRng << q.mMinAtoms << q.mMaxAtoms << q.mBinLength << q.mNumCols
-        << q.mAlpha << q.mDomainLength << q.mNumBins;
+        << q.mAlpha << q.mDomainLength << q.mNumBins << q.mLambda
+        << q.mUseCachedRng << q.mU1 << q.mU2;
     return ar;
 }
 
 Archive& operator>>(Archive &ar, ProposalQueue &q)
 {
     ar >> q.mRng >> q.mMinAtoms >> q.mMaxAtoms >> q.mBinLength >> q.mNumCols
-        >> q.mAlpha >> q.mDomainLength >> q.mNumBins;
+        >> q.mAlpha >> q.mDomainLength >> q.mNumBins >> q.mLambda
+        >> q.mUseCachedRng >> q.mU1 >> q.mU2;
     return ar;
 }

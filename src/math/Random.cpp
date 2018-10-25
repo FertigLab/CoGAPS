@@ -42,7 +42,6 @@ uint32_t GapsRng::next()
 
 void GapsRng::advance()
 {
-    mPreviousState = mState;
     mState = mState * 6364136223846793005ull + (54u|1);
 }
 

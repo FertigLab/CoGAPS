@@ -25,6 +25,7 @@ public:
     float* ptr();
 
     unsigned size() const;
+    void pad(float val);
 
     void operator+=(const Vector &v);
 
@@ -34,7 +35,9 @@ public:
     friend Archive& operator<<(Archive &ar, const Vector &vec);
     friend Archive& operator>>(Archive &ar, Vector &vec);
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     aligned_vector mData;
     unsigned mSize;

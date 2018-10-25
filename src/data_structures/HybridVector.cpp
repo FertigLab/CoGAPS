@@ -2,20 +2,27 @@
 #include "../math/Math.h"
 #include "../math/SIMD.h"
 
+#define SIMD_PAD(x) (gaps::simd::Index::increment() + \
+    gaps::simd::Index::increment() * ((x) / gaps::simd::Index::increment())) 
+
 HybridVector::HybridVector(unsigned sz)
     :
 mIndexBitFlags(sz / 64 + 1, 0),
-mData(sz, 0.f),
+mData(SIMD_PAD(sz), 0.f),
 mSize(sz)
-{}
+{
+    GAPS_ASSERT(mData.size() % gaps::simd::Index::increment() == 0);
+}
 
 HybridVector::HybridVector(const std::vector<float> &v)
     :
 mIndexBitFlags(v.size() / 64 + 1, 0),
-mData(v.size(), 0.f),
+mData(SIMD_PAD(v.size()), 0.f),
 mSize(v.size())
 {
-    for (unsigned i = 0; i < v.size(); ++i)
+    GAPS_ASSERT(mData.size() % gaps::simd::Index::increment() == 0);
+
+    for (unsigned i = 0; i < mSize; ++i)
     {
         mData[i] = v[i];
         if (v[i] > 0.f)
@@ -60,6 +67,7 @@ bool HybridVector::add(unsigned i, float v)
 
 float HybridVector::operator[](unsigned i) const
 {
+    GAPS_ASSERT(i < mSize);
     return mData[i];
 }
 

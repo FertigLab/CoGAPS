@@ -20,6 +20,8 @@ public:
     unsigned nRow() const;
     unsigned nCol() const;
 
+    void pad(float val);
+
     float operator()(unsigned i, unsigned j) const;
     float& operator()(unsigned i, unsigned j);
 
@@ -31,7 +33,9 @@ public:
     friend Archive& operator<<(Archive &ar, const Matrix &vec);
     friend Archive& operator>>(Archive &ar, Matrix &vec);
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     std::vector<Vector> mCols;
     unsigned mNumRows;
