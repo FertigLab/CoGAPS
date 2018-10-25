@@ -53,11 +53,12 @@ public:
     friend Archive& operator<<(Archive &ar, const GapsRng &gen);
     friend Archive& operator>>(Archive &ar, GapsRng &gen);
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     const GapsRandomState *mRandState;
     uint64_t mState;
-    uint32_t mPreviousState;
 
     uint32_t next();
     void advance();
@@ -71,7 +72,11 @@ private:
 // private class used by GapsRandomState for seeding individual rngs
 class Xoroshiro128plus
 {
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#else
+public:
+#endif
 
     friend class GapsRandomState;
 
@@ -106,8 +111,10 @@ public:
 
     friend Archive& operator<<(Archive &ar, const GapsRandomState &s);
     friend Archive& operator>>(Archive &ar, GapsRandomState &s);
-    
+   
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     friend GapsRng;
 

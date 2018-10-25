@@ -75,7 +75,23 @@ float GapsStatistics::meanChiSq(const SparseGibbsSampler &PSampler) const
 {
     Matrix A(mAMeanMatrix / static_cast<float>(mStatUpdates));
     Matrix P(mPMeanMatrix / static_cast<float>(mStatUpdates));
-    return 0.f; // TODO
+    
+    float chisq = 0.f;
+    for (unsigned i = 0; i < PSampler.mDMatrix.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < PSampler.mDMatrix.nCol(); ++j)
+        {
+            float m = 0.f;
+            for (unsigned k = 0; k < A.nCol(); ++k)
+            {
+                m += A(i,k) * P(j,k);
+            }
+            float d = PSampler.mDMatrix.getCol(j).at(i);
+            float s = gaps::max(d * 0.1f, 0.1f);
+            chisq += GAPS_SQ((d - m) / s);
+        }
+    }
+    return chisq;
 }
 
 Archive& operator<<(Archive &ar, const GapsStatistics &stat)

@@ -21,7 +21,9 @@ public:
     bool contains(unsigned n);
     bool isEmpty();
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     std::vector<uint32_t> mSet;
     uint64_t mCurrentKey;
@@ -38,7 +40,9 @@ public:
     bool contains(uint64_t pos);
     bool isEmpty();
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     std::vector<uint64_t> mSet;
 };
@@ -63,7 +67,9 @@ public:
     bool overlap(uint64_t pos); // this position in between pair
     bool isEmpty();
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     std::vector<PositionPair> mSet;
 };

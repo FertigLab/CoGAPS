@@ -15,6 +15,14 @@ mNumRows(nrow),
 mNumCols(ncol)
 {}
 
+void Matrix::pad(float val)
+{
+    for (unsigned j = 0; j < mNumCols; ++j)
+    {
+        mCols[j].pad(val);
+    }
+}
+
 // constructor from data set read in as a matrix
 Matrix::Matrix(const Matrix &mat, bool genesInCols, bool subsetGenes,
 std::vector<unsigned> indices)
@@ -162,26 +170,26 @@ bool Matrix::empty() const
     return mNumRows == 0;
 }
 
-Archive& operator<<(Archive &ar, const Matrix &vec)
+Archive& operator<<(Archive &ar, const Matrix &mat)
 {
-    ar << vec.mNumRows << vec.mNumCols;
-    for (unsigned j = 0; j < vec.mNumCols; ++j)
+    ar << mat.mNumRows << mat.mNumCols;
+    for (unsigned j = 0; j < mat.mNumCols; ++j)
     {
-        ar << vec.mCols[j];
+        ar << mat.mCols[j];
     }
     return ar;
 }
 
-Archive& operator>>(Archive &ar, Matrix &vec)
+Archive& operator>>(Archive &ar, Matrix &mat)
 {
     unsigned nr = 0, nc = 0;
     ar >> nr >> nc;
-    GAPS_ASSERT(nr == vec.mNumRows);
-    GAPS_ASSERT(nc == vec.mNumCols);
+    GAPS_ASSERT(nr == mat.mNumRows);
+    GAPS_ASSERT(nc == mat.mNumCols);
 
-    for (unsigned j = 0; j < vec.mNumCols; ++j)
+    for (unsigned j = 0; j < mat.mNumCols; ++j)
     {
-        ar >> vec.mCols[j];
+        ar >> mat.mCols[j];
     }
     return ar;
 }

@@ -111,6 +111,7 @@ Archive& operator<<(Archive &ar, const SparseVector &vec)
 Archive& operator>>(Archive &ar, SparseVector &vec)
 {
     unsigned sz = 0;
+    ar >> sz;
     GAPS_ASSERT(sz == vec.mSize);
 
     for (unsigned i = 0; i < vec.mIndexBitFlags.size(); ++i)

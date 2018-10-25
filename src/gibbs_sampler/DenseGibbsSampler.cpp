@@ -85,8 +85,7 @@ AlphaParameters DenseGibbsSampler::alphaParameters(unsigned row, unsigned col)
 
     gaps::simd::PackedFloat pMat, pD, pAP, pS;
     gaps::simd::PackedFloat partialS(0.f), partialS_mu(0.f);
-    gaps::simd::Index i(0);
-    for (; i <= size - gaps::simd::Index::increment(); ++i)
+    for (gaps::simd::Index i(0); i < size; ++i)
     {   
         pMat.load(mat + i);
         pD.load(D + i);
@@ -96,14 +95,9 @@ AlphaParameters DenseGibbsSampler::alphaParameters(unsigned row, unsigned col)
         partialS += pMat * ratio;
         partialS_mu += ratio * (pD - pAP);
     }
-
-    float s = partialS.scalar(), s_mu = partialS_mu.scalar();
-    for (unsigned j = i.value(); j < size; ++j)
-    {
-        float ratio = mat[j] / (S[j] * S[j]);
-        s += mat[j] * ratio;
-        s_mu += ratio * (D[j] - AP[j]);
-    }
+    
+    float s = partialS.scalar();
+    float s_mu = partialS_mu.scalar();
 
 #if 0 // optional debug section, set to 1 to enable, 0 to disable
 #ifdef GAPS_DEBUG
@@ -117,19 +111,12 @@ AlphaParameters DenseGibbsSampler::alphaParameters(unsigned row, unsigned col)
    
     float s_denom = debug_s < 10.f ? 10.f : debug_s;
     float smu_denom = std::abs(debug_smu) < 10.f ? 10.f : std::abs(debug_smu);
+
     const float tolerance = 0.01f;
-
-    if (std::abs(s - debug_s) / s_denom >= tolerance)
-    {
-        gaps_printf("%f != %f\n", s, debug_s);
-    }
-    if (std::abs(s_mu - debug_smu) / smu_denom >= tolerance)
-    {
-        gaps_printf("%f != %f\n", s_mu, debug_smu);
-    }
-
-    GAPS_ASSERT(std::abs(s - debug_s) / s_denom < tolerance);
-    GAPS_ASSERT(std::abs(s_mu - debug_smu) / smu_denom < tolerance);
+    GAPS_ASSERT_MSG(std::abs(s - debug_s) / s_denom < tolerance,
+        s << " != " << debug_s);
+    GAPS_ASSERT_MSG(std::abs(s_mu - debug_smu) / smu_denom < tolerance,
+        s_mu << " != " << debug_smu);
 #endif
 #endif
 
@@ -140,7 +127,7 @@ AlphaParameters DenseGibbsSampler::alphaParameters(unsigned row, unsigned col)
 AlphaParameters DenseGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
-    if (r1 == r2) // expect false ?
+    if (r1 == r2)
     {
         unsigned size = mDMatrix.nRow();
         const float *D = mDMatrix.getCol(r1).ptr();
@@ -150,9 +137,8 @@ unsigned r2, unsigned c2)
         const float *mat2 = mOtherMatrix->getCol(c2).ptr();
 
         gaps::simd::PackedFloat pMat1, pMat2, pD, pAP, pS;
-        gaps::simd::PackedFloat partialS(0.f), partialS_mu(0.f);
-        gaps::simd::Index i(0);
-        for (; i <= size - gaps::simd::Index::increment(); ++i)
+        gaps::simd::PackedFloat packedS(0.f), packedS_mu(0.f);
+        for (gaps::simd::Index i(0); i < size; ++i)
         {   
             pMat1.load(mat1 + i);
             pMat2.load(mat2 + i);
@@ -160,18 +146,10 @@ unsigned r2, unsigned c2)
             pAP.load(AP + i);
             pS.load(S + i);
             gaps::simd::PackedFloat ratio((pMat1 - pMat2) / (pS * pS));
-            partialS += (pMat1 - pMat2) * ratio;
-            partialS_mu += ratio * (pD - pAP);
+            packedS += (pMat1 - pMat2) * ratio;
+            packedS_mu += ratio * (pD - pAP);
         }
-
-        float s = partialS.scalar(), s_mu = partialS_mu.scalar();
-        for (unsigned j = i.value(); j < size; ++j)
-        {
-            float ratio = (mat1[j] - mat2[j]) / (S[j] * S[j]);
-            s += (mat1[j] - mat2[j]) * ratio;
-            s_mu += ratio * (D[j] - AP[j]);
-        }
-        return AlphaParameters(s, s_mu);
+        return AlphaParameters(packedS.scalar(), packedS_mu.scalar());
     }
     return alphaParameters(r1, c1) + alphaParameters(r2, c2);
 }
@@ -188,28 +166,18 @@ unsigned col, float ch)
 
     gaps::simd::PackedFloat pCh(ch);
     gaps::simd::PackedFloat pMat, pD, pAP, pS;
-    gaps::simd::PackedFloat partialS(0.f), partialS_mu(0.f);
-    gaps::simd::Index i(0);
-    for (; i <= size - gaps::simd::Index::increment(); ++i)
+    gaps::simd::PackedFloat packedS(0.f), packedS_mu(0.f);
+    for (gaps::simd::Index i(0); i < size; ++i)
     {   
         pMat.load(mat + i);
         pD.load(D + i);
         pAP.load(AP + i);
         pS.load(S + i);
         gaps::simd::PackedFloat ratio(pMat / (pS * pS));
-        partialS += pMat * ratio;
-        partialS_mu += ratio * (pD - (pAP + pCh * pMat));
+        packedS += pMat * ratio;
+        packedS_mu += ratio * (pD - (pAP + pCh * pMat));
     }
-
-    float s = partialS.scalar(), s_mu = partialS_mu.scalar();
-    for (unsigned j = i.value(); j < size; ++j)
-    {
-        float ratio = mat[j] / (S[j] * S[j]);
-        s += mat[j] * ratio;
-        s_mu += ratio * (D[j] - (AP[j] + ch * mat[j]));
-    }
-    return AlphaParameters(s, s_mu);
-
+    return AlphaParameters(packedS.scalar(), packedS_mu.scalar());
 }
 
 // PERFORMANCE_CRITICAL
@@ -220,33 +188,29 @@ void DenseGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
     unsigned size = mAPMatrix.nRow();
 
     gaps::simd::PackedFloat pOther, pAP;
-    gaps::simd::Index i(0);
     gaps::simd::PackedFloat pDelta(delta);
-    for (; i <= size - gaps::simd::Index::increment(); ++i)
+    for (gaps::simd::Index i(0); i < size; ++i)
     {
         pOther.load(other + i);
         pAP.load(ap + i);
         pAP += pDelta * pOther;
         pAP.store(ap + i);
     }
-
-    for (unsigned j = i.value(); j < size; ++j)
-    {
-        ap[j] += delta * other[j];
-    }
 }
 
 Archive& operator<<(Archive &ar, const DenseGibbsSampler &s)
 {
-    ar << s.mMatrix << s.mDomain << s.mAlpha << s.mLambda << s.mMaxGibbsMass
-        << s.mAnnealingTemp << s.mNumPatterns << s.mNumBins << s.mBinLength;
+    ar << s.mMatrix << s.mDomain << s.mQueue << s.mAlpha << s.mLambda
+        << s.mMaxGibbsMass << s.mAnnealingTemp << s.mNumPatterns << s.mNumBins
+        << s.mBinLength;
     return ar;
 }
 
 Archive& operator>>(Archive &ar, DenseGibbsSampler &s)
 {
-    ar >> s.mMatrix >> s.mDomain >> s.mAlpha >> s.mLambda >> s.mMaxGibbsMass
-        >> s.mAnnealingTemp >> s.mNumPatterns >> s.mNumBins >> s.mBinLength;
+    ar >> s.mMatrix >> s.mDomain >> s.mQueue >> s.mAlpha >> s.mLambda
+        >> s.mMaxGibbsMass >> s.mAnnealingTemp >> s.mNumPatterns >> s.mNumBins
+        >> s.mBinLength;
     return ar;
 }
 

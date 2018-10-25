@@ -47,8 +47,7 @@ public:
 
     void update(unsigned nSteps, unsigned nThreads);
 
-//#ifndef GAPS_INTERNAL_TESTS
-#if 0
+#ifndef GAPS_INTERNAL_TESTS
 protected:
 #endif
 
@@ -242,8 +241,8 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::death(const AtomicProposal
         if (rebirthMass != prop.atom1->mass)
         {
             impl()->safelyChangeMatrix(prop.r1, prop.c1, rebirthMass - prop.atom1->mass);
+            prop.atom1->mass = rebirthMass;
         }
-        prop.atom1->mass = rebirthMass;
     }
     else // reject rebirth
     {

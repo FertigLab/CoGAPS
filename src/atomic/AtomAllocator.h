@@ -30,7 +30,9 @@ public:
     friend Archive& operator<<(Archive& ar, const Atom &a);
     friend Archive& operator>>(Archive& ar, Atom &a);
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     // used by the allocator
     friend class AtomAllocator;
@@ -51,7 +53,9 @@ public:
     void set(uint64_t n);
     void release(uint64_t n);
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     uint64_t parts[NUM_INDEX_CHUNKS];
 };
@@ -67,7 +71,9 @@ public:
     void free(Atom* a);
     bool depleted() const;
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
     
     Atom* mPool;
     IndexFlagSet mIndexFlags;
@@ -86,7 +92,9 @@ public:
     Atom* createAtom(uint64_t pos, float mass);
     void destroyAtom(Atom *a);
 
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     std::vector<AtomPool*> mPools;
     unsigned mIndex;

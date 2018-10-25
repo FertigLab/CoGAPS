@@ -29,6 +29,8 @@ public:
     friend Archive& operator<<(Archive &ar, const DenseGibbsSampler &s);
     friend Archive& operator>>(Archive &ar, DenseGibbsSampler &s);
 
+    float apSum() const { return gaps::sum(mAPMatrix); }
+
 #ifdef GAPS_DEBUG
     bool internallyConsistent() const;
 #endif
@@ -60,13 +62,16 @@ GapsRandomState *randState)
 GibbsSampler(data, transpose, subsetRows, alpha, maxGibbsMass, params, randState),
 mSMatrix(gaps::pmax(mDMatrix, 0.1f)),
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol())
-{}
+{
+    mSMatrix.pad(1.f); // can't divide by zero
+}
 
 template <class DataType>
 void DenseGibbsSampler::setUncertainty(const DataType &unc, bool transpose,
 bool subsetRows, const GapsParameters &params)
 {
     mSMatrix = Matrix(unc, transpose, subsetRows, params.dataIndicesSubset);
+    mSMatrix.pad(1.f); // can't divide by zero
 }
 
 #endif // __COGAPS_DENSE_GIIBS_SAMPLER_H__

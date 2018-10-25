@@ -12,16 +12,6 @@
 
 class GapsStatistics
 {
-private:
-
-    Matrix mAMeanMatrix;
-    Matrix mAStdMatrix;
-    Matrix mPMeanMatrix;
-    Matrix mPStdMatrix;
-    
-    unsigned mStatUpdates;
-    unsigned mNumPatterns;
-
 public:
 
     GapsStatistics(unsigned nGenes, unsigned nSamples, unsigned nPatterns);
@@ -40,6 +30,18 @@ public:
     // serialization
     friend Archive& operator<<(Archive &ar, const GapsStatistics &stat);
     friend Archive& operator>>(Archive &ar, GapsStatistics &stat);
+
+#ifndef GAPS_INTERNAL_TESTS
+private:
+#endif
+
+    Matrix mAMeanMatrix;
+    Matrix mAStdMatrix;
+    Matrix mPMeanMatrix;
+    Matrix mPStdMatrix;
+    
+    unsigned mStatUpdates;
+    unsigned mNumPatterns;
 };
 
 template <class Sampler>

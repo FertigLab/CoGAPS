@@ -9,7 +9,20 @@
 
 class TsvParser : public AbstractFileParser
 {
+public:
+
+    explicit TsvParser(const std::string &path);
+    ~TsvParser() { mFile.close(); }
+
+    unsigned nRow() const { return mNumRows; }
+    unsigned nCol() const { return mNumCols; }
+
+    bool hasNext();
+    MatrixElement getNext();
+
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     std::ifstream mFile;
 
@@ -21,17 +34,6 @@ private:
 
     TsvParser(const TsvParser &p); // don't allow copies
     TsvParser& operator=(const TsvParser &p); // don't allow copies
-
-public:
-
-    explicit TsvParser(const std::string &path);
-    ~TsvParser() { mFile.close(); }
-
-    unsigned nRow() const { return mNumRows; }
-    unsigned nCol() const { return mNumCols; }
-
-    bool hasNext();
-    MatrixElement getNext();
 };
 
 #endif

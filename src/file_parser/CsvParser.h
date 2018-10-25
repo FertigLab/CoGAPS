@@ -9,7 +9,20 @@
 
 class CsvParser : public AbstractFileParser
 {
+public:
+
+    explicit CsvParser(const std::string &path);
+    ~CsvParser() { mFile.close(); }
+
+    unsigned nRow() const { return mNumRows; }
+    unsigned nCol() const { return mNumCols; }
+
+    bool hasNext();
+    MatrixElement getNext();
+
+#ifndef GAPS_INTERNAL_TESTS
 private:
+#endif
 
     std::ifstream mFile;
 
@@ -21,17 +34,6 @@ private:
 
     CsvParser(const CsvParser &p); // don't allow copies
     CsvParser& operator=(const CsvParser &p); // don't allow copies
-
-public:
-
-    explicit CsvParser(const std::string &path);
-    ~CsvParser() { mFile.close(); }
-
-    unsigned nRow() const { return mNumRows; }
-    unsigned nCol() const { return mNumCols; }
-
-    bool hasNext();
-    MatrixElement getNext();
 };
 
 #endif

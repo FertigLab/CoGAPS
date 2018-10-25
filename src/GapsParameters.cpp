@@ -4,7 +4,7 @@ Archive& operator<<(Archive &ar, const GapsParameters &p)
 {
     ar << p.seed << p.nGenes << p.nSamples << p.nPatterns << p.nIterations
         << p.alphaA << p.alphaP << p.maxGibbsMassA << p.maxGibbsMassP
-        << p.singleCell << p.useSparseOptimization;
+        << p.singleCell << p.useSparseOptimization << p.checkpointInterval;
     return ar;
 }
 
@@ -12,7 +12,7 @@ Archive& operator>>(Archive &ar, GapsParameters &p)
 {
     ar >> p.seed >> p.nGenes >> p.nSamples >> p.nPatterns >> p.nIterations
         >> p.alphaA >> p.alphaP >> p.maxGibbsMassA >> p.maxGibbsMassP
-        >> p.singleCell >> p.useSparseOptimization;
+        >> p.singleCell >> p.useSparseOptimization >> p.checkpointInterval;
     return ar;
 }
     
