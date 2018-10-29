@@ -38,6 +38,7 @@ OBJECTS =   Cogaps.o \
             cpp_tests/testHybridMatrix.o \
             cpp_tests/testHybridVector.o \
             cpp_tests/testMatrix.o \
+            cpp_tests/testRandom.o \
             cpp_tests/testSerialization.o \
             cpp_tests/testSparseGibbsSampler.o \
             cpp_tests/testSparseIterator.o \

@@ -265,7 +265,6 @@ setGeneric("calcCoGAPSStat", function(object, GStoGenes, numPerm=500)
     {standardGeneric("calcCoGAPSStat")})
 
 #' probability gene belongs in gene set
-#' @export
 #' @docType methods
 #' @rdname calcGeneGSStat-methods
 #'
@@ -283,7 +282,6 @@ Pw=rep(1,ncol(object@featureLoadings)), nullGenes=FALSE)
     {standardGeneric("calcGeneGSStat")})
 
 #' compute gene probability
-#' @export
 #' @docType methods
 #' @rdname computeGeneGSProb-methods
 #'

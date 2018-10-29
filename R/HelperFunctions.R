@@ -1,10 +1,10 @@
 #' wrapper around cat
-#' @keywords
+#' @keywords internal
 #'
 #' @description cleans up message printing
 #' @param allParams all cogaps parameters
 #' @param ... arguments forwarded to cat
-#' @return displays text
+#' @return conditionally print message
 gapsCat <- function(allParams, ...)
 {
     if (allParams$messages)
@@ -68,6 +68,7 @@ ncolHelper <- function(data)
 
 #' extract gene names from data
 #' @keywords internal
+#' @return vector of gene names
 getGeneNames <- function(data, transpose)
 {
     nGenes <- ifelse(transpose, ncolHelper(data), nrowHelper(data))
@@ -76,6 +77,7 @@ getGeneNames <- function(data, transpose)
 
 #' extract sample names from data
 #' @keywords internal
+#' @return vector of sample names
 getSampleNames <- function(data, transpose)
 {
     nSamples <- ifelse(transpose, nrowHelper(data), ncolHelper(data))
