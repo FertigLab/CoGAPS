@@ -6,6 +6,9 @@
 \usage{
 corrToMeanPattern(cluster)
 }
+\value{
+correlation of each pattern
+}
 \description{
 calculate correlation of each pattern in a cluster to the cluster mean
 }
