@@ -26,7 +26,6 @@ config.log
 config.status
 aclocal.m4
 autom4te.cache/
-src/Makevars
 
 # ignore checkpoint files
 *.out
