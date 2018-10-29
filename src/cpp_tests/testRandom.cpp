@@ -32,6 +32,23 @@ TEST_CASE("Test error of q_norm lookup table")
     }
 }
 
+TEST_CASE("Test error of p_norm lookup table")
+{
+    GapsRandomState randState(123);
+
+    const unsigned nIterations = 100 * 100; // needs to be multiple of 100
+    const float mean = 0.f;
+    const float sd = 1.f;
+    const float tolerance = 0.01f;
+    for (unsigned i = 1; i < nIterations; ++i)
+    {
+        float p = static_cast<float>(i) / static_cast<float>(nIterations / 100);
+        float lookup_val = randState.p_norm_fast(p, mean, sd);
+        float actual_val = gaps::p_norm(p, mean, sd);
+        requireSmallError(p, actual_val, lookup_val, tolerance);
+    }
+}
+
 #if 0
 
 TEST_CASE("Test Random.h - Random Number Generation")
