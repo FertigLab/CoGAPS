@@ -11,6 +11,8 @@
 #include "../GapsParameters.h"
 
 #include <vector>
+#include <limits>
+#include <cmath>
 
 class GapsStatistics;
 

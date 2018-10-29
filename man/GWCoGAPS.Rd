@@ -53,3 +53,7 @@ CogapsResult object
 \description{
 wrapper around genome-wide distributed algorithm for CoGAPS
 }
+\examples{
+data(SimpSim)
+result <- scCoGAPS(SimpSim.data, BPPARAM=BiocParallel::SerialParam())
+}
