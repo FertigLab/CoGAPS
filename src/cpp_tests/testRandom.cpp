@@ -22,7 +22,7 @@ TEST_CASE("Test error of q_norm lookup table")
     const unsigned nIterations = 10000;
     const float mean = 0.f;
     const float sd = 1.f;
-    const float tolerance = 0.00001f;
+    const float tolerance = 0.01f;
     for (unsigned i = 1; i < nIterations; ++i)
     {
         float q = static_cast<float>(i) / static_cast<float>(nIterations);
