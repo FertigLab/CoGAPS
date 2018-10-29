@@ -1,8 +1,36 @@
 #include "catch.h"
-#include "../math/Algorithms.h"
 #include "../math/Random.h"
+#include "../math/Math.h"
 
 #define TEST_APPROX(x) Approx(x).epsilon(0.001)
+
+static void requireSmallError(float in, float out, float est, float tol)
+{
+    float denom = gaps::max(std::abs(out), 1.f);
+    if (std::abs(est - out) / denom >= tol)
+    {
+        gaps_printf("input: %f, output: %f, error: %f\n", in, out,
+            std::abs(est - out));
+    }
+    REQUIRE(std::abs(est - out) / denom < tol);
+}
+
+TEST_CASE("Test error of q_norm lookup table")
+{
+    GapsRandomState randState(123);
+
+    const unsigned nIterations = 10000;
+    const float mean = 0.f;
+    const float sd = 1.f;
+    const float tolerance = 0.00001f;
+    for (unsigned i = 1; i < nIterations; ++i)
+    {
+        float q = static_cast<float>(i) / static_cast<float>(nIterations);
+        float lookup_val = randState.q_norm_fast(q, mean, sd);
+        float actual_val = gaps::q_norm(q, mean, sd);
+        requireSmallError(q, actual_val, lookup_val, tolerance);
+    }
+}
 
 #if 0
 
