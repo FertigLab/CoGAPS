@@ -7,15 +7,6 @@ sudo: required
 bioc_required: true
 bioc_use_devel: true
 
-# create executable temp directory
-env:
-  global:
-    - TMPDIR=$HOME
-
-# make sure configure is executable
-before_install:
-  - chmod +x configure
-
 # notification setup
 notifications:
   slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts
