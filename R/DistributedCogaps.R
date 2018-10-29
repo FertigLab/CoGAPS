@@ -168,6 +168,7 @@ patternMatch <- function(allPatterns, allParams)
 
 #' calculate correlation of each pattern in a cluster to the cluster mean
 #' @keywords internal
+#' @return correlation of each pattern
 corrToMeanPattern <- function(cluster)
 {
     meanPat <- rowMeans(cluster)
