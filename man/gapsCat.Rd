@@ -12,9 +12,9 @@ gapsCat(allParams, ...)
 \item{...}{arguments forwarded to cat}
 }
 \value{
-displays text
+conditionally print message
 }
 \description{
 cleans up message printing
 }
-\keyword{}
+\keyword{internal}
