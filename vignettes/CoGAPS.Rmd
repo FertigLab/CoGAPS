@@ -1,7 +1,7 @@
 ---
 title: "CoGAPS - Coordinated Gene Association in Pattern Sets"
 author: "Thomas Sherman, Genevieve Stein-O'Brien, Hyejune Limb, Elana Fertig"
-date: "`r doc_date()`"
+date: "`r BiocStyle::doc_date()`"
 bibliography: References.bib
 vignette: >
     %\VignetteIndexEntry{CoGAPS}

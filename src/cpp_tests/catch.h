@@ -7217,40 +7217,14 @@ namespace Catch {
 
 namespace Catch {
 
-    struct RandomNumberGenerator {
-        typedef std::ptrdiff_t result_type;
-
-        result_type operator()( result_type n ) const { return std::rand() % n; }
-
-#ifdef CATCH_CONFIG_CPP11_SHUFFLE
-        static constexpr result_type min() { return 0; }
-        static constexpr result_type max() { return 1000000; }
-        result_type operator()() const { return std::rand() % max(); }
-#endif
-        template<typename V>
-        static void shuffle( V& vector ) {
-            RandomNumberGenerator rng;
-#ifdef CATCH_CONFIG_CPP11_SHUFFLE
-            std::shuffle( vector.begin(), vector.end(), rng );
-#else
-            std::random_shuffle( vector.begin(), vector.end(), rng );
-#endif
-        }
-    };
-
     inline std::vector<TestCase> sortTests( IConfig const& config, std::vector<TestCase> const& unsortedTestCases ) {
 
         std::vector<TestCase> sorted = unsortedTestCases;
 
         switch( config.runOrder() ) {
             case RunTests::InLexicographicalOrder:
-                std::sort( sorted.begin(), sorted.end() );
-                break;
             case RunTests::InRandomOrder:
-                {
-                    seedRng( config );
-                    RandomNumberGenerator::shuffle( sorted );
-                }
+                std::sort( sorted.begin(), sorted.end() );
                 break;
             case RunTests::InDeclarationOrder:
                 // already in declaration order
@@ -8703,10 +8677,8 @@ namespace Catch {
         return line < other.line || ( line == other.line && (std::strcmp(file, other.file) < 0));
     }
 
-    void seedRng( IConfig const& config ) {
-        if( config.rngSeed() != 0 )
-            std::srand( config.rngSeed() );
-    }
+    void seedRng( IConfig const& config ) { /* removed */ }
+    
     unsigned int rngSeed() {
         return getCurrentContext().getConfig()->rngSeed();
     }
