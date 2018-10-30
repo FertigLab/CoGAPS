@@ -11,4 +11,5 @@ test_that("Catch unit tests pass",
     gistGctPath <<- system.file("extdata/GIST.gct", package="CoGAPS")
 
     run_catch_unit_tests()
+    expect(TRUE)
 })

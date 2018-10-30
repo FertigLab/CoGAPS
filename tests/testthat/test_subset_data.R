@@ -25,7 +25,7 @@ test_that("Subsetting Data",
     params <- new("CogapsParams")
     params <- setAnnotationWeights(params, annotation=anno, weights=weights)
     result <- GWCoGAPS(testMatrix, params, messages=FALSE, seed=123,
-        nIterations=5000)
+        nIterations=5000, geneNames=paste("Gene", 1:nrow(testMatrix), sep="_"))
 
     hist <- sapply(getSubsets(result), getHistogram, anno=anno)
     freq <- unname(rowSums(hist) / sum(hist))
