@@ -71,13 +71,18 @@ ncolHelper <- function(data)
 #' @return vector of gene names
 getGeneNames <- function(data, transpose)
 {
+    if (transpose)
+    {
+        return(getSampleNames(data, FALSE))
+    }
+
     names <- NULL
     if (is(data, "character"))
     {
         names <- switch(tools::file_ext(data),
             "csv" = as.matrix(data.table::fread(data, select=1))[,1],
             "tsv" = as.matrix(data.table::fread(data, select=1))[,1],
-            "gct" = suppressWarnings(gsub("\"", "", as.matrix(data.table::fread(gistGctPath, select=1))))
+            "gct" = suppressWarnings(gsub("\"", "", as.matrix(data.table::fread(data, select=1))))
         )
     }
     else if (is(data, "matrix") | is(data, "data.frame"))
@@ -87,7 +92,7 @@ getGeneNames <- function(data, transpose)
 
     if (is.null(names))
     {
-        nGenes <- ifelse(transpose, ncolHelper(data), nrowHelper(data))
+        nGenes <- nrowHelper(data)
         return(paste("Gene", 1:nGenes, sep="_"))
     }
     return(names)
@@ -98,6 +103,11 @@ getGeneNames <- function(data, transpose)
 #' @return vector of sample names
 getSampleNames <- function(data, transpose)
 {
+    if (transpose)
+    {
+        return(getGeneNames(data, FALSE))
+    }
+
     names <- NULL
     if (is(data, "character"))
     {
@@ -114,7 +124,7 @@ getSampleNames <- function(data, transpose)
 
     if (is.null(names))
     {
-        nSamples <- ifelse(transpose, nrowHelper(data), ncolHelper(data))
+        nSamples <- ncolHelper(data)
         return(paste("Sample", 1:nSamples, sep="_"))
     }
     return(names)
