@@ -3,11 +3,6 @@ language: r
 cache: packages
 sudo: required
 
-# test on both linux and OSX
-os:
-  - linux
-  - osx
-
 # use bioconductor
 bioc_required: true
 bioc_use_devel: true
