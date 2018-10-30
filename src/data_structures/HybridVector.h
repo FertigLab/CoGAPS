@@ -36,6 +36,8 @@ public:
 
     const float* densePtr() const;
 
+    const std::vector<uint64_t>& getBitFlags() const { return mIndexBitFlags; }
+
     friend Archive& operator<<(Archive &ar, const HybridVector &vec);
     friend Archive& operator>>(Archive &ar, HybridVector &vec);
 

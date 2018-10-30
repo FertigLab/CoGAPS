@@ -2,6 +2,8 @@
 #include "../data_structures/SparseIterator.h"
 #include "../math/VectorMath.h"
 
+#include <bitset>
+
 #define GAPS_SQ(x) ((x) * (x))
 
 /////////// SparseGibbsSampler Function Definitions //////////////
@@ -52,23 +54,188 @@ unsigned col, float delta)
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
+//#define __USE_ITERATOR__
+#define __LOOP_OVER_INDICES__
+//#define __INLINED_ITERATOR__
+
 AlphaParameters SparseGibbsSampler::alphaParameters(unsigned row, unsigned col)
 {
+#if defined(__USE_ITERATOR__)
+
     float s = mZ1[col];
     float s_mu = -1.f * gaps::dot(mMatrix.getRow(row), mZ2.getCol(col));
 
     SparseIterator<2> it(mDMatrix.getCol(row), mOtherMatrix->getCol(col));
     while (!it.atEnd())
     {
-        s += (get<2>(it) * get<2>(it)) / (get<1>(it) * get<1>(it))
-            - (get<2>(it) * get<2>(it));
-
-        s_mu += get<2>(it) / get<1>(it)
-            + (get<2>(it) - get<2>(it) / (get<1>(it) * get<1>(it)))
-            * gaps::dot(mMatrix.getRow(row), mOtherMatrix->getRow(it.getIndex()));
+        float term1 = get<2>(it) / get<1>(it);
+        float term2 = get<2>(it) - term1 / get<1>(it);
+        s += term1 * term1 - get<2>(it) * get<2>(it);
+        s_mu += term1 + term2 * gaps::dot(mMatrix.getRow(row),
+            mOtherMatrix->getRow(it.getIndex()));
         it.next();
     }
     return AlphaParameters(s, s_mu) * mBeta;
+
+#elif defined(__LOOP_OVER_INDICES__)
+
+    float s = mZ1[col];
+    float s_mu = -1.f * gaps::dot(mMatrix.getRow(row), mZ2.getCol(col));
+
+    const std::vector<unsigned> &indices(mDMatrix.getCol(row).getIndices());
+    const std::vector<float> &data(mDMatrix.getCol(row).getData());
+    const HybridVector &vec(mOtherMatrix->getCol(col));
+    unsigned sz = indices.size();
+
+    for (unsigned i = 0; i < sz; ++i)
+    {
+        if (vec[indices[i]] > 0.f)
+        {    
+            float term1 = vec[indices[i]] / data[i];
+            float term2 = vec[indices[i]] - term1 / data[i];
+            s += term1 * term1 - vec[indices[i]] * vec[indices[i]];
+            s_mu += term1 + term2 * gaps::dot(mMatrix.getRow(row),
+                mOtherMatrix->getRow(indices[i]));
+        }
+    }
+    return AlphaParameters(s, s_mu) * mBeta;
+
+#elif defined(__INLINED_ITERATOR__)
+
+    float s = mZ1[col];
+    float s_mu = -1.f * gaps::dot(mMatrix.getRow(row), mZ2.getCol(col));
+
+    const SparseVector &D(mDMatrix.getCol(row));
+    const HybridVector &V(mOtherMatrix->getCol(col));
+    const std::vector<uint64_t> &bitflags_D(D.getBitFlags());
+    const std::vector<uint64_t> &bitflags_V(V.getBitFlags());
+    const std::vector<float> &data(D.getData());
+
+    unsigned sparseIndex = 0;
+    unsigned sz = bitflags_D.size();
+    for (unsigned i = 0; i < sz; ++i)
+    {
+        uint64_t d_flags = bitflags_D[i];
+        uint64_t common = d_flags & bitflags_V[i];
+        while (common)
+        {
+            unsigned index = __builtin_ffsll(common) - 1;
+            sparseIndex += __builtin_popcountll(d_flags & ((1ull << index) - 1ull));
+            d_flags = (index == 63) ? 0 : d_flags & ~((1ull << (index + 1ull)) - 1ull);
+            common = d_flags & common;
+
+            float v_val = V[64 * i + index];
+            float d_val = data[sparseIndex++];
+
+            float term1 = v_val / d_val;
+            float term2 = v_val - term1 / d_val;
+            s += term1 * term1 - v_val * v_val;
+            s_mu += term1 + term2 * gaps::dot(mMatrix.getRow(row),
+                mOtherMatrix->getRow(64 * i + index));
+        }
+        sparseIndex += __builtin_popcountll(d_flags);
+    }
+    return AlphaParameters(s, s_mu) * mBeta;
+
+#else
+
+    #error "malformed macros"
+
+#endif
+}
+
+AlphaParameters SparseGibbsSampler::alphaParametersWithChange(unsigned row,
+unsigned col, float ch)
+{
+#if defined(__USE_ITERATOR__)
+
+    float s = mZ1[col];
+    float s_mu = -1.f * gaps::dot(mMatrix.getRow(row), mZ2.getCol(col));
+    s_mu -= ch * mZ2(col,col);
+
+    SparseIterator<2> it(mDMatrix.getCol(row), mOtherMatrix->getCol(col));
+    while (!it.atEnd())
+    {
+
+        float term1 = get<2>(it) / get<1>(it);
+        float term2 = get<2>(it) - term1 / get<1>(it);
+        s += term1 * term1 - get<2>(it) * get<2>(it);
+        s_mu += term1 + term2 * (gaps::dot(mMatrix.getRow(row),
+            mOtherMatrix->getRow(it.getIndex()))
+            + ch * mOtherMatrix->operator()(it.getIndex(), col));
+        it.next();
+    }
+    return AlphaParameters(s, s_mu) * mBeta;
+
+#elif defined(__LOOP_OVER_INDICES__)
+
+    float s = mZ1[col];
+    float s_mu = -1.f * gaps::dot(mMatrix.getRow(row), mZ2.getCol(col));
+    s_mu -= ch * mZ2(col,col);
+
+    const std::vector<unsigned> &indices(mDMatrix.getCol(row).getIndices());
+    const std::vector<float> &data(mDMatrix.getCol(row).getData());
+    const HybridVector &vec(mOtherMatrix->getCol(col));
+    unsigned sz = indices.size();
+
+    for (unsigned i = 0; i < sz; ++i)
+    {
+        if (vec[indices[i]] > 0.f)
+        {    
+            float term1 = vec[indices[i]] / data[i];
+            float term2 = vec[indices[i]] - term1 / data[i];
+            s += term1 * term1 - vec[indices[i]] * vec[indices[i]];
+            s_mu += term1 + term2 * gaps::dot(mMatrix.getRow(row),
+                mOtherMatrix->getRow(indices[i]));
+            s_mu += term2 * mOtherMatrix->operator()(indices[i], col) * ch;
+        }
+    }
+    return AlphaParameters(s, s_mu) * mBeta;
+
+#elif defined(__INLINED_ITERATOR__)
+
+    float s = mZ1[col];
+    float s_mu = -1.f * gaps::dot(mMatrix.getRow(row), mZ2.getCol(col));
+    s_mu -= ch * mZ2(col,col);
+
+    const SparseVector &D(mDMatrix.getCol(row));
+    const HybridVector &V(mOtherMatrix->getCol(col));
+    const std::vector<uint64_t> &bitflags_D(D.getBitFlags());
+    const std::vector<uint64_t> &bitflags_V(V.getBitFlags());
+    const std::vector<float> &data(D.getData());
+
+    unsigned sparseIndex = 0;
+    unsigned sz = bitflags_D.size();
+    for (unsigned i = 0; i < sz; ++i)
+    {
+        uint64_t d_flags = bitflags_D[i];
+        uint64_t common = d_flags & bitflags_V[i];
+        while (common)
+        {
+            unsigned index = __builtin_ffsll(common) - 1;
+            sparseIndex += __builtin_popcountll(d_flags & ((1ull << index) - 1ull));
+            d_flags = (index == 63) ? 0 : d_flags & ~((1ull << (index + 1ull)) - 1ull);
+            common = d_flags & common;
+
+            float v_val = V[64 * i + index];
+            float d_val = data[sparseIndex++];
+
+            float term1 = v_val / d_val;
+            float term2 = v_val - term1 / d_val;
+            s += term1 * term1 - v_val * v_val;
+            s_mu += term1 + term2 * gaps::dot(mMatrix.getRow(row),
+                mOtherMatrix->getRow(64 * i + index));
+            s_mu += term2 * mOtherMatrix->operator()(64 * i + index, col) * ch;
+        }
+        sparseIndex += __builtin_popcountll(d_flags);
+    }
+    return AlphaParameters(s, s_mu) * mBeta;
+
+#else
+
+    #error "malformed macros"
+
+#endif
 }
 
 AlphaParameters SparseGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
@@ -92,28 +259,6 @@ unsigned r2, unsigned c2)
         return AlphaParameters(s, a1.s_mu - a2.s_mu);
     }
     return alphaParameters(r1, c1) + alphaParameters(r2, c2);
-}
-
-AlphaParameters SparseGibbsSampler::alphaParametersWithChange(unsigned row,
-unsigned col, float ch)
-{
-    float s = mZ1[col];
-    float s_mu = -1.f * gaps::dot(mMatrix.getRow(row), mZ2.getCol(col));
-    s_mu -= ch * mZ2(col,col);
-
-    SparseIterator<2> it(mDMatrix.getCol(row), mOtherMatrix->getCol(col));
-    while (!it.atEnd())
-    {
-        s += (get<2>(it) * get<2>(it)) / (get<1>(it) * get<1>(it))
-            - (get<2>(it) * get<2>(it));
-
-        s_mu += get<2>(it) / get<1>(it)
-            + (get<2>(it) - get<2>(it) / (get<1>(it) * get<1>(it)))
-            * (gaps::dot(mMatrix.getRow(row), mOtherMatrix->getRow(it.getIndex()))
-            + ch * mOtherMatrix->operator()(it.getIndex(), col));
-        it.next();
-    }
-    return AlphaParameters(s, s_mu) * mBeta;
 }
 
 void SparseGibbsSampler::generateLookupTables()
