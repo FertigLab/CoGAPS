@@ -58,6 +58,15 @@ setMethod("initialize", "CogapsParams",
     {
         getMilliseconds <- function(time) floor((time$sec %% 1) * 1000)
 
+        if (!is.null(list(...)$nSets))
+            stop("nSets must be set after CogapsParams are intialized")
+        if (!is.null(list(...)$cut))
+            stop("cut must be set after CogapsParams are intialized")
+        if (!is.null(list(...)$minNS))
+            stop("minNS must be set after CogapsParams are intialized")
+        if (!is.null(list(...)$maxNS))
+            stop("maxNS must be set after CogapsParams are intialized")
+
         .Object@nPatterns <- 7
         .Object@nIterations <- 1000
         .Object@alphaA <- 0.01

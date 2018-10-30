@@ -4,6 +4,41 @@
 
 #define TEST_APPROX(x) Approx(x).epsilon(0.001)
 
+// this is intended to replicated the random stream that happens when
+// each proposal is creating a new rng and using it a few times
+class EmulatedRng
+{
+public:
+
+    EmulatedRng(unsigned seed)
+        : randState(seed), rng(&randState), tickRng(&randState),
+        remaining(tickRng.uniform32(1, 10))
+    {}
+
+    uint64_t uniform64()
+    {
+        advance();
+        return rng.uniform64();
+    }
+
+private:
+
+    void advance()
+    {
+        --remaining;
+        if (remaining == 0)
+        {
+            rng = GapsRng(&randState);
+            remaining = tickRng.uniform32(1, 10);
+        }
+    }
+
+    GapsRandomState randState;
+    GapsRng rng;
+    GapsRng tickRng;
+    unsigned remaining;
+};
+
 static void requireSmallError(float in, float out, float est, float tol)
 {
     float denom = gaps::max(std::abs(out), 1.f);
@@ -48,6 +83,21 @@ TEST_CASE("Test error of p_norm lookup table")
         requireSmallError(p, actual_val, lookup_val, tolerance);
     }
 }
+
+#if 1
+#ifdef GAPS_INTERNAL_TESTS
+TEST_CASE("write random file to use in diehard tests")
+{
+    Archive ar("random_stream.out", ARCHIVE_WRITE);
+    
+    EmulatedRng rng(123);
+    for (unsigned i = 0; i < 1500000; ++i)
+    {
+        ar << rng.uniform64();
+    }
+}
+#endif
+#endif
 
 #if 0
 
