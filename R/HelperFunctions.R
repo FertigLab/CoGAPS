@@ -4,6 +4,7 @@
 #' @description cleans up message printing
 #' @param allParams all cogaps parameters
 #' @param ... arguments forwarded to cat
+#' @return displays text
 gapsCat <- function(allParams, ...)
 {
     if (allParams$messages)
