@@ -55,39 +55,41 @@ void gotoNextCommon(Iter &it)
 template<>
 float get<1>(const SparseIterator<1> &it)
 {
-    return it.mSparse.at(it.mSparseIndex);
+    return it.mSparse.getIthElement(it.mSparseIndex);
 }
 
 template<>
 float get<1>(const SparseIterator<2> &it)
 {
-    return it.mSparse.at(it.mSparseIndex);
+    return it.mSparse.getIthElement(it.mSparseIndex);
 }
 
 template<>
 float get<1>(const SparseIterator<3> &it)
 {
-    return it.mSparse.at(it.mSparseIndex);
+    return it.mSparse.getIthElement(it.mSparseIndex);
 }
 
 template<>
 float get<2>(const SparseIterator<2> &it)
 {
+    GAPS_ASSERT(it.mHybrid[64 * it.mBigIndex + it.mSmallIndex] > 0.f);
     return it.mHybrid[64 * it.mBigIndex + it.mSmallIndex];
 }
 
 template<>
 float get<2>(const SparseIterator<3> &it)
 {
+    GAPS_ASSERT(it.mHybrid_1[64 * it.mBigIndex + it.mSmallIndex] > 0.f);
     return it.mHybrid_1[64 * it.mBigIndex + it.mSmallIndex];
 }
 
 template<>
 float get<3>(const SparseIterator<3> &it)
 {
+    GAPS_ASSERT(it.mHybrid_2[64 * it.mBigIndex + it.mSmallIndex] > 0.f);
     return it.mHybrid_2[64 * it.mBigIndex + it.mSmallIndex];
 }
-
 
 SparseIterator<1>::SparseIterator(const SparseVector &v)
 :

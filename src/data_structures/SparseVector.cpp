@@ -25,6 +25,7 @@ mIndexBitFlags(v.size() / 64 + 1, 0)
         if (v[i] > 0.f)
         {
             mData.push_back(v[i]);
+            mIndices.push_back(i);
             mIndexBitFlags[i / 64] |= (1ull << (i % 64));
         }
     }
@@ -40,6 +41,7 @@ mIndexBitFlags(v.size() / 64 + 1, 0)
         if (v[i] > 0.f)
         {
             mData.push_back(v[i]);
+            mIndices.push_back(i);
             mIndexBitFlags[i / 64] |= (1ull << (i % 64));
         }
     }
@@ -62,6 +64,8 @@ void SparseVector::insert(unsigned i, float v)
     }
     dataIndex += countLowerBits(mIndexBitFlags[i / 64], i % 64);
 
+    mIndices.push_back(i);
+    std::sort(mIndices.begin(), mIndices.end());
     mData.insert(mData.begin() + dataIndex, v);
     mIndexBitFlags[i / 64] |= (1ull << (i % 64));
 }
@@ -85,6 +89,18 @@ Vector SparseVector::getDense() const
 }
 
 float SparseVector::at(unsigned n) const
+{
+    for (unsigned i = 0; i < mIndices.size(); ++i)
+    {
+        if (mIndices[i] == n)
+        {
+            return mData[i];
+        }
+    }
+    return 0.f;
+}
+
+float SparseVector::getIthElement(unsigned n) const
 {
     return mData[n];
 }
