@@ -11,6 +11,7 @@
 
 ^.git
 
+^src/Makevars(?!.in$|.win$)
 ^src/Cogaps.o
 ^src/GapsParameters.o
 ^src/GapsResult.o
