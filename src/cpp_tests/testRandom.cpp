@@ -12,7 +12,7 @@ public:
 
     EmulatedRng(unsigned seed)
         : randState(seed), rng(&randState), tickRng(&randState),
-        remaining(tickRng.uniform32(1, 10))
+        remaining(tickRng.uniform32(1, 5))
     {}
 
     uint64_t uniform64()
@@ -29,7 +29,7 @@ private:
         if (remaining == 0)
         {
             rng = GapsRng(&randState);
-            remaining = tickRng.uniform32(1, 10);
+            remaining = tickRng.uniform32(1, 5);
         }
     }
 
@@ -84,7 +84,7 @@ TEST_CASE("Test error of p_norm lookup table")
     }
 }
 
-#if 1
+#if 0
 #ifdef GAPS_INTERNAL_TESTS
 TEST_CASE("write random file to use in diehard tests")
 {
