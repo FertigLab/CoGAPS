@@ -6,9 +6,6 @@
 \usage{
 getSampleNames(data, transpose)
 }
-\value{
-vector of sample names
-}
 \description{
 extract sample names from data
 }

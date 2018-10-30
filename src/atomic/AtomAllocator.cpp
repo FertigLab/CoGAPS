@@ -117,7 +117,7 @@ bool AtomPool::depleted() const
 ////////////////////////////// AtomAllocator ///////////////////////////////////
 
 // for debugging
-#define __USE_CUSTOM_ALLOCATOR__ 0
+#define __USE_CUSTOM_ALLOCATOR__ 1
 
 AtomAllocator::AtomAllocator()
 {

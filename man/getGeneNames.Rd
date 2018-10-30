@@ -6,9 +6,6 @@
 \usage{
 getGeneNames(data, transpose)
 }
-\value{
-vector of gene names
-}
 \description{
 extract gene names from data
 }
