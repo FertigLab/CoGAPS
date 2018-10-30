@@ -68,7 +68,6 @@ ncolHelper <- function(data)
 
 #' extract gene names from data
 #' @keywords internal
-#' @return vector of gene names
 getGeneNames <- function(data, transpose)
 {
     nGenes <- ifelse(transpose, ncolHelper(data), nrowHelper(data))
@@ -77,7 +76,6 @@ getGeneNames <- function(data, transpose)
 
 #' extract sample names from data
 #' @keywords internal
-#' @return vector of sample names
 getSampleNames <- function(data, transpose)
 {
     nSamples <- ifelse(transpose, nrowHelper(data), ncolHelper(data))
