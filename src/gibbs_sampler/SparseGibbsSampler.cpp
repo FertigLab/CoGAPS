@@ -55,8 +55,8 @@ unsigned col, float delta)
 }
 
 //#define __USE_ITERATOR__
-#define __LOOP_OVER_INDICES__
-//#define __INLINED_ITERATOR__
+//#define __LOOP_OVER_INDICES__
+#define __INLINED_ITERATOR__
 
 AlphaParameters SparseGibbsSampler::alphaParameters(unsigned row, unsigned col)
 {
