@@ -384,7 +384,8 @@ TEST_CASE("ProposalQueue Serialization")
 
             if (queueWrite[j].atom1 == NULL)
             {
-                REQUIRE(queueRead[j].atom1 == NULL);
+                bool b = queueRead[j].atom1 == NULL;
+                REQUIRE(b); // prevent pointer comparison warning in catch.h
             }
             else
             {
@@ -394,7 +395,8 @@ TEST_CASE("ProposalQueue Serialization")
 
             if (queueWrite[j].atom2 == NULL)
             {
-                REQUIRE(queueRead[j].atom2 == NULL);
+                bool b = queueRead[j].atom2 == NULL;
+                REQUIRE(b); // prevent pointer comparison warning in catch.h
             }
             else
             {
