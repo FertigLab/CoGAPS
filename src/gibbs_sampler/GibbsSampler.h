@@ -344,7 +344,7 @@ float delta)
 template <class Derived, class DataMatrix, class FactorMatrix>
 bool GibbsSampler<Derived, DataMatrix, FactorMatrix>::canUseGibbs(unsigned col) const
 {
-    return !gaps::isVectorZero(mMatrix.getCol(col));
+    return !gaps::isVectorZero(mOtherMatrix->getCol(col));
 }
 
 template <class Derived, class DataMatrix, class FactorMatrix>
