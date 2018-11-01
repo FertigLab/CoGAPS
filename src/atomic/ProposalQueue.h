@@ -49,7 +49,7 @@ public:
     void acceptBirth();
     void rejectBirth();
 
-    unsigned nProcessed();
+    unsigned nProcessed() const;
 
     // serialization
     friend Archive& operator<<(Archive &ar, const ProposalQueue &queue);
