@@ -27,6 +27,7 @@ mDomainLength(static_cast<double>(mBinLength * static_cast<uint64_t>(nrow * ncol
 mNumBins(static_cast<double>(nrow * ncol)),
 mU1(0.f),
 mU2(0.f),
+mNumProcessed(0),
 mUseCachedRng(false)
 {}
 
@@ -40,6 +41,11 @@ void ProposalQueue::setLambda(float lambda)
     mLambda = lambda;
 }
 
+unsigned ProposalQueue::nProcessed() const
+{
+    return mNumProcessed;
+}
+
 void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
 {
     GAPS_ASSERT(mQueue.empty());
@@ -49,14 +55,18 @@ void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
     GAPS_ASSERT(mMinAtoms == mMaxAtoms);
     GAPS_ASSERT_MSG(mMaxAtoms == domain.size(), mMaxAtoms << " != " << domain.size());
 
-    unsigned nIter = 0;
     bool success = true;
-    while (nIter++ < limit && success)
+    mNumProcessed = 0;
+    while (mNumProcessed < limit && success)
     {
         if (!makeProposal(domain))
         {
             success = false;
             mUseCachedRng = true;
+        }
+        else
+        {
+            ++mNumProcessed;
         }
     }
 }

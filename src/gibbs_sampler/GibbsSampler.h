@@ -149,7 +149,7 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::update(unsigned nSteps, un
     {
         // create the largest queue possible, without hitting any conflicts
         mQueue.populate(mDomain, nSteps - n);
-        n += mQueue.size();
+        n += mQueue.nProcessed();
         
         // process all proposed updates in parallel - the way the queue is 
         // populated ensures no race conditions will happen
