@@ -17,7 +17,7 @@ struct GapsResult
     float meanChiSq;
     uint32_t seed;
 
-    GapsResult(const GapsStatistics &stat);
+    explicit GapsResult(const GapsStatistics &stat);
 
     void writeToFile(const std::string &fullPath);
     void writeCsv(const std::string &path);

@@ -66,14 +66,14 @@ SingleCellExperiment. The supported file types are csv, tsv, and mtx.
 \examples{
 # Running from R object
 data(GIST)
-resultA <- CoGAPS(GIST.data_frame)
+resultA <- CoGAPS(GIST.data_frame, nIterations=250)
 
 # Running from file name
 gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
-resultB <- CoGAPS(gist_path)
+resultB <- CoGAPS(gist_path, nIterations=250)
 
 # Setting Parameters
 params <- new("CogapsParams")
 params <- setParam(params, "nPatterns", 5)
-resultC <- CoGAPS(GIST.data_frame, params)
+resultC <- CoGAPS(GIST.data_frame, params, nIterations=250)
 }

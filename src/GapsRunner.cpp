@@ -49,11 +49,8 @@ const DataType &uncertainty, GapsRandomState *randState)
         return runCoGAPSAlgorithm<SparseGibbsSampler>(data, params,
             uncertainty, randState);
     }
-    else
-    {
-        return runCoGAPSAlgorithm<DenseGibbsSampler>(data, params,
-            uncertainty, randState);
-    }
+    return runCoGAPSAlgorithm<DenseGibbsSampler>(data, params,
+        uncertainty, randState);
 }
 
 // these two functions are the top-level functions exposed to the C++
@@ -85,8 +82,7 @@ static double estimatedNumUpdates(double current, double total, float nAtoms)
 
 template <class Sampler>
 static double estimatedPercentComplete(const GapsParameters &params,
-const Sampler &ASampler, const Sampler &PSampler, bpt::ptime startTime,
-char phase, unsigned iter)
+const Sampler &ASampler, const Sampler &PSampler, char phase, unsigned iter)
 {
     double nIter = static_cast<double>(iter);
     double nAtomsA = static_cast<double>(ASampler.nAtoms());
@@ -118,7 +114,7 @@ char phase, unsigned iter)
     {
         bpt::time_duration diff = bpt_now() - startTime;
         double perComplete = estimatedPercentComplete(params, ASampler,
-            PSampler, startTime, phase, iter);
+            PSampler, phase, iter);
         double nSecondsCurrent = diff.total_seconds();
         double nSecondsTotal = nSecondsCurrent / perComplete;
 
@@ -135,7 +131,7 @@ char phase, unsigned iter)
         unsigned totalMinutes = totalSeconds / 60;
         totalSeconds -= totalMinutes * 60;
 
-        gaps_printf("%d of %d, Atoms: %lu(%lu), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
+        gaps_printf("%d of %d, Atoms: %d(%d), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
             iter + 1, params.nIterations, ASampler.nAtoms(),
             PSampler.nAtoms(), PSampler.chiSq(), elapsedHours, elapsedMinutes,
             elapsedSeconds, totalHours, totalMinutes, totalSeconds);
