@@ -106,5 +106,3 @@ TEST_CASE("AtomicDomain")
     }
     #endif
 }
-
-#endif
