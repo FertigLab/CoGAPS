@@ -11,6 +11,7 @@
 
 ^.git
 
+^src/Makevars(?!.in$|.win$)
 ^src/Cogaps.o
 ^src/GapsParameters.o
 ^src/GapsResult.o
@@ -47,6 +48,7 @@
 ^src/cpp_tests/testHybridMatrix.o
 ^src/cpp_tests/testHybridVector.o
 ^src/cpp_tests/testMatrix.o
+^src/cpp_tests/testRandom.o
 ^src/cpp_tests/testSerialization.o
 ^src/cpp_tests/testSparseGibbsSampler.o
 ^src/cpp_tests/testSparseIterator.o

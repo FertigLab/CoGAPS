@@ -88,9 +88,15 @@ test_that("Valid Top-Level CoGAPS Calls",
         outputFrequency=50, seed=1, messages=FALSE, distributed="genome-wide"), NA)
     expect_true(no_na_in_result(res))
 
+    expect_equal(nrow(res@featureLoadings), 1363)
+    expect_equal(nrow(res@sampleFactors), 9)
+
     expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE, distributed="genome-wide"), NA)
     expect_true(no_na_in_result(res))
+
+    expect_equal(nrow(res@featureLoadings), 1363)
+    expect_equal(nrow(res@sampleFactors), 9)
 
     # single-cell CoGAPS
     expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
@@ -98,10 +104,16 @@ test_that("Valid Top-Level CoGAPS Calls",
         transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
 
+    expect_equal(nrow(res@featureLoadings), 9)
+    expect_equal(nrow(res@sampleFactors), 1363)
+
     expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell", singleCell=TRUE,
         transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
+
+    expect_equal(nrow(res@featureLoadings), 9)
+    expect_equal(nrow(res@sampleFactors), 1363)
 })
 
 #test_that("Invalid Top-Level CoGAPS Calls",

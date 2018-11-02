@@ -1,0 +1,46 @@
+PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__ 
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CFLAGS)
+PKG_LIBS = $(SHLIB_OPENMP_CFLAGS)
+
+OBJECTS =   Cogaps.o \
+            GapsParameters.o \
+            GapsResult.o \
+            GapsRunner.o \
+            GapsStatistics.o \
+            RcppExports.o \
+            test-runner.o \
+            atomic/AtomAllocator.o \
+            atomic/AtomicDomain.o \
+            atomic/ProposalQueue.o \
+            data_structures/HashSets.o \
+            data_structures/HybridMatrix.o \
+            data_structures/HybridVector.o \
+            data_structures/Matrix.o \
+            data_structures/SparseIterator.o \
+            data_structures/SparseMatrix.o \
+            data_structures/SparseVector.o \
+            data_structures/Vector.o \
+            file_parser/CsvParser.o \
+            file_parser/GctParser.o \
+            file_parser/FileParser.o \
+            file_parser/TsvParser.o \
+            file_parser/MtxParser.o \
+            gibbs_sampler/DenseGibbsSampler.o \
+            gibbs_sampler/SparseGibbsSampler.o \
+            math/Math.o \
+            math/MatrixMath.o \
+            math/Random.o \
+            math/VectorMath.o \
+            cpp_tests/testAtomicDomain.o \
+            cpp_tests/testDenseGibbsSampler.o \
+            cpp_tests/testFileParsers.o \
+            cpp_tests/testHashSets.o \
+            cpp_tests/testHybridMatrix.o \
+            cpp_tests/testHybridVector.o \
+            cpp_tests/testMatrix.o \
+            cpp_tests/testSerialization.o \
+            cpp_tests/testSparseGibbsSampler.o \
+            cpp_tests/testSparseIterator.o \
+            cpp_tests/testSparseMatrix.o \
+            cpp_tests/testSparseVector.o \
+            cpp_tests/testVector.o

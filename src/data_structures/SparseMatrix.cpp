@@ -2,6 +2,7 @@
 #include "../file_parser/FileParser.h"
 
 #include <iterator>
+#include <algorithm>
 
 // constructor from data set read in as a matrix
 SparseMatrix::SparseMatrix(const Matrix &mat, bool genesInCols,

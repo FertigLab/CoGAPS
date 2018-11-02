@@ -4,8 +4,8 @@
 #include "data_structures/Matrix.h"
 #include "file_parser/FileParser.h"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 struct GapsParameters
 {

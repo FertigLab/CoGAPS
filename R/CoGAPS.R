@@ -49,16 +49,16 @@ buildReport <- function()
 #' @examples
 #' # Running from R object
 #' data(GIST)
-#' resultA <- CoGAPS(GIST.data_frame)
+#' resultA <- CoGAPS(GIST.data_frame, nIterations=250)
 #'
 #' # Running from file name
 #' gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
-#' resultB <- CoGAPS(gist_path)
+#' resultB <- CoGAPS(gist_path, nIterations=250)
 #'
 #' # Setting Parameters
 #' params <- new("CogapsParams")
 #' params <- setParam(params, "nPatterns", 5)
-#' resultC <- CoGAPS(GIST.data_frame, params)
+#' resultC <- CoGAPS(GIST.data_frame, params, nIterations=250)
 #' @importFrom methods new is
 #' @importFrom SummarizedExperiment assay
 #' @importFrom utils packageVersion
@@ -183,7 +183,7 @@ outputToFile=NULL, ...)
 #' @importFrom methods new
 #' @examples
 #' data(SimpSim)
-#' result <- scCoGAPS(t(SimpSim.data), BPPARAM=BiocParallel::SerialParam())
+#' result <- scCoGAPS(t(SimpSim.data), BPPARAM=BiocParallel::SerialParam(), nIterations=250)
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
@@ -206,7 +206,7 @@ geneNames=NULL, sampleNames=NULL, matchedPatterns=NULL, ...)
 #' @importFrom methods new
 #' @examples
 #' data(SimpSim)
-#' result <- scCoGAPS(SimpSim.data, BPPARAM=BiocParallel::SerialParam())
+#' result <- GWCoGAPS(SimpSim.data, BPPARAM=BiocParallel::SerialParam(), nIterations=250)
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,

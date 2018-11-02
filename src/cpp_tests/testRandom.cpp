@@ -1,8 +1,103 @@
 #include "catch.h"
-#include "../math/Algorithms.h"
 #include "../math/Random.h"
+#include "../math/Math.h"
 
 #define TEST_APPROX(x) Approx(x).epsilon(0.001)
+
+// this is intended to replicated the random stream that happens when
+// each proposal is creating a new rng and using it a few times
+class EmulatedRng
+{
+public:
+
+    EmulatedRng(unsigned seed)
+        : randState(seed), rng(&randState), tickRng(&randState),
+        remaining(tickRng.uniform32(1, 5))
+    {}
+
+    uint64_t uniform64()
+    {
+        advance();
+        return rng.uniform64();
+    }
+
+private:
+
+    void advance()
+    {
+        --remaining;
+        if (remaining == 0)
+        {
+            rng = GapsRng(&randState);
+            remaining = tickRng.uniform32(1, 5);
+        }
+    }
+
+    GapsRandomState randState;
+    GapsRng rng;
+    GapsRng tickRng;
+    unsigned remaining;
+};
+
+static void requireSmallError(float in, float out, float est, float tol)
+{
+    float denom = gaps::max(std::abs(out), 1.f);
+    if (std::abs(est - out) / denom >= tol)
+    {
+        gaps_printf("input: %f, output: %f, error: %f\n", in, out,
+            std::abs(est - out));
+    }
+    REQUIRE(std::abs(est - out) / denom < tol);
+}
+
+TEST_CASE("Test error of q_norm lookup table")
+{
+    GapsRandomState randState(123);
+
+    const unsigned nIterations = 10000;
+    const float mean = 0.f;
+    const float sd = 1.f;
+    const float tolerance = 0.01f;
+    for (unsigned i = 1; i < nIterations; ++i)
+    {
+        float q = static_cast<float>(i) / static_cast<float>(nIterations);
+        float lookup_val = randState.q_norm_fast(q, mean, sd);
+        float actual_val = gaps::q_norm(q, mean, sd);
+        requireSmallError(q, actual_val, lookup_val, tolerance);
+    }
+}
+
+TEST_CASE("Test error of p_norm lookup table")
+{
+    GapsRandomState randState(123);
+
+    const unsigned nIterations = 100 * 100; // needs to be multiple of 100
+    const float mean = 0.f;
+    const float sd = 1.f;
+    const float tolerance = 0.01f;
+    for (unsigned i = 1; i < nIterations; ++i)
+    {
+        float p = static_cast<float>(i) / static_cast<float>(nIterations / 100);
+        float lookup_val = randState.p_norm_fast(p, mean, sd);
+        float actual_val = gaps::p_norm(p, mean, sd);
+        requireSmallError(p, actual_val, lookup_val, tolerance);
+    }
+}
+
+#if 0
+#ifdef GAPS_INTERNAL_TESTS
+TEST_CASE("write random file to use in diehard tests")
+{
+    Archive ar("random_stream.out", ARCHIVE_WRITE);
+    
+    EmulatedRng rng(123);
+    for (unsigned i = 0; i < 1500000; ++i)
+    {
+        ar << rng.uniform64();
+    }
+}
+#endif
+#endif
 
 #if 0
 

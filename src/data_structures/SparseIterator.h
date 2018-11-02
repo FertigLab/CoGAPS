@@ -20,7 +20,7 @@ class SparseIterator<1>
 {
 public:
 
-    SparseIterator(const SparseVector &v);
+    explicit SparseIterator(const SparseVector &v);
 
     bool atEnd() const;
     void next();

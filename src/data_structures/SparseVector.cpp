@@ -73,7 +73,7 @@ Vector SparseVector::getDense() const
     for (unsigned i = 0; i < mIndexBitFlags.size(); ++i)
     {
         uint64_t flags = mIndexBitFlags[i];
-        while (flags)
+        while (flags != 0u)
         {
             unsigned ndx = __builtin_ffsll(flags) - 1;
             GAPS_ASSERT(sparseNdx < mData.size());
