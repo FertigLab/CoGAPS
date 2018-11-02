@@ -21,7 +21,7 @@ namespace gaps
     float nonZeroMean(const SparseMatrix &mat);
 
     Matrix pmax(Matrix mat, float p);
-}
+} // namespace gaps
 
 Matrix operator*(Matrix mat, float f);
 Matrix operator/(Matrix mat, float f);

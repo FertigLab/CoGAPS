@@ -12,9 +12,9 @@ public:
 
     Matrix();
     Matrix(unsigned nrow, unsigned ncol);
-    Matrix(const Matrix &mat, bool transpose, bool partitionRows,
+    Matrix(const Matrix &mat, bool genesInCols, bool subsetGenes,
         std::vector<unsigned> indices);
-    Matrix(const std::string &path, bool transpose, bool partitionRows,
+    Matrix(const std::string &path, bool genesInCols, bool subsetGenes,
         std::vector<unsigned> indices);
 
     unsigned nRow() const;
@@ -30,8 +30,8 @@ public:
     
     bool empty() const;
 
-    friend Archive& operator<<(Archive &ar, const Matrix &vec);
-    friend Archive& operator>>(Archive &ar, Matrix &vec);
+    friend Archive& operator<<(Archive &ar, const Matrix &mat);
+    friend Archive& operator>>(Archive &ar, Matrix &mat);
 
 #ifndef GAPS_INTERNAL_TESTS
 private:

@@ -64,7 +64,7 @@ fi
 # set compile flags if warnings enabled
 if test "x$warnings" = "xyes" ; then
     if test "x$ax_cv_cxx_compiler_vendor" = "xgnu" || test "x$ax_cv_cxx_compiler_vendor" = "xclang"; then
-        GAPS_CXX_FLAGS+=" -Wall -Wextra -Werror -Wno-unused-parameter "
+        GAPS_CXX_FLAGS+=" -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unknown-pragmas"
     fi
 fi
 

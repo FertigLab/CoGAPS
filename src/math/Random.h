@@ -16,7 +16,7 @@ struct OptionalFloat
 public :
 
     OptionalFloat();
-    OptionalFloat(float f);
+    OptionalFloat(float f); // NOLINT
 
     float value();
     bool hasValue() const;
@@ -33,7 +33,7 @@ class GapsRng
 {
 public:
 
-    GapsRng(GapsRandomState *mRandState);
+    explicit GapsRng(GapsRandomState *randState);
 
     float uniform();
     float uniform(float a, float b);
@@ -80,7 +80,7 @@ public:
 
     friend class GapsRandomState;
 
-    Xoroshiro128plus(uint64_t seed);
+    explicit Xoroshiro128plus(uint64_t seed);
 
     uint64_t next();
     void rollBackOnce();
@@ -100,7 +100,7 @@ class GapsRandomState
 {
 public:
 
-    GapsRandomState(unsigned t_seed);
+    explicit GapsRandomState(unsigned seed);
 
     uint64_t nextSeed();
     void rollBackOnce();
@@ -116,7 +116,7 @@ public:
 private:
 #endif
 
-    friend GapsRng;
+    friend class GapsRng;
 
     Xoroshiro128plus mSeeder;
 
