@@ -22,10 +22,10 @@ AC_ARG_ENABLE(internal-tests, [AC_HELP_STRING([--enable-internal-tests],
 AC_ARG_ENABLE(warnings, [AC_HELP_STRING([--enable-warnings],
     [compile CoGAPS with warning messages])], [warnings=yes], [warnings=no])
 
-# Check if specific version of SIMD instructions requested
+# Use SIMD unless requested not to
 AC_ARG_ENABLE(simd, [AC_HELP_STRING([--enable-simd],
-    [specify simd instruction set (sse, avx)])],
-    [simd_version=$enableval], [simd_version=avx])
+    [compile with SIMD support if available])],
+    [use_simd=$enableval], [use_simd=yes])
 
 # default CoGAPS specific flags
 GAPS_CPP_FLAGS=" -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__ "
@@ -46,9 +46,6 @@ if test "x$use_openmp" != "xno" ; then
     GAPS_CXX_FLAGS+=" $OPENMP_CXXFLAGS "
     GAPS_LIBS+=" $OPENMP_CXXFLAGS "
 fi
-
-# detect SIMD support
-AX_EXT
 
 echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compiler_version"
 
@@ -71,46 +68,14 @@ if test "x$warnings" = "xyes" ; then
     fi
 fi
 
-# set compile flags for SIMD
-echo "Supported SIMD flags: " $SIMD_FLAGS
-
-if test "x$simd_version" != "xavx" && test "x$simd_version" != "xsse" && test "x$simd_version" != "xno" && test "x$simd_version" != "xyes" ; then
-    echo "Invalid SIMD Type, Defaulting to AVX"
-    simd_version=avx
-fi
-
-avx_supported=false
-if test "x$simd_version" = "xavx" || test "x$simd_version" = "xyes" ; then
-    for s in $SIMD_FLAGS; do
-        if test "x$s" = "x-mavx"; then
-            avx_supported=true
-            echo "Building with AVX instructions"
-            GAPS_CXX_FLAGS+=" -mavx "
-        fi
-    done
-    if test "x$avx_supported" = "xfalse" ; then
-        echo "Note: AVX not supported, trying for SSE"
-        simd_version=sse
-    fi
-fi
-
-sse_supported=false
-if test "x$simd_version" = "xsse" ; then
-    for s in $SIMD_FLAGS; do
-        if test "x$s" = "x-msse4.2"; then
-            sse_supported=true
-            echo "Building with SSE instructions"
-            GAPS_CXX_FLAGS+=" -msse4.2 "
-        fi
-    done
-    if test "x$sse_supported" = "xfalse" ; then
-        echo "Note: SSE not supported"
-        simd_version=no
-    fi
-fi
-
-if test "x$simd_version" = "xno" ; then
+if test "x$use_simd" = "xno" ; then
     echo "Building without SIMD instructions"
+fi
+
+if test "x$use_simd" != "xno" ; then
+    if test "x$ax_cv_cxx_compiler_vendor" = "xgnu" || test "x$ax_cv_cxx_compiler_vendor" = "xclang"; then
+        GAPS_CXX_FLAGS+=" -march=native "
+    fi
 fi
 
 # export variables containing flags
