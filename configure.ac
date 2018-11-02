@@ -73,9 +73,7 @@ if test "x$use_simd" = "xno" ; then
 fi
 
 if test "x$use_simd" != "xno" ; then
-    if test "x$ax_cv_cxx_compiler_vendor" = "xgnu" || test "x$ax_cv_cxx_compiler_vendor" = "xclang"; then
-        GAPS_CXX_FLAGS+=" -march=native "
-    fi
+    GAPS_CXX_FLAGS+=" -march=native "
 fi
 
 # export variables containing flags
