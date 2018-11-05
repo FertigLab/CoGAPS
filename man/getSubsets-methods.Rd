@@ -21,6 +21,6 @@ return the names of the genes (samples) in each subset
 }
 \examples{
 data(SimpSim)
-result <- CoGAPS(SimpSim.data)
+result <- CoGAPS(SimpSim.data, nIterations=100)
 getSubsets(result)
 }

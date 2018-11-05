@@ -21,6 +21,6 @@ return clustered patterns from set of all patterns across all subsets
 }
 \examples{
 data(SimpSim)
-result <- CoGAPS(SimpSim.data)
+result <- CoGAPS(SimpSim.data, nIterations=100)
 getClusteredPatterns(result)
 }

@@ -25,6 +25,6 @@ and standard deviation matrices
 }
 \examples{
 data(SimpSim)
-result <- CoGAPS(SimpSim.data)
+result <- CoGAPS(SimpSim.data, nIterations=100)
 feature_zscore <- calcZ(result)
 }
