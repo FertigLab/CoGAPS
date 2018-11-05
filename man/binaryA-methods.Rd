@@ -26,6 +26,6 @@ threshold * Asd and 0 otherwise
 }
 \examples{
 data(SimpSim)
-result <- CoGAPS(SimpSim.data)
+result <- CoGAPS(SimpSim.data, nIterations=100)
 binMatrix <- binaryA(result, threshold=3)
 }
