@@ -12,7 +12,9 @@ namespace gaps
     float sum(const SparseMatrix &mat);
 
     float min(const Matrix &mat);
+    float min(const SparseMatrix &mat);
     float max(const Matrix &mat);
+    float max(const SparseMatrix &mat);
 
     float mean(const Matrix &mat);
     float mean(const SparseMatrix &mat);
