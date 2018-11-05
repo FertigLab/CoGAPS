@@ -13,12 +13,40 @@ float gaps::min(const Matrix &mat)
     return mn;
 }
 
+float gaps::min(const SparseMatrix &mat)
+{
+    float mn = 0.f;
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        SparseIterator<1> it(mat.getCol(j));
+        while (!it.atEnd())
+        {
+            mn = (get<1>(it) < mn) ? get<1>(it) : mn;
+        }
+    }
+    return mn;
+}
+
 float gaps::max(const Matrix &mat)
 {
     float mx = mat(0,0);
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
         mx = gaps::max(gaps::max(mat.getCol(j)), mx);
+    }
+    return mx;
+}
+
+float gaps::max(const SparseMatrix &mat)
+{
+    float mx = 0.f;
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        SparseIterator<1> it(mat.getCol(j));
+        while (!it.atEnd())
+        {
+            mx = (get<1>(it) < mx) ? get<1>(it) : mx;
+        }
     }
     return mx;
 }

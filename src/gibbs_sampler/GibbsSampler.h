@@ -118,6 +118,13 @@ mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins)
     mMaxGibbsMass = maxGibbsMass / mLambda;
     mQueue.setAlpha(mAlpha);
     mQueue.setLambda(mLambda);
+
+    static bool warningGiven = false;
+    if (!warningGiven && gaps::max(mDMatrix) > 50.f)
+    {
+        warningGiven = true;
+        gaps_printf("\nWarning: Large values detected in data, data needs to be log-transformed\n");
+    }
 }
 
 template <class Derived, class DataMatrix, class FactorMatrix>
