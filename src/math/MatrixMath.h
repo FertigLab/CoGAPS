@@ -12,7 +12,9 @@ namespace gaps
     float sum(const SparseMatrix &mat);
 
     float min(const Matrix &mat);
+    float min(const SparseMatrix &mat);
     float max(const Matrix &mat);
+    float max(const SparseMatrix &mat);
 
     float mean(const Matrix &mat);
     float mean(const SparseMatrix &mat);
@@ -21,7 +23,7 @@ namespace gaps
     float nonZeroMean(const SparseMatrix &mat);
 
     Matrix pmax(Matrix mat, float p);
-}
+} // namespace gaps
 
 Matrix operator*(Matrix mat, float f);
 Matrix operator/(Matrix mat, float f);

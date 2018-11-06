@@ -14,7 +14,7 @@ class FixedHashSetU32
 {
 public:
 
-    FixedHashSetU32(unsigned size);
+    explicit FixedHashSetU32(unsigned size);
 
     void insert(unsigned n);
     void clear();

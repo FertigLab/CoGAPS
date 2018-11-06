@@ -23,12 +23,12 @@ namespace gaps
 
     Vector elementSq(Vector v);
     Vector pmax(Vector v, float p);
-}
+} // namespace gaps
 
 Vector operator*(Vector v, float f);
 Vector operator/(Vector v, float f);
 
-Vector operator*(const HybridVector &v, float f);
-Vector operator/(const HybridVector &v, float f);
+Vector operator*(const HybridVector &hv, float f);
+Vector operator/(const HybridVector &hv, float f);
 
 #endif

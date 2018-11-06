@@ -23,6 +23,6 @@ reconstruct gene
 }
 \examples{
 data(SimpSim)
-result <- CoGAPS(SimpSim.data)
+result <- CoGAPS(SimpSim.data, nIterations=100)
 D_estimate <- reconstructGene(result)
 }

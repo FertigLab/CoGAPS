@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <stdint.h>
+#include <limits>
+#include <cmath>
 
 const float maxU32AsFloat = static_cast<float>(std::numeric_limits<uint32_t>::max());
 const double maxU32AsDouble = static_cast<double>(std::numeric_limits<uint32_t>::max());
