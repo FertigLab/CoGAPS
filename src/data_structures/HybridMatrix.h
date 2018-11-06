@@ -1,9 +1,10 @@
 #ifndef __COGAPS_HYBRID_MATRIX_H__
 #define __COGAPS_HYBRID_MATRIX_H__
 
+#include "HybridVector.h"
 #include "Matrix.h"
 #include "Vector.h"
-#include "HybridVector.h"
+
 #include "../utils/GapsAssert.h"
 
 #include <vector>

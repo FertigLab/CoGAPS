@@ -21,6 +21,6 @@ return original parameters used to generate this result
 }
 \examples{
 data(SimpSim)
-result <- CoGAPS(SimpSim.data)
+result <- CoGAPS(SimpSim.data, nIterations=100)
 getOriginalParameters(result)
 }

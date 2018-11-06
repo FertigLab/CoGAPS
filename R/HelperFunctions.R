@@ -146,6 +146,7 @@ startupMessage <- function(data, allParams)
     if (!is.null(allParams$gaps@distributed))
         dist_message <- allParams$gaps@distributed
 
+    cat("\nThis is CoGAPS version", as.character(packageVersion("CoGAPS")), "\n")
     cat("Running", dist_message, "CoGAPS on", nGenes, "genes and",
         nSamples, "samples")
 

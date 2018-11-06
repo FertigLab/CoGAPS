@@ -1,10 +1,10 @@
 #include "GapsStatistics.h"
 #include "math/Math.h"
 
-GapsStatistics::GapsStatistics(unsigned nRow, unsigned nCol, unsigned nPatterns)
+GapsStatistics::GapsStatistics(unsigned nGenes, unsigned nSamples, unsigned nPatterns)
     :
-mAMeanMatrix(nRow, nPatterns), mAStdMatrix(nRow, nPatterns),
-mPMeanMatrix(nCol, nPatterns), mPStdMatrix(nCol, nPatterns),
+mAMeanMatrix(nGenes, nPatterns), mAStdMatrix(nGenes, nPatterns),
+mPMeanMatrix(nSamples, nPatterns), mPStdMatrix(nSamples, nPatterns),
 mStatUpdates(0), mNumPatterns(nPatterns)
 {}
 

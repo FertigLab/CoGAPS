@@ -25,7 +25,7 @@ public:
     template <unsigned N>
     friend class SparseIterator;
 
-    explicit HybridVector(unsigned size);
+    explicit HybridVector(unsigned sz);
     explicit HybridVector(const std::vector<float> &v);
 
     bool empty() const;

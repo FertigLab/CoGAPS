@@ -21,6 +21,6 @@ return chi-sq of final matrices
 }
 \examples{
 data(SimpSim)
-result <- CoGAPS(SimpSim.data)
+result <- CoGAPS(SimpSim.data, nIterations=100)
 getMeanChiSq(result)
 }

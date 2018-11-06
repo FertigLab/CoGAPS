@@ -298,19 +298,6 @@ otherwise the entire data set must be copied across multiple processes which
 will slow things down and potentially cause an out-of-memory error. We will
 see examples of this in the next two sections.
 
-# Workflow Example - Bulk Data
-
-THIS SECTION UNDER CONSTRUCTION
-
-Here we walk through running CoGAPS on the *GIST* data set from @OCHS_2009,
-which contains gene expression data from gastrointestinal
-stromal tumor cell lines treated with Gleevec. The matrix contains bulk gene
-expression data with 1363 genes and 9 samples.
-
-# Workflow Example - Single Cell Data
-
-THIS SECTION UNDER CONSTRUCTION
-
 # Additional Features of CoGAPS
 
 ## Checkpoint System - Saving/Loading CoGAPS Runs

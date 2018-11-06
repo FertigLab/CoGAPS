@@ -5,6 +5,7 @@
 #include "../utils/GapsAssert.h"
 
 #include <iterator>
+#include <algorithm>
 
 Matrix::Matrix() : mNumRows(0), mNumCols(0) {}
 

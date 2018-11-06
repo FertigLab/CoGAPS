@@ -49,6 +49,8 @@ public:
     void acceptBirth();
     void rejectBirth();
 
+    unsigned nProcessed() const;
+
     // serialization
     friend Archive& operator<<(Archive &ar, const ProposalQueue &queue);
     friend Archive& operator>>(Archive &ar, ProposalQueue &queue);
@@ -78,6 +80,8 @@ private:
     float mLambda;
     float mU1;
     float mU2;
+    
+    unsigned mNumProcessed;
 
     bool mUseCachedRng;
 

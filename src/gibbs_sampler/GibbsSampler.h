@@ -11,6 +11,9 @@
 #include "../GapsParameters.h"
 
 #include <vector>
+#include <limits>
+#include <cmath>
+#include <stdint.h>
 
 class GapsStatistics;
 
@@ -115,6 +118,13 @@ mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins)
     mMaxGibbsMass = maxGibbsMass / mLambda;
     mQueue.setAlpha(mAlpha);
     mQueue.setLambda(mLambda);
+
+    static bool warningGiven = false;
+    if (!warningGiven && gaps::max(mDMatrix) > 50.f)
+    {
+        warningGiven = true;
+        gaps_printf("\nWarning: Large values detected in data, data needs to be log-transformed\n");
+    }
 }
 
 template <class Derived, class DataMatrix, class FactorMatrix>
@@ -149,7 +159,7 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::update(unsigned nSteps, un
     {
         // create the largest queue possible, without hitting any conflicts
         mQueue.populate(mDomain, nSteps - n);
-        n += mQueue.size();
+        n += mQueue.nProcessed();
         
         // process all proposed updates in parallel - the way the queue is 
         // populated ensures no race conditions will happen
@@ -330,18 +340,21 @@ float delta)
 {
     if (prop.atom1->mass + delta > gaps::epsilon && prop.atom2->mass - delta > gaps::epsilon)
     {
-        prop.atom1->mass += delta;
-        prop.atom2->mass -= delta;
+        float newMass1 = prop.atom1->mass + delta;
+        float newMass2 = prop.atom2->mass - delta;
+    
+        impl()->safelyChangeMatrix(prop.r1, prop.c1, newMass1 - prop.atom1->mass);
+        impl()->safelyChangeMatrix(prop.r2, prop.c2, newMass2 - prop.atom2->mass);
 
-        impl()->safelyChangeMatrix(prop.r1, prop.c1, delta);
-        impl()->safelyChangeMatrix(prop.r2, prop.c2, -delta);
+        prop.atom1->mass = newMass1;
+        prop.atom2->mass = newMass2;
     }
 }
 
 template <class Derived, class DataMatrix, class FactorMatrix>
 bool GibbsSampler<Derived, DataMatrix, FactorMatrix>::canUseGibbs(unsigned col) const
 {
-    return !gaps::isVectorZero(mMatrix.getCol(col));
+    return !gaps::isVectorZero(mOtherMatrix->getCol(col));
 }
 
 template <class Derived, class DataMatrix, class FactorMatrix>

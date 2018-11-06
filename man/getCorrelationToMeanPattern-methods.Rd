@@ -21,6 +21,6 @@ return correlation between each pattern and the cluster mean
 }
 \examples{
 data(SimpSim)
-result <- CoGAPS(SimpSim.data)
+result <- CoGAPS(SimpSim.data, nIterations=100)
 getCorrelationToMeanPattern(result)
 }
