@@ -46,6 +46,7 @@ float gaps::max(const SparseMatrix &mat)
         while (!it.atEnd())
         {
             mx = (get<1>(it) < mx) ? get<1>(it) : mx;
+            it.next();
         }
     }
     return mx;
