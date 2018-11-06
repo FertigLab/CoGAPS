@@ -11,7 +11,7 @@
 
 #else
 
-    #include <cstdlib>
+    #include <cstdio>
     #include <iostream>
 
     #define gaps_printf printf
