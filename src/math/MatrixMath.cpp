@@ -45,7 +45,7 @@ float gaps::max(const SparseMatrix &mat)
         SparseIterator<1> it(mat.getCol(j));
         while (!it.atEnd())
         {
-            mx = (get<1>(it) < mx) ? get<1>(it) : mx;
+            mx = (get<1>(it) > mx) ? get<1>(it) : mx;
             it.next();
         }
     }
