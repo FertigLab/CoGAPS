@@ -13,8 +13,6 @@ test_that("Valid Top-Level CoGAPS Calls",
     data(GIST)
     testDataFrame <- GIST.data_frame
     testMatrix <- GIST.matrix
-    #testSummarizedExperiment <- 
-    #testSingleCellExperiment
 
     gistCsvPath <- system.file("extdata/GIST.csv", package="CoGAPS")
     gistTsvPath <- system.file("extdata/GIST.tsv", package="CoGAPS")
