@@ -6,10 +6,7 @@ float gaps::min(const Vector &v)
     float mn = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        if (v[i] < mn)
-        {
-            mn = v[i];
-        }
+        mn = (v[i] < mn) ? v[i] : mn;
     }
     return mn;
 }
@@ -19,10 +16,19 @@ float gaps::min(const HybridVector &v)
     float mn = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        if (v[i] > mn)
-        {
-            mn = v[i];
-        }
+        mn = (v[i] < mn) ? v[i] : mn;
+    }
+    return mn;
+}
+
+float gaps::min(const SparseVector &v)
+{
+    float mn = 0.f;
+    SparseIterator it(v);
+    while (!it.atEnd())
+    {
+        mn = (get<1>(it) < mn) ? get<1>(it) : mn;
+        it.next();
     }
     return mn;
 }
@@ -32,10 +38,7 @@ float gaps::max(const Vector &v)
     float mx = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        if (v[i] > mx)
-        {
-            mx = v[i];
-        }
+        mx = (v[i] > mx) ? v[i] : mx;
     }
     return mx;
 }
@@ -45,29 +48,21 @@ float gaps::max(const HybridVector &v)
     float mx = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        if (v[i] > mx)
-        {
-            mx = v[i];
-        }
+        mx = (v[i] > mx) ? v[i] : mx;
     }
     return mx;
 }
 
-bool gaps::isVectorZero(const Vector &v)
+float gaps::max(const SparseVector &v)
 {
-    for (unsigned i = 0; i < v.size(); ++i)
+    float mx = 0.f;
+    SparseIterator<1> it(v);
+    while (!it.atEnd())
     {
-        if (v[i] > 0.f)
-        {
-            return false;
-        }
+        mx = (get<1>(it) > mx) ? get<1>(it) : mx;
+        it.next();
     }
-    return true;
-}
-
-bool gaps::isVectorZero(const HybridVector &v)
-{
-    return v.empty();
+    return mx;
 }
 
 float gaps::sum(const Vector &v)
@@ -88,6 +83,34 @@ float gaps::sum(const HybridVector &v)
         sum += v[i];
     }
     return sum;
+}
+
+float gaps::sum(const SparseVector &v)
+{
+    float sum = 0.f;
+    SparseIterator<1> it(v);
+    while (!it.atEnd())
+    {
+        sum += get<1>(it);
+        it.next();
+    }
+}
+
+bool gaps::isVectorZero(const Vector &v)
+{
+    for (unsigned i = 0; i < v.size(); ++i)
+    {
+        if (v[i] > 0.f)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool gaps::isVectorZero(const HybridVector &v)
+{
+    return v.empty();
 }
 
 Vector gaps::elementSq(Vector v)
