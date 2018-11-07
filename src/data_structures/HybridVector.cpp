@@ -68,7 +68,7 @@ float HybridVector::operator[](unsigned i) const
     return mData[i];
 }
 
-const float* HybridVector::densePtr() const
+const float* HybridVector::ptr() const
 {
     return &(mData[0]);
 }
