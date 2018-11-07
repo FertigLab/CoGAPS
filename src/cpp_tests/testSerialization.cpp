@@ -279,6 +279,9 @@ TEST_CASE("AtomicDomain Serialization")
         REQUIRE(domainWrite.mAtoms[i]->pos == domainRead.mAtoms[i]->pos);
         REQUIRE(domainWrite.mAtoms[i]->mass == domainRead.mAtoms[i]->mass);
     }
+
+    // cleanup directory
+    std::remove("test_ar.temp");
 }
 #endif
 
@@ -437,7 +440,10 @@ TEST_CASE("ProposalQueue Serialization")
 
         queueWrite.clear();
         queueRead.clear();
-    }    
+    }
+
+    // cleanup directory
+    std::remove("test_ar.temp");
 }
 
 

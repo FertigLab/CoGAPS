@@ -3,6 +3,7 @@
 
 #include "../data_structures/Vector.h"
 #include "../data_structures/HybridVector.h"
+#include "../data_structures/SparseVector.h"
 #include "SIMD.h"
 
 namespace gaps

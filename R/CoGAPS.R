@@ -182,8 +182,8 @@ outputToFile=NULL, ...)
 #' @return CogapsResult object
 #' @importFrom methods new
 #' @examples
-#' data(SimpSim)
-#' result <- scCoGAPS(t(SimpSim.data), BPPARAM=BiocParallel::SerialParam(), nIterations=250)
+#' data(GIST)
+#' result <- scCoGAPS(t(GIST.matrix), BPPARAM=BiocParallel::SerialParam(), nIterations=100)
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
@@ -205,8 +205,8 @@ geneNames=NULL, sampleNames=NULL, matchedPatterns=NULL, ...)
 #' @return CogapsResult object
 #' @importFrom methods new
 #' @examples
-#' data(SimpSim)
-#' result <- GWCoGAPS(SimpSim.data, BPPARAM=BiocParallel::SerialParam(), nIterations=250)
+#' data(GIST)
+#' result <- GWCoGAPS(GIST.matrix, BPPARAM=BiocParallel::SerialParam(), nIterations=100)
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,

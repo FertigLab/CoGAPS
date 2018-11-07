@@ -1,3 +1,45 @@
+#' get specified number of retina subsets
+#' @export
+#'
+#' @description combines retina subsets from extdata directory
+#' @param n number of subsets to use
+#' @return matrix of RNA counts
+#' @importFrom rhdf5 h5read
+getRetinaSubset <- function(n=1)
+{
+    if (!(n %in% 1:4))
+    {
+        stop("invalid number of subsets requested")
+    }
+
+    subset_1_path <- system.file("extdata/retina_subset_1.h5", package="CoGAPS")
+    subset_2_path <- system.file("extdata/retina_subset_2.h5", package="CoGAPS")
+    subset_3_path <- system.file("extdata/retina_subset_3.h5", package="CoGAPS")
+    subset_4_path <- system.file("extdata/retina_subset_4.h5", package="CoGAPS")
+
+    data <- rhdf5::h5read(subset_1_path, "counts")
+    cNames <- rhdf5::h5read(subset_1_path, "cellNames")
+    if (n > 1)
+    {
+        data <- cbind(data, rhdf5::h5read(subset_2_path, "counts"))
+        cNames <- c(cNames, rhdf5::h5read(subset_2_path, "cellNames"))
+    }
+    if (n > 2)
+    {
+        data <- cbind(data, rhdf5::h5read(subset_3_path, "counts"))
+        cNames <- c(cNames, rhdf5::h5read(subset_3_path, "cellNames"))
+    }
+    if (n > 3)
+    {
+        data <- cbind(data, rhdf5::h5read(subset_4_path, "counts"))
+        cNames <- c(cNames, rhdf5::h5read(subset_4_path, "cellNames"))
+    }
+
+    colnames(data) <- cNames
+    rownames(data) <- rhdf5::h5read(subset_1_path, "geneNames")
+    return(data)    
+}
+
 #' wrapper around cat
 #' @keywords internal
 #'

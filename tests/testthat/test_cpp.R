@@ -2,7 +2,6 @@ context("C++")
 
 test_that("Catch unit tests pass",
 {
-    data(SimpSim)
     data(GIST)
 
     gistCsvPath <<- system.file("extdata/GIST.csv", package="CoGAPS")
