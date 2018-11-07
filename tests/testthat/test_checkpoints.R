@@ -2,10 +2,11 @@ context("CoGAPS")
 
 test_that("Checkpoint System",
 {
-    data(SimpSim)
-    run1 <- CoGAPS(SimpSim.data, checkpointInterval=501,
-        checkpointOutFile="test.out", messages=FALSE)
-    run2 <- CoGAPS(SimpSim.data, checkpointInFile="test.out", messages=FALSE)
+    data(GIST)
+    run1 <- CoGAPS(GIST.matrix, checkpointInterval=51,
+        checkpointOutFile="test.out", messages=FALSE, nIterations=100)
+    run2 <- CoGAPS(GIST.matrix, checkpointInFile="test.out", messages=FALSE,
+        nIterations=100)
 
     print(max(run1@featureLoadings - run2@featureLoadings))
 

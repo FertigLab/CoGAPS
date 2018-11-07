@@ -15,7 +15,6 @@ getHistogram <- function(set, anno)
 test_that("Subsetting Data",
 {
     data(GIST)
-    data(SimpSim)
     testMatrix <- GIST.matrix
 
     # sampling with weights
@@ -25,7 +24,7 @@ test_that("Subsetting Data",
     params <- new("CogapsParams")
     params <- setAnnotationWeights(params, annotation=anno, weights=weights)
     result <- GWCoGAPS(testMatrix, params, messages=FALSE, seed=123,
-        nIterations=5000, geneNames=paste("Gene", 1:nrow(testMatrix), sep="_"))
+        nIterations=100, geneNames=paste("Gene", 1:nrow(testMatrix), sep="_"))
 
     hist <- sapply(getSubsets(result), getHistogram, anno=anno)
     freq <- unname(rowSums(hist) / sum(hist))
@@ -34,8 +33,12 @@ test_that("Subsetting Data",
 
     # running cogaps with given subsets
     sets <- list(1:225, 226:450, 451:675, 676:900)
-    result <- GWCoGAPS(SimpSim.data, nPatterns=7, explicitSets=sets,
-        messages=FALSE, matchedPatterns=matrix(1,nrow=ncol(SimpSim.data),ncol=7))
+    mat <- GIST.matrix
+    rownames(mat) <- NULL
+    colnames(mat) <- NULL
+    result <- GWCoGAPS(mat, nPatterns=7, explicitSets=sets,
+        nIterations=100, messages=FALSE,
+        matchedPatterns=matrix(1,nrow=ncol(mat), ncol=7))
     subsets <- lapply(getSubsets(result), getIndices)
     expect_true(all(sapply(1:4, function(i) all.equal(sets[[i]], subsets[[i]]))))
 })

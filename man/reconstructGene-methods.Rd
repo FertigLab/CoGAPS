@@ -22,7 +22,7 @@ the D' estimate of a gene or set of genes
 reconstruct gene
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data, nIterations=100)
+data(GIST)
+result <- CoGAPS(GIST.matrix, nIterations=100)
 D_estimate <- reconstructGene(result)
 }
