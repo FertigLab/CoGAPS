@@ -3,6 +3,7 @@
 
 #include "../data_structures/Vector.h"
 #include "../data_structures/HybridVector.h"
+#include "SIMD.h"
 
 namespace gaps
 {
@@ -15,11 +16,11 @@ namespace gaps
     bool isVectorZero(const Vector &v);
     bool isVectorZero(const HybridVector &v);
 
-    float dot(const Vector &v1, const Vector &v2);
-    float dot(const HybridVector &v1, const HybridVector &v2);
+    template <class VectorType>
+    float dot(const VectorType &a, const VectorType &b);
 
-    float dot_shifted(const Vector &v1, const Vector &v2, float c);
-    float dot_shifted(const HybridVector &v1, const HybridVector &v2, float c);
+    template <class VectorType>
+    float dot_shifted(const VectorType &v1, const VectorType &v2, float c);
 
     float sum(const Vector &v);
     float sum(const HybridVector &v);
@@ -33,5 +34,43 @@ Vector operator/(Vector v, float f);
 
 Vector operator*(const HybridVector &hv, float f);
 Vector operator/(const HybridVector &hv, float f);
+
+template <class VectorType>
+float gaps::dot(const VectorType &a, const VectorType &b)
+{
+    GAPS_ASSERT(a.size() == b.size());
+
+    const float *v1 = a.ptr();
+    const float *v2 = b.ptr();
+    const unsigned size = a.size();
+
+    gaps::simd::PackedFloat packedDot(0.f), p1, p2;
+    for (gaps::simd::Index i(0); i < size; ++i)
+    {
+        p1.load(v1 + i);
+        p2.load(v2 + i);
+        packedDot += p1 * p2;
+    }
+    return packedDot.scalar();
+}
+
+template <class VectorType>
+float gaps::dot_shifted(const VectorType &a, const VectorType &b, float c)
+{
+    GAPS_ASSERT(a.size() == b.size());
+
+    const float *v1 = a.ptr();
+    const float *v2 = b.ptr();
+    const unsigned size = a.size();
+
+    gaps::simd::PackedFloat packedDot(0.f), shift(c), p1, p2;
+    for (gaps::simd::Index i(0); i < size; ++i)
+    {
+        p1.load(v1 + i);
+        p2.load(v2 + i);
+        packedDot += p1 * (p2 + shift);
+    }
+    return packedDot.scalar();
+}
 
 #endif
