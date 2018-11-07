@@ -242,7 +242,7 @@ AlphaParameters SparseGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
     float s = mZ1[c1] * mZ1[c1] - 2 * mZ2.operator()(c1,c2) + mZ1[c2] * mZ1[c2];
-    float s_mu = -1.f * gaps::dot(mMatrix.getRow(r1), mZ2.getCol(c1) - mZ1[c1]);
+    float s_mu = -1.f * gaps::dot_shifted(mMatrix.getRow(r1), mZ2.getCol(c1), -mZ1[c1]);
 
     SparseIterator<3> it(mDMatrix.getCol(r1), mOtherMatrix->getCol(c1), mOtherMatrix->getCol(c2));
     while (!it.atEnd())
