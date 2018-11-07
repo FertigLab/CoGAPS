@@ -241,43 +241,25 @@ unsigned col, float ch)
 AlphaParameters SparseGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
-    float s = mZ1[c1] * mZ1[c1] - 2 * mZ2.operator()(c1,c2) + mZ1[c2] * mZ1[c2];
-    float s_mu = -1.f * gaps::dot_shifted(mMatrix.getRow(r1), mZ2.getCol(c1), -mZ1[c1]);
-
-    SparseIterator<3> it(mDMatrix.getCol(r1), mOtherMatrix->getCol(c1), mOtherMatrix->getCol(c2));
-    while (!it.atEnd())
-    {
-        float term1 = get<2>(it) - get<3>(it);
-
-        s += term1 * term1 + (term1 * term1 / get<1>(it) / get<1>(it));
-        s_mu += term1 * (get<1>(it) - gaps::dot(mMatrix.getRow(r1), mOtherMatrix->getRow(it.getIndex()))) / get<1>(it) / get<1>(it);
-        s_mu += term1 * gaps::dot(mMatrix.getRow(r1), mOtherMatrix->getRow(it.getIndex()));
-
-        it.next();
-    }
-    return AlphaParameters(s, s_mu) * mBeta;
-
-    /*
     if (r1 == r2)
     {
-        AlphaParameters a1 = alphaParameters(r1, c1);
-        AlphaParameters a2 = alphaParameters(r2, c2);
-        float s = -2.f * mBeta * mZ2(c1,c2) + a1.s + a2.s;
+        float s = mZ1[c1] * mZ1[c1] - 2 * mZ2.operator()(c1,c2) + mZ1[c2] * mZ1[c2];
+        float s_mu = -1.f * gaps::dot_shifted(mMatrix.getRow(r1), mZ2.getCol(c1), -mZ1[c1]);
 
-        SparseIterator<3> it(mDMatrix.getCol(r1), mOtherMatrix->getCol(c1),
-            mOtherMatrix->getCol(c2));
+        SparseIterator<3> it(mDMatrix.getCol(r1), mOtherMatrix->getCol(c1), mOtherMatrix->getCol(c2));
         while (!it.atEnd())
         {
-            float term1 = 2.f * get<2>(it) * get<3>(it);
-            s += mBeta * (term1 - term1 / GAPS_SQ(get<1>(it)));
+            float term1 = get<2>(it) - get<3>(it);
+
+            s += term1 * term1 + (term1 * term1 / get<1>(it) / get<1>(it));
+            s_mu += term1 * (get<1>(it) - gaps::dot(mMatrix.getRow(r1), mOtherMatrix->getRow(it.getIndex()))) / get<1>(it) / get<1>(it);
+            s_mu += term1 * gaps::dot(mMatrix.getRow(r1), mOtherMatrix->getRow(it.getIndex()));
+
             it.next();
         }
-        GAPS_ASSERT(s >= 0.f);
-        return AlphaParameters(s, a1.s_mu - a2.s_mu);
+        return AlphaParameters(s, s_mu) * mBeta;
     }
     return alphaParameters(r1, c1) + alphaParameters(r2, c2);
-    */
-
 }
 
 void SparseGibbsSampler::generateLookupTables()
