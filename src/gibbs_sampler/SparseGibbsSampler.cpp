@@ -90,7 +90,7 @@ AlphaParameters SparseGibbsSampler::alphaParameters(unsigned row, unsigned col)
     for (unsigned i = 0; i < sz; ++i)
     {
         if (vec[indices[i]] > 0.f)
-        {    
+        {
             float term1 = vec[indices[i]] / data[i];
             float term2 = vec[indices[i]] - term1 / data[i];
             s += term1 * term1 - vec[indices[i]] * vec[indices[i]];
@@ -181,7 +181,7 @@ unsigned col, float ch)
     for (unsigned i = 0; i < sz; ++i)
     {
         if (vec[indices[i]] > 0.f)
-        {    
+        {
             float term1 = vec[indices[i]] / data[i];
             float term2 = vec[indices[i]] - term1 / data[i];
             s += term1 * term1 - vec[indices[i]] * vec[indices[i]];
@@ -241,6 +241,23 @@ unsigned col, float ch)
 AlphaParameters SparseGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
+    float s = mZ1[c1] * mZ1[c1] - 2 * mZ2.operator()(c1,c2) + mZ1[c2] * mZ1[c2];
+    float s_mu = -1.f * gaps::dot(mMatrix.getRow(r1), mZ2.getCol(c1) - mZ1[c1]);
+
+    SparseIterator<3> it(mDMatrix.getCol(r1), mOtherMatrix->getCol(c1), mOtherMatrix->getCol(c2));
+    while (!it.atEnd())
+    {
+        float term1 = get<2>(it) - get<3>(it);
+
+        s += term1 * term1 + (term1 * term1 / get<1>(it) / get<1>(it));
+        s_mu += term1 * (get<1>(it) - gaps::dot(mMatrix.getRow(r1), mOtherMatrix->getRow(it.getIndex()))) / get<1>(it) / get<1>(it);
+        s_mu += term1 * gaps::dot(mMatrix.getRow(r1), mOtherMatrix->getRow(it.getIndex()));
+
+        it.next();
+    }
+    return AlphaParameters(s, s_mu) * mBeta;
+
+    /*
     if (r1 == r2)
     {
         AlphaParameters a1 = alphaParameters(r1, c1);
@@ -259,6 +276,8 @@ unsigned r2, unsigned c2)
         return AlphaParameters(s, a1.s_mu - a2.s_mu);
     }
     return alphaParameters(r1, c1) + alphaParameters(r2, c2);
+    */
+
 }
 
 void SparseGibbsSampler::generateLookupTables()
