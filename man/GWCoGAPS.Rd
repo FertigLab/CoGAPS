@@ -54,6 +54,6 @@ CogapsResult object
 wrapper around genome-wide distributed algorithm for CoGAPS
 }
 \examples{
-data(SimpSim)
-result <- GWCoGAPS(SimpSim.data, BPPARAM=BiocParallel::SerialParam(), nIterations=250)
+data(GIST)
+result <- GWCoGAPS(GIST.matrix, BPPARAM=BiocParallel::SerialParam(), nIterations=100)
 }

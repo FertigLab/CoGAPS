@@ -1,5 +1,6 @@
 #include "Math.h"
 #include "VectorMath.h"
+#include "../data_structures/SparseIterator.h"
 
 float gaps::min(const Vector &v)
 {
@@ -24,7 +25,7 @@ float gaps::min(const HybridVector &v)
 float gaps::min(const SparseVector &v)
 {
     float mn = 0.f;
-    SparseIterator it(v);
+    SparseIterator<1> it(v);
     while (!it.atEnd())
     {
         mn = (get<1>(it) < mn) ? get<1>(it) : mn;
@@ -94,6 +95,7 @@ float gaps::sum(const SparseVector &v)
         sum += get<1>(it);
         it.next();
     }
+    return sum;
 }
 
 bool gaps::isVectorZero(const Vector &v)

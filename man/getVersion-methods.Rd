@@ -20,7 +20,7 @@ version number
 return version number used to generate this result
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data, nIterations=100)
+data(GIST)
+result <- CoGAPS(GIST.matrix, nIterations=100)
 getVersion(result)
 }

@@ -1,6 +1,10 @@
 #ifndef __COGAPS_MATRIX_MATH_H__
 #define __COGAPS_MATRIX_MATH_H__
 
+// in order for overload resolution to work correctly with vectors we need
+// to include VectorMath, code won't compile if overload resolution fails
+#include "VectorMath.h"
+
 #include "../data_structures/Matrix.h"
 #include "../data_structures/HybridMatrix.h"
 #include "../data_structures/SparseMatrix.h"
@@ -34,7 +38,7 @@ float gaps::min(const MatrixType &mat)
     float mn = 0.f;
     for (unsigned i = 0; i < mat.nCol(); ++i)
     {
-        float cmin = gaps::min(mat.getCol());
+        float cmin = gaps::min(mat.getCol(i));
         mn = (cmin < mn) ? cmin : mn;
     }
     return mn;
@@ -46,7 +50,7 @@ float gaps::max(const MatrixType &mat)
     float mx = 0.f;
     for (unsigned i = 0; i < mat.nCol(); ++i)
     {
-        float cmax = gaps::max(mat.getCol());
+        float cmax = gaps::max(mat.getCol(i));
         mx = (cmax < mx) ? cmax : mx;
     }
     return mx;
@@ -58,13 +62,13 @@ float gaps::sum(const MatrixType &mat)
     float sum = 0.f;
     for (unsigned i = 0; i < mat.nCol(); ++i)
     {
-        sum += gaps::sum(mat.getCol());
+        sum += gaps::sum(mat.getCol(i));
     }
     return sum;
 }
 
 template <class MatrixType>
-float gaps::sum(const MatrixType &mat)
+float gaps::mean(const MatrixType &mat)
 {
     return gaps::sum(mat) / (mat.nRow() * mat.nCol());
 }

@@ -91,10 +91,10 @@ file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
 
 ```{r}
 # load data
-data(SimpSim)
+data(GIST)
 
 # run CoGAPS
-CoGAPS(SimpSim.data)
+CoGAPS(GIST.matrix)
 ```
 
 While CoGAPS is running it periodically prints status messages. For example,
@@ -138,7 +138,7 @@ Once we've created the parameters object we can pass it along with our data to
 
 ```{r}
 # run CoGAPS with specified model parameters
-CoGAPS(SimpSim.data, params)
+CoGAPS(GIST.matrix, params)
 ```
 
 ### Run Configuration Options
@@ -149,7 +149,7 @@ directly to `CoGAPS` that control things like displaying the status of the run.
 
 ```{r}
 # run CoGAPS with specified output frequency
-CoGAPS(SimpSim.data, params, outputFrequency=250)
+CoGAPS(GIST.matrix, params, outputFrequency=250)
 ```
 
 There are several other arguments that are passed directly to `CoGAPS` which
@@ -171,7 +171,7 @@ provides these functions for querying the metadata in a safe manner:
 
 ```{r}
 # run CoGAPS
-result <- CoGAPS(SimpSim.data, params, messages=FALSE)
+result <- CoGAPS(GIST.matrix, params, messages=FALSE)
 
 # get the mean ChiSq statistic over all samples
 getMeanChiSq(result)
@@ -200,7 +200,7 @@ in `params`).
 
 ```{r}
 # store result
-result <- CoGAPS(SimpSim.data, params, nIterations=5000, messages=FALSE)
+result <- CoGAPS(GIST.matrix, params, nIterations=5000, messages=FALSE)
 
 # plot CogapsResult object returned from CoGAPS
 plot(result)
@@ -226,8 +226,8 @@ things like hardware and data size. The best approach is to play around with
 different values and see how it effects the estimated time.
 
 ```{r}
-CoGAPS(SimpSim.data, nIterations=10000, outputFrequency=5000, nThreads=1, seed=5)
-CoGAPS(SimpSim.data, nIterations=10000, outputFrequency=5000, nThreads=4, seed=5)
+CoGAPS(GIST.matrix, nIterations=10000, outputFrequency=5000, nThreads=1, seed=5)
+CoGAPS(GIST.matrix, nIterations=10000, outputFrequency=5000, nThreads=4, seed=5)
 ```
 
 Note this method relies on CoGAPS being compiled with OpenMP support, use
@@ -272,16 +272,16 @@ The following calls are equivalent:
 
 ```{r}
 # genome-wide CoGAPS
-GWCoGAPS(SimpSim.data, params, messages=FALSE)
+GWCoGAPS(GIST.matrix, params, messages=FALSE)
 
 # genome-wide CoGAPS
-CoGAPS(SimpSim.data, params, distributed="genome-wide", messages=FALSE)
+CoGAPS(GIST.matrix, params, distributed="genome-wide", messages=FALSE)
 
 # single-cell CoGAPS
-scCoGAPS(SimpSim.data, params, messages=FALSE)
+scCoGAPS(GIST.matrix, params, messages=FALSE)
 
 # single-cell CoGAPS
-CoGAPS(SimpSim.data, params, distributed="single-cell", singleCell=TRUE, messages=FALSE)
+CoGAPS(GIST.matrix, params, distributed="single-cell", singleCell=TRUE, messages=FALSE)
 ```
 
 Notice that we also set the parameter `singleCell=TRUE`. This makes some 
@@ -310,10 +310,10 @@ pass a file name as `checkpointInFile` to load from a checkpoint.
 
 ```{r}
 # our initial run
-res1 <- CoGAPS(SimpSim.data, params, checkpointInterval=100, checkpointOutFile="vignette_example.out", messages=FALSE)
+res1 <- CoGAPS(GIST.matrix, params, checkpointInterval=100, checkpointOutFile="vignette_example.out", messages=FALSE)
 
 # assume the previous run crashes
-res2 <- CoGAPS(SimpSim.data, checkpointInFile="vignette_example.out", messages=FALSE)
+res2 <- CoGAPS(GIST.matrix, checkpointInFile="vignette_example.out", messages=FALSE)
 
 # check that they're equal
 all(res1@featureLoadings == res2@featureLoadings)
@@ -353,7 +353,7 @@ different choices for the backend.
 
 ```{r}
 # run CoGAPS with serial backend
-scCoGAPS(SimpSim.data, params, BPPARAM=BiocParallel::SerialParam(), messages=FALSE)
+scCoGAPS(GIST.matrix, params, BPPARAM=BiocParallel::SerialParam(), messages=FALSE)
 ```
 
 ### Methods of Subsetting Data
@@ -366,12 +366,12 @@ sampling all rows (cols) according to the weight of each category.
 
 ```{r}
 # sampling with weights
-anno <- sample(letters[1:5], size=nrow(SimpSim.data), replace=TRUE)
+anno <- sample(letters[1:5], size=nrow(GIST.matrix), replace=TRUE)
 w <- c(1,1,2,2,1)
 names(w) <- letters[1:5]
 params <- new("CogapsParams")
 params <- setAnnotationWeights(params, annotation=anno, weights=w)
-result <- GWCoGAPS(SimpSim.data, params, messages=FALSE)
+result <- GWCoGAPS(GIST.matrix, params, messages=FALSE)
 ```
 
 Finally, the user can set `explicitSets` which is a list of character or 
@@ -383,7 +383,7 @@ into each set. Make sure to set `nSets` to the correct value before passing `exp
 sets <- list(1:225, 226:450, 451:675, 676:900)
 params <- new("CogapsParams")
 params <- setDistributedParams(params, nSets=length(sets))
-result <- GWCoGAPS(SimpSim.data, params, explicitSets=sets, messages=FALSE)
+result <- GWCoGAPS(GIST.matrix, params, explicitSets=sets, messages=FALSE)
 ```
 
 ### Additional Return Information
@@ -394,7 +394,7 @@ stitches the results from each subset back together.
 
 ```{r}
 # run GWCoGAPS (subset data so the displayed output is small)
-data <- SimpSim.data[,1:8]
+data <- GIST.matrix[,1:8]
 params <- new("CogapsParams")
 params <- setParam(params, "nPatterns", 3)
 params <- setDistributedParams(params, nSets=2)
@@ -425,13 +425,13 @@ along with the original parameters for the GWCoGAPS/scCoGAPS run.
 
 ```{r}
 # initial run
-result <- GWCoGAPS(SimpSim.data, messages=FALSE)
+result <- GWCoGAPS(GIST.matrix, messages=FALSE)
 
 # custom matching process (just take matrix from first subset as a dummy)
 consensusMatrix <- getUnmatchedPatterns(result)[[1]]
 
 # run with our custom matched patterns matrix
-GWCoGAPS(SimpSim.data, matchedPatterns=consensusMatrix, explicitSets=getSubsets(result))
+GWCoGAPS(GIST.matrix, matchedPatterns=consensusMatrix, explicitSets=getSubsets(result))
 ```
 
 # sessionInfo()
