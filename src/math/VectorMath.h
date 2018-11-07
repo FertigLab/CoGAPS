@@ -18,6 +18,9 @@ namespace gaps
     float dot(const Vector &v1, const Vector &v2);
     float dot(const HybridVector &v1, const HybridVector &v2);
 
+    float dot_shifted(const Vector &v1, const Vector &v2, float c);
+    float dot_shifted(const HybridVector &v1, const HybridVector &v2, float c);
+
     float sum(const Vector &v);
     float sum(const HybridVector &v);
 
