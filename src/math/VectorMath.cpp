@@ -19,10 +19,7 @@ float gaps::min(const Vector &v)
     float mn = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        if (v[i] < mn)
-        {
-            mn = v[i];
-        }
+        mn = (v[i] < mn) ? v[i] : mn;
     }
     return mn;
 }
@@ -32,10 +29,19 @@ float gaps::min(const HybridVector &v)
     float mn = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        if (v[i] > mn)
-        {
-            mn = v[i];
-        }
+        mn = (v[i] < mn) ? v[i] : mn;
+    }
+    return mn;
+}
+
+float gaps::min(const SparseVector &v)
+{
+    float mn = 0.f;
+    SparseIterator it(v);
+    while (!it.atEnd())
+    {
+        mn = (get<1>(it) < mn) ? get<1>(it) : mn;
+        it.next();
     }
     return mn;
 }
@@ -45,10 +51,7 @@ float gaps::max(const Vector &v)
     float mx = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        if (v[i] > mx)
-        {
-            mx = v[i];
-        }
+        mx = (v[i] > mx) ? v[i] : mx;
     }
     return mx;
 }
@@ -58,12 +61,52 @@ float gaps::max(const HybridVector &v)
     float mx = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        if (v[i] > mx)
-        {
-            mx = v[i];
-        }
+        mx = (v[i] > mx) ? v[i] : mx;
     }
     return mx;
+}
+
+float gaps::max(const SparseVector &v)
+{
+    float mx = 0.f;
+    SparseIterator<1> it(v);
+    while (!it.atEnd())
+    {
+        mx = (get<1>(it) > mx) ? get<1>(it) : mx;
+        it.next();
+    }
+    return mx;
+}
+
+float gaps::sum(const Vector &v)
+{
+    float sum = 0.f;
+    for (unsigned i = 0; i < v.size(); ++i)
+    {
+        sum += v[i];
+    }
+    return sum;
+}
+
+float gaps::sum(const HybridVector &v)
+{
+    float sum = 0.f;
+    for (unsigned i = 0; i < v.size(); ++i)
+    {
+        sum += v[i];
+    }
+    return sum;
+}
+
+float gaps::sum(const SparseVector &v)
+{
+    float sum = 0.f;
+    SparseIterator<1> it(v);
+    while (!it.atEnd())
+    {
+        sum += get<1>(it);
+        it.next();
+    }
 }
 
 bool gaps::isVectorZero(const Vector &v)
@@ -95,26 +138,6 @@ float gaps::dot(const HybridVector &v1, const HybridVector &v2)
     GAPS_ASSERT(v1.size() == v2.size());
 
     return dot_helper(v1.densePtr(), v2.densePtr(), v1.size());
-}
-
-float gaps::sum(const Vector &v)
-{
-    float sum = 0.f;
-    for (unsigned i = 0; i < v.size(); ++i)
-    {
-        sum += v[i];
-    }
-    return sum;
-}
-
-float gaps::sum(const HybridVector &v)
-{
-    float sum = 0.f;
-    for (unsigned i = 0; i < v.size(); ++i)
-    {
-        sum += v[i];
-    }
-    return sum;
 }
 
 Vector gaps::elementSq(Vector v)

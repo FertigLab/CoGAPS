@@ -8,18 +8,21 @@ namespace gaps
 {
     float min(const Vector &v);
     float min(const HybridVector &v);
+    float min(const SparseVector &v);
 
     float max(const Vector &v);
     float max(const HybridVector &v);
+    float max(const SparseVector &v);
+
+    float sum(const Vector &v);
+    float sum(const HybridVector &v);
+    float sum(const SparseVector &v);
 
     bool isVectorZero(const Vector &v);
     bool isVectorZero(const HybridVector &v);
 
     float dot(const Vector &v1, const Vector &v2);
     float dot(const HybridVector &v1, const HybridVector &v2);
-
-    float sum(const Vector &v);
-    float sum(const HybridVector &v);
 
     Vector elementSq(Vector v);
     Vector pmax(Vector v, float p);
