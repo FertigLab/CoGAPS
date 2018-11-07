@@ -1,31 +1,5 @@
 #include "Math.h"
 #include "VectorMath.h"
-#include "SIMD.h"
-
-static float dot_helper(const float *v1, const float *v2, unsigned size)
-{
-    gaps::simd::PackedFloat packedDot(0.f), p1, p2;
-    for (gaps::simd::Index i(0); i < size; ++i)
-    {
-        p1.load(v1 + i);
-        p2.load(v2 + i);
-        packedDot += p1 * p2;
-    }
-    return packedDot.scalar();
-}
-
-static float dot_shifted_helper(const float *v1, const float *v2, unsigned size,
-float c)
-{
-    gaps::simd::PackedFloat packedDot(0.f), shift(c), p1, p2;
-    for (gaps::simd::Index i(0); i < size; ++i)
-    {
-        p1.load(v1 + i);
-        p2.load(v2 + i);
-        packedDot += p1 * (p2 + shift);
-    }
-    return packedDot.scalar();
-}
 
 float gaps::min(const Vector &v)
 {
@@ -94,34 +68,6 @@ bool gaps::isVectorZero(const Vector &v)
 bool gaps::isVectorZero(const HybridVector &v)
 {
     return v.empty();
-}
-
-float gaps::dot(const Vector &v1, const Vector &v2)
-{
-    GAPS_ASSERT(v1.size() == v2.size());
-
-    return dot_helper(v1.ptr(), v2.ptr(), v1.size());
-}
-
-float gaps::dot(const HybridVector &v1, const HybridVector &v2)
-{
-    GAPS_ASSERT(v1.size() == v2.size());
-
-    return dot_helper(v1.densePtr(), v2.densePtr(), v1.size());
-}
-
-float gaps::dot_shifted(const Vector &v1, const Vector &v2, float c)
-{
-    GAPS_ASSERT(v1.size() == v2.size());
-
-    return dot_shifted_helper(v1.ptr(), v2.ptr(), v1.size(), c);
-}
-
-float gaps::dot_shifted(const HybridVector &v1, const HybridVector &v2, float c)
-{
-    GAPS_ASSERT(v1.size() == v2.size());
-
-    return dot_shifted_helper(v1.densePtr(), v2.densePtr(), v1.size(), c);
 }
 
 float gaps::sum(const Vector &v)

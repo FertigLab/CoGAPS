@@ -34,7 +34,7 @@ public:
     bool add(unsigned i, float v); // true if zeros out data
     float operator[](unsigned i) const;
 
-    const float* densePtr() const;
+    const float* ptr() const;
 
     const std::vector<uint64_t>& getBitFlags() const { return mIndexBitFlags; }
 
