@@ -84,7 +84,7 @@ public:
 
     PackedFloat() : mData() {}
     explicit PackedFloat(float val) : mData(SET_SCALAR(val)) {}
-#if defined( __GAPS_SSE__ ) || defined( __GAPS_AVX__ )
+#if defined( __GAPS_SSE__ ) || defined( __GAPS_AVX__ ) // avoid redefintion when gaps_packed_t == float
     explicit PackedFloat(gaps_packed_t val) : mData(val) {}
 #endif
 
