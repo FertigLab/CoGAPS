@@ -55,5 +55,5 @@ wrapper around single-cell distributed algorithm for CoGAPS
 }
 \examples{
 data(GIST)
-result <- scCoGAPS(t(GIST.matrix), BPPARAM=BiocParallel::SerialParam(), nIterations=250)
+result <- scCoGAPS(t(GIST.matrix), BPPARAM=BiocParallel::SerialParam(), nIterations=100)
 }
