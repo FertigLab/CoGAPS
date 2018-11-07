@@ -9,9 +9,15 @@ namespace gaps
 {
     float min(const Vector &v);
     float min(const HybridVector &v);
+    float min(const SparseVector &v);
 
     float max(const Vector &v);
     float max(const HybridVector &v);
+    float max(const SparseVector &v);
+
+    float sum(const Vector &v);
+    float sum(const HybridVector &v);
+    float sum(const SparseVector &v);
 
     bool isVectorZero(const Vector &v);
     bool isVectorZero(const HybridVector &v);
@@ -21,9 +27,6 @@ namespace gaps
 
     template <class VectorType>
     float dot_shifted(const VectorType &v1, const VectorType &v2, float c);
-
-    float sum(const Vector &v);
-    float sum(const HybridVector &v);
 
     Vector elementSq(Vector v);
     Vector pmax(Vector v, float p);
