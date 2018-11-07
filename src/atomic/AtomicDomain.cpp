@@ -1,6 +1,8 @@
 #include "AtomicDomain.h"
 #include "../utils/GapsAssert.h"
 
+#include <algorithm>
+#include <limits>
 #include <vector>
 
 ////////////////////////////////// HELPER //////////////////////////////////////
