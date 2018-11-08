@@ -192,7 +192,6 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional")
             it.next();
         }
         REQUIRE(ddot == gaps::dot(dv1, dv2));
-        REQUIRE(ddot == gaps::dot_shifted(dv1, dv2, 0.f));
         REQUIRE(sdot == ddot);
     }
 #endif
