@@ -243,7 +243,7 @@ unsigned r2, unsigned c2)
 {
     if (r1 == r2)
     {
-        float s = -1.f * (mZ1[c1] - 2 * mZ2.operator()(c1,c2) + mZ1[c2]);
+        float s = mZ1[c1] - 2.f * mZ2(c1,c2) + mZ1[c2];
         float s_mu = -1.f * gaps::dot_shifted(mMatrix.getRow(r1), mZ2.getCol(c1), -mZ1[c1]);
 
         SparseIterator<3> it(mDMatrix.getCol(r1), mOtherMatrix->getCol(c1), mOtherMatrix->getCol(c2));
@@ -251,7 +251,7 @@ unsigned r2, unsigned c2)
         {
             float term1 = get<2>(it) - get<3>(it);
 
-            s += term1 * term1 + (term1 * term1 / get<1>(it) / get<1>(it));
+            s += (term1 * term1) / (get<1>(it) * get<1>(it)) - term1 * term1;
             s_mu += term1 * (get<1>(it) - gaps::dot(mMatrix.getRow(r1), mOtherMatrix->getRow(it.getIndex()))) / get<1>(it) / get<1>(it);
             s_mu += term1 * gaps::dot(mMatrix.getRow(r1), mOtherMatrix->getRow(it.getIndex()));
 

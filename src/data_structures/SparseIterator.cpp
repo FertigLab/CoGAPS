@@ -80,14 +80,12 @@ float get<2>(const SparseIterator<2> &it)
 template<>
 float get<2>(const SparseIterator<3> &it)
 {
-    GAPS_ASSERT(it.mHybrid_1[64 * it.mBigIndex + it.mSmallIndex] > 0.f);
     return it.mHybrid_1[64 * it.mBigIndex + it.mSmallIndex];
 }
 
 template<>
 float get<3>(const SparseIterator<3> &it)
 {
-    GAPS_ASSERT(it.mHybrid_2[64 * it.mBigIndex + it.mSmallIndex] > 0.f);
     return it.mHybrid_2[64 * it.mBigIndex + it.mSmallIndex];
 }
 
@@ -161,7 +159,7 @@ mHybrid_2(h2),
 mSparseFlags(v.mIndexBitFlags[0]),
 mHybridFlags_1(h1.mIndexBitFlags[0]),
 mHybridFlags_2(h2.mIndexBitFlags[0]),
-mCommonFlags(v.mIndexBitFlags[0] & h1.mIndexBitFlags[0] & h2.mIndexBitFlags[0]),
+mCommonFlags(v.mIndexBitFlags[0] & (h1.mIndexBitFlags[0] | h2.mIndexBitFlags[0])),
 mTotalIndices(v.mIndexBitFlags.size()),
 mBigIndex(0),
 mSmallIndex(0),
@@ -187,7 +185,7 @@ void SparseIterator<3>::next()
 
 void SparseIterator<3>::calculateCommonFlags()
 {
-    mCommonFlags = mSparseFlags & mHybridFlags_1 & mHybridFlags_2;
+    mCommonFlags = mSparseFlags & (mHybridFlags_1 | mHybridFlags_2);
 }
 
 void SparseIterator<3>::getFlags()

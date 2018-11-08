@@ -248,7 +248,6 @@ TEST_CASE("Test SparseIterator.h - Three Dimensional")
     {
         SparseVector sv(10);
         sv.insert(0, 1.f);
-        sv.insert(4, 5.f);
         sv.insert(7, 8.f);
         sv.insert(8, 9.f);
         sv.insert(9, 10.f);
@@ -256,20 +255,22 @@ TEST_CASE("Test SparseIterator.h - Three Dimensional")
         HybridVector hv1(10);
         hv1.add(4, 3.f);
         hv1.add(5, 4.f);
-        hv1.add(6, 5.f);
         hv1.add(7, 6.f);
         hv1.add(9, 7.f);
 
         HybridVector hv2(10);
-        hv2.add(0, 5.f);
         hv2.add(4, 6.f);
         hv2.add(8, 7.f);
         hv2.add(9, 8.f);
         
         SparseIterator<3> it(sv, hv1, hv2);
-        REQUIRE(get<1>(it) == 5.f); // 4
-        REQUIRE(get<2>(it) == 3.f);
-        REQUIRE(get<3>(it) == 6.f);
+        REQUIRE(get<1>(it) == 8.f); // 7
+        REQUIRE(get<2>(it) == 6.f);
+        REQUIRE(get<3>(it) == 0.f);
+        it.next();
+        REQUIRE(get<1>(it) == 9.f); // 8
+        REQUIRE(get<2>(it) == 0.f);
+        REQUIRE(get<3>(it) == 7.f);
         it.next();
         REQUIRE(get<1>(it) == 10.f); // 9
         REQUIRE(get<2>(it) == 7.f);
