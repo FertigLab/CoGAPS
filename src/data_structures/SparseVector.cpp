@@ -1,6 +1,21 @@
 #include "SparseVector.h"
 #include "Vector.h"
 
+#ifdef GAPS_DEBUG
+static bool isSorted(const std::vector<unsigned> &vec)
+{
+    for (unsigned i = 1; i < vec.size(); ++i)
+    {
+        if (vec[i] <= vec[i-1])
+        {
+            gaps_printf("unsorted\nd\n%d\n", vec[i-1], vec[i]);
+            return false;
+        }
+    }
+    return true;
+}
+#endif
+
 // counts number of bits set below position
 // internal expression clears all bits as high as pos or higher
 // number of remaning bits is returned
@@ -64,10 +79,10 @@ void SparseVector::insert(unsigned i, float v)
     }
     dataIndex += countLowerBits(mIndexBitFlags[i / 64], i % 64);
 
-    mIndices.push_back(i);
-    std::sort(mIndices.begin(), mIndices.end());
     mData.insert(mData.begin() + dataIndex, v);
+    mIndices.insert(mIndices.begin() + dataIndex, i);
     mIndexBitFlags[i / 64] |= (1ull << (i % 64));
+    GAPS_ASSERT(isSorted(mIndices));
 }
 
 Vector SparseVector::getDense() const
@@ -90,14 +105,18 @@ Vector SparseVector::getDense() const
 
 float SparseVector::at(unsigned n) const
 {
-    for (unsigned i = 0; i < mIndices.size(); ++i)
+    if (!(mIndexBitFlags[n / 64] & (1ull << (n % 64))))
     {
-        if (mIndices[i] == n)
-        {
-            return mData[i];
-        }
+        return 0.f;
     }
-    return 0.f;
+
+    unsigned sparseNdx = 0;
+    for (unsigned i = 0; i < n / 64; ++i)
+    {
+        sparseNdx += __builtin_popcountll(mIndexBitFlags[i]);
+    }
+    sparseNdx += countLowerBits(mIndexBitFlags[n / 64], n % 64);
+    return mData[sparseNdx];
 }
 
 float SparseVector::getIthElement(unsigned n) const

@@ -24,6 +24,7 @@ public:
 
     bool atEnd() const;
     void next();
+    unsigned getIndex() const;
 
 #ifndef GAPS_INTERNAL_TESTS
 private:
@@ -32,7 +33,12 @@ private:
     friend float get<1>(const SparseIterator<1> &it);
 
     const SparseVector &mSparse;
+    uint64_t mSparseFlags;
     unsigned mSparseIndex;
+    unsigned mTotalIndices;
+    unsigned mBigIndex;
+    unsigned mSmallIndex;
+    bool mAtEnd;
 };
 
 template<>
