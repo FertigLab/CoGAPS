@@ -91,8 +91,7 @@ setValidity("CogapsResult",
 #' @return chi-sq error
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
-#' getMeanChiSq(result)
+#' getMeanChiSq(GIST.result)
 setGeneric("getMeanChiSq", function(object)
     {standardGeneric("getMeanChiSq")})
 
@@ -105,8 +104,7 @@ setGeneric("getMeanChiSq", function(object)
 #' @return version number
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
-#' getVersion(result)
+#' getVersion(GIST.result)
 setGeneric("getVersion", function(object)
     {standardGeneric("getVersion")})
 
@@ -119,8 +117,7 @@ setGeneric("getVersion", function(object)
 #' @return CogapsParams object
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
-#' getOriginalParameters(result)
+#' getOriginalParameters(GIST.result)
 setGeneric("getOriginalParameters", function(object)
     {standardGeneric("getOriginalParameters")})
 
@@ -133,8 +130,7 @@ setGeneric("getOriginalParameters", function(object)
 #' @return CogapsParams object
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
-#' getUnmatchedPatterns(result)
+#' getUnmatchedPatterns(GIST.result)
 setGeneric("getUnmatchedPatterns", function(object)
     {standardGeneric("getUnmatchedPatterns")})
 
@@ -147,8 +143,7 @@ setGeneric("getUnmatchedPatterns", function(object)
 #' @return CogapsParams object
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
-#' getClusteredPatterns(result)
+#' getClusteredPatterns(GIST.result)
 setGeneric("getClusteredPatterns", function(object)
     {standardGeneric("getClusteredPatterns")})
 
@@ -161,8 +156,7 @@ setGeneric("getClusteredPatterns", function(object)
 #' @return CogapsParams object
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
-#' getCorrelationToMeanPattern(result)
+#' getCorrelationToMeanPattern(GIST.result)
 setGeneric("getCorrelationToMeanPattern", function(object)
     {standardGeneric("getCorrelationToMeanPattern")})
 
@@ -175,8 +169,7 @@ setGeneric("getCorrelationToMeanPattern", function(object)
 #' @return CogapsParams object
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
-#' getSubsets(result)
+#' getSubsets(GIST.result)
 setGeneric("getSubsets", function(object)
     {standardGeneric("getSubsets")})
 
@@ -193,8 +186,7 @@ setGeneric("getSubsets", function(object)
 #' @return matrix of z-scores
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
-#' feature_zscore <- calcZ(result)
+#' feature_zscore <- calcZ(GIST.result)
 setGeneric("calcZ", function(object, which="feature")
     {standardGeneric("calcZ")})
 
@@ -208,8 +200,7 @@ setGeneric("calcZ", function(object, which="feature")
 #' @return the D' estimate of a gene or set of genes
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
-#' D_estimate <- reconstructGene(result)
+#' D_estimate <- reconstructGene(GIST.result)
 setGeneric("reconstructGene", function(object, genes=NULL)
     {standardGeneric("reconstructGene")})
 
@@ -227,8 +218,7 @@ setGeneric("reconstructGene", function(object, genes=NULL)
 #' @return plots a heatmap of the A Matrix
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix[1:100,], nIterations=100)
-#' binMatrix <- binaryA(result, threshold=3)
+#' binMatrix <- binaryA(GIST.result, threshold=3)
 setGeneric("binaryA", function(object, threshold=3)
     {standardGeneric("binaryA")})
 
@@ -244,8 +234,7 @@ setGeneric("binaryA", function(object, threshold=3)
 #' @return creates a residual plot
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
-#' plotResiduals(result, GIST.matrix)
+#' plotResiduals(GIST.result, GIST.matrix)
 setGeneric("plotResiduals", function(object, data, uncertainty=NULL)
     {standardGeneric("plotResiduals")})
 
