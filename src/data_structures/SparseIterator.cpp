@@ -92,17 +92,42 @@ float get<3>(const SparseIterator<3> &it)
 SparseIterator<1>::SparseIterator(const SparseVector &v)
 :
 mSparse(v),
-mSparseIndex(0)
-{}
+mSparseFlags(v.mIndexBitFlags[0]),
+mSparseIndex(0),
+mTotalIndices(v.mIndexBitFlags.size()),
+mBigIndex(0),
+mSmallIndex(0),
+mAtEnd(false)
+{
+    next();
+    mSparseIndex -= 1; // next puts us at position 1, this resets to 0
+}
 
 bool SparseIterator<1>::atEnd() const
 {
-    return mSparseIndex == mSparse.nElements();
+    return mAtEnd;
 }
 
 void SparseIterator<1>::next()
 {
     ++mSparseIndex;
+    while (!mSparseFlags)
+    {
+        // advance to next chunk
+        if (++mBigIndex == mTotalIndices)
+        {   
+            mAtEnd = true;
+            return;
+        }
+        mSparseFlags = mSparse.mIndexBitFlags[mBigIndex];
+    }
+    mSmallIndex = __builtin_ffsll(mSparseFlags) - 1;
+    mSparseFlags = clearLowerBits(mSparseFlags, mSmallIndex);
+}
+
+unsigned SparseIterator<1>::getIndex() const
+{
+    return 64 * mBigIndex + mSmallIndex;
 }
 
 SparseIterator<2>::SparseIterator(const SparseVector &v, const HybridVector &h)

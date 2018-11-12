@@ -3,6 +3,7 @@
 
 #if defined ( __AVX2__ ) || defined ( __AVX__ )
 
+    #define SIMD_INC 8
     #define __GAPS_AVX__
     #include <immintrin.h>
     typedef __m256 gaps_packed_t;
@@ -16,6 +17,7 @@
 
 #elif defined ( __SSE4_2__ ) || defined ( __SSE4_1__ )
 
+    #define SIMD_INC 4
     #define __GAPS_SSE__
     #include <nmmintrin.h>
     typedef __m128 gaps_packed_t;
@@ -30,6 +32,7 @@
 #else
 
     typedef float gaps_packed_t;
+    #define SIMD_INC 1
     #define SET_SCALAR(x) x
     #define LOAD_PACKED(x) *(x)
     #define STORE_PACKED(p,x) *(p) = (x)
@@ -58,13 +61,7 @@ public:
     
     static unsigned increment()
     {
-    #if defined( __GAPS_AVX__ )
-        return 8;
-    #elif defined( __GAPS_SSE__ )
-        return 4;
-    #else
-        return 1;
-    #endif
+        return SIMD_INC;
     }
 
     friend const float* operator+(const float *ptr, Index ndx);
@@ -82,7 +79,7 @@ class PackedFloat
 {
 public:
 
-    PackedFloat() : mData() {}
+    PackedFloat() : mData(SET_SCALAR(0.f)) {}
     explicit PackedFloat(float val) : mData(SET_SCALAR(val)) {}
 #if defined( __GAPS_SSE__ ) || defined( __GAPS_AVX__ ) // avoid redefintion when gaps_packed_t == float
     explicit PackedFloat(gaps_packed_t val) : mData(val) {}
@@ -122,6 +119,27 @@ private:
 
     gaps_packed_t mData;
 };
+
+inline float getScalar(gaps_packed_t pf)
+{
+    #if defined( __GAPS_AVX__ )
+
+        pf = _mm256_hadd_ps(pf, pf);
+        pf = _mm256_hadd_ps(pf, pf);
+        float* ra = reinterpret_cast<float*>(&pf); // NOLINT
+        return ra[0] + ra[4];
+
+    #elif defined( __GAPS_SSE__ )
+
+        float* ra = reinterpret_cast<float*>(&pf); // NOLINT
+        return ra[0] + ra[1] + ra[2] + ra[3];
+
+    #else
+
+        return pf;
+
+    #endif
+}
 
 } // namespace simd
 } // namespace gaps
