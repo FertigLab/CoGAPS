@@ -26,6 +26,6 @@ threshold * Asd and 0 otherwise
 }
 \examples{
 data(GIST)
-result <- CoGAPS(GIST.matrix, nIterations=100)
+result <- CoGAPS(GIST.matrix[1:100,], nIterations=100)
 binMatrix <- binaryA(result, threshold=3)
 }

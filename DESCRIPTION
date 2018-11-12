@@ -30,13 +30,13 @@ Imports:
     stats,
     SummarizedExperiment,
     tools,
-    utils
+    utils,
+    rhdf5
 Suggests:
     testthat,
     knitr,
     rmarkdown,
-    BiocStyle,
-    rhdf5
+    BiocStyle
 LinkingTo: Rcpp, BH
 VignetteBuilder: knitr
 License: GPL (==2)
