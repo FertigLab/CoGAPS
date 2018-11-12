@@ -227,7 +227,7 @@ setGeneric("reconstructGene", function(object, genes=NULL)
 #' @return plots a heatmap of the A Matrix
 #' @examples
 #' data(GIST)
-#' result <- CoGAPS(GIST.matrix, nIterations=100)
+#' result <- CoGAPS(GIST.matrix[1:100,], nIterations=100)
 #' binMatrix <- binaryA(result, threshold=3)
 setGeneric("binaryA", function(object, threshold=3)
     {standardGeneric("binaryA")})

@@ -49,16 +49,16 @@ buildReport <- function()
 #' @examples
 #' # Running from R object
 #' data(GIST)
-#' resultA <- CoGAPS(GIST.data_frame, nIterations=250)
+#' resultA <- CoGAPS(GIST.data_frame, nIterations=100)
 #'
 #' # Running from file name
 #' gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
-#' resultB <- CoGAPS(gist_path, nIterations=250)
+#' resultB <- CoGAPS(gist_path, nIterations=100)
 #'
 #' # Setting Parameters
 #' params <- new("CogapsParams")
 #' params <- setParam(params, "nPatterns", 5)
-#' resultC <- CoGAPS(GIST.data_frame, params, nIterations=250)
+#' resultC <- CoGAPS(GIST.data_frame, params, nIterations=100)
 #' @importFrom methods new is
 #' @importFrom SummarizedExperiment assay
 #' @importFrom utils packageVersion

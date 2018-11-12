@@ -9,7 +9,6 @@ OBJECTS =   Cogaps.o \
             GapsStatistics.o \
             RcppExports.o \
             test-runner.o \
-            atomic/AtomAllocator.o \
             atomic/AtomicDomain.o \
             atomic/ProposalQueue.o \
             data_structures/HashSets.o \
