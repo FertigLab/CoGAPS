@@ -4,7 +4,7 @@
 \alias{getRetinaSubset}
 \title{get specified number of retina subsets}
 \usage{
-getRetinaSubset(n)
+getRetinaSubset(n = 1)
 }
 \arguments{
 \item{n}{number of subsets to use}
