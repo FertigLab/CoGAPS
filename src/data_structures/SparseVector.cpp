@@ -1,21 +1,6 @@
 #include "SparseVector.h"
 #include "Vector.h"
 
-#ifdef GAPS_DEBUG
-static bool isSorted(const std::vector<unsigned> &vec)
-{
-    for (unsigned i = 1; i < vec.size(); ++i)
-    {
-        if (vec[i] <= vec[i-1])
-        {
-            gaps_printf("unsorted\nd\n%d\n", vec[i-1], vec[i]);
-            return false;
-        }
-    }
-    return true;
-}
-#endif
-
 // counts number of bits set below position
 // internal expression clears all bits as high as pos or higher
 // number of remaning bits is returned
@@ -40,7 +25,6 @@ mIndexBitFlags(v.size() / 64 + 1, 0)
         if (v[i] > 0.f)
         {
             mData.push_back(v[i]);
-            mIndices.push_back(i);
             mIndexBitFlags[i / 64] |= (1ull << (i % 64));
         }
     }
@@ -56,7 +40,6 @@ mIndexBitFlags(v.size() / 64 + 1, 0)
         if (v[i] > 0.f)
         {
             mData.push_back(v[i]);
-            mIndices.push_back(i);
             mIndexBitFlags[i / 64] |= (1ull << (i % 64));
         }
     }
@@ -80,9 +63,7 @@ void SparseVector::insert(unsigned i, float v)
     dataIndex += countLowerBits(mIndexBitFlags[i / 64], i % 64);
 
     mData.insert(mData.begin() + dataIndex, v);
-    mIndices.insert(mIndices.begin() + dataIndex, i);
     mIndexBitFlags[i / 64] |= (1ull << (i % 64));
-    GAPS_ASSERT(isSorted(mIndices));
 }
 
 Vector SparseVector::getDense() const

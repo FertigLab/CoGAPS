@@ -25,10 +25,8 @@ public:
 
     Vector getDense() const;
 
-    //const std::vector<unsigned>& getIndices() const { return mIndices; }
     const std::vector<float>& getData() const { return mData; }
     const std::vector<uint64_t>& getBitFlags() const { return mIndexBitFlags; }
-    const std::vector<unsigned>& getIndices() const { return mIndices; }    
 
     float at(unsigned n) const;
     float getIthElement(unsigned n) const;
@@ -43,7 +41,6 @@ private:
     
     unsigned mSize;
     std::vector<uint64_t> mIndexBitFlags;
-    std::vector<unsigned> mIndices;
     std::vector<float> mData;
 
     void insert(unsigned i, float v);
