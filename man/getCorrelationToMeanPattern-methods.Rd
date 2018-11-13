@@ -21,6 +21,5 @@ return correlation between each pattern and the cluster mean
 }
 \examples{
 data(GIST)
-result <- CoGAPS(GIST.matrix, nIterations=100)
-getCorrelationToMeanPattern(result)
+getCorrelationToMeanPattern(GIST.result)
 }

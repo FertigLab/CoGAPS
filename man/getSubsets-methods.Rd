@@ -21,6 +21,5 @@ return the names of the genes (samples) in each subset
 }
 \examples{
 data(GIST)
-result <- CoGAPS(GIST.matrix, nIterations=100)
-getSubsets(result)
+getSubsets(GIST.result)
 }

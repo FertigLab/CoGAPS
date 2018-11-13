@@ -21,6 +21,5 @@ return clustered patterns from set of all patterns across all subsets
 }
 \examples{
 data(GIST)
-result <- CoGAPS(GIST.matrix, nIterations=100)
-getClusteredPatterns(result)
+getClusteredPatterns(GIST.result)
 }

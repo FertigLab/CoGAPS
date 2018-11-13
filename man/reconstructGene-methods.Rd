@@ -23,6 +23,5 @@ reconstruct gene
 }
 \examples{
 data(GIST)
-result <- CoGAPS(GIST.matrix, nIterations=100)
-D_estimate <- reconstructGene(result)
+D_estimate <- reconstructGene(GIST.result)
 }

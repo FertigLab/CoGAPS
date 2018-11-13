@@ -21,6 +21,5 @@ return original parameters used to generate this result
 }
 \examples{
 data(GIST)
-result <- CoGAPS(GIST.matrix, nIterations=100)
-getOriginalParameters(result)
+getOriginalParameters(GIST.result)
 }
