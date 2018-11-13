@@ -25,6 +25,5 @@ calculate residuals and produce heatmap
 }
 \examples{
 data(GIST)
-result <- CoGAPS(GIST.matrix, nIterations=100)
-plotResiduals(result, GIST.matrix)
+plotResiduals(GIST.result, GIST.matrix)
 }

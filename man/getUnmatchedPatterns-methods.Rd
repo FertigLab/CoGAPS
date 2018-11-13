@@ -21,6 +21,5 @@ return unmatched patterns from each subset
 }
 \examples{
 data(GIST)
-result <- CoGAPS(GIST.matrix, nIterations=100)
-getUnmatchedPatterns(result)
+getUnmatchedPatterns(GIST.result)
 }

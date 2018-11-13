@@ -21,6 +21,5 @@ return version number used to generate this result
 }
 \examples{
 data(GIST)
-result <- CoGAPS(GIST.matrix, nIterations=100)
-getVersion(result)
+getVersion(GIST.result)
 }

@@ -25,6 +25,5 @@ and standard deviation matrices
 }
 \examples{
 data(GIST)
-result <- CoGAPS(GIST.matrix, nIterations=100)
-feature_zscore <- calcZ(result)
+feature_zscore <- calcZ(GIST.result)
 }
