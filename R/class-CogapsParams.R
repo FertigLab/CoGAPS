@@ -171,7 +171,7 @@ minNS=NULL, maxNS=NULL)
 #' @docType methods
 #' @rdname setAnnotationWeights-methods
 #'
-#' @description these parameters  are interrelated so they must be set together
+#' @description these parameters are interrelated so they must be set together
 #' @param object an object of type CogapsParams
 #' @param annotation vector of labels
 #' @param weights vector of weights
