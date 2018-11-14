@@ -11,7 +11,7 @@
 #define __GAPS_USE_POOLED_ALLOCATOR__
 
 #ifdef __GAPS_USE_POOLED_ALLOCATOR__
-#include <boost/pool/object_pool.hpp>
+#include "boost/pool/object_pool.hpp"
 #endif
 
 struct Atom
