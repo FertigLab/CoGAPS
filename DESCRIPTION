@@ -37,7 +37,7 @@ Suggests:
     knitr,
     rmarkdown,
     BiocStyle
-LinkingTo: Rcpp, BH
+LinkingTo: Rcpp
 VignetteBuilder: knitr
 License: GPL (==2)
 biocViews: GeneExpression, Transcription, GeneSetEnrichment,

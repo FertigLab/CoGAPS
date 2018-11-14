@@ -27,7 +27,7 @@ AC_ARG_ENABLE(simd, [AC_HELP_STRING([--enable-simd],
     [use_simd=$enableval], [use_simd=yes])
 
 # default CoGAPS specific flags
-GAPS_CPP_FLAGS=" -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__ "
+GAPS_CPP_FLAGS=" -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__ -Iinclude"
 GAPS_CXX_FLAGS=
 GAPS_LIBS=
 

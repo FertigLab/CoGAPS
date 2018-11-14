@@ -1,5 +1,3 @@
-// [[Rcpp::depends(BH)]]
-
 #include "Math.h"
 #include "../utils/GapsAssert.h"
 
