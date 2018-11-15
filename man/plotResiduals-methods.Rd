@@ -25,5 +25,6 @@ calculate residuals and produce heatmap
 }
 \examples{
 data(GIST)
-plotResiduals(GIST.result, GIST.matrix)
+# to expensive to call since it plots
+# plotResiduals(GIST.result, GIST.matrix)
 }

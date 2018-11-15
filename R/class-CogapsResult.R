@@ -218,7 +218,8 @@ setGeneric("reconstructGene", function(object, genes=NULL)
 #' @return plots a heatmap of the A Matrix
 #' @examples
 #' data(GIST)
-#' binMatrix <- binaryA(GIST.result, threshold=3)
+#' # to expensive to call since it plots
+#' # binaryA(GIST.result, threshold=3)
 setGeneric("binaryA", function(object, threshold=3)
     {standardGeneric("binaryA")})
 
@@ -234,7 +235,8 @@ setGeneric("binaryA", function(object, threshold=3)
 #' @return creates a residual plot
 #' @examples
 #' data(GIST)
-#' plotResiduals(GIST.result, GIST.matrix)
+#' # to expensive to call since it plots
+#' # plotResiduals(GIST.result, GIST.matrix)
 setGeneric("plotResiduals", function(object, data, uncertainty=NULL)
     {standardGeneric("plotResiduals")})
 
