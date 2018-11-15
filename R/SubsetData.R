@@ -94,14 +94,22 @@ createSets <- function(data, allParams)
     {
         if (length(allParams$gaps@explicitSets) != allParams$gaps@nSets)
             stop("nSets does not match number of explicit sets given")
-        return(sampleWithExplictSets(allParams, total))
+        sets <- sampleWithExplictSets(allParams, total)
     }
-
-    if (!is.null(allParams$gaps@samplingAnnotation))
+    else if (!is.null(allParams$gaps@samplingAnnotation))
     {
         gapsCat(allParams, "sampling with annotation weights\n")
-        return(sampleWithAnnotationWeights(allParams, setSize))
+        sets <- sampleWithAnnotationWeights(allParams, setSize)
     }
-    gapsCat(allParams, "\n")
-    return(sampleUniformly(allParams, total, setSize))
+    else
+    {
+        gapsCat(allParams, "\n")
+        sets <- sampleUniformly(allParams, total, setSize)
+    }
+
+    gapsCat(allParams, "set sizes (min, mean, max): (",
+        min(sapply(sets, length)), ", ",
+        mean(sapply(sets, length)), ", ",
+        max(sapply(sets, length)), ")\n", sep="")
+    return(sets)
 }
