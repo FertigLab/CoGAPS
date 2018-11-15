@@ -17,6 +17,10 @@ struct GapsResult
     float meanChiSq;
     uint32_t seed;
 
+    std::vector<float> chisqHistory;
+    std::vector<unsigned> atomHistoryA;
+    std::vector<unsigned> atomHistoryP;
+
     explicit GapsResult(const GapsStatistics &stat);
 
     void writeToFile(const std::string &fullPath);

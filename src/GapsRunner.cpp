@@ -107,7 +107,7 @@ const Sampler &ASampler, const Sampler &PSampler, char phase, unsigned iter)
 template <class Sampler>
 static void displayStatus(const GapsParameters &params,
 const Sampler &ASampler, const Sampler &PSampler, bpt::ptime startTime,
-char phase, unsigned iter)
+char phase, unsigned iter, GapsStatistics &stats)
 {
     if (params.printMessages && params.outputFrequency > 0
     && ((iter + 1) % params.outputFrequency) == 0)
@@ -131,10 +131,17 @@ char phase, unsigned iter)
         unsigned totalMinutes = totalSeconds / 60;
         totalSeconds -= totalMinutes * 60;
 
+        float cs = PSampler.chiSq();
+        unsigned nA = ASampler.nAtoms();
+        unsigned nP = PSampler.nAtoms();
+
+        stats.addChiSq(cs);
+        stats.addAtomCount(nA, nP);
+
         gaps_printf("%d of %d, Atoms: %d(%d), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
-            iter + 1, params.nIterations, ASampler.nAtoms(),
-            PSampler.nAtoms(), PSampler.chiSq(), elapsedHours, elapsedMinutes,
-            elapsedSeconds, totalHours, totalMinutes, totalSeconds);
+            iter + 1, params.nIterations, nA, nP, cs, elapsedHours,
+            elapsedMinutes, elapsedSeconds, totalHours, totalMinutes,
+            totalSeconds);
         gaps_flush();
     }
 }
@@ -236,7 +243,8 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
         {
             stats.update(ASampler, PSampler);
         }
-        displayStatus(params, ASampler, PSampler, startTime, phase, currentIter);
+        displayStatus(params, ASampler, PSampler, startTime, phase,
+            currentIter, stats);
     }
 }
 
