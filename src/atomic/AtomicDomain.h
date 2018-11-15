@@ -8,7 +8,7 @@
 #include <vector>
 
 // comment out to use 'new' operator for allocating atoms
-#define __GAPS_USE_POOLED_ALLOCATOR__
+// #define __GAPS_USE_POOLED_ALLOCATOR__
 
 #ifdef __GAPS_USE_POOLED_ALLOCATOR__
 #include "boost/pool/object_pool.hpp"
@@ -87,8 +87,6 @@ private:
     std::vector<Atom*> mAtoms;
 #ifdef __GAPS_USE_POOLED_ALLOCATOR__
     boost::object_pool<Atom> mAtomPool;
-#else
-    #warning "Not using pooled allocator for atomic"
 #endif
 };
 
