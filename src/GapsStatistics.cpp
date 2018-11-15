@@ -91,6 +91,27 @@ float GapsStatistics::meanChiSq(const SparseGibbsSampler &PSampler) const
     return chisq;
 }
 
+void GapsStatistics::addChiSq(float chisq)
+{
+    mChisqHistory.push_back(chisq);
+}
+
+void GapsStatistics::addAtomCount(unsigned atomA, unsigned atomP)
+{
+    mAtomHistoryA.push_back(atomA);
+    mAtomHistoryP.push_back(atomP);
+}
+
+std::vector<float> GapsStatistics::chisqHistory() const
+{
+    return mChisqHistory;
+}
+
+std::vector<unsigned> GapsStatistics::atomHistory(char m) const
+{
+    return m == 'A' ? mAtomHistoryA : mAtomHistoryP;
+}
+
 Archive& operator<<(Archive &ar, const GapsStatistics &stat)
 {
     ar << stat.mAMeanMatrix << stat.mAStdMatrix << stat.mPMeanMatrix

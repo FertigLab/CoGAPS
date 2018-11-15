@@ -23,6 +23,12 @@ public:
     Matrix Pmean() const;
     Matrix Asd() const;
     Matrix Psd() const;
+
+    void addChiSq(float chisq);
+    void addAtomCount(unsigned atomA, unsigned atomP);
+
+    std::vector<float> chisqHistory() const;
+    std::vector<unsigned> atomHistory(char m) const;
     
     float meanChiSq(const DenseGibbsSampler &PSampler) const;
     float meanChiSq(const SparseGibbsSampler &PSampler) const;
@@ -40,6 +46,10 @@ private:
     Matrix mPMeanMatrix;
     Matrix mPStdMatrix;
     
+    std::vector<float> mChisqHistory;
+    std::vector<unsigned> mAtomHistoryA;
+    std::vector<unsigned> mAtomHistoryP;
+
     unsigned mStatUpdates;
     unsigned mNumPatterns;
 };

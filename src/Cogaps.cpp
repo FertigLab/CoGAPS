@@ -136,7 +136,11 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
         Rcpp::Named("meanChiSq") = result.meanChiSq,
         Rcpp::Named("geneNames") = allParams["geneNames"],
         Rcpp::Named("sampleNames") = allParams["sampleNames"],
-        Rcpp::Named("diagnostics") = Rcpp::List::create()
+        Rcpp::Named("diagnostics") = Rcpp::List::create(
+            Rcpp::Named("chisq") = Rcpp::wrap(result.chisqHistory),
+            Rcpp::Named("atomsA") = Rcpp::wrap(result.atomHistoryA),
+            Rcpp::Named("atomsP") = Rcpp::wrap(result.atomHistoryP)
+        )
     );
 }
 
