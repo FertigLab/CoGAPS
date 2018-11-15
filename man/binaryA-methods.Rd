@@ -26,5 +26,6 @@ threshold * Asd and 0 otherwise
 }
 \examples{
 data(GIST)
-binMatrix <- binaryA(GIST.result, threshold=3)
+# to expensive to call since it plots
+# binaryA(GIST.result, threshold=3)
 }
