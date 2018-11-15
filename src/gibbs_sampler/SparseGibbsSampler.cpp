@@ -21,7 +21,7 @@ float SparseGibbsSampler::chiSq() const
         for (unsigned i = 0; i < mDMatrix.nRow(); ++i)
         {
             float dot = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(i));
-            chisq -= dot * dot;
+            chisq += dot * dot;
         }
 
         SparseIterator<1> it(mDMatrix.getCol(j));
@@ -29,7 +29,7 @@ float SparseGibbsSampler::chiSq() const
         {
             float dot = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(it.getIndex()));
             float dsq = get<1>(it) * get<1>(it);
-            chisq += 1 + dot * (dot - 2 * get<1>(it) + dsq * dot) / dsq;
+            chisq += 1 + dot * (dot - 2 * get<1>(it) - dsq * dot) / dsq;
             it.next();
         }
     }
