@@ -49,6 +49,7 @@ public:
     bool useSparseOptimization;
 
     char whichFixedMatrix;
+    unsigned workerID;
 
 private:
 
@@ -89,7 +90,8 @@ printMessages(true),
 subsetGenes(t_subsetGenes),
 printThreadUsage(true),
 useSparseOptimization(false),
-whichFixedMatrix('N')
+whichFixedMatrix('N'),
+workerID(1)
 {
     calculateDataDimensions(data);
 }
