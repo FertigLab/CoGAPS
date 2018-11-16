@@ -1,0 +1,17 @@
+version: 3.3.12 
+date: 2018-11-16
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fixed bug where rows/cols would get re-ordered in GWCoGAPS/scCoGAPS
+
+version: 3.3.11
+date: 2018-11-15
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - store chisq and atom count history in result object
+
+version: 3.3.10
+date: 2018-11-15
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - display size of subsets created by GWCoGAPS/scCoGAPS
