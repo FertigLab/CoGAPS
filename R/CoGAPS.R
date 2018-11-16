@@ -101,8 +101,6 @@ outputToFile=NULL, ...)
         stop("unsupported file extension for uncertainty")
     if (!is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "matrix"))
         stop("uncertainty must be a matrix unless data is a file path")
-    if (!is(data, "character"))
-        checkDataMatrix(data, uncertainty, allParams$gaps)
     if (!is.null(uncertainty) & allParams$gaps@sparseOptimization)
         stop("must use default uncertainty when enabling sparseOptimization")
 
@@ -123,6 +121,8 @@ outputToFile=NULL, ...)
         data <- SummarizedExperiment::assay(data, "counts")
     else if (is(data, "SingleCellExperiment"))
         data <- SummarizedExperiment::assay(data, "counts")
+    if (!is(data, "character"))
+        checkDataMatrix(data, uncertainty, allParams$gaps)
    
     # determine which function to call cogaps algorithm
     if (!is.null(allParams$gaps@distributed))

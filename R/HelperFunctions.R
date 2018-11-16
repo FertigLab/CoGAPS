@@ -236,6 +236,13 @@ parseExtraParams <- function(allParams, extraParams)
 #' @return throws an error if data has problems
 checkDataMatrix <- function(data, uncertainty, params)
 {
+    if (!is(data, "matrix") & !is(data, "data.frame")
+    & !is(data, "SummarizedExperiment") & !is(data, "SingleCellExperiment"))
+        stop("unsupported object type of CoGAPS")
+    if (any(is.na(data)))
+        stop("NA values in data")
+    if (!all(apply(data, 2, is.numeric)))
+        stop("data is not numeric")
     if (sum(data < 0) > 0 | sum(uncertainty < 0) > 0)
         stop("negative values in data and/or uncertainty matrix")
     if (nrow(data) <= params@nPatterns | ncol(data) <= params@nPatterns)
