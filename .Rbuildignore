@@ -4,6 +4,7 @@
 ^\.astylerc$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^ChangeLog
 
 ^inst/benchmarks/
 ^inst/profiling/
