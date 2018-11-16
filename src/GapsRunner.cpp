@@ -23,6 +23,22 @@ namespace bpt = boost::posix_time;
         } \
     } while(0)
 
+struct GapsTime
+{
+    unsigned hours;
+    unsigned minutes;
+    unsigned seconds;
+
+    GapsTime(unsigned totalSeconds)
+    {
+        hours = totalSeconds / 3600;
+        totalSeconds -= hours * 3600;
+        minutes = totalSeconds / 60;
+        totalSeconds -= minutes * 60;
+        seconds = totalSeconds;
+    }
+};
+
 // forward declaration
 template <class Sampler, class DataType>
 static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &params,
@@ -115,21 +131,9 @@ char phase, unsigned iter, GapsStatistics &stats)
         bpt::time_duration diff = bpt_now() - startTime;
         double perComplete = estimatedPercentComplete(params, ASampler,
             PSampler, phase, iter);
-        double nSecondsCurrent = diff.total_seconds();
-        double nSecondsTotal = nSecondsCurrent / perComplete;
 
-        unsigned elapsedSeconds = static_cast<unsigned>(nSecondsCurrent);
-        unsigned totalSeconds = static_cast<unsigned>(nSecondsTotal);
-
-        unsigned elapsedHours = elapsedSeconds / 3600;
-        elapsedSeconds -= elapsedHours * 3600;
-        unsigned elapsedMinutes = elapsedSeconds / 60;
-        elapsedSeconds -= elapsedMinutes * 60;
-
-        unsigned totalHours = totalSeconds / 3600;
-        totalSeconds -= totalHours * 3600;
-        unsigned totalMinutes = totalSeconds / 60;
-        totalSeconds -= totalMinutes * 60;
+        GapsTime elapsedTime(static_cast<unsigned>(diff.total_seconds()));
+        GapsTime totalTime(static_cast<unsigned>(diff.total_seconds() / perComplete));
 
         float cs = PSampler.chiSq();
         unsigned nA = ASampler.nAtoms();
@@ -139,9 +143,9 @@ char phase, unsigned iter, GapsStatistics &stats)
         stats.addAtomCount(nA, nP);
 
         gaps_printf("%d of %d, Atoms: %d(%d), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
-            iter + 1, params.nIterations, nA, nP, cs, elapsedHours,
-            elapsedMinutes, elapsedSeconds, totalHours, totalMinutes,
-            totalSeconds);
+            iter + 1, params.nIterations, nA, nP, cs, elapsedTime.hours,
+            elapsedTime.minutes, elapsedTime.seconds, totalTime.hours,
+            totalTime.minutes, totalTime.seconds);
         gaps_flush();
     }
 }
@@ -361,6 +365,16 @@ const DataType &uncertainty, GapsRandomState *randState)
     // get result
     GapsResult result(stats);
     result.meanChiSq = stats.meanChiSq(PSampler);
+
+    // if we are running distributed, each worker needs to print when it's done
+    if (!params.printThreadUsage)
+    {
+        bpt::time_duration diff = bpt_now() - startTime;
+        GapsTime elapsed(static_cast<unsigned>(diff.total_seconds()));
+        gaps_printf("    worker %d is finished! Time: %02d:%02d:%02d\n",
+            params.workerID, elapsed.hours, elapsed.minutes, elapsed.seconds);
+    }
+
     return result;
 }
 

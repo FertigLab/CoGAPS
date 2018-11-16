@@ -1,3 +1,9 @@
+version: 3.3.14
+date: 2018-11-16
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - added how much time the run took in the worker output message
+
 version: 3.3.13
 date: 2018-11-16
 author: Tom Sherman <tomsherman159@gmail.com>

@@ -69,6 +69,7 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
     // get configuration parameters
     params.maxThreads = allParams["nThreads"];
     params.printMessages = allParams["messages"] && (workerID == 1);
+    params.workerID = workerID;
     params.outputFrequency = allParams["outputFrequency"];
     params.checkpointOutFile = Rcpp::as<std::string>(allParams["checkpointOutFile"]);
     params.checkpointInterval = allParams["checkpointInterval"];
@@ -126,12 +127,6 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, unsigned workerID)
         result.writeToFile(Rcpp::as<std::string>(allParams["outputToFile"]));
     }
     
-    // if we are running distributed, each worker needs to print when it's done
-    if (indices.isNotNull())
-    {
-        gaps_printf("    worker %d is finished!\n", workerID);
-    }
-
     // return R list
     return Rcpp::List::create(
         Rcpp::Named("Amean") = createRMatrix(result.Amean),
