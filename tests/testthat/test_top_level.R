@@ -112,6 +112,46 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     expect_equal(nrow(res@featureLoadings), 9)
     expect_equal(nrow(res@sampleFactors), 1363)
+
+    # test same seed == same result
+    res1 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE)
+    res2 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE)
+    expect_true(all(res1@featureLoadings == res2@featureLoadings))
+    expect_true(all(res1@featureStdDev == res2@featureStdDev))
+    expect_true(all(res1@sampleFactors == res2@sampleFactors))
+    expect_true(all(res1@sampleStdDev== res2@sampleStdDev))
+
+    # test same seed == same result for distributed
+    res1 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE, distributed="genome-wide")
+    res2 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE, distributed="genome-wide")
+    expect_true(all(res1@featureLoadings == res2@featureLoadings))
+    expect_true(all(res1@featureStdDev == res2@featureStdDev))
+    expect_true(all(res1@sampleFactors == res2@sampleFactors))
+    expect_true(all(res1@sampleStdDev== res2@sampleStdDev))
+
+    # test same seed == same result for async
+    res1 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE, nThreads=1)
+    res2 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE, nThreads=4)
+    expect_true(all(res1@featureLoadings == res2@featureLoadings))
+    expect_true(all(res1@featureStdDev == res2@featureStdDev))
+    expect_true(all(res1@sampleFactors == res2@sampleFactors))
+    expect_true(all(res1@sampleStdDev== res2@sampleStdDev))
+
+    # test same seed == same result for different number of threads
+    res1 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE, nThreads=4)
+    res2 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE, nThreads=6)
+    expect_true(all(res1@featureLoadings == res2@featureLoadings))
+    expect_true(all(res1@featureStdDev == res2@featureStdDev))
+    expect_true(all(res1@sampleFactors == res2@sampleFactors))
+    expect_true(all(res1@sampleStdDev== res2@sampleStdDev))
 })
 
 #test_that("Invalid Top-Level CoGAPS Calls",
