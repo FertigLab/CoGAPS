@@ -1,3 +1,9 @@
+version: 3.3.13
+date: 2018-11-16
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - added a print message when a worker has finished during distributed CoGAPS
+
 version: 3.3.12 
 date: 2018-11-16
 author: Tom Sherman <tomsherman159@gmail.com>

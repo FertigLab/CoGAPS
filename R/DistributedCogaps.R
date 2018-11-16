@@ -22,7 +22,7 @@ geneNames, sampleNames, fixedMatrix=NULL)
     # call CoGAPS
     internal <- ifelse(is(data, "character"), cogaps_cpp_from_file, cogaps_cpp)
     raw <- internal(data, allParams, uncertainty, sets[[index]],
-        fixedMatrix, index == 1)
+        fixedMatrix, index)
     res <- new("CogapsResult", Amean=raw$Amean, Asd=raw$Asd, Pmean=raw$Pmean,
         Psd=raw$Psd, meanChiSq=raw$meanChiSq, geneNames=geneNames,
         sampleNames=sampleNames)

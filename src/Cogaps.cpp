@@ -45,7 +45,7 @@ static Rcpp::NumericMatrix createRMatrix(const GenericMatrix &mat)
 
 template <class DataType>
 GapsParameters getGapsParameters(const DataType &data,
-const Rcpp::List &allParams, bool isMaster,
+const Rcpp::List &allParams, unsigned workerID,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix,
 const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
 {
@@ -68,7 +68,7 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
 
     // get configuration parameters
     params.maxThreads = allParams["nThreads"];
-    params.printMessages = allParams["messages"] && isMaster;
+    params.printMessages = allParams["messages"] && (workerID == 1);
     params.outputFrequency = allParams["outputFrequency"];
     params.checkpointOutFile = Rcpp::as<std::string>(allParams["checkpointOutFile"]);
     params.checkpointInterval = allParams["checkpointInterval"];
@@ -110,10 +110,10 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
 template <class DataType>
 static Rcpp::List cogapsRun(const DataType &data, const Rcpp::List &allParams,
 const DataType &uncertainty, const Rcpp::Nullable<Rcpp::IntegerVector> &indices,
-const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
+const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, unsigned workerID)
 {
     // convert R parameters to GapsParameters struct
-    GapsParameters params(getGapsParameters(data, allParams, isMaster,
+    GapsParameters params(getGapsParameters(data, allParams, workerID,
         fixedMatrix, indices));
 
     // create GapsRunner, note we must first initialize the random generator
@@ -124,6 +124,12 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, bool isMaster)
     if (allParams["outputToFile"] != R_NilValue)
     {
         result.writeToFile(Rcpp::as<std::string>(allParams["outputToFile"]));
+    }
+    
+    // if we are running distributed, each worker needs to print when it's done
+    if (indices.isNotNull())
+    {
+        gaps_printf("    worker %d is finished!\n", workerID);
     }
 
     // return R list
@@ -152,7 +158,7 @@ const Rcpp::List &allParams,
 const Rcpp::Nullable<Rcpp::CharacterVector> &uncertainty=R_NilValue,
 const Rcpp::Nullable<Rcpp::IntegerVector> &indices=R_NilValue,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue,
-bool isMaster=true)
+unsigned workerID=1)
 {
     std::string unc;
     if (uncertainty.isNotNull())
@@ -161,7 +167,7 @@ bool isMaster=true)
     }
 
     return cogapsRun(Rcpp::as<std::string>(data), allParams, unc, indices,
-        fixedMatrix, isMaster);
+        fixedMatrix, workerID);
 }
 
 // [[Rcpp::export]]
@@ -170,7 +176,7 @@ const Rcpp::List &allParams,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &uncertainty=R_NilValue,
 const Rcpp::Nullable<Rcpp::IntegerVector> &indices=R_NilValue,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue,
-bool isMaster=true)
+unsigned workerID=1)
 {
     Matrix unc;
     if (uncertainty.isNotNull())
@@ -179,7 +185,7 @@ bool isMaster=true)
     }
 
     return cogapsRun(convertRMatrix(data), allParams, unc, indices,
-        fixedMatrix, isMaster);
+        fixedMatrix, workerID);
 }
 
 // [[Rcpp::export]]
