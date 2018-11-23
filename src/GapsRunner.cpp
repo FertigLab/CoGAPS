@@ -373,6 +373,7 @@ const DataType &uncertainty, GapsRandomState *randState)
         GapsTime elapsed(static_cast<unsigned>(diff.total_seconds()));
         gaps_printf("    worker %d is finished! Time: %02d:%02d:%02d\n",
             params.workerID, elapsed.hours, elapsed.minutes, elapsed.seconds);
+        gaps_flush();
     }
 
     return result;
