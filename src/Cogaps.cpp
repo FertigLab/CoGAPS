@@ -63,7 +63,8 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
     // create standard CoGAPS parameters struct
     GapsParameters params(data, allParams["transposeData"], indices.isNotNull(),
         subsetGenes, subset);
-    params.printThreadUsage = !indices.isNotNull();
+    params.runningDistributed = indices.isNotNull();
+    params.printThreadUsage = !params.runningDistributed;
     params.whichFixedMatrix = indices.isNotNull() ? (subsetGenes ? 'P' : 'A') : 'N';
 
     // get configuration parameters

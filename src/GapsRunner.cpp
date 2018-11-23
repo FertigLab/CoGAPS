@@ -367,7 +367,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     result.meanChiSq = stats.meanChiSq(PSampler);
 
     // if we are running distributed, each worker needs to print when it's done
-    if (!params.printThreadUsage)
+    if (params.runningDistributed)
     {
         bpt::time_duration diff = bpt_now() - startTime;
         GapsTime elapsed(static_cast<unsigned>(diff.total_seconds()));
