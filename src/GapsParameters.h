@@ -50,6 +50,7 @@ public:
 
     char whichFixedMatrix;
     unsigned workerID;
+    bool runningDistributed;
 
 private:
 
@@ -91,7 +92,8 @@ subsetGenes(t_subsetGenes),
 printThreadUsage(true),
 useSparseOptimization(false),
 whichFixedMatrix('N'),
-workerID(1)
+workerID(1),
+runningDistributed(false)
 {
     calculateDataDimensions(data);
 }
