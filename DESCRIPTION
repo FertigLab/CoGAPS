@@ -42,7 +42,7 @@ VignetteBuilder: knitr
 License: GPL (==2)
 biocViews: GeneExpression, Transcription, GeneSetEnrichment,
     DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray,
-    MultipleComparison, DimensionReduction
+    MultipleComparison, DimensionReduction, ImmunoOncology
 NeedsCompilation: yes
 RoxygenNote: 6.1.0
 Encoding: UTF-8
