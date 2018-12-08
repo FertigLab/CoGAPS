@@ -5,7 +5,7 @@ sudo: required
 
 # use bioconductor
 bioc_required: true
-bioc_use_devel: true
+bioc_use_devel: false
 
 # notification setup
 notifications:
