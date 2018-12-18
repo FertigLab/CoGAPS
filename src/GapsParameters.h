@@ -48,7 +48,7 @@ public:
     bool printThreadUsage;
     bool useSparseOptimization;
 
-    char whichFixedMatrix;
+    char whichMatrixFixed;
     unsigned workerID;
     bool runningDistributed;
 
@@ -91,7 +91,7 @@ printMessages(true),
 subsetGenes(t_subsetGenes),
 printThreadUsage(true),
 useSparseOptimization(false),
-whichFixedMatrix('N'),
+whichMatrixFixed('N'),
 workerID(1),
 runningDistributed(false)
 {

@@ -154,19 +154,19 @@ template <class Sampler>
 static void updateSampler(const GapsParameters &params, Sampler &ASampler,
 Sampler &PSampler, unsigned nA, unsigned nP)
 {
-    if (!params.useFixedMatrix || params.whichFixedMatrix != 'A')
+    if (params.whichMatrixFixed != 'A')
     {
         ASampler.update(nA, params.maxThreads);
-        if (!params.useFixedMatrix || params.whichFixedMatrix != 'P')
+        if (params.whichMatrixFixed != 'P')
         {
             PSampler.sync(ASampler, params.maxThreads);
         }
     }
 
-    if (!params.useFixedMatrix || params.whichFixedMatrix != 'P')
+    if (params.whichMatrixFixed != 'P')
     {
         PSampler.update(nP, params.maxThreads);
-        if (!params.useFixedMatrix || params.whichFixedMatrix != 'A')
+        if (params.whichMatrixFixed != 'A')
         {
             ASampler.sync(PSampler, params.maxThreads);
         }

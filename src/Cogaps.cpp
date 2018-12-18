@@ -65,7 +65,6 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
         subsetGenes, subset);
     params.runningDistributed = indices.isNotNull();
     params.printThreadUsage = !params.runningDistributed;
-    params.whichFixedMatrix = indices.isNotNull() ? (subsetGenes ? 'P' : 'A') : 'N';
 
     // get configuration parameters
     params.maxThreads = allParams["nThreads"];
@@ -90,6 +89,7 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
     if (fixedMatrix.isNotNull())
     {
         params.useFixedMatrix = true;
+        params.whichMatrixFixed = Rcpp::as<char>(allParams["whichMatrixFixed"]);
         params.fixedMatrix = convertRMatrix(Rcpp::NumericMatrix(fixedMatrix));
     }
 
@@ -152,8 +152,6 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, unsigned workerID)
 Rcpp::List cogaps_cpp_from_file(const Rcpp::CharacterVector &data,
 const Rcpp::List &allParams,
 const Rcpp::Nullable<Rcpp::CharacterVector> &uncertainty=R_NilValue,
-const Rcpp::Nullable<Rcpp::IntegerVector> &indices=R_NilValue,
-const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue,
 unsigned workerID=1)
 {
     std::string unc;
@@ -170,8 +168,6 @@ unsigned workerID=1)
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data,
 const Rcpp::List &allParams,
 const Rcpp::Nullable<Rcpp::NumericMatrix> &uncertainty=R_NilValue,
-const Rcpp::Nullable<Rcpp::IntegerVector> &indices=R_NilValue,
-const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix=R_NilValue,
 unsigned workerID=1)
 {
     Matrix unc;
