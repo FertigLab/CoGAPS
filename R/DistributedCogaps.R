@@ -53,11 +53,10 @@ distributedCogaps <- function(data, allParams, uncertainty)
         allParams$bpBackend <- BiocParallel::MulticoreParam(workers=length(sets))
     
     initialResult <- NULL
-    if (is.null(allParams$matchedPatterns))
+    if (is.null(allParams$fixedPatterns))
     {
         # run Cogaps normally on each subset of the data
-        if (allParams$messages)
-            cat("Running Across Subsets...\n\n")
+        gapsCat(allParams, "Running Across Subsets...\n\n")
         initialResult <- bplapply(1:length(sets), callInternalCoGAPS, BPPARAM=allParams$bpBackend,
             sets=sets, data=data, allParams=allParams, uncertainty=uncertainty,
             geneNames=allParams$geneNames, sampleNames=allParams$sampleNames)
@@ -69,8 +68,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
             unmatchedPatterns <- lapply(initialResult, function(x) x@featureLoadings)
 
         # match patterns in either A or P matrix
-        if (allParams$messages)
-            cat("\nMatching Patterns Across Subsets...\n")
+        gapsCat(allParams, "\nMatching Patterns Across Subsets...\n")
         matchedPatterns <- findConsensusMatrix(unmatchedPatterns, allParams)
         allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
 
@@ -87,8 +85,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
     }
         
     # run final phase with fixed matrix
-    if (allParams$messages)
-        cat("Running Final Stage...\n\n")
+    gapsCat(allParams, "Running Final Stage...\n\n")
     finalResult <- bplapply(1:length(sets), callInternalCoGAPS, BPPARAM=allParams$bpBackend,
         sets=sets, data=data, allParams=allParams, uncertainty=uncertainty,
         geneNames=allParams$geneNames, sampleNames=allParams$sampleNames,    

@@ -250,3 +250,87 @@ checkDataMatrix <- function(data, uncertainty, params)
     if (sum(uncertainty < 1e-5) > 0)
         warning("small values in uncertainty matrix detected")
 }
+
+#' check that all inputs are valid
+#' @keywords internal
+#'
+#' @param data data matrix
+#' @param uncertainty uncertainty matrix, can be null
+#' @param allParams list of all parameters
+#' @return throws an error if inputs are invalid
+checkInputs <- function(data, uncertainty, allParams)
+{
+    # check file extension
+    if (is(data, "character") & !supported(data))
+        stop("unsupported file extension for data")
+
+    # check uncertainty matrix
+    if (is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "character"))
+        stop("uncertainty must be same data type as data (file name)")
+    if (is(uncertainty, "character") & !supported(uncertainty))
+        stop("unsupported file extension for uncertainty")
+    if (!is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "matrix"))
+        stop("uncertainty must be a matrix unless data is a file path")
+    if (!is.null(uncertainty) & allParams$gaps@sparseOptimization)
+        stop("must use default uncertainty when enabling sparseOptimization")
+
+    # check fixed matrix choice
+    if (!(allParams$whichMatrixFixed %in% ("A", "P", "N")))
+        stop("Invalid choice of fixed matrix, must be 'A' or 'P'")
+    if (!is.null(allParams$fixedPatterns) & allParams@whichMatrixFixed == "N")
+        stop("fixedPatterns passed without setting whichMatrixFixed")
+
+    # check parameters specific to distributed cogaps
+    if (!is.null(allParams$gaps@distributed))
+    {
+        if (allParams$gaps@distributed == "single-cell" & !allParams$gaps@singleCell)
+            warning("running single-cell CoGAPS with singleCell=FALSE")
+        if (!is.null(allParams$fixedPatterns) & is.null(allParams$gaps@explicitSets))
+            warning("doing manual pattern matching with using explicit subsets")
+        if (allParams$nThreads > 1)
+            stop("can't run multi-threaded and distributed CoGAPS at the same time")
+        if (allParams$gaps@distributed == "single-cell" & allParams$whichMatrixFixed == "P")
+    }
+
+    # convert data to matrix
+    if (is(data, "matrix"))
+        data <- data
+    if (is(data, "data.frame"))
+        data <- data.matrix(data)
+    else if (is(data, "SummarizedExperiment"))
+        data <- SummarizedExperiment::assay(data, "counts")
+    else if (is(data, "SingleCellExperiment"))
+        data <- SummarizedExperiment::assay(data, "counts")
+    if (!is(data, "character"))
+        checkDataMatrix(data, uncertainty, allParams$gaps)
+}
+
+#' extracts gene/sample names from the data
+#' @keywords internal
+#'
+#' @param data data matrix
+#' @param allParams list of all parameters
+#' @param geneNames vector of names of genes in data
+#' @param sampleNames vector of names of samples in data
+#' @return list of all parameters with added gene names
+getNamesFromData <- function(data, allParams, geneNames, sampleNames)
+{
+    # get gene/sample names
+    if (is.null(geneNames))
+        geneNames <- getGeneNames(data, allParams$transposeData)
+    if (is.null(sampleNames))
+        sampleNames <- getSampleNames(data, allParams$transposeData)
+
+    nGenes <- ifelse(allParams$transposeData, ncolHelper(data), nrowHelper(data))
+    nSamples <- ifelse(allParams$transposeData, nrowHelper(data), ncolHelper(data))
+
+    if (length(geneNames) != nGenes)
+        stop("incorrect number of gene names given")
+    if (length(sampleNames) != nSamples)
+        stop("incorrect number of sample names given")
+
+    allParams$geneNames <- geneNames
+    allParams$sampleNames <- sampleNames
+
+    return(allParams)
+}

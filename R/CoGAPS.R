@@ -65,8 +65,8 @@ buildReport <- function()
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL,
-geneNames=NULL, sampleNames=NULL, matchedPatterns=NULL,
+checkpointInFile=NULL, transposeData=FALSE, subsetData=NULL, BPPARAM=NULL,
+geneNames=NULL, sampleNames=NULL, fixedPatterns=NULL, whichMatrixFixed='N',
 outputToFile=NULL, ...)
 {
     # store all parameters in a list and parse parameters from ...
@@ -79,82 +79,33 @@ outputToFile=NULL, ...)
         "checkpointInterval"=checkpointInterval,
         "checkpointInFile"=checkpointInFile,
         "transposeData"=transposeData,
+        "subsetData"=subsetData,
         "bpBackend"=BPPARAM,
-        "matchedPatterns"=matchedPatterns,
+        "fixedPatterns"=fixedPatterns,
+        "whichMatrixFixed"=whichMatrixFixed,
         "outputToFile"=outputToFile,
-        "whichMatrixFixed"=NULL # internal parameter
     )
     allParams <- parseExtraParams(allParams, list(...))
 
-    # check file extension
-    if (is(data, "character") & !supported(data))
-        stop("unsupported file extension for data")
-
-    # enforce the use of explicit subsets with manual pattern matching
-    if (!is.null(allParams$matchedPatterns) & is.null(allParams$gaps@explicitSets))
-        stop("must provide explicit subsets when doing manual pattern matching")
-
-    # check uncertainty matrix
-    if (is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "character"))
-        stop("uncertainty must be same data type as data (file name)")
-    if (is(uncertainty, "character") & !supported(uncertainty))
-        stop("unsupported file extension for uncertainty")
-    if (!is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "matrix"))
-        stop("uncertainty must be a matrix unless data is a file path")
-    if (!is.null(uncertainty) & allParams$gaps@sparseOptimization)
-        stop("must use default uncertainty when enabling sparseOptimization")
-
-    # check single cell parameter
-    if (!is.null(allParams$gaps@distributed))
-        if (allParams$gaps@distributed == "single-cell" & !allParams$gaps@singleCell)
-            warning("running single-cell CoGAPS with singleCell=FALSE")
-
-    if (!is.null(allParams$gaps@distributed) & allParams$nThreads > 1)
-        stop("can't run multi-threaded and distributed CoGAPS at the same time")
-
-    # convert data to matrix
-    if (is(data, "matrix"))
-        data <- data
-    if (is(data, "data.frame"))
-        data <- data.matrix(data)
-    else if (is(data, "SummarizedExperiment"))
-        data <- SummarizedExperiment::assay(data, "counts")
-    else if (is(data, "SingleCellExperiment"))
-        data <- SummarizedExperiment::assay(data, "counts")
-    if (!is(data, "character"))
-        checkDataMatrix(data, uncertainty, allParams$gaps)
+    # check that inputs are valid, then read the gene/sample names from the data
+    checkInputs(data, uncertainty, allParams)
+    allParams <- getNamesFromData(data, allParams, geneNames, sampleNames)
    
-    # determine which function to call cogaps algorithm
-    if (!is.null(allParams$gaps@distributed))
-        dispatchFunc <- distributedCogaps # genome-wide or single-cell cogaps
-    else if (is(data, "character"))
-        dispatchFunc <- cogaps_cpp_from_file # data is a file path
-    else
-        dispatchFunc <- cogaps_cpp # default
-
     # check if we're running from a checkpoint
     if (!is.null(allParams$checkpointInFile))
     {
         if (!is.null(allParams$gaps@distributed))
             stop("checkpoints not supported for distributed cogaps")
         else
-            cat("Running CoGAPS from a checkpoint\n")
+            gapsCat(allParams, "Running CoGAPS from a checkpoint\n")
     }
 
-    # get gene/sample names
-    if (is.null(geneNames)) geneNames <- getGeneNames(data, allParams$transposeData)
-    if (is.null(sampleNames)) sampleNames <- getSampleNames(data, allParams$transposeData)
-
-    nGenes <- ifelse(allParams$transposeData, ncolHelper(data), nrowHelper(data))
-    nSamples <- ifelse(allParams$transposeData, nrowHelper(data), ncolHelper(data))
-
-    if (length(geneNames) != nGenes)
-        stop("incorrect number of gene names given")
-    if (length(sampleNames) != nSamples)
-        stop("incorrect number of sample names given")
-
-    allParams$geneNames <- geneNames
-    allParams$sampleNames <- sampleNames
+    # determine which function to call cogaps algorithm
+    dispatchFunc <- cogaps_cpp # default
+    if (!is.null(allParams$gaps@distributed))
+        dispatchFunc <- distributedCogaps # genome-wide or single-cell cogaps
+    else if (is(data, "character"))
+        dispatchFunc <- cogaps_cpp_from_file # data is a file path
 
     # run cogaps
     startupMessage(data, allParams)
