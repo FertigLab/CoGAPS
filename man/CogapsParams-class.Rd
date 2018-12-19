@@ -26,8 +26,9 @@ Encapsulates all parameters for the CoGAPS algorithm
 
 \item{\code{singleCell}}{is the data single cell?}
 
-\item{\code{sparseOptimization}}{speeds up performance with sparse data, note
-this can only be used with the default uncertainty}
+\item{\code{sparseOptimization}}{speeds up performance with sparse data
+(roughly >80% of data is zero), note this can only be used with the
+default uncertainty}
 
 \item{\code{distributed}}{either "genome-wide" or "single-cell" indicating which
 distributed algorithm should be used}

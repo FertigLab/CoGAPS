@@ -16,7 +16,7 @@ public:
         bool t_subsetData=false, bool t_subsetGenes=false,
         const std::vector<unsigned> t_dataIndicesSubset=std::vector<unsigned>());
 
-    Matrix fixedMatrix;
+    Matrix fixedPatterns;
 
     std::vector<unsigned> dataIndicesSubset;
 
@@ -38,7 +38,7 @@ public:
     float maxGibbsMassA;
     float maxGibbsMassP;
 
-    bool useFixedMatrix;
+    bool useFixedPatterns;
     bool subsetData;
     bool useCheckPoint;
     bool transposeData;
@@ -66,7 +66,7 @@ GapsParameters::GapsParameters(const DataType &data, bool t_transposeData,
 bool t_subsetData, bool t_subsetGenes,
 const std::vector<unsigned> t_dataIndicesSubset)
     :
-fixedMatrix(Matrix()),
+fixedPatterns(Matrix()),
 dataIndicesSubset(t_dataIndicesSubset),
 checkpointFile(std::string()),
 checkpointOutFile("gaps_checkpoint.out"),
@@ -82,7 +82,7 @@ alphaA(0.01f),
 alphaP(0.01f),
 maxGibbsMassA(100.f),
 maxGibbsMassP(100.f),
-useFixedMatrix(false),
+useFixedPatterns(false),
 subsetData(t_subsetData),
 useCheckPoint(false),
 transposeData(t_transposeData),

@@ -44,32 +44,30 @@ static Rcpp::NumericMatrix createRMatrix(const GenericMatrix &mat)
 ////////// converts R parameters to single GapsParameters struct ///////////////
 
 template <class DataType>
-GapsParameters getGapsParameters(const DataType &data,
-const Rcpp::List &allParams, unsigned workerID,
-const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix,
-const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
+GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allParams)
 {
-    // check if subsetting data
     const Rcpp::S4 &gapsParams(allParams["gaps"]);
-    bool subsetGenes = false;
+
+    // check if subsetting data
+    unsigned subsetDim = Rcpp::as<unsigned>(allParams["subsetDim"]);
+    bool subsetGenes = subsetDim == 1;
     std::vector<unsigned> subset;
-    if (indices.isNotNull())
+    if (subsetDim > 0)
     {
-        std::string d(Rcpp::as<std::string>(gapsParams.slot("distributed")));
-        subsetGenes = (d == "genome-wide");
-        subset = Rcpp::as< std::vector<unsigned> >(Rcpp::IntegerVector(indices));
+        Rcpp::IntegerVector subsetR = allParams["subsetIndices"];
+        subset = Rcpp::as< std::vector<unsigned> >(subsetR);
     }
 
     // create standard CoGAPS parameters struct
-    GapsParameters params(data, allParams["transposeData"], indices.isNotNull(),
+    GapsParameters params(data, allParams["transposeData"], subsetDim > 0,
         subsetGenes, subset);
-    params.runningDistributed = indices.isNotNull();
+    params.runningDistributed = subsetDim > 0;
     params.printThreadUsage = !params.runningDistributed;
 
     // get configuration parameters
     params.maxThreads = allParams["nThreads"];
-    params.printMessages = allParams["messages"] && (workerID == 1);
-    params.workerID = workerID;
+    params.workerID = allParams["workerID"];
+    params.printMessages = allParams["messages"] && (params.workerID == 1);
     params.outputFrequency = allParams["outputFrequency"];
     params.checkpointOutFile = Rcpp::as<std::string>(allParams["checkpointOutFile"]);
     params.checkpointInterval = allParams["checkpointInterval"];
@@ -86,11 +84,12 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
     params.useSparseOptimization = gapsParams.slot("sparseOptimization");
 
     // check if using fixed matrix
-    if (fixedMatrix.isNotNull())
+    params.whichMatrixFixed = Rcpp::as<char>(allParams["whichMatrixFixed"]);
+    if (params.whichMatrixFixed != 'N')
     {
-        params.useFixedMatrix = true;
-        params.whichMatrixFixed = Rcpp::as<char>(allParams["whichMatrixFixed"]);
-        params.fixedMatrix = convertRMatrix(Rcpp::NumericMatrix(fixedMatrix));
+        params.useFixedPatterns = true;
+        Rcpp::NumericMatrix fixedMatrixR = allParams["fixedPatterns"];
+        params.fixedPatterns = convertRMatrix(fixedMatrixR);
     }
 
     // check if using checkpoint file, peek at the saved parameters
@@ -111,12 +110,10 @@ const Rcpp::Nullable<Rcpp::IntegerVector> &indices)
 
 template <class DataType>
 static Rcpp::List cogapsRun(const DataType &data, const Rcpp::List &allParams,
-const DataType &uncertainty, const Rcpp::Nullable<Rcpp::IntegerVector> &indices,
-const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, unsigned workerID)
+const DataType &uncertainty)
 {
     // convert R parameters to GapsParameters struct
-    GapsParameters params(getGapsParameters(data, allParams, workerID,
-        fixedMatrix, indices));
+    GapsParameters params(getGapsParameters(data, allParams));
 
     // create GapsRunner, note we must first initialize the random generator
     GapsRandomState randState(params.seed);
@@ -151,33 +148,27 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &fixedMatrix, unsigned workerID)
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp_from_file(const Rcpp::CharacterVector &data,
 const Rcpp::List &allParams,
-const Rcpp::Nullable<Rcpp::CharacterVector> &uncertainty=R_NilValue,
-unsigned workerID=1)
+const Rcpp::Nullable<Rcpp::CharacterVector> &uncertainty)
 {
     std::string unc;
     if (uncertainty.isNotNull())
     {
         unc = Rcpp::as<std::string>(Rcpp::CharacterVector(uncertainty));
     }
-
-    return cogapsRun(Rcpp::as<std::string>(data), allParams, unc, indices,
-        fixedMatrix, workerID);
+    return cogapsRun(Rcpp::as<std::string>(data), allParams, unc);
 }
 
 // [[Rcpp::export]]
 Rcpp::List cogaps_cpp(const Rcpp::NumericMatrix &data,
 const Rcpp::List &allParams,
-const Rcpp::Nullable<Rcpp::NumericMatrix> &uncertainty=R_NilValue,
-unsigned workerID=1)
+const Rcpp::Nullable<Rcpp::NumericMatrix> &uncertainty)
 {
     Matrix unc;
     if (uncertainty.isNotNull())
     {
         unc = convertRMatrix(Rcpp::NumericMatrix(uncertainty));
     }
-
-    return cogapsRun(convertRMatrix(data), allParams, unc, indices,
-        fixedMatrix, workerID);
+    return cogapsRun(convertRMatrix(data), allParams, unc);
 }
 
 // [[Rcpp::export]]

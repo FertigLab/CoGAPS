@@ -11,8 +11,9 @@
 #' @slot maxGibbsMassP atomic mass restriction for sample matrix
 #' @slot seed random number generator seed
 #' @slot singleCell is the data single cell?
-#' @slot sparseOptimization speeds up performance with sparse data, note
-#' this can only be used with the default uncertainty
+#' @slot sparseOptimization speeds up performance with sparse data
+#' (roughly >80% of data is zero), note this can only be used with the
+#' default uncertainty
 #' @slot distributed either "genome-wide" or "single-cell" indicating which
 #' distributed algorithm should be used
 #' @slot nSets [distributed parameter] number of sets to break data into
