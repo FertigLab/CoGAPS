@@ -420,7 +420,7 @@ have a result object from a previous run of GWCoGAPS/scCoGAPS, the unmatched
 patterns for each subset are found by calling `getUnmatchedPatterns`. Apply
 any method you like as long as the result is a matrix with the number of rows
 equal to the number of samples (genes) and the number of columns is equal to 
-the number of patterns. Then pass the matrix to the  `matchedPatterns` argument
+the number of patterns. Then pass the matrix to the  `fixedPatterns` argument
 along with the original parameters for the GWCoGAPS/scCoGAPS run.
 
 ```{r}
@@ -431,7 +431,7 @@ result <- GWCoGAPS(GIST.matrix, messages=FALSE)
 consensusMatrix <- getUnmatchedPatterns(result)[[1]]
 
 # run with our custom matched patterns matrix
-GWCoGAPS(GIST.matrix, matchedPatterns=consensusMatrix, explicitSets=getSubsets(result))
+GWCoGAPS(GIST.matrix, fixedPatterns=consensusMatrix, explicitSets=getSubsets(result))
 ```
 
 # sessionInfo()
