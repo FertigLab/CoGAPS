@@ -38,12 +38,19 @@ buildReport <- function()
 #' @param transposeData T/F for transposing data while reading it in - useful
 #' for data that is stored as samples x genes since CoGAPS requires data to be
 #' genes x samples
+#' @param subsetIndices set of indices to use from the data
+#' @param subsetDim which dimension (1=rows, 2=cols) to subset
 #' @param BPPARAM BiocParallel backend 
 #' @param geneNames vector of names of genes in data
 #' @param sampleNames vector of names of samples in data
-#' @param matchedPatterns manually matched patterns for distributed CoGAPS
+#' @param fixedPatterns fix either 'A' or 'P' matrix to these values
+#' @param whichMatrixFixed either 'A' or 'P', indicating which matrix is fixed
 #' @param outputToFile name of a file to save the output to, will create 4 files
 #' of the form "filename_nPatterns_[Amean, Asd, Pmean, Psd].extension"
+#' @param workerID if calling CoGAPS in parallel the worker ID can be specified,
+#' only worker 1 prints output and each worker outputs when it finishes, this
+#' is not neccesary when using the default parallel methods (i.e. distributed
+#' CoGAPS) but only when the user is manually calling CoGAPS in parallel
 #' @param ... allows for overwriting parameters in params
 #' @return CogapsResult object
 #' @examples
@@ -65,9 +72,9 @@ buildReport <- function()
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, subsetData=NULL, BPPARAM=NULL,
-geneNames=NULL, sampleNames=NULL, fixedPatterns=NULL, whichMatrixFixed='N',
-outputToFile=NULL, ...)
+checkpointInFile=NULL, transposeData=FALSE, subsetIndices=NULL, subsetDim=0,
+BPPARAM=NULL, geneNames=NULL, sampleNames=NULL, fixedPatterns=NULL,
+whichMatrixFixed='N', outputToFile=NULL, workerID=1, ...)
 {
     # store all parameters in a list and parse parameters from ...
     validObject(params)
@@ -79,13 +86,23 @@ outputToFile=NULL, ...)
         "checkpointInterval"=checkpointInterval,
         "checkpointInFile"=checkpointInFile,
         "transposeData"=transposeData,
-        "subsetData"=subsetData,
-        "bpBackend"=BPPARAM,
+        "subsetIndices"=subsetIndices,
+        "subsetDim"=subsetDim,
+        "BPPARAM"=BPPARAM,
         "fixedPatterns"=fixedPatterns,
         "whichMatrixFixed"=whichMatrixFixed,
         "outputToFile"=outputToFile,
+        "workerID"=workerID
     )
     allParams <- parseExtraParams(allParams, list(...))
+
+    # convert data if needed
+    if (is(data, "data.frame"))
+        data <- data.matrix(data)
+    else if (is(data, "SummarizedExperiment"))
+        data <- SummarizedExperiment::assay(data, "counts")
+    else if (is(data, "SingleCellExperiment"))
+        data <- SummarizedExperiment::assay(data, "counts")
 
     # check that inputs are valid, then read the gene/sample names from the data
     checkInputs(data, uncertainty, allParams)
@@ -94,10 +111,7 @@ outputToFile=NULL, ...)
     # check if we're running from a checkpoint
     if (!is.null(allParams$checkpointInFile))
     {
-        if (!is.null(allParams$gaps@distributed))
-            stop("checkpoints not supported for distributed cogaps")
-        else
-            gapsCat(allParams, "Running CoGAPS from a checkpoint\n")
+        gapsCat(allParams, "Running CoGAPS from a checkpoint\n")
     }
 
     # determine which function to call cogaps algorithm
@@ -110,19 +124,7 @@ outputToFile=NULL, ...)
     # run cogaps
     startupMessage(data, allParams)
     gapsReturnList <- dispatchFunc(data, allParams, uncertainty)
-
-    # convert list to CogapsResult object
-    return(new("CogapsResult",
-        Amean       = gapsReturnList$Amean,
-        Asd         = gapsReturnList$Asd,
-        Pmean       = gapsReturnList$Pmean,
-        Psd         = gapsReturnList$Psd,
-        meanChiSq   = gapsReturnList$meanChiSq,
-        geneNames   = gapsReturnList$geneNames,
-        sampleNames = gapsReturnList$sampleNames,
-        diagnostics = append(gapsReturnList$diagnostics,
-            list("params"=allParams$gaps, "version"=utils::packageVersion("CoGAPS")))
-    ))
+    return(createCogapsResult(gapsReturnList, allParams))
 }
 
 #' Single Cell CoGAPS
@@ -138,14 +140,34 @@ outputToFile=NULL, ...)
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL,
-geneNames=NULL, sampleNames=NULL, matchedPatterns=NULL, ...)
+checkpointInFile=NULL, transposeData=FALSE, subsetIndices=NULL, subsetDim=0,
+BPPARAM=NULL, geneNames=NULL, sampleNames=NULL, fixedPatterns=NULL,
+whichMatrixFixed='N', outputToFile=NULL, workerID=1, ...)
 {
     params@distributed <- "single-cell"
     params@singleCell <- TRUE
-    CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
-        checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
-        BPPARAM, geneNames, sampleNames, matchedPatterns, ...)
+    CoGAPS(
+        data=data,
+        params=params,
+        nThreads=nThreads,
+        messages=messages,
+        outputFrequency=outputFrequency,
+        uncertainty=uncertainty,
+        checkpointOutFile=checkpointOutFile,
+        checkpointInterval=checkpointInterval,
+        checkpointInFile=checkpointInFile,
+        transposeData=transposeData,
+        subsetIndices=subsetIndices,
+        subsetDim=subsetDim,
+        BPPARAM=BPPARAM,
+        geneNames=geneNames,
+        sampleNames=sampleNames,
+        fixedPatterns=fixedPatterns,
+        whichMatrixFixed=whichMatrixFixed,
+        outputToFile=outputToFile,
+        workerID=workerID,
+        ...
+    )
 }
 
 #' Genome Wide CoGAPS
@@ -161,11 +183,31 @@ geneNames=NULL, sampleNames=NULL, matchedPatterns=NULL, ...)
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, BPPARAM=NULL,
-geneNames=NULL, sampleNames=NULL, matchedPatterns=NULL, ...)
+checkpointInFile=NULL, transposeData=FALSE, subsetIndices=NULL, subsetDim=0,
+BPPARAM=NULL, geneNames=NULL, sampleNames=NULL, fixedPatterns=NULL,
+whichMatrixFixed='N', outputToFile=NULL, workerID=1, ...)
 {
     params@distributed <- "genome-wide"
-    CoGAPS(data, params, nThreads, messages, outputFrequency, uncertainty,
-        checkpointOutFile, checkpointInterval, checkpointInFile, transposeData,
-        BPPARAM, geneNames, sampleNames, matchedPatterns, ...)
+    CoGAPS(
+        data=data,
+        params=params,
+        nThreads=nThreads,
+        messages=messages,
+        outputFrequency=outputFrequency,
+        uncertainty=uncertainty,
+        checkpointOutFile=checkpointOutFile,
+        checkpointInterval=checkpointInterval,
+        checkpointInFile=checkpointInFile,
+        transposeData=transposeData,
+        subsetIndices=subsetIndices,
+        subsetDim=subsetDim,
+        BPPARAM=BPPARAM,
+        geneNames=geneNames,
+        sampleNames=sampleNames,
+        fixedPatterns=fixedPatterns,
+        whichMatrixFixed=whichMatrixFixed,
+        outputToFile=outputToFile,
+        workerID=workerID,
+        ...
+    )
 }

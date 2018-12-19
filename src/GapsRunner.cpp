@@ -257,18 +257,18 @@ static void processFixedMatrix(const GapsParameters &params, Sampler &ASampler,
 Sampler &PSampler)
 {
     // check if we're fixing a matrix
-    if (params.useFixedMatrix)
+    if (params.useFixedPatterns)
     {
-        switch (params.whichFixedMatrix)
+        switch (params.whichMatrixFixed)
         {
-            GAPS_ASSERT(params.fixedMatrix.nCol() == params.nPatterns);
+            GAPS_ASSERT(params.fixedPatterns.nCol() == params.nPatterns);
             case 'A' :
-                GAPS_ASSERT(params.fixedMatrix.nRow() == params.nGenes);
-                ASampler.setMatrix(params.fixedMatrix);
+                GAPS_ASSERT(params.fixedPatterns.nRow() == params.nGenes);
+                ASampler.setMatrix(params.fixedPatterns);
                 break;
             case 'P' :
-                GAPS_ASSERT(params.fixedMatrix.nRow() == params.nSamples);
-                PSampler.setMatrix(params.fixedMatrix);
+                GAPS_ASSERT(params.fixedPatterns.nRow() == params.nSamples);
+                PSampler.setMatrix(params.fixedPatterns);
                 break;
             default: break; // 'N' for none
         }

@@ -1,4 +1,7 @@
-#' make correct call to internal CoGAPS dispatch function
+#' make correct call to internal CoGAPS dispatch function, CoGAPS could be
+#' called directly, but to avoid any re-entrant behavior this function is called
+#' instead. It is a light wrapper around cogaps_cpp that handles setting
+#' the distributed parameters
 #' @keywords internal
 #'
 #' @param index index for which subset to run on
@@ -10,24 +13,27 @@
 #' @param sampleNames names of all samples
 #' @param fixedMatrix matrix of matched patterns
 #' @return CogapsResult object
-callInternalCoGAPS <- function(index, sets, data, allParams, uncertainty,
-geneNames, sampleNames, fixedMatrix=NULL)
+callInternalCoGAPS <- function(data, allParams, uncertainty, subsetIndices,
+workerID)
 {
+    # identify which mode of parallelization
+    genomeWide <- allParams$gaps@distributed == "genome-wide"
+    allParams$gaps@distributed <- NULL
+
     # subset gene/sample names
-    if (allParams$gaps@distributed == "genome-wide")
-        geneNames <- geneNames[sets[[index]]]
+    if (genomeWide)
+        allParams$geneNames <- allParams$geneNames[subsetIndices]
     else
-        sampleNames <- sampleNames[sets[[index]]]
+        allParams$sampleNames <- allParams$sampleNames[subsetIndices]
+
+    allParams$subsetIndices <- subsetIndices
+    allParams$subsetDim <- ifelse(genomeWide, 1, 2)
+    allParams$workerID <- workerID
 
     # call CoGAPS
     internal <- ifelse(is(data, "character"), cogaps_cpp_from_file, cogaps_cpp)
-    raw <- internal(data, allParams, uncertainty, sets[[index]],
-        fixedMatrix, index)
-    res <- new("CogapsResult", Amean=raw$Amean, Asd=raw$Asd, Pmean=raw$Pmean,
-        Psd=raw$Psd, meanChiSq=raw$meanChiSq, geneNames=geneNames,
-        sampleNames=sampleNames)
-    validObject(res)
-    return(res)
+    raw <- internal(data, allParams, uncertainty)
+    return(createCogapsResult(raw, allParams))
 }
 
 #' CoGAPS Distributed Matrix Factorization Algorithm
@@ -49,17 +55,18 @@ distributedCogaps <- function(data, allParams, uncertainty)
     if (min(sapply(sets, length)) < allParams$gaps@nPatterns)
         stop("data subset dimension less than nPatterns")
 
-    if (is.null(allParams$bpBackend))
-        allParams$bpBackend <- BiocParallel::MulticoreParam(workers=length(sets))
+    if (is.null(allParams$BPPARAM))
+        allParams$BPPARAM <- BiocParallel::MulticoreParam(workers=length(sets))
     
     initialResult <- NULL
     if (is.null(allParams$fixedPatterns))
     {
         # run Cogaps normally on each subset of the data
         gapsCat(allParams, "Running Across Subsets...\n\n")
-        initialResult <- bplapply(1:length(sets), callInternalCoGAPS, BPPARAM=allParams$bpBackend,
-            sets=sets, data=data, allParams=allParams, uncertainty=uncertainty,
-            geneNames=allParams$geneNames, sampleNames=allParams$sampleNames)
+        initialResult <- bplapply(1:length(sets), function(i)
+        {
+            callInternalCoGAPS(data, allParams, uncertainty, sets[[i]], i)
+        })
 
         # get all unmatched patterns
         if (allParams$gaps@distributed == "genome-wide")
@@ -70,32 +77,30 @@ distributedCogaps <- function(data, allParams, uncertainty)
         # match patterns in either A or P matrix
         gapsCat(allParams, "\nMatching Patterns Across Subsets...\n")
         matchedPatterns <- findConsensusMatrix(unmatchedPatterns, allParams)
-        allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
-
-        # set fixed matrix
-        allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
-            == "genome-wide", "P", "A")
     }
     else
     {
-        matchedPatterns <- list(consensus=allParams$matchedPatterns)
-        allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
-        allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
-            == "genome-wide", "P", "A")
+        matchedPatterns <- list(consensus=allParams$fixedPatterns)
     }
+
+    # set fixed matrix
+    allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
+    allParams$fixedPatterns <- matchedPatterns$consensus
+    allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
+        == "genome-wide", "P", "A")
         
     # run final phase with fixed matrix
     gapsCat(allParams, "Running Final Stage...\n\n")
-    finalResult <- bplapply(1:length(sets), callInternalCoGAPS, BPPARAM=allParams$bpBackend,
-        sets=sets, data=data, allParams=allParams, uncertainty=uncertainty,
-        geneNames=allParams$geneNames, sampleNames=allParams$sampleNames,    
-        fixedMatrix=matchedPatterns$consensus)
+    finalResult <- bplapply(1:length(sets), function(i)
+    {
+        callInternalCoGAPS(data, allParams, uncertainty, sets[[i]], i)
+    })
 
     # concatenate final result
     fullResult <- stitchTogether(finalResult, allParams)
 
     # add diagnostic information before returning
-    if (is.null(allParams$matchedPatterns))
+    if (allParams$whichMatrixFixed == 'N') # no manual pattern matching
     {
         fullResult$diagnostics$firstPass <- initialResult
         fullResult$diagnostics$unmatchedPatterns <- unmatchedPatterns

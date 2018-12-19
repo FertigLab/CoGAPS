@@ -36,9 +36,9 @@ test_that("Subsetting Data",
     mat <- GIST.matrix
     rownames(mat) <- NULL
     colnames(mat) <- NULL
-    result <- GWCoGAPS(mat, nPatterns=7, explicitSets=sets,
-        nIterations=100, messages=FALSE,
-        matchedPatterns=matrix(1,nrow=ncol(mat), ncol=7))
+    result <- GWCoGAPS(mat, nPatterns=7, explicitSets=sets, nIterations=100,
+        messages=FALSE, whichMatrixFixed="P",
+        fixedPatterns=matrix(1,nrow=ncol(mat), ncol=7))
     subsets <- lapply(getSubsets(result), getIndices)
     expect_true(all(sapply(1:4, function(i) all.equal(sets[[i]], subsets[[i]]))))
 })

@@ -260,11 +260,9 @@ checkDataMatrix <- function(data, uncertainty, params)
 #' @return throws an error if inputs are invalid
 checkInputs <- function(data, uncertainty, allParams)
 {
-    # check file extension
     if (is(data, "character") & !supported(data))
         stop("unsupported file extension for data")
 
-    # check uncertainty matrix
     if (is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "character"))
         stop("uncertainty must be same data type as data (file name)")
     if (is(uncertainty, "character") & !supported(uncertainty))
@@ -274,13 +272,13 @@ checkInputs <- function(data, uncertainty, allParams)
     if (!is.null(uncertainty) & allParams$gaps@sparseOptimization)
         stop("must use default uncertainty when enabling sparseOptimization")
 
-    # check fixed matrix choice
-    if (!(allParams$whichMatrixFixed %in% ("A", "P", "N")))
+    if (!(allParams$whichMatrixFixed %in% c("A", "P", "N")))
         stop("Invalid choice of fixed matrix, must be 'A' or 'P'")
-    if (!is.null(allParams$fixedPatterns) & allParams@whichMatrixFixed == "N")
+    if (!is.null(allParams$fixedPatterns) & allParams$whichMatrixFixed == "N")
         stop("fixedPatterns passed without setting whichMatrixFixed")
+    if (allParams$whichMatrixFixed %in% c("A", "P") & is.null(allParams$fixedPatterns))
+        stop("whichMatrixFixed is set without passing fixedPatterns")
 
-    # check parameters specific to distributed cogaps
     if (!is.null(allParams$gaps@distributed))
     {
         if (allParams$gaps@distributed == "single-cell" & !allParams$gaps@singleCell)
@@ -289,18 +287,19 @@ checkInputs <- function(data, uncertainty, allParams)
             warning("doing manual pattern matching with using explicit subsets")
         if (allParams$nThreads > 1)
             stop("can't run multi-threaded and distributed CoGAPS at the same time")
+        if (!is.null(allParams$checkpointInFile))
+            stop("checkpoints not supported for distributed cogaps")
         if (allParams$gaps@distributed == "single-cell" & allParams$whichMatrixFixed == "P")
+            stop("can't fix P matrix when running single-cell CoGAPS")
+        if (allParams$gaps@distributed == "genome-wide" & allParams$whichMatrixFixed == "A")
+            stop("can't fix A matrix when running genome-wide CoGAPS")
     }
 
-    # convert data to matrix
-    if (is(data, "matrix"))
-        data <- data
-    if (is(data, "data.frame"))
-        data <- data.matrix(data)
-    else if (is(data, "SummarizedExperiment"))
-        data <- SummarizedExperiment::assay(data, "counts")
-    else if (is(data, "SingleCellExperiment"))
-        data <- SummarizedExperiment::assay(data, "counts")
+    if (!(allParams$subsetDim %in% c(0,1,2)))
+        stop("invalid subset dimension")
+    if (allParams$subsetDim > 0 & is.null(allParams$subsetIndices))
+        stop("subsetDim provided without subsetIndices")
+
     if (!is(data, "character"))
         checkDataMatrix(data, uncertainty, allParams$gaps)
 }

@@ -2,21 +2,23 @@
 % Please edit documentation in R/DistributedCogaps.R
 \name{callInternalCoGAPS}
 \alias{callInternalCoGAPS}
-\title{make correct call to internal CoGAPS dispatch function}
+\title{make correct call to internal CoGAPS dispatch function, CoGAPS could be
+called directly, but to avoid any re-entrant behavior this function is called
+instead. It is a light wrapper around cogaps_cpp that handles setting
+the distributed parameters}
 \usage{
-callInternalCoGAPS(index, sets, data, allParams, uncertainty, geneNames,
-  sampleNames, fixedMatrix = NULL)
+callInternalCoGAPS(data, allParams, uncertainty, subsetIndices, workerID)
 }
 \arguments{
-\item{index}{index for which subset to run on}
-
-\item{sets}{list of all subsets}
-
 \item{data}{data in a supported format}
 
 \item{allParams}{list of all parameters}
 
 \item{uncertainty}{uncertainty of data in the same format}
+
+\item{index}{index for which subset to run on}
+
+\item{sets}{list of all subsets}
 
 \item{geneNames}{names of all genes}
 
@@ -28,6 +30,9 @@ callInternalCoGAPS(index, sets, data, allParams, uncertainty, geneNames,
 CogapsResult object
 }
 \description{
-make correct call to internal CoGAPS dispatch function
+make correct call to internal CoGAPS dispatch function, CoGAPS could be
+called directly, but to avoid any re-entrant behavior this function is called
+instead. It is a light wrapper around cogaps_cpp that handles setting
+the distributed parameters
 }
 \keyword{internal}
