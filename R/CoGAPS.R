@@ -43,7 +43,10 @@ buildReport <- function()
 #' @param BPPARAM BiocParallel backend 
 #' @param geneNames vector of names of genes in data
 #' @param sampleNames vector of names of samples in data
-#' @param fixedPatterns fix either 'A' or 'P' matrix to these values
+#' @param fixedPatterns fix either 'A' or 'P' matrix to these values, in the
+#' context of distributed CoGAPS (GWCoGAPS/scCoGAPS), the first phase is
+#' skipped and fixedPatterns is used for all sets - allowing manual pattern
+#' matching, as well as fixed runs of standard CoGAPS
 #' @param whichMatrixFixed either 'A' or 'P', indicating which matrix is fixed
 #' @param outputToFile name of a file to save the output to, will create 4 files
 #' of the form "filename_nPatterns_[Amean, Asd, Pmean, Psd].extension"
