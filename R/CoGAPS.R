@@ -147,7 +147,7 @@ messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
 checkpointInFile=NULL, transposeData=FALSE, subsetIndices=NULL, subsetDim=0,
 BPPARAM=NULL, geneNames=NULL, sampleNames=NULL, fixedPatterns=NULL,
-whichMatrixFixed='N', outputToFile=NULL, workerID=1, ...)
+whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
 {
     params@distributed <- "single-cell"
     params@singleCell <- TRUE
@@ -169,6 +169,7 @@ whichMatrixFixed='N', outputToFile=NULL, workerID=1, ...)
         sampleNames=sampleNames,
         fixedPatterns=fixedPatterns,
         whichMatrixFixed=whichMatrixFixed,
+        takePumpSamples=takePumpSamples,
         outputToFile=outputToFile,
         workerID=workerID,
         ...
@@ -190,7 +191,7 @@ messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
 checkpointInFile=NULL, transposeData=FALSE, subsetIndices=NULL, subsetDim=0,
 BPPARAM=NULL, geneNames=NULL, sampleNames=NULL, fixedPatterns=NULL,
-whichMatrixFixed='N', outputToFile=NULL, workerID=1, ...)
+whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
 {
     params@distributed <- "genome-wide"
     CoGAPS(
@@ -211,6 +212,7 @@ whichMatrixFixed='N', outputToFile=NULL, workerID=1, ...)
         sampleNames=sampleNames,
         fixedPatterns=fixedPatterns,
         whichMatrixFixed=whichMatrixFixed,
+        takePumpSamples=takePumpSamples,
         outputToFile=outputToFile,
         workerID=workerID,
         ...
