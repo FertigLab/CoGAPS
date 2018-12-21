@@ -5,7 +5,8 @@ GapsStatistics::GapsStatistics(unsigned nGenes, unsigned nSamples, unsigned nPat
     :
 mAMeanMatrix(nGenes, nPatterns), mAStdMatrix(nGenes, nPatterns),
 mPMeanMatrix(nSamples, nPatterns), mPStdMatrix(nSamples, nPatterns),
-mStatUpdates(0), mNumPatterns(nPatterns)
+mPumpMatrix(nGenes, nPatterns), mPumpThreshold(PUMP_CUT), mStatUpdates(0),
+mNumPatterns(nPatterns), mPumpUpdates(0)
 {}
 
 Matrix GapsStatistics::Amean() const
@@ -63,7 +64,10 @@ float GapsStatistics::meanChiSq(const DenseGibbsSampler &PSampler) const
                 m += mAMeanMatrix(i,k) * mPMeanMatrix(j,k);
             }
             m /= GAPS_SQ(static_cast<float>(mStatUpdates));
-            chisq += GAPS_SQ((PSampler.mDMatrix(i,j) - m) / PSampler.mSMatrix(i,j));
+
+            float d = PSampler.mDMatrix(i,j);
+            float s = PSampler.mSMatrix(i,j);
+            chisq += GAPS_SQ(d - m) / GAPS_SQ(s);
         }
     }
     return chisq;
@@ -85,10 +89,30 @@ float GapsStatistics::meanChiSq(const SparseGibbsSampler &PSampler) const
 
             float d = PSampler.mDMatrix.getCol(j).at(i);
             float s = gaps::max(d * 0.1f, 0.1f);
-            chisq += GAPS_SQ((d - m) / s);
+            chisq += GAPS_SQ(d - m) / GAPS_SQ(s);
         }
     }
     return chisq;
+}
+
+Matrix GapsStatistics::pumpMatrix() const
+{
+    float denom = mPumpUpdates != 0 ? static_cast<float>(mPumpUpdates) : 1.f;
+    return mPumpMatrix / denom;
+}
+
+Matrix GapsStatistics::meanPattern() const
+{
+    Matrix mat(mAMeanMatrix.nRow(), mAMeanMatrix.nCol());
+    if (mPumpThreshold == PUMP_UNIQUE)
+    {
+        pumpMatrixCutThreshold(Amean(), &mat);
+    }
+    else
+    {
+        pumpMatrixUniqueThreshold(Amean(), &mat);
+    }   
+    return mat;
 }
 
 void GapsStatistics::addChiSq(float chisq)

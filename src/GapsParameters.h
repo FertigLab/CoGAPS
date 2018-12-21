@@ -7,6 +7,12 @@
 #include <string>
 #include <vector>
 
+enum PumpThreshold
+{
+    PUMP_UNIQUE=1,
+    PUMP_CUT=2
+};
+
 struct GapsParameters
 {
 public:
@@ -38,6 +44,8 @@ public:
     float maxGibbsMassA;
     float maxGibbsMassP;
 
+    PumpThreshold pumpThreshold;
+
     bool useFixedPatterns;
     bool subsetData;
     bool useCheckPoint;
@@ -47,6 +55,7 @@ public:
     bool subsetGenes;
     bool printThreadUsage;
     bool useSparseOptimization;
+    bool takePumpSamples;
 
     char whichMatrixFixed;
     unsigned workerID;
@@ -82,6 +91,7 @@ alphaA(0.01f),
 alphaP(0.01f),
 maxGibbsMassA(100.f),
 maxGibbsMassP(100.f),
+pumpThreshold(PUMP_UNIQUE),
 useFixedPatterns(false),
 subsetData(t_subsetData),
 useCheckPoint(false),
@@ -91,6 +101,7 @@ printMessages(true),
 subsetGenes(t_subsetGenes),
 printThreadUsage(true),
 useSparseOptimization(false),
+takePumpSamples(false),
 whichMatrixFixed('N'),
 workerID(1),
 runningDistributed(false)
