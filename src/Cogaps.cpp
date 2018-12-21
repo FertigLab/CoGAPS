@@ -71,6 +71,7 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.outputFrequency = allParams["outputFrequency"];
     params.checkpointOutFile = Rcpp::as<std::string>(allParams["checkpointOutFile"]);
     params.checkpointInterval = allParams["checkpointInterval"];
+    params.takePumpSamples = allParams["takePumpSamples"];
 
     // extract model specific parameters from list
     params.seed = gapsParams.slot("seed");
@@ -138,7 +139,9 @@ const DataType &uncertainty)
         Rcpp::Named("diagnostics") = Rcpp::List::create(
             Rcpp::Named("chisq") = Rcpp::wrap(result.chisqHistory),
             Rcpp::Named("atomsA") = Rcpp::wrap(result.atomHistoryA),
-            Rcpp::Named("atomsP") = Rcpp::wrap(result.atomHistoryP)
+            Rcpp::Named("atomsP") = Rcpp::wrap(result.atomHistoryP),
+            Rcpp::Named("pumpStat") = createRMatrix(result.pumpMatrix),
+            Rcpp::Named("meanPatternAssignment") = createRMatrix(result.meanPatternAssignment)
         )
     );
 }

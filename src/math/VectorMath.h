@@ -16,6 +16,8 @@ namespace gaps
     float max(const HybridVector &v);
     float max(const SparseVector &v);
 
+    unsigned whichMax(const Vector &v);
+
     float sum(const Vector &v);
     float sum(const HybridVector &v);
     float sum(const SparseVector &v);

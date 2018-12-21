@@ -49,7 +49,10 @@ genes x samples}
 
 \item{sampleNames}{vector of names of samples in data}
 
-\item{fixedPatterns}{fix either 'A' or 'P' matrix to these values}
+\item{fixedPatterns}{fix either 'A' or 'P' matrix to these values, in the
+context of distributed CoGAPS (GWCoGAPS/scCoGAPS), the first phase is
+skipped and fixedPatterns is used for all sets - allowing manual pattern
+matching, as well as fixed runs of standard CoGAPS}
 
 \item{whichMatrixFixed}{either 'A' or 'P', indicating which matrix is fixed}
 

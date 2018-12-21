@@ -246,6 +246,10 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
         if (phase == 'S')
         {
             stats.update(ASampler, PSampler);
+            if (params.takePumpSamples)
+            {
+                stats.updatePump(ASampler);
+            }
         }
         displayStatus(params, ASampler, PSampler, startTime, phase,
             currentIter, stats);
@@ -365,6 +369,12 @@ const DataType &uncertainty, GapsRandomState *randState)
     // get result
     GapsResult result(stats);
     result.meanChiSq = stats.meanChiSq(PSampler);
+
+    if (params.takePumpSamples)
+    {
+        result.pumpMatrix = stats.pumpMatrix();
+        result.meanPatternAssignment = stats.meanPattern();
+    }
 
     // if we are running distributed, each worker needs to print when it's done
     if (params.runningDistributed)

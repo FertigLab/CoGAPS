@@ -13,7 +13,9 @@ struct GapsResult
     Matrix Asd;
     Matrix Pmean;
     Matrix Psd;
-    
+    Matrix pumpMatrix;
+    Matrix meanPatternAssignment;
+
     float meanChiSq;
     uint32_t seed;
 

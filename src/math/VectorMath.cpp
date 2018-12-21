@@ -66,6 +66,18 @@ float gaps::max(const SparseVector &v)
     return mx;
 }
 
+unsigned gaps::whichMax(const Vector &v)
+{
+    unsigned ndx = 0;
+    float mx = 0.f;
+    for (unsigned i = 0; i < v.size(); ++i)
+    {
+        ndx = (v[i] > mx) ? i : ndx;
+        mx = (v[i] > mx) ? v[i] : mx;
+    }
+    return ndx;
+}
+
 float gaps::sum(const Vector &v)
 {
     float sum = 0.f;
