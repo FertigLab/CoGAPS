@@ -10,7 +10,8 @@ scCoGAPS(data, params = new("CogapsParams"), nThreads = 1,
   checkpointInFile = NULL, transposeData = FALSE,
   subsetIndices = NULL, subsetDim = 0, BPPARAM = NULL,
   geneNames = NULL, sampleNames = NULL, fixedPatterns = NULL,
-  whichMatrixFixed = "N", outputToFile = NULL, workerID = 1, ...)
+  whichMatrixFixed = "N", takePumpSamples = FALSE,
+  outputToFile = NULL, workerID = 1, ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
@@ -55,6 +56,8 @@ skipped and fixedPatterns is used for all sets - allowing manual pattern
 matching, as well as fixed runs of standard CoGAPS}
 
 \item{whichMatrixFixed}{either 'A' or 'P', indicating which matrix is fixed}
+
+\item{takePumpSamples}{whether or not to take PUMP samples}
 
 \item{outputToFile}{name of a file to save the output to, will create 4 files
 of the form "filename_nPatterns_[Amean, Asd, Pmean, Psd].extension"}
