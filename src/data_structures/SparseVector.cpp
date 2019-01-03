@@ -52,6 +52,8 @@ unsigned SparseVector::size() const
 
 void SparseVector::insert(unsigned i, float v)
 {
+    GAPS_ASSERT(v > 0.f);
+
     // this data should not exist
     GAPS_ASSERT(!(mIndexBitFlags[i / 64] & (1ull << (i % 64))));
 
