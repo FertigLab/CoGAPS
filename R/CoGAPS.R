@@ -60,16 +60,16 @@ buildReport <- function()
 #' @examples
 #' # Running from R object
 #' data(GIST)
-#' resultA <- CoGAPS(GIST.data_frame, nIterations=100)
+#' resultA <- CoGAPS(GIST.data_frame, nIterations=25)
 #'
 #' # Running from file name
 #' gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
-#' resultB <- CoGAPS(gist_path, nIterations=100)
+#' resultB <- CoGAPS(gist_path, nIterations=25)
 #'
 #' # Setting Parameters
 #' params <- new("CogapsParams")
-#' params <- setParam(params, "nPatterns", 5)
-#' resultC <- CoGAPS(GIST.data_frame, params, nIterations=100)
+#' params <- setParam(params, "nPatterns", 3)
+#' resultC <- CoGAPS(GIST.data_frame, params, nIterations=25)
 #' @importFrom methods new is
 #' @importFrom SummarizedExperiment assay
 #' @importFrom utils packageVersion
@@ -141,7 +141,11 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
 #' @importFrom methods new
 #' @examples
 #' data(GIST)
-#' result <- scCoGAPS(t(GIST.matrix), BPPARAM=BiocParallel::SerialParam(), nIterations=100)
+#' params <- new("CogapsParams")
+#' params <- setDistributedParams(params, nSets=2)
+#' params <- setParam(params, "nIterations", 100)
+#' params <- setParam(params, "nPatterns", 3)
+#' result <- scCoGAPS(t(GIST.matrix), params, BPPARAM=BiocParallel::SerialParam())
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
@@ -185,7 +189,11 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
 #' @importFrom methods new
 #' @examples
 #' data(GIST)
-#' result <- GWCoGAPS(GIST.matrix, BPPARAM=BiocParallel::SerialParam(), nIterations=100)
+#' params <- new("CogapsParams")
+#' params <- setDistributedParams(params, nSets=2)
+#' params <- setParam(params, "nIterations", 100)
+#' params <- setParam(params, "nPatterns", 3)
+#' result <- GWCoGAPS(GIST.matrix, params, BPPARAM=BiocParallel::SerialParam())
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
