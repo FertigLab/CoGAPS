@@ -1,5 +1,5 @@
 Package: CoGAPS
-Version: 3.2.1
+Version: 3.2.2
 Date: 2018-04-24
 Title: Coordinated Gene Activity in Pattern Sets
 Author: Thomas Sherman, Wai-shing Lee, Conor Kelton, Ondrej Maxian, Jacob Carey,
@@ -39,7 +39,7 @@ Suggests:
 LinkingTo: Rcpp, BH
 VignetteBuilder: knitr
 License: GPL (==2)
-biocViews: GeneExpression, Transcription, GeneSetEnrichment,
+biocViews: ImmunoOncology, GeneExpression, Transcription, GeneSetEnrichment,
     DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray,
     MultipleComparison, DimensionReduction
 NeedsCompilation: yes
