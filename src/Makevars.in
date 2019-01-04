@@ -1,48 +1,6 @@
 PKG_CPPFLAGS = @GAPS_CPP_FLAGS@
 PKG_CXXFLAGS = @GAPS_CXX_FLAGS@
 PKG_LIBS = @GAPS_LIBS@
-
-OBJECTS =   Cogaps.o \
-            GapsParameters.o \
-            GapsResult.o \
-            GapsRunner.o \
-            GapsStatistics.o \
-            RcppExports.o \
-            test-runner.o \
-            atomic/AtomicDomain.o \
-            atomic/ProposalQueue.o \
-            data_structures/HashSets.o \
-            data_structures/HybridMatrix.o \
-            data_structures/HybridVector.o \
-            data_structures/Matrix.o \
-            data_structures/SparseIterator.o \
-            data_structures/SparseMatrix.o \
-            data_structures/SparseVector.o \
-            data_structures/Vector.o \
-            file_parser/CsvParser.o \
-            file_parser/GctParser.o \
-            file_parser/FileParser.o \
-            file_parser/TsvParser.o \
-            file_parser/MtxParser.o \
-            gibbs_sampler/DenseGibbsSampler.o \
-            gibbs_sampler/SparseGibbsSampler.o \
-            math/Math.o \
-            math/MatrixMath.o \
-            math/Random.o \
-            math/VectorMath.o \
-            cpp_tests/testAtomicDomain.o \
-            cpp_tests/testDenseGibbsSampler.o \
-            cpp_tests/testFileParsers.o \
-            cpp_tests/testHashSets.o \
-            cpp_tests/testHybridMatrix.o \
-            cpp_tests/testHybridVector.o \
-            cpp_tests/testMatrix.o \
-            cpp_tests/testRandom.o \
-            cpp_tests/testSerialization.o \
-            cpp_tests/testSparseGibbsSampler.o \
-            cpp_tests/testSparseIterator.o \
-            cpp_tests/testSparseMatrix.o \
-            cpp_tests/testSparseVector.o \
-            cpp_tests/testVector.o
+OBJECTS = @GAPS_SOURCE_FILES@
 
 

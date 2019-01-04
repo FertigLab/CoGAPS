@@ -8,7 +8,7 @@
 #include <vector>
 
 // comment out to use 'new' operator for allocating atoms
-// #define __GAPS_USE_POOLED_ALLOCATOR__
+//#define __GAPS_USE_POOLED_ALLOCATOR__
 
 #ifdef __GAPS_USE_POOLED_ALLOCATOR__
 #include "boost/pool/object_pool.hpp"
