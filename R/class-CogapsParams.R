@@ -112,7 +112,9 @@ setValidity("CogapsParams",
         if (!is.null(object@explicitSets) & length(object@explicitSets) != object@nSets)
             "nSets doesn't match length of explicitSets"
         if (length(unique(object@samplingAnnotation)) != length(object@samplingWeight))
-            stop("samplingWeight has mismatched size with amount of distinct annotations")
+            "samplingWeight has mismatched size with amount of distinct annotations"
+        if (object@cut > object@nPatterns)
+            "cut must be less than or equal to nPatterns"
 
         # check type of explicitSets
         if (!is.null(object@explicitSets) & !is(object@explicitSets, "list"))
