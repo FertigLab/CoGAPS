@@ -16,6 +16,29 @@ author: Tom Sherman <tomsherman159@gmail.com>
 
     - fixed bug when reading csv/tsv files and using sparseOptimization
 
+version: 3.3.21
+date: 12-20-19
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - added PUMP back to CoGAPS
+
+version: 3.3.20 (jumped from 3.3.16)
+date: 2018-12-19
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - allow for fixed matrix in standard CoGAPS
+
+version: 3.3.16
+date: 2018-11-22
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - flush output when printing time
+
+version: 3.3.15
+date: 2018-11-22
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - clarify internal parameters
 
 version: 3.3.14
 date: 2018-11-16
