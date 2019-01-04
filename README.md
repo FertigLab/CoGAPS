@@ -1,4 +1,4 @@
-# CoGAPS Version: 3.3.22
+# CoGAPS Version: 3.3.23
 
 [![Bioc](https://bioconductor.org/images/logo_bioconductor.gif)](https://bioconductor.org/packages/CoGAPS)
 [![downloads](https://bioconductor.org/shields/downloads/CancerInSilico.svg)](https://bioconductor.org/packages/CoGAPS)
