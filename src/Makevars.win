@@ -29,17 +29,4 @@ OBJECTS =   Cogaps.o \
             math/Math.o \
             math/MatrixMath.o \
             math/Random.o \
-            math/VectorMath.o \
-            cpp_tests/testAtomicDomain.o \
-            cpp_tests/testDenseGibbsSampler.o \
-            cpp_tests/testFileParsers.o \
-            cpp_tests/testHashSets.o \
-            cpp_tests/testHybridMatrix.o \
-            cpp_tests/testHybridVector.o \
-            cpp_tests/testMatrix.o \
-            cpp_tests/testSerialization.o \
-            cpp_tests/testSparseGibbsSampler.o \
-            cpp_tests/testSparseIterator.o \
-            cpp_tests/testSparseMatrix.o \
-            cpp_tests/testSparseVector.o \
-            cpp_tests/testVector.o
+            math/VectorMath.o
