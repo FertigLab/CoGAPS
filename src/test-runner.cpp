@@ -11,4 +11,5 @@ int run_catch_unit_tests()
     int numFailed = session.run();
     return (numFailed < 0xFF ? numFailed : 0xFF);
 #endif
+    return 1;
 }
