@@ -1,6 +1,8 @@
+RHDF5_LIBS=`echo 'Rhdf5lib::pkgconfig("PKG_CXX_LIBS")'|\
+    "${R_HOME}/bin/R" --vanilla --slave`
+
 PKG_CPPFLAGS = @GAPS_CPP_FLAGS@
 PKG_CXXFLAGS = @GAPS_CXX_FLAGS@
-PKG_LIBS = @GAPS_LIBS@
+PKG_LIBS = @GAPS_LIBS@ $(RHDF5_LIBS)
 OBJECTS = @GAPS_SOURCE_FILES@
-
 
