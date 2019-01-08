@@ -3,19 +3,26 @@
 
 #include "../utils/GapsAssert.h"
 
+#include <cstdio>
+#include <cunistd>
 #include <sstream>
 
 MtxParser::MtxParser(const std::string &path) : mNumRows(0), mNumCols(0)
 {
-    mFile.open(path.c_str());
-
-    // read first line
-    std::string line;
-    std::getline(mFile, line);
-    if (mFile.eof() || mFile.fail())
+    // check if file exists and read it in
+    if (access(path, F_OK) == -1)
     {
         GAPS_ERROR("Invalid MTX file");
     }
+    mFile = fopen(path, "r");
+
+    // read first line
+    char line[1024];
+    fgets(line, 1024, mFile);
+        
+
+    std::string line;
+    std::getline(mFile, line);
 
     // skip over comments
     while (line.find('%') != std::string::npos)
@@ -30,6 +37,7 @@ MtxParser::MtxParser(const std::string &path) : mNumRows(0), mNumCols(0)
 
     // store dimensions
     ss >> mNumRows >> mNumCols;
+    mFile_p = fopen(path, "r");
 }
 
 bool MtxParser::hasNext()
@@ -43,9 +51,13 @@ MatrixElement MtxParser::getNext()
     unsigned row = 0, col = 0;
     float val = 0.f;
 
-    mFile >> row;
-    mFile >> col;
-    mFile >> val;
+    
+
+    //mFile >> row;
+    //mFile >> col;
+    //mFile >> val;
+
+    
 
     return MatrixElement(row - 1, col - 1, val);
 }

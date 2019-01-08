@@ -323,13 +323,20 @@ const DataType &uncertainty, GapsRandomState *randState)
     // within the sampler, note the subsetting genes/samples flag must be
     // flipped if we are flipping the transpose flag
     GAPS_MESSAGE(params.printMessages, "Loading Data...");
+    bpt::ptime readStart = bpt_now();
     Sampler ASampler(data, !params.transposeData, !params.subsetGenes,
         params.alphaA, params.maxGibbsMassA, params, randState);
     Sampler PSampler(data, params.transposeData, params.subsetGenes,
         params.alphaP, params.maxGibbsMassP, params, randState);
     processUncertainty(params, ASampler, PSampler, uncertainty);
     processFixedMatrix(params, ASampler, PSampler);
-    GAPS_MESSAGE(params.printMessages, "Done!\n");
+    bpt::time_duration readDiff = bpt_now() - readStart;
+    GapsTime elapsed(static_cast<unsigned>(readDiff.total_seconds()));
+    if (params.printMessages)
+    {
+        gaps_printf("Done! (%02d:%02d:%02d)\n", elapsed.hours, elapsed.minutes,
+            elapsed.seconds);
+    }
 
     // these variables will get overwritten by checkpoint if provided
     GapsStatistics stats(params.nGenes, params.nSamples, params.nPatterns);
