@@ -1,6 +1,7 @@
 #include "catch.h"
-#include "../gibbs_sampler/DenseGibbsSampler.h"
-#include "../gibbs_sampler/SparseGibbsSampler.h"
+#include "../gibbs_sampler/GibbsSampler.h"
+#include "../gibbs_sampler/DenseStoragePolicy.h"
+#include "../gibbs_sampler/SparseStoragePolicy.h"
 
 #define TEST_APPROX(x) Approx(x).epsilon(0.001f)
 
@@ -19,9 +20,9 @@ TEST_CASE("Test SparseGibbsSampler")
 
         GapsRandomState randState(123);
         GapsParameters params(data);
-        SparseGibbsSampler ASampler(data, true, false, params.alphaA,
+        GibbsSampler<SparseStorage> ASampler(data, true, false, params.alphaA,
             params.maxGibbsMassA, params, &randState);
-        SparseGibbsSampler PSampler(data, false, false, params.alphaP,
+        GibbsSampler<SparseStorage> PSampler(data, false, false, params.alphaP,
             params.maxGibbsMassP, params, &randState);
     
         ASampler.sync(PSampler);
@@ -53,17 +54,17 @@ TEST_CASE("Test SparseGibbsSampler")
 
         // create pair of sparse gibbs samplers
         GapsParameters params(data);
-        SparseGibbsSampler sparse_ASampler(data, true, false, params.alphaA,
+        GibbsSampler<SparseStorage> sparse_ASampler(data, true, false, params.alphaA,
             params.maxGibbsMassA, params, &randState);
-        SparseGibbsSampler sparse_PSampler(data, false, false, params.alphaP,
+        GibbsSampler<SparseStorage> sparse_PSampler(data, false, false, params.alphaP,
             params.maxGibbsMassP, params, &randState);
         sparse_ASampler.sync(sparse_PSampler);
         sparse_PSampler.sync(sparse_ASampler);
 
         // create pair of dense gibbs samplers
-        DenseGibbsSampler dense_ASampler(data, true, false, params.alphaA,
+        GibbsSampler<DenseStorage> dense_ASampler(data, true, false, params.alphaA,
             params.maxGibbsMassA, params, &randState);
-        DenseGibbsSampler dense_PSampler(data, false, false, params.alphaP,
+        GibbsSampler<DenseStorage> dense_PSampler(data, false, false, params.alphaP,
             params.maxGibbsMassP, params, &randState);
         dense_ASampler.sync(dense_PSampler);
         dense_PSampler.sync(dense_ASampler);

@@ -1,6 +1,9 @@
 #include "GapsRunner.h"
 
 #include "utils/Archive.h"
+#include "gibbs_sampler/GibbsSampler.h"
+#include "gibbs_sampler/DenseStoragePolicy.h"
+#include "gibbs_sampler/SparseStoragePolicy.h"
 
 #ifdef __GAPS_R_BUILD__
 #include <Rcpp.h>
@@ -62,10 +65,10 @@ const DataType &uncertainty, GapsRandomState *randState)
 
     if (params.useSparseOptimization)
     {
-        return runCoGAPSAlgorithm<SparseGibbsSampler>(data, params,
+        return runCoGAPSAlgorithm< GibbsSampler<SparseStorage> >(data, params,
             uncertainty, randState);
     }
-    return runCoGAPSAlgorithm<DenseGibbsSampler>(data, params,
+    return runCoGAPSAlgorithm< GibbsSampler<DenseStorage> >(data, params,
         uncertainty, randState);
 }
 

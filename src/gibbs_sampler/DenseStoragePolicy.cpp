@@ -1,8 +1,10 @@
-#include "DenseGibbsSampler.h"
+#include "DenseStoragePolicy.h"
+
+#include "../math/Math.h"
 
 #define GAPS_SQ(x) ((x) * (x))
 
-float DenseGibbsSampler::chiSq() const
+float DenseStorage::chiSq() const
 {
     float chisq = 0.f;
     for (unsigned i = 0; i < mDMatrix.nRow(); ++i)
@@ -16,7 +18,7 @@ float DenseGibbsSampler::chiSq() const
     return chisq;
 }
 
-void DenseGibbsSampler::sync(const DenseGibbsSampler &sampler, unsigned nThreads)
+void DenseStorage::sync(const DenseStorage &sampler, unsigned nThreads)
 {
     // copy transpose of other AP matrix
     GAPS_ASSERT(sampler.mAPMatrix.nRow() == mAPMatrix.nCol());
@@ -38,7 +40,7 @@ void DenseGibbsSampler::sync(const DenseGibbsSampler &sampler, unsigned nThreads
         mOtherMatrix->nCol() << " != " << mMatrix.nCol());
 }
 
-void DenseGibbsSampler::extraInitialization()
+void DenseStorage::extraInitialization()
 {
     GAPS_ASSERT(mOtherMatrix->nRow() == mAPMatrix.nRow());
     GAPS_ASSERT(mOtherMatrix->nCol() == mMatrix.nCol());
@@ -57,7 +59,12 @@ void DenseGibbsSampler::extraInitialization()
     }
 }
 
-void DenseGibbsSampler::changeMatrix(unsigned row, unsigned col, float delta)
+float DenseStorage::apSum() const
+{
+    return gaps::sum(mAPMatrix);
+}
+
+void DenseStorage::changeMatrix(unsigned row, unsigned col, float delta)
 {
     mMatrix(row, col) += delta;
     updateAPMatrix(row, col, delta);
@@ -65,7 +72,7 @@ void DenseGibbsSampler::changeMatrix(unsigned row, unsigned col, float delta)
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
-void DenseGibbsSampler::safelyChangeMatrix(unsigned row, unsigned col, float delta)
+void DenseStorage::safelyChangeMatrix(unsigned row, unsigned col, float delta)
 {
     float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
     updateAPMatrix(row, col, newVal - mMatrix(row, col));
@@ -75,7 +82,7 @@ void DenseGibbsSampler::safelyChangeMatrix(unsigned row, unsigned col, float del
 }
 
 // PERFORMANCE_CRITICAL
-AlphaParameters DenseGibbsSampler::alphaParameters(unsigned row, unsigned col)
+AlphaParameters DenseStorage::alphaParameters(unsigned row, unsigned col)
 {
     unsigned size = mDMatrix.nRow();
     const float *D = mDMatrix.getCol(row).ptr();
@@ -124,7 +131,7 @@ AlphaParameters DenseGibbsSampler::alphaParameters(unsigned row, unsigned col)
 }
 
 // PERFORMANCE_CRITICAL
-AlphaParameters DenseGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
+AlphaParameters DenseStorage::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
     if (r1 == r2)
@@ -155,7 +162,7 @@ unsigned r2, unsigned c2)
 }
 
 // PERFORMANCE_CRITICAL
-AlphaParameters DenseGibbsSampler::alphaParametersWithChange(unsigned row,
+AlphaParameters DenseStorage::alphaParametersWithChange(unsigned row,
 unsigned col, float ch)
 {
     unsigned size = mDMatrix.nRow();
@@ -181,7 +188,7 @@ unsigned col, float ch)
 }
 
 // PERFORMANCE_CRITICAL
-void DenseGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
+void DenseStorage::updateAPMatrix(unsigned row, unsigned col, float delta)
 {
     const float *other = mOtherMatrix->getCol(col).ptr();
     float *ap = mAPMatrix.getCol(row).ptr();
@@ -198,35 +205,15 @@ void DenseGibbsSampler::updateAPMatrix(unsigned row, unsigned col, float delta)
     }
 }
 
-Archive& operator<<(Archive &ar, const DenseGibbsSampler &s)
+Archive& operator<<(Archive &ar, const DenseStorage &s)
 {
-    ar << s.mMatrix << s.mDomain << s.mQueue << s.mAlpha << s.mLambda
-        << s.mMaxGibbsMass << s.mAnnealingTemp << s.mNumPatterns << s.mNumBins
-        << s.mBinLength;
+    ar << s.mMatrix;
     return ar;
 }
 
-Archive& operator>>(Archive &ar, DenseGibbsSampler &s)
+Archive& operator>>(Archive &ar, DenseStorage &s)
 {
-    ar >> s.mMatrix >> s.mDomain >> s.mQueue >> s.mAlpha >> s.mLambda
-        >> s.mMaxGibbsMass >> s.mAnnealingTemp >> s.mNumPatterns >> s.mNumBins
-        >> s.mBinLength;
+    ar >> s.mMatrix;
     return ar;
 }
 
-#ifdef GAPS_DEBUG
-bool DenseGibbsSampler::internallyConsistent() const
-{
-    for (unsigned j = 0; j < mMatrix.nCol(); ++j)
-    {
-        for (unsigned i = 0; i < mMatrix.nRow(); ++i)
-        {
-            if (mMatrix(i,j) < 0.f)
-            {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-#endif

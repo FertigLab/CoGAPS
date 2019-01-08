@@ -27,8 +27,9 @@ OBJECTS =   Cogaps.o \
             file_parser/FileParser.o \
             file_parser/TsvParser.o \
             file_parser/MtxParser.o \
-            gibbs_sampler/DenseGibbsSampler.o \
-            gibbs_sampler/SparseGibbsSampler.o \
+            gibbs_sampler/AlphaParameters.o \
+            gibbs_sampler/DenseStoragePolicy.o \
+            gibbs_sampler/SparseStoragePolicy.o \
             math/Math.o \
             math/MatrixMath.o \
             math/Random.o \
