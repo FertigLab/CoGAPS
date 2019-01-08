@@ -1,3 +1,9 @@
+version: 3.3.26
+date: 2019-1-8
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - allow for selectively disabling AVX instructions
+
 version: 3.3.25
 date: 2019-1-7
 author: Tom Sherman <tomsherman159@gmail.com>

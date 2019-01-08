@@ -81,6 +81,7 @@ if test "x$use_simd" = "xsse" ; then
 fi
 
 if test "x$use_simd" != "xno" ; then
+    echo "Using AVX instructions if available"
     GAPS_CXX_FLAGS+=" -march=native "
 fi
 
