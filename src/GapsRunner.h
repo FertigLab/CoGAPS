@@ -18,6 +18,7 @@ namespace gaps
     // data stored in file
     GapsResult run(const std::string &data, GapsParameters &params,
         const std::string &uncertainty, GapsRandomState *randState);
+
 }; // namespace gaps
 
 #endif // __COGAPS_GAPS_RUNNER_H__

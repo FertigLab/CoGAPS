@@ -4,7 +4,8 @@
 #include "FileParser.h"
 #include "MatrixElement.h"
 
-#include <cstdio>
+//#include <cstdio>
+#include <fstream>
 #include <string>
 
 class MtxParser : public AbstractFileParser
@@ -24,7 +25,8 @@ public:
 private:
 #endif
 
-    FILE *mFile;
+    //FILE *mFile;
+    std::ifstream mFile;
 
     unsigned mNumRows;
     unsigned mNumCols;

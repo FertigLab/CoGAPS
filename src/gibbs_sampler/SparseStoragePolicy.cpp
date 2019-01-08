@@ -1,8 +1,8 @@
-#include "SparseGibbsSampler.h"
-#include "../data_structures/SparseIterator.h"
-#include "../math/VectorMath.h"
+#include "SparseStoragePolicy.h"
 
-#include <bitset>
+#include "../data_structures/SparseIterator.h"
+#include "../math/Math.h"
+#include "../math/VectorMath.h"
 
 #define GAPS_SQ(x) ((x) * (x))
 
@@ -11,9 +11,7 @@
 #define COUNT_BITS(u) __builtin_popcountll(u)
 #define GET_FIRST_SET_BIT(u) (__builtin_ffsll(u) - 1)
 
-/////////// SparseGibbsSampler Function Definitions //////////////
-
-float SparseGibbsSampler::chiSq() const
+float SparseStorage::chiSq() const
 {
     float chisq = 0.f;
     for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
@@ -36,19 +34,25 @@ float SparseGibbsSampler::chiSq() const
     return chisq * mBeta;
 }
 
-void SparseGibbsSampler::sync(const SparseGibbsSampler &sampler, unsigned nThreads)
+void SparseStorage::sync(const SparseStorage &sampler, unsigned nThreads)
 {
     mOtherMatrix = &(sampler.mMatrix);
     generateLookupTables();
 }
 
 // required for GibbsSampler interface
-void SparseGibbsSampler::extraInitialization()
+void SparseStorage::extraInitialization()
 {
     // nop - not needed
 }
 
-void SparseGibbsSampler::changeMatrix(unsigned row, unsigned col,
+// required for GibbsSampler interface
+float SparseStorage::apSum() const
+{
+    return 0.f;
+}
+
+void SparseStorage::changeMatrix(unsigned row, unsigned col,
 float delta)
 {
     mMatrix.add(row, col, delta);
@@ -56,7 +60,7 @@ float delta)
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
-void SparseGibbsSampler::safelyChangeMatrix(unsigned row,
+void SparseStorage::safelyChangeMatrix(unsigned row,
 unsigned col, float delta)
 {
     float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
@@ -65,7 +69,8 @@ unsigned col, float delta)
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
-AlphaParameters SparseGibbsSampler::alphaParameters(unsigned row, unsigned col)
+// PERFORMANCE_CRITICAL
+AlphaParameters SparseStorage::alphaParameters(unsigned row, unsigned col)
 {
     const SparseVector &D(mDMatrix.getCol(row));
     const HybridVector &V(mOtherMatrix->getCol(col));
@@ -107,7 +112,8 @@ AlphaParameters SparseGibbsSampler::alphaParameters(unsigned row, unsigned col)
     return AlphaParameters(s, s_mu) * mBeta;
 }
 
-AlphaParameters SparseGibbsSampler::alphaParametersWithChange(unsigned row,
+// PERFORMANCE_CRITICAL
+AlphaParameters SparseStorage::alphaParametersWithChange(unsigned row,
 unsigned col, float ch)
 {
     const SparseVector &D(mDMatrix.getCol(row));
@@ -152,7 +158,8 @@ unsigned col, float ch)
     return AlphaParameters(s, s_mu) * mBeta;
 }
 
-AlphaParameters SparseGibbsSampler::alphaParameters(unsigned r1, unsigned c1,
+// PERFORMANCE_CRITICAL
+AlphaParameters SparseStorage::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
     if (r1 == r2)
@@ -204,16 +211,17 @@ unsigned r2, unsigned c2)
     return alphaParameters(r1, c1) + alphaParameters(r2, c2);
 }
 
-void SparseGibbsSampler::generateLookupTables()
+void SparseStorage::generateLookupTables()
 {
-    for (unsigned i = 0; i < mNumPatterns; ++i)
+    unsigned nPatterns = mZ1.size();
+    for (unsigned i = 0; i < nPatterns; ++i)
     {
         mZ1[i] = 0.f;
         for (unsigned k = 0; k < mOtherMatrix->nRow(); ++k)
         {
             mZ1[i] += GAPS_SQ(mOtherMatrix->operator()(k,i));
         }
-        for (unsigned j = i; j < mNumPatterns; ++j)
+        for (unsigned j = i; j < nPatterns; ++j)
         {
             float d = gaps::dot(mOtherMatrix->getCol(i), mOtherMatrix->getCol(j));
             mZ2(i,j) = d;
@@ -222,25 +230,15 @@ void SparseGibbsSampler::generateLookupTables()
     }
 }
 
-Archive& operator<<(Archive &ar, const SparseGibbsSampler &s)
+Archive& operator<<(Archive &ar, const SparseStorage &s)
 {
-    ar << s.mMatrix << s.mDomain << s.mAlpha << s.mLambda << s.mMaxGibbsMass
-        << s.mAnnealingTemp << s.mNumPatterns << s.mNumBins << s.mBinLength
-        << s.mBeta;
+    ar << s.mMatrix << s.mBeta;
     return ar;
 }
 
-Archive& operator>>(Archive &ar, SparseGibbsSampler &s)
+Archive& operator>>(Archive &ar, SparseStorage &s)
 {
-    ar >> s.mMatrix >> s.mDomain >> s.mAlpha >> s.mLambda >> s.mMaxGibbsMass
-        >> s.mAnnealingTemp >> s.mNumPatterns >> s.mNumBins >> s.mBinLength
-        >> s.mBeta;
+    ar >> s.mMatrix >> s.mBeta;
     return ar;
 }
 
-#ifdef GAPS_DEBUG
-bool SparseGibbsSampler::internallyConsistent() const
-{
-    return true;
-}
-#endif

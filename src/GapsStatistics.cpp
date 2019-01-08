@@ -51,7 +51,7 @@ Matrix GapsStatistics::Psd() const
     return mat;
 }
 
-float GapsStatistics::meanChiSq(const DenseGibbsSampler &PSampler) const
+float GapsStatistics::meanChiSq(const GibbsSampler<DenseStorage> &PSampler) const
 {
     float chisq = 0.f;
     for (unsigned i = 0; i < PSampler.mDMatrix.nRow(); ++i)
@@ -73,7 +73,7 @@ float GapsStatistics::meanChiSq(const DenseGibbsSampler &PSampler) const
     return chisq;
 }
 
-float GapsStatistics::meanChiSq(const SparseGibbsSampler &PSampler) const
+float GapsStatistics::meanChiSq(const GibbsSampler<SparseStorage> &PSampler) const
 {
     float chisq = 0.f;
     for (unsigned i = 0; i < PSampler.mDMatrix.nRow(); ++i)

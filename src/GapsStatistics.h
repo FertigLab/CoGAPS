@@ -1,12 +1,14 @@
 #ifndef __COGAPS_GAPS_STATISTICS_H__
 #define __COGAPS_GAPS_STATISTICS_H__
 
+#include "GapsParameters.h"
+#include "gibbs_sampler/GibbsSampler.h"
+#include "gibbs_sampler/DenseStoragePolicy.h"
+#include "gibbs_sampler/SparseStoragePolicy.h"
 #include "math/Math.h"
 #include "math/MatrixMath.h"
 #include "math/VectorMath.h"
 #include "data_structures/Matrix.h"
-#include "gibbs_sampler/DenseGibbsSampler.h"
-#include "gibbs_sampler/SparseGibbsSampler.h"
 
 #define GAPS_SQ(x) ((x) * (x))
 
@@ -36,8 +38,8 @@ public:
     std::vector<float> chisqHistory() const;
     std::vector<unsigned> atomHistory(char m) const;
     
-    float meanChiSq(const DenseGibbsSampler &PSampler) const;
-    float meanChiSq(const SparseGibbsSampler &PSampler) const;
+    float meanChiSq(const GibbsSampler<DenseStorage> &PSampler) const;
+    float meanChiSq(const GibbsSampler<SparseStorage> &PSampler) const;
 
     // serialization
     friend Archive& operator<<(Archive &ar, const GapsStatistics &stat);
