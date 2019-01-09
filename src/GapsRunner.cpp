@@ -369,6 +369,8 @@ const DataType &uncertainty, GapsRandomState *randState)
     // get result
     GapsResult result(stats);
     result.meanChiSq = stats.meanChiSq(PSampler);
+    result.averageQueueLengthA = ASampler.getAverageQueueLength();
+    result.averageQueueLengthP = PSampler.getAverageQueueLength();
 
     if (params.takePumpSamples)
     {
