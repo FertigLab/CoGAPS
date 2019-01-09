@@ -4,7 +4,6 @@
 #include "FileParser.h"
 #include "MatrixElement.h"
 
-//#include <cstdio>
 #include <fstream>
 #include <string>
 
@@ -25,7 +24,6 @@ public:
 private:
 #endif
 
-    //FILE *mFile;
     std::ifstream mFile;
 
     unsigned mNumRows;
