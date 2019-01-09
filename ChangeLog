@@ -1,3 +1,9 @@
+version: 3.3.27
+date: 2019-1-9
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - stop running examples for scCoGAPS/GWCoGAPS to reduce R CMD check time
+
 version: 3.3.26
 date: 2019-1-8
 author: Tom Sherman <tomsherman159@gmail.com>
