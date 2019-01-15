@@ -1,3 +1,9 @@
+version: 3.3.28
+date: 2019-1-15
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - return average asynchronous queue length in metadata
+
 version: 3.3.27
 date: 2019-1-9
 author: Tom Sherman <tomsherman159@gmail.com>
