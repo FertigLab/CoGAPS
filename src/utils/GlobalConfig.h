@@ -14,9 +14,9 @@
 #endif
 
 #ifdef __GAPS_R_BUILD__
-    gaps_check_interrupt Rcpp::checkUserInterrupt
+    #define gaps_check_interrupt(x) Rcpp::checkUserInterrupt(x)
 #else
-    gaps_check_interrupt do {} while(0)
+    #define gaps_check_interrupt(x) do {} while(0)
 #endif
 
 // used to convert defined macro values into strings
