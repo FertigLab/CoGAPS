@@ -145,13 +145,21 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     # test same seed == same result for different number of threads
     res1 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
-        messages=FALSE, nThreads=4)
+        messages=FALSE, nThreads=1)
     res2 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE, nThreads=3)
+    res3 <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
         messages=FALSE, nThreads=6)
+
     expect_true(all(res1@featureLoadings == res2@featureLoadings))
     expect_true(all(res1@featureStdDev == res2@featureStdDev))
     expect_true(all(res1@sampleFactors == res2@sampleFactors))
     expect_true(all(res1@sampleStdDev== res2@sampleStdDev))
+
+    expect_true(all(res3@featureLoadings == res2@featureLoadings))
+    expect_true(all(res3@featureStdDev == res2@featureStdDev))
+    expect_true(all(res3@sampleFactors == res2@sampleFactors))
+    expect_true(all(res3@sampleStdDev== res2@sampleStdDev))
 
     # test running with fixed matrix
     nPat <- 3
