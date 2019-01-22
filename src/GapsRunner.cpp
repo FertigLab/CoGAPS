@@ -222,10 +222,7 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
 {
     for (; currentIter < params.nIterations; ++currentIter)
     {
-        #ifdef __GAPS_R_BUILD__
-        Rcpp::checkUserInterrupt();
-        #endif
-
+        gaps_check_interrupt();
         createCheckpoint(params, ASampler, PSampler, randState, stats,
             rng, phase, currentIter);
         
@@ -323,12 +320,17 @@ const DataType &uncertainty, GapsRandomState *randState)
     // within the sampler, note the subsetting genes/samples flag must be
     // flipped if we are flipping the transpose flag
     GAPS_MESSAGE(params.printMessages, "Loading Data...");
+    gaps_check_interrupt();
     Sampler ASampler(data, !params.transposeData, !params.subsetGenes,
         params.alphaA, params.maxGibbsMassA, params, randState);
+    gaps_check_interrupt();
     Sampler PSampler(data, params.transposeData, params.subsetGenes,
         params.alphaP, params.maxGibbsMassP, params, randState);
+    gaps_check_interrupt();
     processUncertainty(params, ASampler, PSampler, uncertainty);
+    gaps_check_interrupt();
     processFixedMatrix(params, ASampler, PSampler);
+    gaps_check_interrupt();
     GAPS_MESSAGE(params.printMessages, "Done!\n");
 
     // these variables will get overwritten by checkpoint if provided
@@ -369,6 +371,8 @@ const DataType &uncertainty, GapsRandomState *randState)
     // get result
     GapsResult result(stats);
     result.meanChiSq = stats.meanChiSq(PSampler);
+    result.averageQueueLengthA = ASampler.getAverageQueueLength();
+    result.averageQueueLengthP = PSampler.getAverageQueueLength();
 
     if (params.takePumpSamples)
     {
