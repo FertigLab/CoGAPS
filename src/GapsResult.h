@@ -23,6 +23,9 @@ struct GapsResult
     std::vector<unsigned> atomHistoryA;
     std::vector<unsigned> atomHistoryP;
 
+    float averageQueueLengthA;
+    float averageQueueLengthP;
+
     explicit GapsResult(const GapsStatistics &stat);
 
     void writeToFile(const std::string &fullPath);

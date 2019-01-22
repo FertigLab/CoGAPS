@@ -47,6 +47,7 @@ public:
     void setMatrix(const Matrix &mat);
 
     unsigned nAtoms() const;
+    float getAverageQueueLength() const;
 
     void update(unsigned nSteps, unsigned nThreads);
 
@@ -69,6 +70,9 @@ protected:
     unsigned mNumPatterns;
     uint64_t mNumBins;
     uint64_t mBinLength;
+
+    float mAvgQueueLength;
+    float mNumQueueSamples;    
 
     // can't be constructed outside of derived classes
     template <class DataType>
@@ -109,7 +113,9 @@ mMaxGibbsMass(0.f),
 mAnnealingTemp(1.f),
 mNumPatterns(params.nPatterns),
 mNumBins(mMatrix.nRow() * params.nPatterns),
-mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins)
+mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins),
+mAvgQueueLength(0),
+mNumQueueSamples(0)
 {
     float meanD = params.singleCell ? gaps::nonZeroMean(mDMatrix) :
        gaps::mean(mDMatrix);
@@ -152,6 +158,12 @@ unsigned GibbsSampler<Derived, DataMatrix, FactorMatrix>::nAtoms() const
 }
 
 template <class Derived, class DataMatrix, class FactorMatrix>
+float GibbsSampler<Derived, DataMatrix, FactorMatrix>::getAverageQueueLength() const
+{
+    return mAvgQueueLength;
+}
+
+template <class Derived, class DataMatrix, class FactorMatrix>
 void GibbsSampler<Derived, DataMatrix, FactorMatrix>::update(unsigned nSteps, unsigned nThreads)
 {
     unsigned n = 0;
@@ -160,6 +172,13 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::update(unsigned nSteps, un
         // create the largest queue possible, without hitting any conflicts
         mQueue.populate(mDomain, nSteps - n);
         n += mQueue.nProcessed();
+    
+        if (n < nSteps) // don't cant last one since it might be truncated
+        {
+            mNumQueueSamples += 1.f;
+            mAvgQueueLength *= (mNumQueueSamples - 1.f) / mNumQueueSamples;
+            mAvgQueueLength += static_cast<float>(mQueue.size()) / mNumQueueSamples;
+        }
         
         // process all proposed updates in parallel - the way the queue is 
         // populated ensures no race conditions will happen

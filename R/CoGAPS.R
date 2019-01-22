@@ -140,12 +140,14 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
 #' @return CogapsResult object
 #' @importFrom methods new
 #' @examples
+#' \dontrun{
 #' data(GIST)
 #' params <- new("CogapsParams")
 #' params <- setDistributedParams(params, nSets=2)
 #' params <- setParam(params, "nIterations", 100)
 #' params <- setParam(params, "nPatterns", 3)
 #' result <- scCoGAPS(t(GIST.matrix), params, BPPARAM=BiocParallel::SerialParam())
+#' }
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
@@ -188,12 +190,14 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
 #' @return CogapsResult object
 #' @importFrom methods new
 #' @examples
+#' \dontrun{
 #' data(GIST)
 #' params <- new("CogapsParams")
 #' params <- setDistributedParams(params, nSets=2)
 #' params <- setParam(params, "nIterations", 100)
 #' params <- setParam(params, "nPatterns", 3)
 #' result <- GWCoGAPS(GIST.matrix, params, BPPARAM=BiocParallel::SerialParam())
+#' }
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
 messages=TRUE, outputFrequency=500, uncertainty=NULL,
 checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
