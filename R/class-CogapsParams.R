@@ -131,6 +131,10 @@ setValidity("CogapsParams",
 
         if (!is.null(object@explicitSets) & !is.null(object@samplingAnnotation))
             "explicitSets and samplingAnnotation/samplingWeight are both set"
+
+        if (!is.null(object@distributed))
+            if (!(object@distributed %in% c("genome-wide", "single-cell")))
+                "distributed method must be either 'genome-wide' or 'single-cell'"
     }
 )
 
