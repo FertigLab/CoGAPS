@@ -1,3 +1,9 @@
+version: 3.3.31
+date: 2019-1-31
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - allow rds files to be passed
+
 version: 3.3.30
 date: 2019-1-29
 author: Tom Sherman <tomsherman159@gmail.com>
