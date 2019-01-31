@@ -101,6 +101,14 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
     )
     allParams <- parseExtraParams(allParams, list(...))
 
+    # if rds was passed, we first read it in before any processing
+    if (is(data, "character") & tools::file_ext(data) == "rds")
+    {
+        gapsCat(allParams, "reading RDS file...")
+        data <- readRDS(data)
+        gapsCat(allParams, "done\n")
+    }
+
     # convert data if needed
     if (is(data, "data.frame"))
         data <- data.matrix(data)
