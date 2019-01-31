@@ -56,3 +56,6 @@
 ^src/cpp_tests/testSparseMatrix.o
 ^src/cpp_tests/testSparseVector.o
 ^src/cpp_tests/testVector.o
+^src/gibbs_sampler/AlphaParameters.o
+^src/gibbs_sampler/DenseStoragePolicy.o
+^src/gibbs_sampler/SparseStoragePolicy.o
