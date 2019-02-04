@@ -55,7 +55,7 @@ setClass("CogapsParams", slots = c(
 #' @return initialized CogapsParams object
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsParams",
-    function(.Object, ...)
+    function(.Object, distributed=NULL, ...)
     {
         getMilliseconds <- function(time) floor((time$sec %% 1) * 1000)
 
@@ -67,9 +67,10 @@ setMethod("initialize", "CogapsParams",
             stop("minNS must be set after CogapsParams are intialized")
         if (!is.null(list(...)$maxNS))
             stop("maxNS must be set after CogapsParams are intialized")
-        if (!is.null(list(...)$distributed))
-            if (list(...)$distributed == "none")
-                list(...)$distributed <- NULL
+        if (!is.null(distributed))
+            if (distributed == "none")
+                distributed <- NULL
+        .Object@distributed <- distributed
         
         .Object@nPatterns <- 7
         .Object@nIterations <- 1000
@@ -80,7 +81,6 @@ setMethod("initialize", "CogapsParams",
         .Object@seed <- getMilliseconds(as.POSIXlt(Sys.time()))
         .Object@singleCell <- FALSE
         .Object@sparseOptimization <- FALSE
-        .Object@distributed <- NULL
         .Object@cut <- .Object@nPatterns
         .Object@nSets <- 4
         .Object@minNS <- ceiling(.Object@nSets / 2)
