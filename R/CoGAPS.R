@@ -101,10 +101,10 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
     )
     allParams <- parseExtraParams(allParams, list(...))
 
-    # if rds was passed, we first read it in before any processings
+    # if rds was passed, we first read it in before any processing
     if (is(data, "character"))
     {
-        if (tools::file_ext(data) == "rds"))
+        if (tools::file_ext(data) == "rds")
         {
             gapsCat(allParams, "reading RDS file...")
             data <- readRDS(data)
