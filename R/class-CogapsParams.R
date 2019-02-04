@@ -67,7 +67,10 @@ setMethod("initialize", "CogapsParams",
             stop("minNS must be set after CogapsParams are intialized")
         if (!is.null(list(...)$maxNS))
             stop("maxNS must be set after CogapsParams are intialized")
-
+        if (!is.null(list(...)$distributed))
+            if (list(...)$distributed == "none")
+                list(...)$distributed <- NULL
+        
         .Object@nPatterns <- 7
         .Object@nIterations <- 1000
         .Object@alphaA <- 0.01
