@@ -225,10 +225,7 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
 {
     for (; currentIter < params.nIterations; ++currentIter)
     {
-        #ifdef __GAPS_R_BUILD__
-        Rcpp::checkUserInterrupt();
-        #endif
-
+        gaps_check_interrupt();
         createCheckpoint(params, ASampler, PSampler, randState, stats,
             rng, phase, currentIter);
         
@@ -325,14 +322,26 @@ const DataType &uncertainty, GapsRandomState *randState)
     // is symmetrical for each sampler, this simplifies the code 
     // within the sampler, note the subsetting genes/samples flag must be
     // flipped if we are flipping the transpose flag
+    // note: there are excessive amounts of check interrupt statements here,
+    // this is so that if the user accidentally runs cogaps on an extremely
+    // large file they can exit during the loading phase rather than killing
+    // the process or waiting for it to finish
     GAPS_MESSAGE(params.printMessages, "Loading Data...");
     bpt::ptime readStart = bpt_now();
+
+    gaps_check_interrupt();
     Sampler ASampler(data, !params.transposeData, !params.subsetGenes,
         params.alphaA, params.maxGibbsMassA, params, randState);
+    gaps_check_interrupt();
     Sampler PSampler(data, params.transposeData, params.subsetGenes,
         params.alphaP, params.maxGibbsMassP, params, randState);
+    gaps_check_interrupt();
     processUncertainty(params, ASampler, PSampler, uncertainty);
+    gaps_check_interrupt();
     processFixedMatrix(params, ASampler, PSampler);
+    gaps_check_interrupt();
+
+    // elapsed time for reading data
     bpt::time_duration readDiff = bpt_now() - readStart;
     GapsTime elapsed(static_cast<unsigned>(readDiff.total_seconds()));
     if (params.printMessages)
@@ -359,7 +368,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     // record start time
     bpt::ptime startTime = bpt_now();
 
-    // fallthrough through phases, allows algorithm to be resumed in any phase
+    // fallthrough through phases, allows algorithm to be resumed in either phase
     GAPS_ASSERT(phase == 'C' || phase == 'S');
     switch (phase)
     {
@@ -379,6 +388,8 @@ const DataType &uncertainty, GapsRandomState *randState)
     // get result
     GapsResult result(stats);
     result.meanChiSq = stats.meanChiSq(PSampler);
+    result.averageQueueLengthA = ASampler.getAverageQueueLength();
+    result.averageQueueLengthP = PSampler.getAverageQueueLength();
 
     if (params.takePumpSamples)
     {

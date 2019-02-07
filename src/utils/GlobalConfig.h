@@ -13,6 +13,12 @@
     #define __GAPS_OPENMP__
 #endif
 
+#ifdef __GAPS_R_BUILD__
+    #define gaps_check_interrupt(x) Rcpp::checkUserInterrupt(x)
+#else
+    #define gaps_check_interrupt(x) do {} while(0)
+#endif
+
 // used to convert defined macro values into strings
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
