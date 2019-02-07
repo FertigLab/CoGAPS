@@ -48,7 +48,6 @@ protected:
     Matrix mAPMatrix; // cached product of A and P
 };
 
-
 template <class DataType>
 DenseStorage::DenseStorage(const DataType &data, bool transpose,
 bool subsetRows, const GapsParameters &params)
@@ -59,7 +58,7 @@ mOtherMatrix(NULL),
 mSMatrix(gaps::pmax(mDMatrix, 0.1f)),
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol())
 {
-    mSMatrix.pad(1.f); // can't divide by zero
+    mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
 }
 
 template <class DataType>
