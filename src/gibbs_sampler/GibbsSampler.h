@@ -45,6 +45,7 @@ public:
     void setMatrix(const Matrix &mat);
 
     unsigned nAtoms() const;
+    float getAverageQueueLength() const;
 
     void update(unsigned nSteps, unsigned nThreads);
 
@@ -70,6 +71,9 @@ private:
     unsigned mNumPatterns;
     uint64_t mNumBins;
     uint64_t mBinLength;
+
+    float mAvgQueueLength;
+    float mNumQueueSamples;
 
     void birth(const AtomicProposal &prop);
     void death(const AtomicProposal &prop);
@@ -100,7 +104,9 @@ mMaxGibbsMass(0.f),
 mAnnealingTemp(1.f),
 mNumPatterns(params.nPatterns),
 mNumBins(StoragePolicy::mMatrix.nRow() * params.nPatterns),
-mBinLength(std::numeric_limits<uint64_t>::max() / (StoragePolicy::mMatrix.nRow() * params.nPatterns))
+mBinLength(std::numeric_limits<uint64_t>::max() / (StoragePolicy::mMatrix.nRow() * params.nPatterns)),
+mAvgQueueLength(0),
+mNumQueueSamples(0)
 {
     float meanD = params.singleCell ? gaps::nonZeroMean(StoragePolicy::mDMatrix) :
        gaps::mean(StoragePolicy::mDMatrix);
@@ -146,6 +152,13 @@ void GibbsSampler<StoragePolicy>::update(unsigned nSteps, unsigned nThreads)
         // create the largest queue possible, without hitting any conflicts
         mQueue.populate(mDomain, nSteps - n);
         n += mQueue.nProcessed();
+    
+        if (n < nSteps) // don't cant last one since it might be truncated
+        {
+            mNumQueueSamples += 1.f;
+            mAvgQueueLength *= (mNumQueueSamples - 1.f) / mNumQueueSamples;
+            mAvgQueueLength += static_cast<float>(mQueue.size()) / mNumQueueSamples;
+        }
         
         // process all proposed updates in parallel - the way the queue is 
         // populated ensures no race conditions will happen

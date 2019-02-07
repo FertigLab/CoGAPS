@@ -55,7 +55,7 @@ setClass("CogapsParams", slots = c(
 #' @return initialized CogapsParams object
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsParams",
-    function(.Object, ...)
+    function(.Object, distributed=NULL, ...)
     {
         getMilliseconds <- function(time) floor((time$sec %% 1) * 1000)
 
@@ -67,7 +67,11 @@ setMethod("initialize", "CogapsParams",
             stop("minNS must be set after CogapsParams are intialized")
         if (!is.null(list(...)$maxNS))
             stop("maxNS must be set after CogapsParams are intialized")
-
+        if (!is.null(distributed))
+            if (distributed == "none")
+                distributed <- NULL
+        .Object@distributed <- distributed
+        
         .Object@nPatterns <- 7
         .Object@nIterations <- 1000
         .Object@alphaA <- 0.01
@@ -77,7 +81,6 @@ setMethod("initialize", "CogapsParams",
         .Object@seed <- getMilliseconds(as.POSIXlt(Sys.time()))
         .Object@singleCell <- FALSE
         .Object@sparseOptimization <- FALSE
-        .Object@distributed <- NULL
         .Object@cut <- .Object@nPatterns
         .Object@nSets <- 4
         .Object@minNS <- ceiling(.Object@nSets / 2)
@@ -131,6 +134,10 @@ setValidity("CogapsParams",
 
         if (!is.null(object@explicitSets) & !is.null(object@samplingAnnotation))
             "explicitSets and samplingAnnotation/samplingWeight are both set"
+
+        if (!is.null(object@distributed))
+            if (!(object@distributed %in% c("genome-wide", "single-cell")))
+                "distributed method must be either 'genome-wide' or 'single-cell'"
     }
 )
 
