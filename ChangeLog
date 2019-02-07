@@ -1,3 +1,9 @@
+version: 3.3.33
+date: 2019-2-7
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - internal design changes, should have no visible effect
+
 version: 3.3.32
 date: 2019-2-4
 author: Tom Sherman <tomsherman159@gmail.com>
