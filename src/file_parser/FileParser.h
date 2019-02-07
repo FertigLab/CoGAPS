@@ -12,7 +12,6 @@ enum GapsFileType
     GAPS_CSV,
     GAPS_TSV,
     GAPS_GCT,
-    GAPS_HDF5,
     GAPS_INVALID_FILE_TYPE
 };
 
