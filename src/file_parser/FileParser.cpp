@@ -4,7 +4,6 @@
 #include "MtxParser.h"
 #include "TsvParser.h"
 #include "GctParser.h"
-#include "Hdf5Parser.h"
 
 #include <string>
 
@@ -16,7 +15,6 @@ AbstractFileParser* AbstractFileParser::create(const std::string &path)
         case GAPS_CSV: return new CsvParser(path);
         case GAPS_TSV: return new TsvParser(path);
         case GAPS_GCT: return new GctParser(path);
-        case GAPS_HDF5: return new Hdf5Parser(path);
         default: GAPS_ERROR("Invalid file type\n");
     }
 }
@@ -63,8 +61,6 @@ GapsFileType FileParser::fileType(const std::string &path)
     if (ext == ".csv")  { return GAPS_CSV; }
     if (ext == ".tsv")  { return GAPS_TSV; }
     if (ext == ".gct")  { return GAPS_GCT; }
-    if (ext == ".h5")   { return GAPS_HDF5; }
-    if (ext == ".hdf5") { return GAPS_HDF5; }
 
     return GAPS_INVALID_FILE_TYPE;
 }

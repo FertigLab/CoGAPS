@@ -31,14 +31,13 @@ Imports:
     SummarizedExperiment,
     tools,
     utils,
-    rhdf5,
-    Rhdf5lib
+    rhdf5
 Suggests:
     testthat,
     knitr,
     rmarkdown,
     BiocStyle
-LinkingTo: Rcpp, Rhdf5lib
+LinkingTo: Rcpp
 VignetteBuilder: knitr
 LazyLoad: true
 License: GPL (==2)

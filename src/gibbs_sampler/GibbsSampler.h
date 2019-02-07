@@ -144,6 +144,12 @@ unsigned GibbsSampler<StoragePolicy>::nAtoms() const
 }
 
 template <class StoragePolicy>
+float GibbsSampler<StoragePolicy>::getAverageQueueLength() const
+{
+    return mAvgQueueLength;
+}
+
+template <class StoragePolicy>
 void GibbsSampler<StoragePolicy>::update(unsigned nSteps, unsigned nThreads)
 {
     unsigned n = 0;
@@ -153,7 +159,7 @@ void GibbsSampler<StoragePolicy>::update(unsigned nSteps, unsigned nThreads)
         mQueue.populate(mDomain, nSteps - n);
         n += mQueue.nProcessed();
     
-        if (n < nSteps) // don't cant last one since it might be truncated
+        if (n < nSteps) // don't count last one since it might be truncated
         {
             mNumQueueSamples += 1.f;
             mAvgQueueLength *= (mNumQueueSamples - 1.f) / mNumQueueSamples;
