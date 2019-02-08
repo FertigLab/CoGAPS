@@ -113,6 +113,13 @@ template <class DataType>
 static Rcpp::List cogapsRun(const DataType &data, const Rcpp::List &allParams,
 const DataType &uncertainty)
 {
+#ifdef GAPS_DISABLE_CHECKPOINTS
+    if (!Rf_isNull(allParams["checkpointInFile"]))
+    {
+        GAPS_ERROR("checkpoints are disabled");
+    }
+#endif
+
     // convert R parameters to GapsParameters struct
     GapsParameters params(getGapsParameters(data, allParams));
 
@@ -180,4 +187,14 @@ const Rcpp::Nullable<Rcpp::NumericMatrix> &uncertainty)
 std::string getBuildReport_cpp()
 {
     return buildReport();
+}
+
+// [[Rcpp::export]]
+bool checkpointsEnabled_cpp()
+{
+#ifdef GAPS_DISABLE_CHECKPOINTS
+    return false;
+#else
+    return true;
+#endif
 }

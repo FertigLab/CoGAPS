@@ -13,6 +13,10 @@ getBuildReport_cpp <- function() {
     .Call('_CoGAPS_getBuildReport_cpp', PACKAGE = 'CoGAPS')
 }
 
+checkpointsEnabled_cpp <- function() {
+    .Call('_CoGAPS_checkpointsEnabled_cpp', PACKAGE = 'CoGAPS')
+}
+
 run_catch_unit_tests <- function() {
     .Call('_CoGAPS_run_catch_unit_tests', PACKAGE = 'CoGAPS')
 }
