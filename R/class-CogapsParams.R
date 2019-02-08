@@ -51,6 +51,8 @@ setClass("CogapsParams", slots = c(
 
 #' constructor for CogapsParams
 #' @param .Object CogapsParams object
+#' @param distributed either "genome-wide" or "single-cell" indicating which
+#' distributed algorithm should be used
 #' @param ... initial values for slots
 #' @return initialized CogapsParams object
 #' @importFrom methods callNextMethod

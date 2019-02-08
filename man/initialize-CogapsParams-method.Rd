@@ -10,6 +10,9 @@
 \arguments{
 \item{.Object}{CogapsParams object}
 
+\item{distributed}{either "genome-wide" or "single-cell" indicating which
+distributed algorithm should be used}
+
 \item{...}{initial values for slots}
 }
 \value{
