@@ -5,6 +5,7 @@
 # ignore compiled files
 *.so
 *.o
+*.dll
 
 .git
 

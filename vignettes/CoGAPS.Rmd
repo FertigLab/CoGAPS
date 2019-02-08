@@ -309,15 +309,18 @@ beginning. Set the `checkpointInterval` parameter to save checkpoints and
 pass a file name as `checkpointInFile` to load from a checkpoint. 
 
 ```{r}
-# our initial run
-res1 <- CoGAPS(GIST.matrix, params, checkpointInterval=100, checkpointOutFile="vignette_example.out", messages=FALSE)
+if (CoGAPS::checkpointsEnabled())
+{
+    # our initial run
+    res1 <- CoGAPS(GIST.matrix, params, checkpointInterval=100, checkpointOutFile="vignette_example.out", messages=FALSE)
 
-# assume the previous run crashes
-res2 <- CoGAPS(GIST.matrix, checkpointInFile="vignette_example.out", messages=FALSE)
+    # assume the previous run crashes
+    res2 <- CoGAPS(GIST.matrix, checkpointInFile="vignette_example.out", messages=FALSE)
 
-# check that they're equal
-all(res1@featureLoadings == res2@featureLoadings)
-all(res1@sampleFactors == res2@sampleFactors)
+    # check that they're equal
+    all(res1@featureLoadings == res2@featureLoadings)
+    all(res1@sampleFactors == res2@sampleFactors)
+}
 ```
 
 ## Transposing Data

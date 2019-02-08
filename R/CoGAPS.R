@@ -14,6 +14,17 @@ buildReport <- function()
     getBuildReport_cpp()
 }
 
+#' Check if package was built with checkpoints enabled
+#' @export
+#'
+#' @return true/false if check are enabled
+#' @examples
+#' CoGAPS::checkpointsEnabled()
+checkpointsEnabled <- function()
+{
+    checkpointsEnabled_cpp()
+}
+
 #' CoGAPS Matrix Factorization Algorithm
 #' @export 
 #'
