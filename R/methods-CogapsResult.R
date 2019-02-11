@@ -1,3 +1,26 @@
+#' convert list output from c++ code to a CogapsResult object
+#' @keywords internal
+#'
+#' @param returnList list from cogaps_cpp
+#' @param allParams list of all parameters
+#' @return CogapsResult object
+createCogapsResult <- function(returnList, allParams)
+{
+    res <- new("CogapsResult",
+        Amean       = returnList$Amean,
+        Asd         = returnList$Asd,
+        Pmean       = returnList$Pmean,
+        Psd         = returnList$Psd,
+        meanChiSq   = returnList$meanChiSq,
+        geneNames   = returnList$geneNames,
+        sampleNames = returnList$sampleNames,
+        diagnostics = append(returnList$diagnostics,
+            list("params"=allParams$gaps, "version"=utils::packageVersion("CoGAPS")))
+    )
+    validObject(res)
+    return(res)
+}
+
 setMethod("show", signature("CogapsResult"),
 function(object)
 {

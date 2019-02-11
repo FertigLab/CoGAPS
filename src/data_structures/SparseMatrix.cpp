@@ -83,7 +83,10 @@ bool subsetGenes, std::vector<unsigned> indices)
             MatrixElement e(fp.getNext());
             unsigned row = genesInCols ? e.col : e.row;
             unsigned col = genesInCols ? e.row : e.col;
-            mCols[col].insert(row, e.value);
+            if (e.value > 0.f)
+            {
+                mCols[col].insert(row, e.value);
+            }
         }
     }
     else
@@ -92,20 +95,23 @@ bool subsetGenes, std::vector<unsigned> indices)
         while (fp.hasNext())
         {
             MatrixElement e(fp.getNext());
-            unsigned searchIndex = 1 + ((subsetGenes != genesInCols) ? e.row : e.col);
-            std::vector<unsigned>::iterator pos = 
-                std::lower_bound(indices.begin(), indices.end(), searchIndex);
-        
-            // this index is included in the subset
-            if (pos != indices.end() && *pos == searchIndex)
+            if (e.value > 0.f)
             {
-                unsigned row = subsetGenes
-                    ? std::distance(indices.begin(), pos)
-                    : genesInCols ? e.col : e.row;
-                unsigned col = !subsetGenes
-                    ? std::distance(indices.begin(), pos)
-                    : genesInCols ? e.row : e.col;
-                mCols[col].insert(row, e.value);
+                unsigned searchIndex = 1 + ((subsetGenes != genesInCols) ? e.row : e.col);
+                std::vector<unsigned>::iterator pos = 
+                    std::lower_bound(indices.begin(), indices.end(), searchIndex);
+        
+                // this index is included in the subset
+                if (pos != indices.end() && *pos == searchIndex)
+                {
+                    unsigned row = subsetGenes
+                        ? std::distance(indices.begin(), pos)
+                        : genesInCols ? e.col : e.row;
+                    unsigned col = !subsetGenes
+                        ? std::distance(indices.begin(), pos)
+                        : genesInCols ? e.row : e.col;
+                    mCols[col].insert(row, e.value);
+                }
             }
         }
     }

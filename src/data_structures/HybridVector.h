@@ -3,7 +3,7 @@
 
 #include "../utils/Archive.h"
 
-#include <boost/align/aligned_allocator.hpp>
+#include "boost/align/aligned_allocator.hpp"
 #include <vector>
 
 // need to align data for SIMD
@@ -34,7 +34,9 @@ public:
     bool add(unsigned i, float v); // true if zeros out data
     float operator[](unsigned i) const;
 
-    const float* densePtr() const;
+    const float* ptr() const;
+
+    const std::vector<uint64_t>& getBitFlags() const { return mIndexBitFlags; }
 
     friend Archive& operator<<(Archive &ar, const HybridVector &vec);
     friend Archive& operator>>(Archive &ar, HybridVector &vec);

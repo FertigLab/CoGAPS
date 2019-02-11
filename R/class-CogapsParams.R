@@ -11,8 +11,9 @@
 #' @slot maxGibbsMassP atomic mass restriction for sample matrix
 #' @slot seed random number generator seed
 #' @slot singleCell is the data single cell?
-#' @slot sparseOptimization speeds up performance with sparse data, note
-#' this can only be used with the default uncertainty
+#' @slot sparseOptimization speeds up performance with sparse data
+#' (roughly >80% of data is zero), note this can only be used with the
+#' default uncertainty
 #' @slot distributed either "genome-wide" or "single-cell" indicating which
 #' distributed algorithm should be used
 #' @slot nSets [distributed parameter] number of sets to break data into
@@ -50,11 +51,13 @@ setClass("CogapsParams", slots = c(
 
 #' constructor for CogapsParams
 #' @param .Object CogapsParams object
+#' @param distributed either "genome-wide" or "single-cell" indicating which
+#' distributed algorithm should be used
 #' @param ... initial values for slots
 #' @return initialized CogapsParams object
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsParams",
-    function(.Object, ...)
+    function(.Object, distributed=NULL, ...)
     {
         getMilliseconds <- function(time) floor((time$sec %% 1) * 1000)
 
@@ -66,7 +69,11 @@ setMethod("initialize", "CogapsParams",
             stop("minNS must be set after CogapsParams are intialized")
         if (!is.null(list(...)$maxNS))
             stop("maxNS must be set after CogapsParams are intialized")
-
+        if (!is.null(distributed))
+            if (distributed == "none")
+                distributed <- NULL
+        .Object@distributed <- distributed
+        
         .Object@nPatterns <- 7
         .Object@nIterations <- 1000
         .Object@alphaA <- 0.01
@@ -76,7 +83,6 @@ setMethod("initialize", "CogapsParams",
         .Object@seed <- getMilliseconds(as.POSIXlt(Sys.time()))
         .Object@singleCell <- FALSE
         .Object@sparseOptimization <- FALSE
-        .Object@distributed <- NULL
         .Object@cut <- .Object@nPatterns
         .Object@nSets <- 4
         .Object@minNS <- ceiling(.Object@nSets / 2)
@@ -111,7 +117,9 @@ setValidity("CogapsParams",
         if (!is.null(object@explicitSets) & length(object@explicitSets) != object@nSets)
             "nSets doesn't match length of explicitSets"
         if (length(unique(object@samplingAnnotation)) != length(object@samplingWeight))
-            stop("samplingWeight has mismatched size with amount of distinct annotations")
+            "samplingWeight has mismatched size with amount of distinct annotations"
+        if (object@cut > object@nPatterns)
+            "cut must be less than or equal to nPatterns"
 
         # check type of explicitSets
         if (!is.null(object@explicitSets) & !is(object@explicitSets, "list"))
@@ -128,6 +136,10 @@ setValidity("CogapsParams",
 
         if (!is.null(object@explicitSets) & !is.null(object@samplingAnnotation))
             "explicitSets and samplingAnnotation/samplingWeight are both set"
+
+        if (!is.null(object@distributed))
+            if (!(object@distributed %in% c("genome-wide", "single-cell")))
+                "distributed method must be either 'genome-wide' or 'single-cell'"
     }
 )
 
@@ -171,7 +183,7 @@ minNS=NULL, maxNS=NULL)
 #' @docType methods
 #' @rdname setAnnotationWeights-methods
 #'
-#' @description these parameters  are interrelated so they must be set together
+#' @description these parameters are interrelated so they must be set together
 #' @param object an object of type CogapsParams
 #' @param annotation vector of labels
 #' @param weights vector of weights

@@ -20,7 +20,6 @@ CogapsParams object
 return clustered patterns from set of all patterns across all subsets
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data)
-getClusteredPatterns(result)
+data(GIST)
+getClusteredPatterns(GIST.result)
 }

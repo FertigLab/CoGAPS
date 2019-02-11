@@ -20,7 +20,6 @@ CogapsParams object
 return unmatched patterns from each subset
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data)
-getUnmatchedPatterns(result)
+data(GIST)
+getUnmatchedPatterns(GIST.result)
 }

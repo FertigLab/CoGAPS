@@ -20,7 +20,6 @@ CogapsParams object
 return correlation between each pattern and the cluster mean
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data)
-getCorrelationToMeanPattern(result)
+data(GIST)
+getCorrelationToMeanPattern(GIST.result)
 }

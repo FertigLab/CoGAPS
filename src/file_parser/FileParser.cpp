@@ -57,10 +57,10 @@ GapsFileType FileParser::fileType(const std::string &path)
     std::string ext = path.substr(pos);
 
     if (ext.find('/') != std::string::npos) { return GAPS_INVALID_FILE_TYPE; }
-    if (ext == ".mtx") { return GAPS_MTX; }
-    if (ext == ".csv") { return GAPS_CSV; }
-    if (ext == ".tsv") { return GAPS_TSV; }
-    if (ext == ".gct") { return GAPS_GCT; }
+    if (ext == ".mtx")  { return GAPS_MTX; }
+    if (ext == ".csv")  { return GAPS_CSV; }
+    if (ext == ".tsv")  { return GAPS_TSV; }
+    if (ext == ".gct")  { return GAPS_GCT; }
 
     return GAPS_INVALID_FILE_TYPE;
 }

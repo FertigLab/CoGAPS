@@ -1,12 +1,32 @@
 #ifndef __COGAPS_ATOMIC_DOMAIN_H__
 #define __COGAPS_ATOMIC_DOMAIN_H__
 
-#include "AtomAllocator.h"
 #include "../data_structures/HashSets.h"
 #include "../math/Random.h"
 #include "../utils/Archive.h"
 
 #include <vector>
+
+// comment out to use 'new' operator for allocating atoms
+//#define __GAPS_USE_POOLED_ALLOCATOR__
+
+#ifdef __GAPS_USE_POOLED_ALLOCATOR__
+#include "boost/pool/object_pool.hpp"
+#endif
+
+struct Atom
+{
+    uint64_t pos;
+    float mass;
+
+    Atom();
+    Atom(uint64_t p, float m);
+
+    void operator=(Atom other);
+
+    friend Archive& operator<<(Archive& ar, const Atom &a);
+    friend Archive& operator>>(Archive& ar, Atom &a);
+};
 
 struct AtomNeighborhood
 {
@@ -65,7 +85,9 @@ private:
 
     // domain storage, sorted vector of pointers to atoms created by allocator
     std::vector<Atom*> mAtoms;
-    AtomAllocator mAllocator;
+#ifdef __GAPS_USE_POOLED_ALLOCATOR__
+    boost::object_pool<Atom> mAtomPool;
+#endif
 };
 
 #endif // __COGAPS_ATOMIC_DOMAIN_H__

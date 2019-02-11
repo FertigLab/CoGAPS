@@ -3,6 +3,8 @@
 #include "../math/Random.h"
 #include "../utils/GapsAssert.h"
 
+#include <limits>
+
 //////////////////////////////// AtomicProposal ////////////////////////////////
 
 AtomicProposal::AtomicProposal(char t, GapsRandomState *randState)

@@ -24,7 +24,6 @@ calculates the Z-score for each element based on input mean
 and standard deviation matrices
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data)
-feature_zscore <- calcZ(result)
+data(GIST)
+feature_zscore <- calcZ(GIST.result)
 }

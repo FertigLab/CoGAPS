@@ -1,5 +1,6 @@
 #include "catch.h"
-#include "../gibbs_sampler/DenseGibbsSampler.h"
+#include "../gibbs_sampler/GibbsSampler.h"
+#include "../gibbs_sampler/DenseStoragePolicy.h"
 
 TEST_CASE("Test DenseGibbsSampler")
 {
@@ -16,9 +17,9 @@ TEST_CASE("Test DenseGibbsSampler")
 
         GapsRandomState randState(123);
         GapsParameters params(data);
-        DenseGibbsSampler ASampler(data, true, false, params.alphaA,
+        GibbsSampler<DenseStorage> ASampler(data, true, false, params.alphaA,
             params.maxGibbsMassA, params, &randState);
-        DenseGibbsSampler PSampler(data, false, false, params.alphaP,
+        GibbsSampler<DenseStorage> PSampler(data, false, false, params.alphaP,
             params.maxGibbsMassP, params, &randState);
     
         REQUIRE(ASampler.chiSq() == 100.f * data.nRow() * data.nCol());

@@ -90,9 +90,8 @@ setValidity("CogapsResult",
 #' @param object an object of type CogapsResult
 #' @return chi-sq error
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' getMeanChiSq(result)
+#' data(GIST)
+#' getMeanChiSq(GIST.result)
 setGeneric("getMeanChiSq", function(object)
     {standardGeneric("getMeanChiSq")})
 
@@ -104,9 +103,8 @@ setGeneric("getMeanChiSq", function(object)
 #' @param object an object of type CogapsResult
 #' @return version number
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' getVersion(result)
+#' data(GIST)
+#' getVersion(GIST.result)
 setGeneric("getVersion", function(object)
     {standardGeneric("getVersion")})
 
@@ -118,9 +116,8 @@ setGeneric("getVersion", function(object)
 #' @param object an object of type CogapsResult
 #' @return CogapsParams object
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' getOriginalParameters(result)
+#' data(GIST)
+#' getOriginalParameters(GIST.result)
 setGeneric("getOriginalParameters", function(object)
     {standardGeneric("getOriginalParameters")})
 
@@ -132,9 +129,8 @@ setGeneric("getOriginalParameters", function(object)
 #' @param object an object of type CogapsResult
 #' @return CogapsParams object
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' getUnmatchedPatterns(result)
+#' data(GIST)
+#' getUnmatchedPatterns(GIST.result)
 setGeneric("getUnmatchedPatterns", function(object)
     {standardGeneric("getUnmatchedPatterns")})
 
@@ -146,9 +142,8 @@ setGeneric("getUnmatchedPatterns", function(object)
 #' @param object an object of type CogapsResult
 #' @return CogapsParams object
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' getClusteredPatterns(result)
+#' data(GIST)
+#' getClusteredPatterns(GIST.result)
 setGeneric("getClusteredPatterns", function(object)
     {standardGeneric("getClusteredPatterns")})
 
@@ -160,9 +155,8 @@ setGeneric("getClusteredPatterns", function(object)
 #' @param object an object of type CogapsResult
 #' @return CogapsParams object
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' getCorrelationToMeanPattern(result)
+#' data(GIST)
+#' getCorrelationToMeanPattern(GIST.result)
 setGeneric("getCorrelationToMeanPattern", function(object)
     {standardGeneric("getCorrelationToMeanPattern")})
 
@@ -174,9 +168,8 @@ setGeneric("getCorrelationToMeanPattern", function(object)
 #' @param object an object of type CogapsResult
 #' @return CogapsParams object
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' getSubsets(result)
+#' data(GIST)
+#' getSubsets(GIST.result)
 setGeneric("getSubsets", function(object)
     {standardGeneric("getSubsets")})
 
@@ -192,9 +185,8 @@ setGeneric("getSubsets", function(object)
 #' calculate the z-score for
 #' @return matrix of z-scores
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' feature_zscore <- calcZ(result)
+#' data(GIST)
+#' feature_zscore <- calcZ(GIST.result)
 setGeneric("calcZ", function(object, which="feature")
     {standardGeneric("calcZ")})
 
@@ -207,9 +199,8 @@ setGeneric("calcZ", function(object, which="feature")
 #' @param genes an index of the gene or genes of interest
 #' @return the D' estimate of a gene or set of genes
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' D_estimate <- reconstructGene(result)
+#' data(GIST)
+#' D_estimate <- reconstructGene(GIST.result)
 setGeneric("reconstructGene", function(object, genes=NULL)
     {standardGeneric("reconstructGene")})
 
@@ -226,9 +217,9 @@ setGeneric("reconstructGene", function(object, genes=NULL)
 #' that an element of Amean must be to get a value of 1
 #' @return plots a heatmap of the A Matrix
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' binMatrix <- binaryA(result, threshold=3)
+#' data(GIST)
+#' # to expensive to call since it plots
+#' # binaryA(GIST.result, threshold=3)
 setGeneric("binaryA", function(object, threshold=3)
     {standardGeneric("binaryA")})
 
@@ -243,9 +234,9 @@ setGeneric("binaryA", function(object, threshold=3)
 #' @param uncertainty original standard deviation matrix run through GAPS
 #' @return creates a residual plot
 #' @examples
-#' data(SimpSim)
-#' result <- CoGAPS(SimpSim.data)
-#' plotResiduals(result, SimpSim.data)
+#' data(GIST)
+#' # to expensive to call since it plots
+#' # plotResiduals(GIST.result, GIST.matrix)
 setGeneric("plotResiduals", function(object, data, uncertainty=NULL)
     {standardGeneric("plotResiduals")})
 

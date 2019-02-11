@@ -1,6 +1,9 @@
-PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__ 
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CFLAGS)
-PKG_LIBS = $(SHLIB_OPENMP_CFLAGS)
+RHDF5_LIBS=$(shell echo 'Rhdf5lib::pkgconfig("PKG_CXX_LIBS")'|\
+    "${R_HOME}/bin/R" --vanilla --slave)
+
+PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__ -Iinclude -DGAPS_DISABLE_CHECKPOINTS
+PKG_CXXFLAGS = -march=native
+PKG_LIBS =
 
 OBJECTS =   Cogaps.o \
             GapsParameters.o \
@@ -9,7 +12,6 @@ OBJECTS =   Cogaps.o \
             GapsStatistics.o \
             RcppExports.o \
             test-runner.o \
-            atomic/AtomAllocator.o \
             atomic/AtomicDomain.o \
             atomic/ProposalQueue.o \
             data_structures/HashSets.o \
@@ -25,22 +27,10 @@ OBJECTS =   Cogaps.o \
             file_parser/FileParser.o \
             file_parser/TsvParser.o \
             file_parser/MtxParser.o \
-            gibbs_sampler/DenseGibbsSampler.o \
-            gibbs_sampler/SparseGibbsSampler.o \
+            gibbs_sampler/AlphaParameters.o \
+            gibbs_sampler/DenseStoragePolicy.o \
+            gibbs_sampler/SparseStoragePolicy.o \
             math/Math.o \
             math/MatrixMath.o \
             math/Random.o \
-            math/VectorMath.o \
-            cpp_tests/testAtomicDomain.o \
-            cpp_tests/testDenseGibbsSampler.o \
-            cpp_tests/testFileParsers.o \
-            cpp_tests/testHashSets.o \
-            cpp_tests/testHybridMatrix.o \
-            cpp_tests/testHybridVector.o \
-            cpp_tests/testMatrix.o \
-            cpp_tests/testSerialization.o \
-            cpp_tests/testSparseGibbsSampler.o \
-            cpp_tests/testSparseIterator.o \
-            cpp_tests/testSparseMatrix.o \
-            cpp_tests/testSparseVector.o \
-            cpp_tests/testVector.o
+            math/VectorMath.o

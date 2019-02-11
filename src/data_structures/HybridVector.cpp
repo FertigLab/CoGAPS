@@ -53,7 +53,7 @@ bool HybridVector::add(unsigned i, float v)
 {
     if (mData[i] + v < gaps::epsilon)
     {
-        mIndexBitFlags[i / 64] ^= (1ull << (i % 64));
+        mIndexBitFlags[i / 64] &= ~(1ull << (i % 64));
         mData[i] = 0.f;
         return true;
     }
@@ -68,7 +68,7 @@ float HybridVector::operator[](unsigned i) const
     return mData[i];
 }
 
-const float* HybridVector::densePtr() const
+const float* HybridVector::ptr() const
 {
     return &(mData[0]);
 }

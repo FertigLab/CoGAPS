@@ -24,7 +24,7 @@ creates a residual plot
 calculate residuals and produce heatmap
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data)
-plotResiduals(result, SimpSim.data)
+data(GIST)
+# to expensive to call since it plots
+# plotResiduals(GIST.result, GIST.matrix)
 }

@@ -55,24 +55,25 @@ void gotoNextCommon(Iter &it)
 template<>
 float get<1>(const SparseIterator<1> &it)
 {
-    return it.mSparse.at(it.mSparseIndex);
+    return it.mSparse.getIthElement(it.mSparseIndex);
 }
 
 template<>
 float get<1>(const SparseIterator<2> &it)
 {
-    return it.mSparse.at(it.mSparseIndex);
+    return it.mSparse.getIthElement(it.mSparseIndex);
 }
 
 template<>
 float get<1>(const SparseIterator<3> &it)
 {
-    return it.mSparse.at(it.mSparseIndex);
+    return it.mSparse.getIthElement(it.mSparseIndex);
 }
 
 template<>
 float get<2>(const SparseIterator<2> &it)
 {
+    GAPS_ASSERT(it.mHybrid[64 * it.mBigIndex + it.mSmallIndex] > 0.f);
     return it.mHybrid[64 * it.mBigIndex + it.mSmallIndex];
 }
 
@@ -88,21 +89,45 @@ float get<3>(const SparseIterator<3> &it)
     return it.mHybrid_2[64 * it.mBigIndex + it.mSmallIndex];
 }
 
-
 SparseIterator<1>::SparseIterator(const SparseVector &v)
 :
 mSparse(v),
-mSparseIndex(0)
-{}
+mSparseFlags(v.mIndexBitFlags[0]),
+mSparseIndex(0),
+mTotalIndices(v.mIndexBitFlags.size()),
+mBigIndex(0),
+mSmallIndex(0),
+mAtEnd(false)
+{
+    next();
+    mSparseIndex -= 1; // next puts us at position 1, this resets to 0
+}
 
 bool SparseIterator<1>::atEnd() const
 {
-    return mSparseIndex == mSparse.nElements();
+    return mAtEnd;
 }
 
 void SparseIterator<1>::next()
 {
     ++mSparseIndex;
+    while (!mSparseFlags)
+    {
+        // advance to next chunk
+        if (++mBigIndex == mTotalIndices)
+        {   
+            mAtEnd = true;
+            return;
+        }
+        mSparseFlags = mSparse.mIndexBitFlags[mBigIndex];
+    }
+    mSmallIndex = __builtin_ffsll(mSparseFlags) - 1;
+    mSparseFlags = clearLowerBits(mSparseFlags, mSmallIndex);
+}
+
+unsigned SparseIterator<1>::getIndex() const
+{
+    return 64 * mBigIndex + mSmallIndex;
 }
 
 SparseIterator<2>::SparseIterator(const SparseVector &v, const HybridVector &h)
@@ -159,7 +184,7 @@ mHybrid_2(h2),
 mSparseFlags(v.mIndexBitFlags[0]),
 mHybridFlags_1(h1.mIndexBitFlags[0]),
 mHybridFlags_2(h2.mIndexBitFlags[0]),
-mCommonFlags(v.mIndexBitFlags[0] & h1.mIndexBitFlags[0] & h2.mIndexBitFlags[0]),
+mCommonFlags(v.mIndexBitFlags[0] & (h1.mIndexBitFlags[0] | h2.mIndexBitFlags[0])),
 mTotalIndices(v.mIndexBitFlags.size()),
 mBigIndex(0),
 mSmallIndex(0),
@@ -185,7 +210,7 @@ void SparseIterator<3>::next()
 
 void SparseIterator<3>::calculateCommonFlags()
 {
-    mCommonFlags = mSparseFlags & mHybridFlags_1 & mHybridFlags_2;
+    mCommonFlags = mSparseFlags & (mHybridFlags_1 | mHybridFlags_2);
 }
 
 void SparseIterator<3>::getFlags()

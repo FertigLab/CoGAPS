@@ -52,6 +52,8 @@ unsigned SparseVector::size() const
 
 void SparseVector::insert(unsigned i, float v)
 {
+    GAPS_ASSERT(v > 0.f);
+
     // this data should not exist
     GAPS_ASSERT(!(mIndexBitFlags[i / 64] & (1ull << (i % 64))));
 
@@ -85,6 +87,22 @@ Vector SparseVector::getDense() const
 }
 
 float SparseVector::at(unsigned n) const
+{
+    if (!(mIndexBitFlags[n / 64] & (1ull << (n % 64))))
+    {
+        return 0.f;
+    }
+
+    unsigned sparseNdx = 0;
+    for (unsigned i = 0; i < n / 64; ++i)
+    {
+        sparseNdx += __builtin_popcountll(mIndexBitFlags[i]);
+    }
+    sparseNdx += countLowerBits(mIndexBitFlags[n / 64], n % 64);
+    return mData[sparseNdx];
+}
+
+float SparseVector::getIthElement(unsigned n) const
 {
     return mData[n];
 }

@@ -1,6 +1,9 @@
 #include "GapsRunner.h"
 
 #include "utils/Archive.h"
+#include "gibbs_sampler/GibbsSampler.h"
+#include "gibbs_sampler/DenseStoragePolicy.h"
+#include "gibbs_sampler/SparseStoragePolicy.h"
 
 #ifdef __GAPS_R_BUILD__
 #include <Rcpp.h>
@@ -22,6 +25,22 @@ namespace bpt = boost::posix_time;
             gaps_printf(m); \
         } \
     } while(0)
+
+struct GapsTime
+{
+    unsigned hours;
+    unsigned minutes;
+    unsigned seconds;
+
+    GapsTime(unsigned totalSeconds)
+    {
+        hours = totalSeconds / 3600;
+        totalSeconds -= hours * 3600;
+        minutes = totalSeconds / 60;
+        totalSeconds -= minutes * 60;
+        seconds = totalSeconds;
+    }
+};
 
 // forward declaration
 template <class Sampler, class DataType>
@@ -46,10 +65,10 @@ const DataType &uncertainty, GapsRandomState *randState)
 
     if (params.useSparseOptimization)
     {
-        return runCoGAPSAlgorithm<SparseGibbsSampler>(data, params,
+        return runCoGAPSAlgorithm< GibbsSampler<SparseStorage> >(data, params,
             uncertainty, randState);
     }
-    return runCoGAPSAlgorithm<DenseGibbsSampler>(data, params,
+    return runCoGAPSAlgorithm< GibbsSampler<DenseStorage> >(data, params,
         uncertainty, randState);
 }
 
@@ -107,7 +126,7 @@ const Sampler &ASampler, const Sampler &PSampler, char phase, unsigned iter)
 template <class Sampler>
 static void displayStatus(const GapsParameters &params,
 const Sampler &ASampler, const Sampler &PSampler, bpt::ptime startTime,
-char phase, unsigned iter)
+char phase, unsigned iter, GapsStatistics &stats)
 {
     if (params.printMessages && params.outputFrequency > 0
     && ((iter + 1) % params.outputFrequency) == 0)
@@ -115,26 +134,21 @@ char phase, unsigned iter)
         bpt::time_duration diff = bpt_now() - startTime;
         double perComplete = estimatedPercentComplete(params, ASampler,
             PSampler, phase, iter);
-        double nSecondsCurrent = diff.total_seconds();
-        double nSecondsTotal = nSecondsCurrent / perComplete;
 
-        unsigned elapsedSeconds = static_cast<unsigned>(nSecondsCurrent);
-        unsigned totalSeconds = static_cast<unsigned>(nSecondsTotal);
+        GapsTime elapsedTime(static_cast<unsigned>(diff.total_seconds()));
+        GapsTime totalTime(static_cast<unsigned>(diff.total_seconds() / perComplete));
 
-        unsigned elapsedHours = elapsedSeconds / 3600;
-        elapsedSeconds -= elapsedHours * 3600;
-        unsigned elapsedMinutes = elapsedSeconds / 60;
-        elapsedSeconds -= elapsedMinutes * 60;
+        float cs = PSampler.chiSq();
+        unsigned nA = ASampler.nAtoms();
+        unsigned nP = PSampler.nAtoms();
 
-        unsigned totalHours = totalSeconds / 3600;
-        totalSeconds -= totalHours * 3600;
-        unsigned totalMinutes = totalSeconds / 60;
-        totalSeconds -= totalMinutes * 60;
+        stats.addChiSq(cs);
+        stats.addAtomCount(nA, nP);
 
         gaps_printf("%d of %d, Atoms: %d(%d), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
-            iter + 1, params.nIterations, ASampler.nAtoms(),
-            PSampler.nAtoms(), PSampler.chiSq(), elapsedHours, elapsedMinutes,
-            elapsedSeconds, totalHours, totalMinutes, totalSeconds);
+            iter + 1, params.nIterations, nA, nP, cs, elapsedTime.hours,
+            elapsedTime.minutes, elapsedTime.seconds, totalTime.hours,
+            totalTime.minutes, totalTime.seconds);
         gaps_flush();
     }
 }
@@ -143,19 +157,19 @@ template <class Sampler>
 static void updateSampler(const GapsParameters &params, Sampler &ASampler,
 Sampler &PSampler, unsigned nA, unsigned nP)
 {
-    if (!params.useFixedMatrix || params.whichFixedMatrix != 'A')
+    if (params.whichMatrixFixed != 'A')
     {
         ASampler.update(nA, params.maxThreads);
-        if (!params.useFixedMatrix || params.whichFixedMatrix != 'P')
+        if (params.whichMatrixFixed != 'P')
         {
             PSampler.sync(ASampler, params.maxThreads);
         }
     }
 
-    if (!params.useFixedMatrix || params.whichFixedMatrix != 'P')
+    if (params.whichMatrixFixed != 'P')
     {
         PSampler.update(nP, params.maxThreads);
-        if (!params.useFixedMatrix || params.whichFixedMatrix != 'A')
+        if (params.whichMatrixFixed != 'A')
         {
             ASampler.sync(PSampler, params.maxThreads);
         }
@@ -211,10 +225,7 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
 {
     for (; currentIter < params.nIterations; ++currentIter)
     {
-        #ifdef __GAPS_R_BUILD__
-        Rcpp::checkUserInterrupt();
-        #endif
-
+        gaps_check_interrupt();
         createCheckpoint(params, ASampler, PSampler, randState, stats,
             rng, phase, currentIter);
         
@@ -235,8 +246,13 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
         if (phase == 'S')
         {
             stats.update(ASampler, PSampler);
+            if (params.takePumpSamples)
+            {
+                stats.updatePump(ASampler);
+            }
         }
-        displayStatus(params, ASampler, PSampler, startTime, phase, currentIter);
+        displayStatus(params, ASampler, PSampler, startTime, phase,
+            currentIter, stats);
     }
 }
 
@@ -245,18 +261,18 @@ static void processFixedMatrix(const GapsParameters &params, Sampler &ASampler,
 Sampler &PSampler)
 {
     // check if we're fixing a matrix
-    if (params.useFixedMatrix)
+    if (params.useFixedPatterns)
     {
-        switch (params.whichFixedMatrix)
+        switch (params.whichMatrixFixed)
         {
-            GAPS_ASSERT(params.fixedMatrix.nCol() == params.nPatterns);
+            GAPS_ASSERT(params.fixedPatterns.nCol() == params.nPatterns);
             case 'A' :
-                GAPS_ASSERT(params.fixedMatrix.nRow() == params.nGenes);
-                ASampler.setMatrix(params.fixedMatrix);
+                GAPS_ASSERT(params.fixedPatterns.nRow() == params.nGenes);
+                ASampler.setMatrix(params.fixedPatterns);
                 break;
             case 'P' :
-                GAPS_ASSERT(params.fixedMatrix.nRow() == params.nSamples);
-                PSampler.setMatrix(params.fixedMatrix);
+                GAPS_ASSERT(params.fixedPatterns.nRow() == params.nSamples);
+                PSampler.setMatrix(params.fixedPatterns);
                 break;
             default: break; // 'N' for none
         }
@@ -306,14 +322,33 @@ const DataType &uncertainty, GapsRandomState *randState)
     // is symmetrical for each sampler, this simplifies the code 
     // within the sampler, note the subsetting genes/samples flag must be
     // flipped if we are flipping the transpose flag
+    // note: there are excessive amounts of check interrupt statements here,
+    // this is so that if the user accidentally runs cogaps on an extremely
+    // large file they can exit during the loading phase rather than killing
+    // the process or waiting for it to finish
     GAPS_MESSAGE(params.printMessages, "Loading Data...");
+    bpt::ptime readStart = bpt_now();
+
+    gaps_check_interrupt();
     Sampler ASampler(data, !params.transposeData, !params.subsetGenes,
         params.alphaA, params.maxGibbsMassA, params, randState);
+    gaps_check_interrupt();
     Sampler PSampler(data, params.transposeData, params.subsetGenes,
         params.alphaP, params.maxGibbsMassP, params, randState);
+    gaps_check_interrupt();
     processUncertainty(params, ASampler, PSampler, uncertainty);
+    gaps_check_interrupt();
     processFixedMatrix(params, ASampler, PSampler);
-    GAPS_MESSAGE(params.printMessages, "Done!\n");
+    gaps_check_interrupt();
+
+    // elapsed time for reading data
+    bpt::time_duration readDiff = bpt_now() - readStart;
+    GapsTime elapsed(static_cast<unsigned>(readDiff.total_seconds()));
+    if (params.printMessages)
+    {
+        gaps_printf("Done! (%02d:%02d:%02d)\n", elapsed.hours, elapsed.minutes,
+            elapsed.seconds);
+    }
 
     // these variables will get overwritten by checkpoint if provided
     GapsStatistics stats(params.nGenes, params.nSamples, params.nPatterns);
@@ -333,7 +368,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     // record start time
     bpt::ptime startTime = bpt_now();
 
-    // fallthrough through phases, allows algorithm to be resumed in any phase
+    // fallthrough through phases, allows algorithm to be resumed in either phase
     GAPS_ASSERT(phase == 'C' || phase == 'S');
     switch (phase)
     {
@@ -353,6 +388,25 @@ const DataType &uncertainty, GapsRandomState *randState)
     // get result
     GapsResult result(stats);
     result.meanChiSq = stats.meanChiSq(PSampler);
+    result.averageQueueLengthA = ASampler.getAverageQueueLength();
+    result.averageQueueLengthP = PSampler.getAverageQueueLength();
+
+    if (params.takePumpSamples)
+    {
+        result.pumpMatrix = stats.pumpMatrix();
+        result.meanPatternAssignment = stats.meanPattern();
+    }
+
+    // if we are running distributed, each worker needs to print when it's done
+    if (params.runningDistributed)
+    {
+        bpt::time_duration diff = bpt_now() - startTime;
+        GapsTime elapsed(static_cast<unsigned>(diff.total_seconds()));
+        gaps_printf("    worker %d is finished! Time: %02d:%02d:%02d\n",
+            params.workerID, elapsed.hours, elapsed.minutes, elapsed.seconds);
+        gaps_flush();
+    }
+
     return result;
 }
 

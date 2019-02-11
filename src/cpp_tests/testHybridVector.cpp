@@ -44,7 +44,7 @@ TEST_CASE("Test HybridVector.h")
             unsigned ndx = rng.uniform32(0,999);
             float diff = rng.uniform();
             float old = v[ndx];
-            if (rng.uniform() < 0.05f)
+            if (rng.uniform() < 0.2f)
             {
                 diff = -1.f * old;
                 REQUIRE(v.add(ndx, diff));
@@ -55,5 +55,21 @@ TEST_CASE("Test HybridVector.h")
                 REQUIRE(v[ndx] == old + diff);
             }
         }
+
+    #ifdef GAPS_INTERNAL_TESTS
+        for (unsigned i = 0; i < v.size(); ++i)
+        {
+            if (v[i] == 0.f)
+            {
+                uint64_t mask = v.mIndexBitFlags[i / 64] & (1ull << (i % 64));
+                REQUIRE(!mask);
+            }
+            else
+            {
+                uint64_t mask = v.mIndexBitFlags[i / 64] & (1ull << (i % 64));
+                REQUIRE(mask);
+            }
+        }
+    #endif
     }
 }

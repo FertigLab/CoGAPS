@@ -1,6 +1,7 @@
 #ifndef __COGAPS_GIBBS_SAMPLER_H__
 #define __COGAPS_GIBBS_SAMPLER_H__
 
+#include "AlphaParameters.h"
 #include "../atomic/AtomicDomain.h"
 #include "../atomic/ProposalQueue.h"
 #include "../data_structures/Matrix.h"
@@ -15,48 +16,49 @@
 #include <cmath>
 #include <stdint.h>
 
+//////////////////////////// GibbsSampler Interface ////////////////////////////
+
 class GapsStatistics;
 
-struct AlphaParameters
-{
-    float s;
-    float s_mu;
-    
-    AlphaParameters(float t_s, float t_smu) : s(t_s), s_mu(t_smu) {}
+template <class StoragePolicy>
+class GibbsSampler;
 
-    AlphaParameters operator+(const AlphaParameters &other) const
-        { return AlphaParameters(s + other.s, s_mu - other.s_mu); } // not a typo
+template <class StoragePolicy>
+Archive& operator<<(Archive &ar, const GibbsSampler<StoragePolicy> &sampler);
 
-    AlphaParameters operator*(float v) const
-        { return AlphaParameters(s * v, s_mu * v); }
+template <class StoragePolicy>
+Archive& operator>>(Archive &ar, GibbsSampler<StoragePolicy> &sampler);
 
-    void operator*=(float v)
-        { s *= v; s_mu *= v; }
-};
-
-//////////////////////// Common GibbsSampler Interface /////////////////////////
-
-template <class Derived, class DataMatrix, class FactorMatrix>
-class GibbsSampler
+template <class StoragePolicy>
+class GibbsSampler : public StoragePolicy
 {
 public:
 
     friend class GapsStatistics;
 
+    template <class DataType>
+    GibbsSampler(const DataType &data, bool transpose, bool subsetRows,
+        float alpha, float maxGibbsMass, const GapsParameters &params,
+        GapsRandomState *randState);
+
     void setAnnealingTemp(float temp);
     void setMatrix(const Matrix &mat);
 
     unsigned nAtoms() const;
+    float getAverageQueueLength() const;
 
     void update(unsigned nSteps, unsigned nThreads);
 
-#ifndef GAPS_INTERNAL_TESTS
-protected:
-#endif
+    friend Archive& operator<< <StoragePolicy> (Archive &ar, const GibbsSampler &s);
+    friend Archive& operator>> <StoragePolicy> (Archive &ar, GibbsSampler &s);
 
-    DataMatrix mDMatrix; // samples by genes for A, genes by samples for P
-    FactorMatrix mMatrix; // genes by patterns for A, samples by patterns for P
-    const FactorMatrix *mOtherMatrix; // pointer to P if this is A, and vice versa
+#ifdef GAPS_DEBUG
+    bool internallyConsistent() const;
+#endif    
+
+#ifndef GAPS_INTERNAL_TESTS
+private:
+#endif
 
     AtomicDomain mDomain; // data structure providing access to atoms
     ProposalQueue mQueue; // creates queue of proposals that get evaluated by sampler
@@ -70,13 +72,8 @@ protected:
     uint64_t mNumBins;
     uint64_t mBinLength;
 
-    // can't be constructed outside of derived classes
-    template <class DataType>
-    GibbsSampler(const DataType &data, bool transpose, bool subsetRows,
-        float alpha, float maxGibbsMass, const GapsParameters &params,
-        GapsRandomState *randState);
-
-    Derived* impl();
+    float mAvgQueueLength;
+    float mNumQueueSamples;
 
     void birth(const AtomicProposal &prop);
     void death(const AtomicProposal &prop);
@@ -92,60 +89,68 @@ protected:
 
 //////////////////// GibbsSampler - templated functions ////////////////////////
 
-template <class Derived, class DataMatrix, class FactorMatrix>
+template <class StoragePolicy>
 template <class DataType>
-GibbsSampler<Derived, DataMatrix, FactorMatrix>::GibbsSampler(const DataType &data,
-bool transpose, bool subsetRows, float alpha, float maxGibbsMass,
-const GapsParameters &params, GapsRandomState *randState)
+GibbsSampler<StoragePolicy>::GibbsSampler(const DataType &data, bool transpose,
+bool subsetRows, float alpha, float maxGibbsMass, const GapsParameters &params,
+GapsRandomState *randState)
     :
-mDMatrix(data, transpose, subsetRows, params.dataIndicesSubset),
-mMatrix(mDMatrix.nCol(), params.nPatterns),
-mOtherMatrix(NULL),
-mDomain(mMatrix.nRow() * params.nPatterns),
-mQueue(mMatrix.nRow(), params.nPatterns, randState),
+StoragePolicy(data, transpose, subsetRows, params),
+mDomain(StoragePolicy::mMatrix.nRow() * params.nPatterns),
+mQueue(StoragePolicy::mMatrix.nRow(), params.nPatterns, randState),
 mAlpha(alpha),
 mLambda(0.f),
 mMaxGibbsMass(0.f),
 mAnnealingTemp(1.f),
 mNumPatterns(params.nPatterns),
-mNumBins(mMatrix.nRow() * params.nPatterns),
-mBinLength(std::numeric_limits<uint64_t>::max() / mNumBins)
+mNumBins(StoragePolicy::mMatrix.nRow() * params.nPatterns),
+mBinLength(std::numeric_limits<uint64_t>::max() / (StoragePolicy::mMatrix.nRow() * params.nPatterns)),
+mAvgQueueLength(0),
+mNumQueueSamples(0)
 {
-    float meanD = params.singleCell ? gaps::nonZeroMean(mDMatrix) :
-       gaps::mean(mDMatrix);
+    float meanD = params.singleCell ? gaps::nonZeroMean(StoragePolicy::mDMatrix) :
+       gaps::mean(StoragePolicy::mDMatrix);
 
     mLambda = mAlpha * std::sqrt(mNumPatterns / meanD);
     mMaxGibbsMass = maxGibbsMass / mLambda;
     mQueue.setAlpha(mAlpha);
     mQueue.setLambda(mLambda);
+
+    static bool warningGiven = false; // prevent duplicate warnings
+    if (!warningGiven && gaps::max(StoragePolicy::mDMatrix) > 50.f)
+    {
+        warningGiven = true;
+        gaps_printf("\nWarning: Large values detected in data, "
+            "data needs to be log-transformed\n");
+    }
 }
 
-template <class Derived, class DataMatrix, class FactorMatrix>
-Derived* GibbsSampler<Derived, DataMatrix, FactorMatrix>::impl()
-{
-    return static_cast<Derived*>(this);
-}
-
-template <class Derived, class DataMatrix, class FactorMatrix>
-void GibbsSampler<Derived, DataMatrix, FactorMatrix>::setAnnealingTemp(float temp)
+template <class StoragePolicy>
+void GibbsSampler<StoragePolicy>::setAnnealingTemp(float temp)
 {
     mAnnealingTemp = temp;
 }
 
-template <class Derived, class DataMatrix, class FactorMatrix>
-void GibbsSampler<Derived, DataMatrix, FactorMatrix>::setMatrix(const Matrix &mat)
+template <class StoragePolicy>
+void GibbsSampler<StoragePolicy>::setMatrix(const Matrix &mat)
 {
-    mMatrix = mat;
+    StoragePolicy::mMatrix = mat;
 }
 
-template <class Derived, class DataMatrix, class FactorMatrix>
-unsigned GibbsSampler<Derived, DataMatrix, FactorMatrix>::nAtoms() const
+template <class StoragePolicy>
+unsigned GibbsSampler<StoragePolicy>::nAtoms() const
 {
     return mDomain.size();
 }
 
-template <class Derived, class DataMatrix, class FactorMatrix>
-void GibbsSampler<Derived, DataMatrix, FactorMatrix>::update(unsigned nSteps, unsigned nThreads)
+template <class StoragePolicy>
+float GibbsSampler<StoragePolicy>::getAverageQueueLength() const
+{
+    return mAvgQueueLength;
+}
+
+template <class StoragePolicy>
+void GibbsSampler<StoragePolicy>::update(unsigned nSteps, unsigned nThreads)
 {
     unsigned n = 0;
     while (n < nSteps)
@@ -153,6 +158,13 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::update(unsigned nSteps, un
         // create the largest queue possible, without hitting any conflicts
         mQueue.populate(mDomain, nSteps - n);
         n += mQueue.nProcessed();
+    
+        if (n < nSteps) // don't count last one since it might be truncated
+        {
+            mNumQueueSamples += 1.f;
+            mAvgQueueLength *= (mNumQueueSamples - 1.f) / mNumQueueSamples;
+            mAvgQueueLength += static_cast<float>(mQueue.size()) / mNumQueueSamples;
+        }
         
         // process all proposed updates in parallel - the way the queue is 
         // populated ensures no race conditions will happen
@@ -170,7 +182,7 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::update(unsigned nSteps, un
         mQueue.clear();
     }
 
-    GAPS_ASSERT(impl()->internallyConsistent());
+    //GAPS_ASSERT(internallyConsistent());
     GAPS_ASSERT(mDomain.isSorted());
 }
 
@@ -193,13 +205,13 @@ float lambda, GapsRng *rng)
 
 // add an atom at a random position, calculate mass either with an
 // exponential distribution or with the gibbs mass distribution
-template <class Derived, class DataMatrix, class FactorMatrix>
-void GibbsSampler<Derived, DataMatrix, FactorMatrix>::birth(const AtomicProposal &prop)
+template <class StoragePolicy>
+void GibbsSampler<StoragePolicy>::birth(const AtomicProposal &prop)
 {
     // try to get mass using gibbs, resort to exponential if needed
     OptionalFloat mass = canUseGibbs(prop.c1)
-        ? gibbsMass(impl()->alphaParameters(prop.r1, prop.c1) * mAnnealingTemp,
-            0.f, mMaxGibbsMass, mLambda, &(prop.rng))
+        ? gibbsMass(StoragePolicy::alphaParameters(prop.r1, prop.c1) *
+            mAnnealingTemp, 0.f, mMaxGibbsMass, mLambda, &(prop.rng))
         : prop.rng.exponential(mLambda);
 
     // accept mass as long as gibbs succeded or it's non-zero
@@ -207,7 +219,7 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::birth(const AtomicProposal
     {
         mQueue.acceptBirth();
         prop.atom1->mass = mass.value();
-        impl()->changeMatrix(prop.r1, prop.c1, mass.value());
+        StoragePolicy::changeMatrix(prop.r1, prop.c1, mass.value());
     }
     else
     {
@@ -218,12 +230,12 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::birth(const AtomicProposal
 
 // automatically accept death, attempt a rebirth at the same position, using
 // the original mass or the gibbs mass distribution
-template <class Derived, class DataMatrix, class FactorMatrix>
-void GibbsSampler<Derived, DataMatrix, FactorMatrix>::death(const AtomicProposal &prop)
+template <class StoragePolicy>
+void GibbsSampler<StoragePolicy>::death(const AtomicProposal &prop)
 {
     // calculate alpha parameters assuming atom dies
-    AlphaParameters alpha = impl()->alphaParametersWithChange(prop.r1, prop.c1,
-        -prop.atom1->mass);
+    AlphaParameters alpha = StoragePolicy::alphaParametersWithChange(prop.r1,
+        prop.c1, -prop.atom1->mass);
 
     float rebirthMass = prop.atom1->mass;
     if (canUseGibbs(prop.c1))
@@ -243,42 +255,45 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::death(const AtomicProposal
         mQueue.rejectDeath();
         if (rebirthMass != prop.atom1->mass)
         {
-            impl()->safelyChangeMatrix(prop.r1, prop.c1, rebirthMass - prop.atom1->mass);
+            StoragePolicy::safelyChangeMatrix(prop.r1, prop.c1,
+                rebirthMass - prop.atom1->mass);
             prop.atom1->mass = rebirthMass;
         }
     }
     else // reject rebirth
     {
         mQueue.acceptDeath();
-        impl()->safelyChangeMatrix(prop.r1, prop.c1, -prop.atom1->mass);
+        StoragePolicy::safelyChangeMatrix(prop.r1, prop.c1, -prop.atom1->mass);
         mDomain.erase(prop.atom1->pos);
     }
 }
 
 // move mass from src to dest in the atomic domain
-template <class Derived, class DataMatrix, class FactorMatrix>
-void GibbsSampler<Derived, DataMatrix, FactorMatrix>::move(const AtomicProposal &prop)
+template <class StoragePolicy>
+void GibbsSampler<StoragePolicy>::move(const AtomicProposal &prop)
 {
     GAPS_ASSERT(prop.r1 != prop.r2 || prop.c1 != prop.c2);
 
-    AlphaParameters alpha = impl()->alphaParameters(prop.r1, prop.c1, prop.r2, prop.c2);
+    AlphaParameters alpha = StoragePolicy::alphaParameters(prop.r1, prop.c1,
+        prop.r2, prop.c2);
     if (std::log(prop.rng.uniform()) < getDeltaLL(alpha, -prop.atom1->mass) * mAnnealingTemp)
     {
         prop.atom1->pos = prop.pos;
-        impl()->safelyChangeMatrix(prop.r1, prop.c1, -prop.atom1->mass);
-        impl()->changeMatrix(prop.r2, prop.c2, prop.atom1->mass);
+        StoragePolicy::safelyChangeMatrix(prop.r1, prop.c1, -prop.atom1->mass);
+        StoragePolicy::changeMatrix(prop.r2, prop.c2, prop.atom1->mass);
     }
 }
 
 // exchange some amount of mass between two positions, note it is possible
 // for one of the atoms to be deleted if it's mass becomes too small
-template <class Derived, class DataMatrix, class FactorMatrix>
-void GibbsSampler<Derived, DataMatrix, FactorMatrix>::exchange(const AtomicProposal &prop)
+template <class StoragePolicy>
+void GibbsSampler<StoragePolicy>::exchange(const AtomicProposal &prop)
 {
     GAPS_ASSERT(prop.r1 != prop.r2 || prop.c1 != prop.c2);
 
     // attempt gibbs distribution exchange
-    AlphaParameters alpha = impl()->alphaParameters(prop.r1, prop.c1, prop.r2, prop.c2);
+    AlphaParameters alpha = StoragePolicy::alphaParameters(prop.r1, prop.c1,
+        prop.r2, prop.c2);
     if (canUseGibbs(prop.c1, prop.c2))
     {
         OptionalFloat gMass = gibbsMass(alpha * mAnnealingTemp,
@@ -294,8 +309,8 @@ void GibbsSampler<Derived, DataMatrix, FactorMatrix>::exchange(const AtomicPropo
     exchangeUsingMetropolisHastings(prop, alpha);
 }
 
-template <class Derived, class DataMatrix, class FactorMatrix>
-void GibbsSampler<Derived, DataMatrix, FactorMatrix>::exchangeUsingMetropolisHastings(const AtomicProposal &prop,
+template <class StoragePolicy>
+void GibbsSampler<StoragePolicy>::exchangeUsingMetropolisHastings(const AtomicProposal &prop,
 AlphaParameters alpha)
 {
     // compute amount of mass to be exchanged
@@ -327,33 +342,62 @@ AlphaParameters alpha)
 }
 
 // helper function for exchange step
-template <class Derived, class DataMatrix, class FactorMatrix>
-void GibbsSampler<Derived, DataMatrix, FactorMatrix>::acceptExchange(const AtomicProposal &prop,
+template <class StoragePolicy>
+void GibbsSampler<StoragePolicy>::acceptExchange(const AtomicProposal &prop,
 float delta)
 {
-    if (prop.atom1->mass + delta > gaps::epsilon && prop.atom2->mass - delta > gaps::epsilon)
+    if (prop.atom1->mass + delta > gaps::epsilon
+    && prop.atom2->mass - delta > gaps::epsilon)
     {
         float newMass1 = prop.atom1->mass + delta;
         float newMass2 = prop.atom2->mass - delta;
     
-        impl()->safelyChangeMatrix(prop.r1, prop.c1, newMass1 - prop.atom1->mass);
-        impl()->safelyChangeMatrix(prop.r2, prop.c2, newMass2 - prop.atom2->mass);
+        StoragePolicy::safelyChangeMatrix(prop.r1, prop.c1,
+            newMass1 - prop.atom1->mass);
+        StoragePolicy::safelyChangeMatrix(prop.r2, prop.c2,
+            newMass2 - prop.atom2->mass);
 
         prop.atom1->mass = newMass1;
         prop.atom2->mass = newMass2;
     }
 }
 
-template <class Derived, class DataMatrix, class FactorMatrix>
-bool GibbsSampler<Derived, DataMatrix, FactorMatrix>::canUseGibbs(unsigned col) const
+template <class StoragePolicy>
+bool GibbsSampler<StoragePolicy>::canUseGibbs(unsigned col) const
 {
-    return !gaps::isVectorZero(mOtherMatrix->getCol(col));
+    return !gaps::isVectorZero(StoragePolicy::mOtherMatrix->getCol(col));
 }
 
-template <class Derived, class DataMatrix, class FactorMatrix>
-bool GibbsSampler<Derived, DataMatrix, FactorMatrix>::canUseGibbs(unsigned c1, unsigned c2) const
+template <class StoragePolicy>
+bool GibbsSampler<StoragePolicy>::canUseGibbs(unsigned c1, unsigned c2) const
 {
     return canUseGibbs(c1) || canUseGibbs(c2);
 }
+
+template <class StoragePolicy>
+Archive& operator<<(Archive &ar, const GibbsSampler<StoragePolicy> &s)
+{
+    operator<<(ar, static_cast<const StoragePolicy&>(s)) << s.mDomain
+        << s.mQueue << s.mAlpha << s.mLambda << s.mMaxGibbsMass
+        << s.mAnnealingTemp << s.mNumPatterns << s.mNumBins << s.mBinLength;
+    return ar;
+}
+
+template <class StoragePolicy>
+Archive& operator>>(Archive &ar, GibbsSampler<StoragePolicy> &s)
+{
+    operator>>(ar, static_cast<StoragePolicy&>(s)) >> s.mDomain >> s.mQueue
+        >> s.mAlpha >> s.mLambda >> s.mMaxGibbsMass >> s.mAnnealingTemp
+        >> s.mNumPatterns >> s.mNumBins >> s.mBinLength;
+    return ar;
+}
+
+#ifdef GAPS_DEBUG
+template <class StoragePolicy>
+bool GibbsSampler<StoragePolicy>::internallyConsistent() const
+{
+    return true;
+}
+#endif
 
 #endif // __COGAPS_GIBBS_SAMPLER_H__

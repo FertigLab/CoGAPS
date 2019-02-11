@@ -1,3 +1,45 @@
+#' get specified number of retina subsets
+#' @export
+#'
+#' @description combines retina subsets from extdata directory
+#' @param n number of subsets to use
+#' @return matrix of RNA counts
+#' @importFrom rhdf5 h5read
+getRetinaSubset <- function(n=1)
+{
+    if (!(n %in% 1:4))
+    {
+        stop("invalid number of subsets requested")
+    }
+
+    subset_1_path <- system.file("extdata/retina_subset_1.h5", package="CoGAPS")
+    subset_2_path <- system.file("extdata/retina_subset_2.h5", package="CoGAPS")
+    subset_3_path <- system.file("extdata/retina_subset_3.h5", package="CoGAPS")
+    subset_4_path <- system.file("extdata/retina_subset_4.h5", package="CoGAPS")
+
+    data <- rhdf5::h5read(subset_1_path, "counts")
+    cNames <- rhdf5::h5read(subset_1_path, "cellNames")
+    if (n > 1)
+    {
+        data <- cbind(data, rhdf5::h5read(subset_2_path, "counts"))
+        cNames <- c(cNames, rhdf5::h5read(subset_2_path, "cellNames"))
+    }
+    if (n > 2)
+    {
+        data <- cbind(data, rhdf5::h5read(subset_3_path, "counts"))
+        cNames <- c(cNames, rhdf5::h5read(subset_3_path, "cellNames"))
+    }
+    if (n > 3)
+    {
+        data <- cbind(data, rhdf5::h5read(subset_4_path, "counts"))
+        cNames <- c(cNames, rhdf5::h5read(subset_4_path, "cellNames"))
+    }
+
+    colnames(data) <- cNames
+    rownames(data) <- rhdf5::h5read(subset_1_path, "geneNames")
+    return(data)    
+}
+
 #' wrapper around cat
 #' @keywords internal
 #'
@@ -194,10 +236,100 @@ parseExtraParams <- function(allParams, extraParams)
 #' @return throws an error if data has problems
 checkDataMatrix <- function(data, uncertainty, params)
 {
+    if (!is(data, "matrix") & !is(data, "data.frame")
+    & !is(data, "SummarizedExperiment") & !is(data, "SingleCellExperiment"))
+        stop("unsupported object type of CoGAPS")
+    if (any(is.na(data)))
+        stop("NA values in data")
+    if (!all(apply(data, 2, is.numeric)))
+        stop("data is not numeric")
     if (sum(data < 0) > 0 | sum(uncertainty < 0) > 0)
         stop("negative values in data and/or uncertainty matrix")
     if (nrow(data) <= params@nPatterns | ncol(data) <= params@nPatterns)
         stop("nPatterns must be less than dimensions of data")
     if (sum(uncertainty < 1e-5) > 0)
         warning("small values in uncertainty matrix detected")
+}
+
+#' check that all inputs are valid
+#' @keywords internal
+#'
+#' @param data data matrix
+#' @param uncertainty uncertainty matrix, can be null
+#' @param allParams list of all parameters
+#' @return throws an error if inputs are invalid
+checkInputs <- function(data, uncertainty, allParams)
+{
+    if (is(data, "character") & !supported(data))
+        stop("unsupported file extension for data")
+
+    if (is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "character"))
+        stop("uncertainty must be same data type as data (file name)")
+    if (is(uncertainty, "character") & !supported(uncertainty))
+        stop("unsupported file extension for uncertainty")
+    if (!is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "matrix"))
+        stop("uncertainty must be a matrix unless data is a file path")
+    if (!is.null(uncertainty) & allParams$gaps@sparseOptimization)
+        stop("must use default uncertainty when enabling sparseOptimization")
+
+    if (!(allParams$whichMatrixFixed %in% c("A", "P", "N")))
+        stop("Invalid choice of fixed matrix, must be 'A' or 'P'")
+    if (!is.null(allParams$fixedPatterns) & allParams$whichMatrixFixed == "N")
+        stop("fixedPatterns passed without setting whichMatrixFixed")
+    if (allParams$whichMatrixFixed %in% c("A", "P") & is.null(allParams$fixedPatterns))
+        stop("whichMatrixFixed is set without passing fixedPatterns")
+
+    if (!is.null(allParams$gaps@distributed))
+    {
+        if (allParams$gaps@distributed == "single-cell" & !allParams$gaps@singleCell)
+            warning("running single-cell CoGAPS with singleCell=FALSE")
+        if (!is.null(allParams$fixedPatterns) & is.null(allParams$gaps@explicitSets))
+            warning("doing manual pattern matching with using explicit subsets")
+        if (allParams$nThreads > 1)
+            stop("can't run multi-threaded and distributed CoGAPS at the same time")
+        if (!is.null(allParams$checkpointInFile))
+            stop("checkpoints not supported for distributed cogaps")
+        if (allParams$gaps@distributed == "single-cell" & allParams$whichMatrixFixed == "P")
+            stop("can't fix P matrix when running single-cell CoGAPS")
+        if (allParams$gaps@distributed == "genome-wide" & allParams$whichMatrixFixed == "A")
+            stop("can't fix A matrix when running genome-wide CoGAPS")
+    }
+
+    if (!(allParams$subsetDim %in% c(0,1,2)))
+        stop("invalid subset dimension")
+    if (allParams$subsetDim > 0 & is.null(allParams$subsetIndices))
+        stop("subsetDim provided without subsetIndices")
+
+    if (!is(data, "character"))
+        checkDataMatrix(data, uncertainty, allParams$gaps)
+}
+
+#' extracts gene/sample names from the data
+#' @keywords internal
+#'
+#' @param data data matrix
+#' @param allParams list of all parameters
+#' @param geneNames vector of names of genes in data
+#' @param sampleNames vector of names of samples in data
+#' @return list of all parameters with added gene names
+getNamesFromData <- function(data, allParams, geneNames, sampleNames)
+{
+    # get gene/sample names
+    if (is.null(geneNames))
+        geneNames <- getGeneNames(data, allParams$transposeData)
+    if (is.null(sampleNames))
+        sampleNames <- getSampleNames(data, allParams$transposeData)
+
+    nGenes <- ifelse(allParams$transposeData, ncolHelper(data), nrowHelper(data))
+    nSamples <- ifelse(allParams$transposeData, nrowHelper(data), ncolHelper(data))
+
+    if (length(geneNames) != nGenes)
+        stop("incorrect number of gene names given")
+    if (length(sampleNames) != nSamples)
+        stop("incorrect number of sample names given")
+
+    allParams$geneNames <- geneNames
+    allParams$sampleNames <- sampleNames
+
+    return(allParams)
 }

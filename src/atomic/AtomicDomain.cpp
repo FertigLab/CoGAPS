@@ -1,6 +1,8 @@
 #include "AtomicDomain.h"
 #include "../utils/GapsAssert.h"
 
+#include <algorithm>
+#include <limits>
 #include <vector>
 
 ////////////////////////////////// HELPER //////////////////////////////////////
@@ -22,6 +24,30 @@ static bool vecContains(const std::vector<Atom*> &vec, uint64_t pos)
 {
     Atom temp(pos, 0.f);
     return std::binary_search(vec.begin(), vec.end(), &temp, compareAtom);
+}
+
+////////////////////////////////// Atom ////////////////////////////////////////
+
+Atom::Atom() : pos(0), mass(0.f) {}
+
+Atom::Atom(uint64_t p, float m) : pos(p), mass(m) {}
+
+void Atom::operator=(Atom other)
+{
+    pos = other.pos;
+    mass = other.mass;
+}
+
+Archive& operator<<(Archive &ar, const Atom &a)
+{
+    ar << a.pos << a.mass;
+    return ar;
+}
+
+Archive& operator>>(Archive &ar, Atom &a)
+{
+    ar >> a.pos >> a.mass;
+    return ar;
 }
 
 //////////////////////////// ATOM NEIGHBORHOOD /////////////////////////////////
@@ -46,7 +72,11 @@ bool AtomNeighborhood::hasRight()
 
 ////////////////////////////// ATOMIC DOMAIN ///////////////////////////////////
 
+#ifdef __GAPS_USE_POOLED_ALLOCATOR__
+AtomicDomain::AtomicDomain(uint64_t nBins) : mAtomPool(16384, 0)
+#else
 AtomicDomain::AtomicDomain(uint64_t nBins)
+#endif
 {
     uint64_t binLength = std::numeric_limits<uint64_t>::max() / nBins;
     mDomainLength = binLength * nBins;
@@ -107,7 +137,12 @@ Atom* AtomicDomain::insert(uint64_t pos, float mass)
 
     std::vector<Atom*>::iterator it;
     it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
-    it = mAtoms.insert(it, mAllocator.createAtom(pos, mass));
+
+#ifdef __GAPS_USE_POOLED_ALLOCATOR__
+    it = mAtoms.insert(it, mAtomPool.construct(pos, mass));
+#else
+    it = mAtoms.insert(it, new Atom(pos, mass));
+#endif
 
     GAPS_ASSERT(vecContains(mAtoms, pos));
     return *it;
@@ -122,9 +157,14 @@ void AtomicDomain::erase(uint64_t pos)
 
         std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
             mAtoms.end(), pos, compareAtomLower);
-        mAllocator.destroyAtom(*it);
-        mAtoms.erase(it);
 
+    #ifdef __GAPS_USE_POOLED_ALLOCATOR__
+        mAtomPool.destroy(*it);
+    #else
+        delete *it;
+    #endif
+
+        mAtoms.erase(it);
         GAPS_ASSERT(!vecContains(mAtoms, pos));
     }
 }

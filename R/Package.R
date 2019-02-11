@@ -25,18 +25,6 @@
 #' @useDynLib CoGAPS
 NULL
 
-#' Simulated data
-#' @docType data
-#' @name SimpSim.data
-#' @usage SimpSim.data
-NULL
-
-#' CoGAPS result from running on simulated data
-#' @docType data
-#' @name SimpSim.result
-#' @usage SimpSim.result
-NULL
-
 #' GIST gene expression data from Ochs et al. (2009)
 #' @docType data
 #' @name GIST.data_frame
@@ -59,10 +47,4 @@ NULL
 #' @docType data
 #' @name GIST.result
 #' @usage GIST.result
-NULL
-
-#' Gene sets defined by transcription factors defined from TRANSFAC.
-#' @docType data
-#' @name tf2ugFC
-#' @usage tf2ugFC
 NULL

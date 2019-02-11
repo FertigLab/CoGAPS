@@ -20,7 +20,6 @@ CogapsParams object
 return original parameters used to generate this result
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data)
-getOriginalParameters(result)
+data(GIST)
+getOriginalParameters(GIST.result)
 }

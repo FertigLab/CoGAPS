@@ -65,6 +65,18 @@ function(object, whichParam, value)
     {
         stop("please set this parameter with setAnnotationWeights")
     }
+    else if (whichParam == "nPatterns")
+    {
+        object@nPatterns <- value
+        object@cut <- min(object@cut, object@nPatterns)
+    }
+    else if (whichParam == "distributed")
+    {
+        if (value == "none")
+            object@distributed <- NULL
+        else
+            object@distributed <- value
+    }
     else
     {
         slot(object, whichParam) <- value

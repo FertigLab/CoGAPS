@@ -9,7 +9,6 @@ MtxParser::MtxParser(const std::string &path) : mNumRows(0), mNumCols(0)
 {
     mFile.open(path.c_str());
 
-    // read first line
     std::string line;
     std::getline(mFile, line);
     if (mFile.eof() || mFile.fail())
@@ -42,10 +41,8 @@ MatrixElement MtxParser::getNext()
 {
     unsigned row = 0, col = 0;
     float val = 0.f;
-
     mFile >> row;
     mFile >> col;
     mFile >> val;
-
     return MatrixElement(row - 1, col - 1, val);
 }

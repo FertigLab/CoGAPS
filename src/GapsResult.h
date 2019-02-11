@@ -13,9 +13,18 @@ struct GapsResult
     Matrix Asd;
     Matrix Pmean;
     Matrix Psd;
-    
+    Matrix pumpMatrix;
+    Matrix meanPatternAssignment;
+
     float meanChiSq;
     uint32_t seed;
+
+    std::vector<float> chisqHistory;
+    std::vector<unsigned> atomHistoryA;
+    std::vector<unsigned> atomHistoryP;
+
+    float averageQueueLengthA;
+    float averageQueueLengthP;
 
     explicit GapsResult(const GapsStatistics &stat);
 

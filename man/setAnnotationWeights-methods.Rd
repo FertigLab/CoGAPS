@@ -21,7 +21,7 @@ setAnnotationWeights(object, annotation, weights)
 the modified params object
 }
 \description{
-these parameters  are interrelated so they must be set together
+these parameters are interrelated so they must be set together
 }
 \examples{
  params <- new("CogapsParams")

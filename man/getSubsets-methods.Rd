@@ -20,7 +20,6 @@ CogapsParams object
 return the names of the genes (samples) in each subset
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data)
-getSubsets(result)
+data(GIST)
+getSubsets(GIST.result)
 }

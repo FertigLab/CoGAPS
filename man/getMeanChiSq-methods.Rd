@@ -20,7 +20,6 @@ chi-sq error
 return chi-sq of final matrices
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data)
-getMeanChiSq(result)
+data(GIST)
+getMeanChiSq(GIST.result)
 }

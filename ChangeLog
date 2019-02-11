@@ -1,0 +1,131 @@
+version: 3.3.34
+date: 2019-2-8
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - optionally disable checkpoints, disable on windows by default
+
+version: 3.3.33
+date: 2019-2-7
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - internal design changes, should have no visible effect
+
+version: 3.3.32
+date: 2019-2-4
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - allow "none" to be the argument type for distributed parameter
+
+version: 3.3.31
+date: 2019-1-31
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - allow rds files to be passed
+
+version: 3.3.30
+date: 2019-1-29
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - added check for value of params@distributed
+
+version: 3.3.29
+date: 2019-1-22
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - check for user interrupt more often when reading data
+
+version: 3.3.28
+date: 2019-1-15
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - return average asynchronous queue length in metadata
+
+version: 3.3.27
+date: 2019-1-9
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - stop running examples for scCoGAPS/GWCoGAPS to reduce R CMD check time
+
+version: 3.3.26
+date: 2019-1-8
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - allow for selectively disabling AVX instructions
+
+version: 3.3.25
+date: 2019-1-7
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fixed bugs with new build configuration
+
+version: 3.3.24
+date: 2019-1-4
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - dont compile C++ unit tests by default
+
+version: 3.3.23
+date: 2019-1-4
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - better handle setting nPatterns after cut
+
+version: 3.3.22
+date: 2019-1-3
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fixed bug when reading csv/tsv files and using sparseOptimization
+
+version: 3.3.21
+date: 12-20-19
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - added PUMP back to CoGAPS
+
+version: 3.3.20 (jumped from 3.3.16)
+date: 2018-12-19
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - allow for fixed matrix in standard CoGAPS
+
+version: 3.3.16
+date: 2018-11-22
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - flush output when printing time
+
+version: 3.3.15
+date: 2018-11-22
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - clarify internal parameters
+
+version: 3.3.14
+date: 2018-11-16
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - added how much time the run took in the worker output message
+
+version: 3.3.13
+date: 2018-11-16
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - added a print message when a worker has finished during distributed CoGAPS
+
+version: 3.3.12 
+date: 2018-11-16
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fixed bug where rows/cols would get re-ordered in GWCoGAPS/scCoGAPS
+
+version: 3.3.11
+date: 2018-11-15
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - store chisq and atom count history in result object
+
+version: 3.3.10
+date: 2018-11-15
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - display size of subsets created by GWCoGAPS/scCoGAPS

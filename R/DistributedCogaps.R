@@ -1,3 +1,41 @@
+#' make correct call to internal CoGAPS dispatch function, CoGAPS could be
+#' called directly, but to avoid any re-entrant behavior this function is called
+#' instead. It is a light wrapper around cogaps_cpp that handles setting
+#' the distributed parameters
+#' @keywords internal
+#'
+#' @param index index for which subset to run on
+#' @param sets list of all subsets
+#' @param data data in a supported format
+#' @param allParams list of all parameters
+#' @param uncertainty uncertainty of data in the same format
+#' @param geneNames names of all genes
+#' @param sampleNames names of all samples
+#' @param fixedMatrix matrix of matched patterns
+#' @return CogapsResult object
+callInternalCoGAPS <- function(data, allParams, uncertainty, subsetIndices,
+workerID)
+{
+    # identify which mode of parallelization
+    genomeWide <- allParams$gaps@distributed == "genome-wide"
+    allParams$gaps@distributed <- NULL
+
+    # subset gene/sample names
+    if (genomeWide)
+        allParams$geneNames <- allParams$geneNames[subsetIndices]
+    else
+        allParams$sampleNames <- allParams$sampleNames[subsetIndices]
+
+    allParams$subsetIndices <- subsetIndices
+    allParams$subsetDim <- ifelse(genomeWide, 1, 2)
+    allParams$workerID <- workerID
+
+    # call CoGAPS
+    internal <- ifelse(is(data, "character"), cogaps_cpp_from_file, cogaps_cpp)
+    raw <- internal(data, allParams, uncertainty)
+    return(createCogapsResult(raw, allParams))
+}
+
 #' CoGAPS Distributed Matrix Factorization Algorithm
 #' @keywords internal
 #'
@@ -11,38 +49,24 @@
 #' @importFrom BiocParallel bplapply MulticoreParam
 distributedCogaps <- function(data, allParams, uncertainty)
 {
-    FUN <- function(index, sets, data, allParams, uncertainty, geneNames,
-    sampleNames, fixedMatrix=NULL)
-    {
-        if (allParams$gaps@distributed == "genome-wide")
-            geneNames <- geneNames[sets[[index]]]
-        else
-            sampleNames <- sampleNames[sets[[index]]]
-
-        internal <- ifelse(is(data, "character"), cogaps_cpp_from_file, cogaps_cpp)
-        raw <- internal(data, allParams, uncertainty, sets[[index]],
-            fixedMatrix, index == 1)
-        res <- new("CogapsResult", Amean=raw$Amean, Asd=raw$Asd, Pmean=raw$Pmean,
-            Psd=raw$Psd, meanChiSq=raw$meanChiSq, geneNames=geneNames,
-            sampleNames=sampleNames)
-        validObject(res)
-        return(res)
-    }
-
     # randomly sample either rows or columns into subsets to break the data up
     set.seed(allParams$gaps@seed)
     sets <- createSets(data, allParams)
-    if (is.null(allParams$bpBackend))
-        allParams$bpBackend <- BiocParallel::MulticoreParam(workers=length(sets))
+    if (min(sapply(sets, length)) < allParams$gaps@nPatterns)
+        stop("data subset dimension less than nPatterns")
+
+    if (is.null(allParams$BPPARAM))
+        allParams$BPPARAM <- BiocParallel::MulticoreParam(workers=length(sets))
     
-    if (is.null(allParams$matchedPatterns))
+    initialResult <- NULL
+    if (is.null(allParams$fixedPatterns))
     {
         # run Cogaps normally on each subset of the data
-        if (allParams$messages)
-            cat("Running Across Subsets...\n\n")
-        initialResult <- bplapply(1:length(sets), FUN, BPPARAM=allParams$bpBackend,
-            sets=sets, data=data, allParams=allParams, uncertainty=uncertainty,
-            geneNames=allParams$geneNames, sampleNames=allParams$sampleNames)
+        gapsCat(allParams, "Running Across Subsets...\n\n")
+        initialResult <- bplapply(1:length(sets), function(i)
+        {
+            callInternalCoGAPS(data, allParams, uncertainty, sets[[i]], i)
+        })
 
         # get all unmatched patterns
         if (allParams$gaps@distributed == "genome-wide")
@@ -51,60 +75,46 @@ distributedCogaps <- function(data, allParams, uncertainty)
             unmatchedPatterns <- lapply(initialResult, function(x) x@featureLoadings)
 
         # match patterns in either A or P matrix
-        if (allParams$messages)
-            cat("\nMatching Patterns Across Subsets...\n")
+        gapsCat(allParams, "\nMatching Patterns Across Subsets...\n")
         matchedPatterns <- findConsensusMatrix(unmatchedPatterns, allParams)
-        allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
-
-        # set fixed matrix
-        allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
-            == "genome-wide", "P", "A")
     }
     else
     {
-        matchedPatterns <- list(consensus=allParams$matchedPatterns)
-        allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
-        allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
-            == "genome-wide", "P", "A")
+        matchedPatterns <- list(consensus=allParams$fixedPatterns)
     }
+
+    # set fixed matrix
+    allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
+    allParams$fixedPatterns <- matchedPatterns$consensus
+    allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
+        == "genome-wide", "P", "A")
         
     # run final phase with fixed matrix
-    if (allParams$messages)
-        cat("Running Final Stage...\n\n")
-    finalResult <- bplapply(1:length(sets), FUN, BPPARAM=allParams$bpBackend,
-        sets=sets, data=data, allParams=allParams, uncertainty=uncertainty,
-        geneNames=allParams$geneNames, sampleNames=allParams$sampleNames,    
-        fixedMatrix=matchedPatterns$consensus)
+    gapsCat(allParams, "Running Final Stage...\n\n")
+    finalResult <- bplapply(1:length(sets), function(i)
+    {
+        callInternalCoGAPS(data, allParams, uncertainty, sets[[i]], i)
+    })
 
     # concatenate final result
     fullResult <- stitchTogether(finalResult, allParams)
 
     # add diagnostic information before returning
-    if (is.null(allParams$matchedPatterns))
+    if (allParams$whichMatrixFixed == 'N') # no manual pattern matching
     {
+        fullResult$diagnostics$firstPass <- initialResult
         fullResult$diagnostics$unmatchedPatterns <- unmatchedPatterns
         fullResult$diagnostics$clusteredPatterns <- matchedPatterns$clusteredPatterns
         fullResult$diagnostics$CorrToMeanPattern <- lapply(matchedPatterns$clusteredPatterns, corrToMeanPattern)
     }
 
+    # include the subsets used
     if (allParams$gaps@distributed == "genome-wide")
-        allNames <- allParams$geneNames
+        fullResult$diagnostics$subsets <- lapply(sets, function(s) fullResult$geneNames[s])
     else
-        allNames <- allParams$sampleNames
-    fullResult$diagnostics$subsets <- lapply(sets, function(s) allNames[s])
+        fullResult$diagnostics$subsets <- lapply(sets, function(s) fullResult$sampleNames[s])
 
-    # rename genes/samples if dimension was subsetted incompletely
-    allUsedIndices <- sort(unlist(sets))
-    if (allParams$gaps@distributed == "genome-wide")
-    {
-        fullResult$geneNames <- allParams$geneNames[allUsedIndices]
-        fullResult$sampleNames <- allParams$sampleNames
-    }
-    else
-    {
-        fullResult$geneNames <- allParams$geneNames
-        fullResult$sampleNames <- allParams$sampleNames[allUsedIndices]
-    }
+    # return list, calling function will process this into a CogapsResult object
     return(fullResult)
 }
 
@@ -223,6 +233,8 @@ stitchTogether <- function(result, allParams)
         Asd   <- do.call(rbind, lapply(result, function(x) x@featureStdDev))
         Pmean <- consensus
         Psd   <- matrix(0, nrow=nrow(consensus), ncol=ncol(consensus))
+        geneNames <- unlist(sapply(result, function(x) rownames(x@featureLoadings)))
+        sampleNames <- allParams$sampleNames
     }
     else
     {
@@ -231,10 +243,12 @@ stitchTogether <- function(result, allParams)
         Asd   <- matrix(0, nrow=nrow(consensus), ncol=ncol(consensus))
         Pmean <- do.call(rbind, lapply(result, function(x) x@sampleFactors))
         Psd   <- do.call(rbind, lapply(result, function(x) x@sampleStdDev))
+        geneNames <- allParams$geneNames
+        sampleNames <- unlist(sapply(result, function(x) rownames(x@sampleFactors)))
     }
 
     return(list("Amean"=Amean, "Asd"=Asd, "Pmean"=Pmean, "Psd"=Psd,
-        "seed"=allParams$gaps@seed,
+        "seed"=allParams$gaps@seed, "geneNames"=geneNames, "sampleNames"=sampleNames,
         "meanChiSq"=sum(sapply(result, function(r) r@metadata$meanChiSq))))
 }
 

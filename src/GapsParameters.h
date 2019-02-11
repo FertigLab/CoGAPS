@@ -7,6 +7,12 @@
 #include <string>
 #include <vector>
 
+enum PumpThreshold
+{
+    PUMP_UNIQUE=1,
+    PUMP_CUT=2
+};
+
 struct GapsParameters
 {
 public:
@@ -16,7 +22,7 @@ public:
         bool t_subsetData=false, bool t_subsetGenes=false,
         const std::vector<unsigned> t_dataIndicesSubset=std::vector<unsigned>());
 
-    Matrix fixedMatrix;
+    Matrix fixedPatterns;
 
     std::vector<unsigned> dataIndicesSubset;
 
@@ -38,7 +44,9 @@ public:
     float maxGibbsMassA;
     float maxGibbsMassP;
 
-    bool useFixedMatrix;
+    PumpThreshold pumpThreshold;
+
+    bool useFixedPatterns;
     bool subsetData;
     bool useCheckPoint;
     bool transposeData;
@@ -47,8 +55,11 @@ public:
     bool subsetGenes;
     bool printThreadUsage;
     bool useSparseOptimization;
+    bool takePumpSamples;
 
-    char whichFixedMatrix;
+    char whichMatrixFixed;
+    unsigned workerID;
+    bool runningDistributed;
 
 private:
 
@@ -64,7 +75,7 @@ GapsParameters::GapsParameters(const DataType &data, bool t_transposeData,
 bool t_subsetData, bool t_subsetGenes,
 const std::vector<unsigned> t_dataIndicesSubset)
     :
-fixedMatrix(Matrix()),
+fixedPatterns(Matrix()),
 dataIndicesSubset(t_dataIndicesSubset),
 checkpointFile(std::string()),
 checkpointOutFile("gaps_checkpoint.out"),
@@ -80,7 +91,8 @@ alphaA(0.01f),
 alphaP(0.01f),
 maxGibbsMassA(100.f),
 maxGibbsMassP(100.f),
-useFixedMatrix(false),
+pumpThreshold(PUMP_UNIQUE),
+useFixedPatterns(false),
 subsetData(t_subsetData),
 useCheckPoint(false),
 transposeData(t_transposeData),
@@ -89,7 +101,10 @@ printMessages(true),
 subsetGenes(t_subsetGenes),
 printThreadUsage(true),
 useSparseOptimization(false),
-whichFixedMatrix('N')
+takePumpSamples(false),
+whichMatrixFixed('N'),
+workerID(1),
+runningDistributed(false)
 {
     calculateDataDimensions(data);
 }

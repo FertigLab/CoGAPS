@@ -25,7 +25,7 @@ in which the value is 1 if the value in Amean is greater than
 threshold * Asd and 0 otherwise
 }
 \examples{
-data(SimpSim)
-result <- CoGAPS(SimpSim.data)
-binMatrix <- binaryA(result, threshold=3)
+data(GIST)
+# to expensive to call since it plots
+# binaryA(GIST.result, threshold=3)
 }
