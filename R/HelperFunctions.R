@@ -323,6 +323,17 @@ getNamesFromData <- function(data, allParams, geneNames, sampleNames)
     nGenes <- ifelse(allParams$transposeData, ncolHelper(data), nrowHelper(data))
     nSamples <- ifelse(allParams$transposeData, nrowHelper(data), ncolHelper(data))
 
+    if (allParams$subsetDim == 1)
+    {
+        nGenes <- length(allParams$subsetIndices)
+        geneNames <- geneNames[allParams$subsetIndices]
+    }
+    else if (allParams$subsetDim == 2)
+    {
+        nSamples <- length(allParams$subsetIndices)
+        sampleNames <- sampleames[allParams$subsetIndices]
+    }    
+
     if (length(geneNames) != nGenes)
         stop("incorrect number of gene names given")
     if (length(sampleNames) != nSamples)

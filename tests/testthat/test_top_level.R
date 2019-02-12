@@ -194,5 +194,10 @@ test_that("Valid Top-Level CoGAPS Calls",
     res <- CoGAPS(gistCsvPath, params, nIterations=100, outputFrequency=100, seed=42,
         messages=FALSE, nPatterns=3)
     expect_true(is.null(res@metadata$params@distributed))
+
+    # test subsetting indices
+    res <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE, nPatterns=3, subsetIndices=1:100, subsetDim=1)
+    expect_true(nrow(res@featureLoadings) == 100)
 })
 
