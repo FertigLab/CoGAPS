@@ -4,12 +4,12 @@
 \alias{patternMatch}
 \title{Match Patterns Across Multiple Runs}
 \usage{
-patternMatch(allPatterns, allParams)
+patternMatch(allPatterns, gapsParams)
 }
 \arguments{
 \item{allPatterns}{matrix of patterns stored in the columns}
 
-\item{allParams}{list of all CoGAPS parameters}
+\item{gapsParams}{CoGAPS parameters object}
 }
 \value{
 a matrix of consensus patterns
