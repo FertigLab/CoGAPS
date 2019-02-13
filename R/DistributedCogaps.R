@@ -120,7 +120,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
 
 
 #' find the consensus pattern matrix across all subsets
-#' @keywords internal
+#' @export
 #'
 #' @param unmatchedPatterns list of all unmatched pattern matrices from initial
 #' run of CoGAPS

@@ -4,13 +4,13 @@
 \alias{findConsensusMatrix}
 \title{find the consensus pattern matrix across all subsets}
 \usage{
-findConsensusMatrix(unmatchedPatterns, allParams)
+findConsensusMatrix(unmatchedPatterns, gapsParams)
 }
 \arguments{
 \item{unmatchedPatterns}{list of all unmatched pattern matrices from initial
 run of CoGAPS}
 
-\item{allParams}{list of all CoGAPS parameters}
+\item{gapsParams}{list of all CoGAPS parameters}
 }
 \value{
 matrix of consensus patterns
@@ -18,4 +18,3 @@ matrix of consensus patterns
 \description{
 find the consensus pattern matrix across all subsets
 }
-\keyword{internal}
