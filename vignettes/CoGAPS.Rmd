@@ -434,7 +434,7 @@ result <- GWCoGAPS(GIST.matrix, messages=FALSE)
 consensusMatrix <- getUnmatchedPatterns(result)[[1]]
 
 # run with our custom matched patterns matrix
-GWCoGAPS(GIST.matrix, fixedPatterns=consensusMatrix, explicitSets=getSubsets(result))
+GWCoGAPS(GIST.matrix, fixedPatterns=consensusMatrix, explicitSets=getSubsets(result), whichMatrixFixed='P')
 ```
 
 # sessionInfo()
