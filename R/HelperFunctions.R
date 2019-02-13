@@ -331,7 +331,7 @@ getNamesFromData <- function(data, allParams, geneNames, sampleNames)
     else if (allParams$subsetDim == 2)
     {
         nSamples <- length(allParams$subsetIndices)
-        sampleNames <- sampleames[allParams$subsetIndices]
+        sampleNames <- sampleNames[allParams$subsetIndices]
     }    
 
     if (length(geneNames) != nGenes)
