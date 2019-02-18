@@ -81,7 +81,7 @@ isRdsFile <- function(file)
         return(FALSE)
     if (!is(file, "character"))
         return(FALSE)
-    return(tools::file_ext(file) == ".rds")
+    return(tools::file_ext(file) == "rds")
 }
 
 #' get input that might be an RDS file
