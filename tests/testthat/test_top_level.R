@@ -200,5 +200,22 @@ test_that("Valid Top-Level CoGAPS Calls",
     res <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
         messages=FALSE, nPatterns=3, subsetIndices=1:100, subsetDim=1)
     expect_true(nrow(res@featureLoadings) == 100)
+
+    # test using RDS file for parameters
+    matP <- getSampleFactors(GIST.result)
+    params <- CogapsParams(nPatterns=ncol(matP), nIterations=175, seed=42,
+        singleCell=TRUE, sparseOptimization=TRUE, distributed="genome-wide",
+        explicitSets=list(1:200, 201:400, 401:600, 601:800, 801:1000))
+    params <- setDistributedParams(params, nSets=5, cut=ncol(matP) + 1)
+    params <- setFixedPatterns(params, matP, "P")
+    saveRDS(params, file="temp_params.rds")
+
+    res1 <- CoGAPS(GIST.matrix, params)
+    res2 <- CoGAPS(GIST.matrix, "temp_params.rds")
+    
+    expect_true(all(res1@featureLoadings == res2@featureLoadings))
+    expect_true(all(res1@featureStdDev == res2@featureStdDev))
+    expect_true(all(res1@sampleFactors == res2@sampleFactors))
+    expect_true(all(res1@sampleStdDev== res2@sampleStdDev))
 })
 
