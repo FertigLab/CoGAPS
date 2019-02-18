@@ -7,11 +7,8 @@
 CoGAPS(data, params = new("CogapsParams"), nThreads = 1,
   messages = TRUE, outputFrequency = 500, uncertainty = NULL,
   checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 1000,
-  checkpointInFile = NULL, transposeData = FALSE,
-  subsetIndices = NULL, subsetDim = 0, BPPARAM = NULL,
-  geneNames = NULL, sampleNames = NULL, fixedPatterns = NULL,
-  whichMatrixFixed = "N", takePumpSamples = FALSE,
-  outputToFile = NULL, workerID = 1, ...)
+  checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
+  workerID = 1, ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
@@ -40,27 +37,7 @@ contained in this file}
 for data that is stored as samples x genes since CoGAPS requires data to be
 genes x samples}
 
-\item{subsetIndices}{set of indices to use from the data}
-
-\item{subsetDim}{which dimension (1=rows, 2=cols) to subset}
-
 \item{BPPARAM}{BiocParallel backend}
-
-\item{geneNames}{vector of names of genes in data}
-
-\item{sampleNames}{vector of names of samples in data}
-
-\item{fixedPatterns}{fix either 'A' or 'P' matrix to these values, in the
-context of distributed CoGAPS (GWCoGAPS/scCoGAPS), the first phase is
-skipped and fixedPatterns is used for all sets - allowing manual pattern
-matching, as well as fixed runs of standard CoGAPS}
-
-\item{whichMatrixFixed}{either 'A' or 'P', indicating which matrix is fixed}
-
-\item{takePumpSamples}{whether or not to take PUMP samples}
-
-\item{outputToFile}{name of a file to save the output to, will create 4 files
-of the form "filename_nPatterns_[Amean, Asd, Pmean, Psd].extension"}
 
 \item{workerID}{if calling CoGAPS in parallel the worker ID can be specified,
 only worker 1 prints output and each worker outputs when it finishes, this

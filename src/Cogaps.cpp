@@ -49,12 +49,12 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     const Rcpp::S4 &gapsParams(allParams["gaps"]);
 
     // check if subsetting data
-    unsigned subsetDim = Rcpp::as<unsigned>(allParams["subsetDim"]);
-    bool subsetGenes = subsetDim == 1;
+    unsigned subsetDim = Rcpp::as<unsigned>(gapsParams.slot("subsetDim"));
+    bool subsetGenes = (subsetDim == 1);
     std::vector<unsigned> subset;
     if (subsetDim > 0)
     {
-        Rcpp::IntegerVector subsetR = allParams["subsetIndices"];
+        Rcpp::IntegerVector subsetR = gapsParams.slot("subsetIndices");
         subset = Rcpp::as< std::vector<unsigned> >(subsetR);
     }
 
@@ -71,7 +71,7 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.outputFrequency = allParams["outputFrequency"];
     params.checkpointOutFile = Rcpp::as<std::string>(allParams["checkpointOutFile"]);
     params.checkpointInterval = allParams["checkpointInterval"];
-    params.takePumpSamples = allParams["takePumpSamples"];
+    params.takePumpSamples = gapsParams.slot("takePumpSamples");
 
     // extract model specific parameters from list
     params.seed = gapsParams.slot("seed");
@@ -85,11 +85,11 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.useSparseOptimization = gapsParams.slot("sparseOptimization");
 
     // check if using fixed matrix
-    params.whichMatrixFixed = Rcpp::as<char>(allParams["whichMatrixFixed"]);
+    params.whichMatrixFixed = Rcpp::as<char>(gapsParams.slot("whichMatrixFixed"));
     if (params.whichMatrixFixed != 'N')
     {
         params.useFixedPatterns = true;
-        Rcpp::NumericMatrix fixedMatrixR = allParams["fixedPatterns"];
+        Rcpp::NumericMatrix fixedMatrixR = gapsParams.slot("fixedPatterns");
         params.fixedPatterns = convertRMatrix(fixedMatrixR);
     }
 
@@ -122,17 +122,17 @@ const DataType &uncertainty)
 
     // convert R parameters to GapsParameters struct
     GapsParameters params(getGapsParameters(data, allParams));
+#ifdef GAPS_DEBUG
+    if (params.printMessages)
+    {
+        params.print();
+    }
+#endif
 
     // create GapsRunner, note we must first initialize the random generator
     GapsRandomState randState(params.seed);
     GapsResult result(gaps::run(data, params, uncertainty, &randState));
 
-    // write result to file if requested
-    if (allParams["outputToFile"] != R_NilValue)
-    {
-        result.writeToFile(Rcpp::as<std::string>(allParams["outputToFile"]));
-    }
-    
     // return R list
     return Rcpp::List::create(
         Rcpp::Named("Amean") = createRMatrix(result.Amean),

@@ -15,9 +15,10 @@ getHistogram <- function(set, anno)
 test_that("Subsetting Data",
 {
     data(GIST)
-    #testMatrix <- GIST.matrix
 
+    ## BAD TEST TO RUN
     # sampling with weights
+    #testMatrix <- GIST.matrix
     #anno <- sample(letters[1:5], size=nrow(testMatrix), replace=TRUE)
     #weights <- c(0,1,4,1,0)
     #names(weights) <- letters[1:5]
@@ -29,7 +30,6 @@ test_that("Subsetting Data",
     #hist <- sapply(getSubsets(result), getHistogram, anno=anno)
     #freq <- unname(rowSums(hist) / sum(hist))
     
-    # dumb test
     #expect_true(all.equal(freq, unname(weights / sum(weights)), tol=0.1))
 
     # running cogaps with given subsets
@@ -37,9 +37,11 @@ test_that("Subsetting Data",
     mat <- GIST.matrix
     rownames(mat) <- NULL
     colnames(mat) <- NULL
-    result <- GWCoGAPS(mat, nPatterns=7, explicitSets=sets, nIterations=100,
-        messages=FALSE, whichMatrixFixed="P",
-        fixedPatterns=matrix(1,nrow=ncol(mat), ncol=7))
+    nPatterns <- ncol(getSampleFactors(GIST.result))
+    params <- CogapsParams()
+    params <- setFixedPatterns(params, getSampleFactors(GIST.result), "P")
+    result <- GWCoGAPS(mat, params, nPatterns=nPatterns, explicitSets=sets,
+        nIterations=100, messages=FALSE, seed=42)
     subsets <- lapply(getSubsets(result), getIndices)
     expect_true(all(sapply(1:4, function(i) all.equal(sets[[i]], subsets[[i]]))))
 })

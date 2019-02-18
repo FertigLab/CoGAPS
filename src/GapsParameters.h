@@ -22,10 +22,12 @@ public:
         bool t_subsetData=false, bool t_subsetGenes=false,
         const std::vector<unsigned> t_dataIndicesSubset=std::vector<unsigned>());
 
+    void print() const;
+
     Matrix fixedPatterns;
 
     std::vector<unsigned> dataIndicesSubset;
-
+    
     std::string checkpointFile;
     std::string checkpointOutFile;
 

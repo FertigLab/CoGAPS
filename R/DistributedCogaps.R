@@ -26,8 +26,8 @@ workerID)
     else
         allParams$sampleNames <- allParams$sampleNames[subsetIndices]
 
-    allParams$subsetIndices <- subsetIndices
-    allParams$subsetDim <- ifelse(genomeWide, 1, 2)
+    allParams$gaps@subsetIndices <- subsetIndices
+    allParams$gaps@subsetDim <- ifelse(genomeWide, 1, 2)
     allParams$workerID <- workerID
 
     # call CoGAPS
@@ -226,6 +226,7 @@ corcut <- function(allPatterns, cut, minNS)
 #' @return list with all CoGAPS output
 stitchTogether <- function(result, allParams)
 {
+    print("stiching together...")
     if (allParams$gaps@distributed == "genome-wide")
     {
         consensus <- result[[1]]@sampleFactors

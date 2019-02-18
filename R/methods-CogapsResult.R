@@ -4,6 +4,7 @@
 #' @param returnList list from cogaps_cpp
 #' @param allParams list of all parameters
 #' @return CogapsResult object
+#' @importFrom utils packageVersion
 createCogapsResult <- function(returnList, allParams)
 {
     res <- new("CogapsResult",
@@ -56,6 +57,22 @@ plot.CogapsResult <- function(x, ...)
     legend("top", paste("Pattern", 1:nFactors, sep = ""), pch = 1:nFactors,
         lty=1, cex=0.8, col=colors, bty="y", ncol=5)
 }
+
+#' @rdname getFeatureLoadings-methods
+#' @aliases getFeatureLoadings
+setMethod("getFeatureLoadings", signature(object="CogapsResult"),
+function(object)
+{
+    object@featureLoadings
+})
+
+#' @rdname getSampleFactors-methods
+#' @aliases getSampleFactors
+setMethod("getSampleFactors", signature(object="CogapsResult"),
+function(object)
+{
+    object@sampleFactors
+})
 
 #' @rdname getMeanChiSq-methods
 #' @aliases getMeanChiSq

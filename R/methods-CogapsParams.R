@@ -1,3 +1,17 @@
+#' CogapsParams constructor
+#' @export
+#'
+#' @description create a CogapsParams object
+#' @param ... parameters for the initialization method
+#' @return CogapsParams object
+#' @examples
+#' params <- CogapsParams(nPatterns=10)
+#' params
+CogapsParams <- function(...)
+{
+    new("CogapsParams", ...)
+}
+
 setMethod("show", signature("CogapsParams"),
 function(object)
 {
@@ -59,11 +73,15 @@ function(object, whichParam, value)
     }
     else if (whichParam %in% c("nSets", "cut", "minNS", "maxNS"))
     {
-        stop("please set this parameter with setDistributedParams")
+        stop("please set \'", whichParam, "\' with setDistributedParams")
     }
     else if (whichParam %in% c("samplingAnnotation", "samplingWeight"))
     {
-        stop("please set this parameter with setAnnotationWeights")
+        stop("please set \'", whichParam, "\' with setAnnotationWeights")
+    }
+    else if (whichParam %in% c("fixedPatterns", "whichMatrixFixed"))
+    {
+        stop("please set \'", whichParam, "\' with setFixedPatterns")
     }
     else if (whichParam == "nPatterns")
     {
@@ -111,6 +129,18 @@ function(object, annotation, weights)
 {
     object@samplingAnnotation <- annotation
     object@samplingWeight <- weights
+
+    validObject(object)
+    return(object)
+})
+
+#' @rdname setFixedPatterns-methods
+#' @aliases setFixedPatterns
+setMethod("setFixedPatterns", signature(object="CogapsParams"),
+function(object, fixedPatterns, whichMatrixFixed)
+{
+    object@fixedPatterns <- fixedPatterns
+    object@whichMatrixFixed <- whichMatrixFixed
 
     validObject(object)
     return(object)

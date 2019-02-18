@@ -51,5 +51,22 @@ the rows (cols) to use for weighted sampling}
 
 \item{\code{samplingWeight}}{[distributed parameter] weights associated with 
 samplingAnnotation}
+
+\item{\code{subsetIndices}}{set of indices to use from the data}
+
+\item{\code{subsetDim}}{which dimension (1=rows, 2=cols) to subset}
+
+\item{\code{geneNames}}{vector of names of genes in data}
+
+\item{\code{sampleNames}}{vector of names of samples in data}
+
+\item{\code{fixedPatterns}}{fix either 'A' or 'P' matrix to these values, in the
+context of distributed CoGAPS (GWCoGAPS/scCoGAPS), the first phase is
+skipped and fixedPatterns is used for all sets - allowing manual pattern
+matching, as well as fixed runs of standard CoGAPS}
+
+\item{\code{whichMatrixFixed}}{either 'A' or 'P', indicating which matrix is fixed}
+
+\item{\code{takePumpSamples}}{whether or not to take PUMP samples}
 }}
 
