@@ -98,16 +98,16 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     # single-cell CoGAPS
     expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell", singleCell=TRUE,
-        transposeData=TRUE), NA)
+        outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell",
+        singleCell=TRUE, transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
 
     expect_equal(nrow(res@featureLoadings), 9)
     expect_equal(nrow(res@sampleFactors), 1363)
 
     expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell", singleCell=TRUE,
-        transposeData=TRUE), NA)
+        outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell",
+        singleCell=TRUE, transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
 
     expect_equal(nrow(res@featureLoadings), 9)
@@ -165,31 +165,32 @@ test_that("Valid Top-Level CoGAPS Calls",
     nPat <- 3
     fixedA <- matrix(runif(nrow(testMatrix) * nPat, 1, 10), ncol=nPat)
     fixedP <- matrix(runif(ncol(testMatrix) * nPat, 1, 10), ncol=nPat)
-    res <- CoGAPS(testMatrix, nIterations=100, outputFrequency=100, seed=42,
-        messages=FALSE, nPatterns=nPat, whichMatrixFixed="A",
-        fixedPatterns=fixedA)
+    params <- CogapsParams()
+    params <- setFixedPatterns(params, fixedA, "A")
+    res <- CoGAPS(testMatrix, params, nIterations=100, outputFrequency=100,
+        seed=42, messages=FALSE, nPatterns=nPat)
     
     expect_true(all(dim(res@featureLoadings) == dim(fixedA)))
     for (i in 1:ncol(fixedA))
         fixedA[,i] <- fixedA[,i] * (res@featureLoadings[1,i] / fixedA[1,i])
     all.equal(unname(res@featureLoadings), fixedA, tolerance=0.001)
 
-    res <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
-        messages=FALSE, nPatterns=nPat, whichMatrixFixed="P",
-        fixedPatterns=fixedP)
+    params <- CogapsParams()
+    params <- setFixedPatterns(params, fixedP, "P")
+    res <- CoGAPS(gistCsvPath, params, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE, nPatterns=nPat)
 
     expect_true(all(dim(res@sampleFactors) == dim(fixedP)))
     for (i in 1:ncol(fixedP))
         fixedP[,i] <- fixedP[,i] * (res@sampleFactors[1,i] / fixedP[1,i])
     all.equal(unname(res@sampleFactors), fixedP, tolerance=0.001)
 
-
     # make sure that "none" gets converted to NULL for distributed
     res <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=100, seed=42,
         messages=FALSE, nPatterns=3, distributed="none")
     expect_true(is.null(res@metadata$params@distributed))    
 
-    params <- new("CogapsParams")
+    params <- CogapsParams()
     params <- setParam(params, "distributed", "none")
     res <- CoGAPS(gistCsvPath, params, nIterations=100, outputFrequency=100, seed=42,
         messages=FALSE, nPatterns=3)
