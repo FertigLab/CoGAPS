@@ -226,7 +226,6 @@ corcut <- function(allPatterns, cut, minNS)
 #' @return list with all CoGAPS output
 stitchTogether <- function(result, allParams)
 {
-    print("stiching together...")
     if (allParams$gaps@distributed == "genome-wide")
     {
         consensus <- result[[1]]@sampleFactors
