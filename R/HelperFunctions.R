@@ -247,6 +247,8 @@ parseExtraParams <- function(allParams, extraParams)
     return(allParams)
 }
 
+## TODO these checks should be in the C++ code so that file names are checked
+## just as much as R variables
 #' check that provided data is valid
 #' @keywords internal
 #'

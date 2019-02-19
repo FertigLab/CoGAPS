@@ -350,6 +350,13 @@ const DataType &uncertainty, GapsRandomState *randState)
             elapsed.seconds);
     }
 
+    // if we are running distributed, each worker needs to print when it's started
+    if (params.runningDistributed)
+    {
+        gaps_printf("    worker %d is starting!\n", params.workerID);
+        gaps_flush();
+    }
+
     // these variables will get overwritten by checkpoint if provided
     GapsStatistics stats(params.nGenes, params.nSamples, params.nPatterns);
     GapsRng rng(randState);
