@@ -1,3 +1,9 @@
+version: 3.3.38
+date: 2019-2-18
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - print message when each worker starts
+
 version: 3.3.37
 date: 2019-2-18
 author: Tom Sherman <tomsherman159@gmail.com>
