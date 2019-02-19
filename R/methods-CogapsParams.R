@@ -112,8 +112,7 @@ function(object, nSets, cut, minNS, maxNS)
     message("setting distributed parameters - call this again if you change ",
         "nPatterns")
 
-    object@nSets <- nSets
-
+    object@nSets <- ifelse(is.null(nSets), object@nSets, nSets)
     object@cut <- ifelse(is.null(cut), object@nPatterns, cut)
     object@minNS <- ifelse(is.null(minNS), ceiling(object@nSets / 2), minNS)
     object@maxNS <- ifelse(is.null(maxNS), object@minNS + object@nSets, maxNS)
