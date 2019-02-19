@@ -105,12 +105,22 @@ getValueOrRds <- function(input)
 #' @importFrom tools file_ext
 nrowHelper <- function(data)
 {
+    nrowMtx <- function(file)
+    {
+        i <- 1
+        while (unname(data.table::fread(file, nrows=i, fill=TRUE)[i,1] == "%"))
+        {
+            i <- i + 1
+        }
+        return(unname(as.numeric(data.table::fread(file, nrow=i, fill=TRUE)[i,1])))
+    }
+
     if (is(data, "character"))
     {
         return(switch(tools::file_ext(data),
             "csv" = nrow(data.table::fread(data, select=1)),
             "tsv" = nrow(data.table::fread(data, select=1)),
-            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,1]),
+            "mtx" = nrowMtx(data),
             "gct" = as.numeric(strsplit(as.matrix(data.table::fread(data, nrows=1, sep='\t')), "\\s+")[[1]][1])
         ))
     }
@@ -126,12 +136,22 @@ nrowHelper <- function(data)
 #' @importFrom tools file_ext
 ncolHelper <- function(data)
 {
+    ncolMtx <- function(file)
+    {
+        i <- 1
+        while (unname(data.table::fread(file, nrows=i, fill=TRUE)[i,1] == "%"))
+        {
+            i <- i + 1
+        }
+        return(unname(as.numeric(data.table::fread(file, nrow=i, fill=TRUE)[i,2])))
+    }
+
     if (is(data, "character"))
     {
         return(switch(tools::file_ext(data),
             "csv" = ncol(data.table::fread(data, nrows=1)) - 1,
             "tsv" = ncol(data.table::fread(data, nrows=1)) - 1,
-            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,2]),
+            "mtx" = ncolMtx(data),
             "gct" = as.numeric(strsplit(as.matrix(data.table::fread(data, nrows=1, sep='\t')), "\\s+")[[1]][2])
         ))
     }

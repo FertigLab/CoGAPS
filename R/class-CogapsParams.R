@@ -216,7 +216,7 @@ setGeneric("setParam", function(object, whichParam, value)
 #' @examples
 #'  params <- new("CogapsParams")
 #'  params <- setDistributedParams(params, 5)
-setGeneric("setDistributedParams", function(object, nSets, cut=NULL,
+setGeneric("setDistributedParams", function(object, nSets=NULL, cut=NULL,
 minNS=NULL, maxNS=NULL)
     {standardGeneric("setDistributedParams")})
 
