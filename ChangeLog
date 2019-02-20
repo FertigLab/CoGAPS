@@ -1,3 +1,10 @@
+version: 3.3.39
+date: 2019-2-20
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fix bug when reading mtx and not ignoring comments
+    - allow setDistributedParams to be called to reset params
+
 version: 3.3.38
 date: 2019-2-18
 author: Tom Sherman <tomsherman159@gmail.com>
