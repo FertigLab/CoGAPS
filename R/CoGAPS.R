@@ -71,8 +71,8 @@ checkpointsEnabled <- function()
 #' resultC <- CoGAPS(GIST.data_frame, params, nIterations=25)
 #' @importFrom methods new is
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
-outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
-checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
+outputFrequency=2500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
+checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, ...)
 {
     # pre-process inputs
