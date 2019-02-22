@@ -59,7 +59,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
         allParams$BPPARAM <- BiocParallel::MulticoreParam(workers=length(sets))
     
     initialResult <- NULL
-    if (is.null(allParams$fixedPatterns))
+    if (is.null(allParams$gaps@fixedPatterns))
     {
         # run Cogaps normally on each subset of the data
         gapsCat(allParams, "Running Across Subsets...\n\n")
@@ -80,13 +80,13 @@ distributedCogaps <- function(data, allParams, uncertainty)
     }
     else
     {
-        matchedPatterns <- list(consensus=allParams$fixedPatterns)
+        matchedPatterns <- list(consensus=allParams$gaps@fixedPatterns)
     }
 
     # set fixed matrix
     allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
-    allParams$fixedPatterns <- matchedPatterns$consensus
-    allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
+    allParams$gaps@fixedPatterns <- matchedPatterns$consensus
+    allParams$gaps@whichMatrixFixed <- ifelse(allParams$gaps@distributed
         == "genome-wide", "P", "A")
         
     # run final phase with fixed matrix
