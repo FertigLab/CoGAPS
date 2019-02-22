@@ -5,8 +5,8 @@
 \title{CoGAPS Matrix Factorization Algorithm}
 \usage{
 CoGAPS(data, params = new("CogapsParams"), nThreads = 1,
-  messages = TRUE, outputFrequency = 500, uncertainty = NULL,
-  checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 1000,
+  messages = TRUE, outputFrequency = 2500, uncertainty = NULL,
+  checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 0,
   checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
   workerID = 1, ...)
 }
