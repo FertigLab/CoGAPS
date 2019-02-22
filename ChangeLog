@@ -1,3 +1,11 @@
+version: 3.3.40
+date: 2019-2-22
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - more sensible default parameters
+    - fixed critical bug introduced in 3.3.37 where fixedPatterns was
+        ignored in the second phase of distributed runs
+
 version: 3.3.39
 date: 2019-2-20
 author: Tom Sherman <tomsherman159@gmail.com>
