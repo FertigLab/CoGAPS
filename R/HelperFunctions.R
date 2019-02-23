@@ -4,13 +4,14 @@
 #' @description combines retina subsets from extdata directory
 #' @param n number of subsets to use
 #' @return matrix of RNA counts
+#' @examples
+#' retSubset <- getRetinaSubset()
+#' dim(retSubset)
 #' @importFrom rhdf5 h5read
 getRetinaSubset <- function(n=1)
 {
     if (!(n %in% 1:4))
-    {
         stop("invalid number of subsets requested")
-    }
 
     subset_1_path <- system.file("extdata/retina_subset_1.h5", package="CoGAPS")
     subset_2_path <- system.file("extdata/retina_subset_2.h5", package="CoGAPS")
@@ -66,6 +67,35 @@ supported <- function(file)
     return(tools::file_ext(file) %in% c("tsv", "csv", "mtx", "gct"))
 }
 
+#' checks if file is rds format
+#' @keywords internal
+#'
+#' @param file path to file
+#' @return TRUE if file is .rds, FALSE if not
+#' @importFrom tools file_ext
+isRdsFile <- function(file)
+{
+    if (is.null(file))
+        return(FALSE)
+    if (length(file) == 0)
+        return(FALSE)
+    if (!is(file, "character"))
+        return(FALSE)
+    return(tools::file_ext(file) == "rds")
+}
+
+#' get input that might be an RDS file
+#' @keywords internal
+#'
+#' @param input some user input
+#' @return if input is an RDS file, read it - otherwise return input
+getValueOrRds <- function(input)
+{
+    if (isRdsFile(input))
+        return(readRDS(input))
+    return(input)
+}
+
 #' get number of rows from supported file name or matrix
 #' @keywords internal
 #'
@@ -75,12 +105,22 @@ supported <- function(file)
 #' @importFrom tools file_ext
 nrowHelper <- function(data)
 {
+    nrowMtx <- function(file)
+    {
+        i <- 1
+        while (unname(data.table::fread(file, nrows=i, fill=TRUE)[i,1] == "%"))
+        {
+            i <- i + 1
+        }
+        return(unname(as.numeric(data.table::fread(file, nrow=i, fill=TRUE)[i,1])))
+    }
+
     if (is(data, "character"))
     {
         return(switch(tools::file_ext(data),
             "csv" = nrow(data.table::fread(data, select=1)),
             "tsv" = nrow(data.table::fread(data, select=1)),
-            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,1]),
+            "mtx" = nrowMtx(data),
             "gct" = as.numeric(strsplit(as.matrix(data.table::fread(data, nrows=1, sep='\t')), "\\s+")[[1]][1])
         ))
     }
@@ -96,12 +136,22 @@ nrowHelper <- function(data)
 #' @importFrom tools file_ext
 ncolHelper <- function(data)
 {
+    ncolMtx <- function(file)
+    {
+        i <- 1
+        while (unname(data.table::fread(file, nrows=i, fill=TRUE)[i,1] == "%"))
+        {
+            i <- i + 1
+        }
+        return(unname(as.numeric(data.table::fread(file, nrow=i, fill=TRUE)[i,2])))
+    }
+
     if (is(data, "character"))
     {
         return(switch(tools::file_ext(data),
             "csv" = ncol(data.table::fread(data, nrows=1)) - 1,
             "tsv" = ncol(data.table::fread(data, nrows=1)) - 1,
-            "mtx" = as.numeric(data.table::fread(data, nrows=1, fill=TRUE)[1,2]),
+            "mtx" = ncolMtx(data),
             "gct" = as.numeric(strsplit(as.matrix(data.table::fread(data, nrows=1, sep='\t')), "\\s+")[[1]][2])
         ))
     }
@@ -114,9 +164,7 @@ ncolHelper <- function(data)
 getGeneNames <- function(data, transpose)
 {
     if (transpose)
-    {
         return(getSampleNames(data, FALSE))
-    }
 
     names <- NULL
     if (is(data, "character"))
@@ -127,16 +175,13 @@ getGeneNames <- function(data, transpose)
             "gct" = suppressWarnings(gsub("\"", "", as.matrix(data.table::fread(data, select=1))))
         )
     }
-    else if (is(data, "matrix") | is(data, "data.frame"))
+    else
     {
         names <- rownames(data)
     }
 
     if (is.null(names))
-    {
-        nGenes <- nrowHelper(data)
-        return(paste("Gene", 1:nGenes, sep="_"))
-    }
+        return(paste("Gene", 1:nrowHelper(data), sep="_"))
     return(names)
 }
 
@@ -146,9 +191,7 @@ getGeneNames <- function(data, transpose)
 getSampleNames <- function(data, transpose)
 {
     if (transpose)
-    {
         return(getGeneNames(data, FALSE))
-    }
 
     names <- NULL
     if (is(data, "character"))
@@ -159,16 +202,13 @@ getSampleNames <- function(data, transpose)
             "gct" = suppressWarnings(colnames(data.table::fread(data, skip=2, nrows=1))[-1:-2])
         )
     }
-    else if (is(data, "matrix") | is(data, "data.frame"))
+    else
     {
         names <- colnames(data)
     }
 
     if (is.null(names))
-    {
-        nSamples <- ncolHelper(data)
-        return(paste("Sample", 1:nSamples, sep="_"))
-    }
+        return(paste("Sample", 1:ncolHelper(data), sep="_"))
     return(names)
 }
 
@@ -227,6 +267,8 @@ parseExtraParams <- function(allParams, extraParams)
     return(allParams)
 }
 
+## TODO these checks should be in the C++ code so that file names are checked
+## just as much as R variables
 #' check that provided data is valid
 #' @keywords internal
 #'
@@ -236,9 +278,6 @@ parseExtraParams <- function(allParams, extraParams)
 #' @return throws an error if data has problems
 checkDataMatrix <- function(data, uncertainty, params)
 {
-    if (!is(data, "matrix") & !is(data, "data.frame")
-    & !is(data, "SummarizedExperiment") & !is(data, "SingleCellExperiment"))
-        stop("unsupported object type of CoGAPS")
     if (any(is.na(data)))
         stop("NA values in data")
     if (!all(apply(data, 2, is.numeric)))
@@ -260,9 +299,6 @@ checkDataMatrix <- function(data, uncertainty, params)
 #' @return throws an error if inputs are invalid
 checkInputs <- function(data, uncertainty, allParams)
 {
-    if (is(data, "character") & !supported(data))
-        stop("unsupported file extension for data")
-
     if (is(data, "character") & !is.null(uncertainty) & !is(uncertainty, "character"))
         stop("uncertainty must be same data type as data (file name)")
     if (is(uncertainty, "character") & !supported(uncertainty))
@@ -272,33 +308,15 @@ checkInputs <- function(data, uncertainty, allParams)
     if (!is.null(uncertainty) & allParams$gaps@sparseOptimization)
         stop("must use default uncertainty when enabling sparseOptimization")
 
-    if (!(allParams$whichMatrixFixed %in% c("A", "P", "N")))
-        stop("Invalid choice of fixed matrix, must be 'A' or 'P'")
-    if (!is.null(allParams$fixedPatterns) & allParams$whichMatrixFixed == "N")
-        stop("fixedPatterns passed without setting whichMatrixFixed")
-    if (allParams$whichMatrixFixed %in% c("A", "P") & is.null(allParams$fixedPatterns))
-        stop("whichMatrixFixed is set without passing fixedPatterns")
-
     if (!is.null(allParams$gaps@distributed))
     {
         if (allParams$gaps@distributed == "single-cell" & !allParams$gaps@singleCell)
             warning("running single-cell CoGAPS with singleCell=FALSE")
-        if (!is.null(allParams$fixedPatterns) & is.null(allParams$gaps@explicitSets))
-            warning("doing manual pattern matching with using explicit subsets")
         if (allParams$nThreads > 1)
             stop("can't run multi-threaded and distributed CoGAPS at the same time")
         if (!is.null(allParams$checkpointInFile))
             stop("checkpoints not supported for distributed cogaps")
-        if (allParams$gaps@distributed == "single-cell" & allParams$whichMatrixFixed == "P")
-            stop("can't fix P matrix when running single-cell CoGAPS")
-        if (allParams$gaps@distributed == "genome-wide" & allParams$whichMatrixFixed == "A")
-            stop("can't fix A matrix when running genome-wide CoGAPS")
     }
-
-    if (!(allParams$subsetDim %in% c(0,1,2)))
-        stop("invalid subset dimension")
-    if (allParams$subsetDim > 0 & is.null(allParams$subsetIndices))
-        stop("subsetDim provided without subsetIndices")
 
     if (!is(data, "character"))
         checkDataMatrix(data, uncertainty, allParams$gaps)
@@ -309,38 +327,72 @@ checkInputs <- function(data, uncertainty, allParams)
 #'
 #' @param data data matrix
 #' @param allParams list of all parameters
-#' @param geneNames vector of names of genes in data
-#' @param sampleNames vector of names of samples in data
 #' @return list of all parameters with added gene names
-getNamesFromData <- function(data, allParams, geneNames, sampleNames)
+getDimNames <- function(data, allParams)
 {
-    # get gene/sample names
-    if (is.null(geneNames))
+    # get user supplied names
+    geneNames <- allParams$gaps@geneNames
+    sampleNames <- allParams$gaps@sampleNames
+
+    # if user didn't supply any names, pull from data set or use default labels
+    if (is.null(allParams$gaps@geneNames))
         geneNames <- getGeneNames(data, allParams$transposeData)
-    if (is.null(sampleNames))
+    if (is.null(allParams$gaps@sampleNames))
         sampleNames <- getSampleNames(data, allParams$transposeData)
 
+    # get the number of genes/samples
     nGenes <- ifelse(allParams$transposeData, ncolHelper(data), nrowHelper(data))
     nSamples <- ifelse(allParams$transposeData, nrowHelper(data), ncolHelper(data))
 
-    if (allParams$subsetDim == 1)
+    # handle any subsetting
+    if (allParams$gaps@subsetDim == 1)
     {
-        nGenes <- length(allParams$subsetIndices)
-        geneNames <- geneNames[allParams$subsetIndices]
+        nGenes <- length(allParams$gaps@subsetIndices)
+        geneNames <- geneNames[allParams$gaps@subsetIndices]
     }
-    else if (allParams$subsetDim == 2)
+    else if (allParams$gaps@subsetDim == 2)
     {
-        nSamples <- length(allParams$subsetIndices)
-        sampleNames <- sampleames[allParams$subsetIndices]
+        nSamples <- length(allParams$gaps@subsetIndices)
+        sampleNames <- sampleNames[allParams$gaps@subsetIndices]
     }    
 
+    # check that names align with expected number of genes/samples
     if (length(geneNames) != nGenes)
         stop("incorrect number of gene names given")
     if (length(sampleNames) != nSamples)
         stop("incorrect number of sample names given")
 
+    # store processed gene/sample names directly in allParams list
+    # this is an important distinction - allParams@gaps contains the
+    # gene/sample names originally passed by the user, allParams contains
+    # the procseed gene/sample names to be used when labeling the result
     allParams$geneNames <- geneNames
     allParams$sampleNames <- sampleNames
-
     return(allParams)
+}
+
+#' convert any acceptable data input to a numeric matrix
+#' @keywords internal
+#'
+#' @description convert supported R objects containing the data to a
+#' numeric matrix, if data is a file name do nothing. Exits with an error
+#' if data is not a supported type.
+#' @param data data input
+#' @return data matrix
+#' @importFrom methods is
+#' @importFrom SummarizedExperiment assay
+convertDataToMatrix <- function(data)
+{
+    if (is(data, "character") & !supported(data))
+        stop("unsupported file extension for data")
+    else if (is(data, "matrix") | is(data, "character"))
+        return(data)
+    else if (is(data, "data.frame"))
+        return(data.matrix(data))
+    else if (is(data, "SummarizedExperiment"))
+        return(SummarizedExperiment::assay(data, "counts"))
+    else if (is(data, "SingleCellExperiment"))
+        return(SummarizedExperiment::assay(data, "counts"))
+    else
+        stop("unsupported data type")
 }

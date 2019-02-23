@@ -15,3 +15,7 @@ matrix of RNA counts
 \description{
 combines retina subsets from extdata directory
 }
+\examples{
+retSubset <- getRetinaSubset()
+dim(retSubset)
+}

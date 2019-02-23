@@ -49,19 +49,7 @@ checkpointsEnabled <- function()
 #' @param transposeData T/F for transposing data while reading it in - useful
 #' for data that is stored as samples x genes since CoGAPS requires data to be
 #' genes x samples
-#' @param subsetIndices set of indices to use from the data
-#' @param subsetDim which dimension (1=rows, 2=cols) to subset
 #' @param BPPARAM BiocParallel backend 
-#' @param geneNames vector of names of genes in data
-#' @param sampleNames vector of names of samples in data
-#' @param fixedPatterns fix either 'A' or 'P' matrix to these values, in the
-#' context of distributed CoGAPS (GWCoGAPS/scCoGAPS), the first phase is
-#' skipped and fixedPatterns is used for all sets - allowing manual pattern
-#' matching, as well as fixed runs of standard CoGAPS
-#' @param whichMatrixFixed either 'A' or 'P', indicating which matrix is fixed
-#' @param takePumpSamples whether or not to take PUMP samples
-#' @param outputToFile name of a file to save the output to, will create 4 files
-#' of the form "filename_nPatterns_[Amean, Asd, Pmean, Psd].extension"
 #' @param workerID if calling CoGAPS in parallel the worker ID can be specified,
 #' only worker 1 prints output and each worker outputs when it finishes, this
 #' is not neccesary when using the default parallel methods (i.e. distributed
@@ -82,17 +70,18 @@ checkpointsEnabled <- function()
 #' params <- setParam(params, "nPatterns", 3)
 #' resultC <- CoGAPS(GIST.data_frame, params, nIterations=25)
 #' @importFrom methods new is
-#' @importFrom SummarizedExperiment assay
-#' @importFrom utils packageVersion
-CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
-messages=TRUE, outputFrequency=500, uncertainty=NULL,
-checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, subsetIndices=NULL, subsetDim=0,
-BPPARAM=NULL, geneNames=NULL, sampleNames=NULL, fixedPatterns=NULL,
-whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
+CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
+outputFrequency=2500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
+checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
+BPPARAM=NULL, workerID=1, ...)
 {
-    # store all parameters in a list and parse parameters from ...
+    # pre-process inputs
+    data <- getValueOrRds(data)
+    data <- convertDataToMatrix(data)
+    params <- getValueOrRds(params)
     validObject(params)
+
+    # store all parameters in a list and parse parameters from ...
     allParams <- list("gaps"=params,
         "nThreads"=nThreads,
         "messages"=messages,
@@ -100,48 +89,24 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
         "checkpointOutFile"=checkpointOutFile,
         "checkpointInterval"=checkpointInterval,
         "checkpointInFile"=checkpointInFile,
+        "geneNames"=NULL, # the gene/sample names in the params object are kept
+        "sampleNames"=NULL, # as a reference, these are the values actually used
         "transposeData"=transposeData,
-        "subsetIndices"=subsetIndices,
-        "subsetDim"=subsetDim,
         "BPPARAM"=BPPARAM,
-        "fixedPatterns"=fixedPatterns,
-        "whichMatrixFixed"=whichMatrixFixed,
-        "takePumpSamples"=takePumpSamples,
-        "outputToFile"=outputToFile,
+        "outputToFile"=NULL,
         "workerID"=workerID
     )
     allParams <- parseExtraParams(allParams, list(...))
-
-    # if rds was passed, we first read it in before any processing
-    if (is(data, "character"))
-    {
-        if (tools::file_ext(data) == "rds")
-        {
-            gapsCat(allParams, "reading RDS file...")
-            data <- readRDS(data)
-            gapsCat(allParams, "done\n")
-        }
-    }
-
-    # convert data if needed
-    if (is(data, "data.frame"))
-        data <- data.matrix(data)
-    else if (is(data, "SummarizedExperiment"))
-        data <- SummarizedExperiment::assay(data, "counts")
-    else if (is(data, "SingleCellExperiment"))
-        data <- SummarizedExperiment::assay(data, "counts")
-
-    # check that inputs are valid, then read the gene/sample names from the data
+    allParams <- getDimNames(data, allParams)
     checkInputs(data, uncertainty, allParams)
-    allParams <- getNamesFromData(data, allParams, geneNames, sampleNames)
-   
+
     # check if we're running from a checkpoint
     if (!is.null(allParams$checkpointInFile))
     {
         gapsCat(allParams, "Running CoGAPS from a checkpoint\n")
     }
 
-    # determine which function to call cogaps algorithm
+    # determine function to call cogaps algorithm
     dispatchFunc <- cogaps_cpp # default
     if (!is.null(allParams$gaps@distributed))
         dispatchFunc <- distributedCogaps # genome-wide or single-cell cogaps
@@ -170,12 +135,10 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
 #' params <- setParam(params, "nPatterns", 3)
 #' result <- scCoGAPS(t(GIST.matrix), params, BPPARAM=BiocParallel::SerialParam())
 #' }
-scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
-messages=TRUE, outputFrequency=500, uncertainty=NULL,
-checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, subsetIndices=NULL, subsetDim=0,
-BPPARAM=NULL, geneNames=NULL, sampleNames=NULL, fixedPatterns=NULL,
-whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
+scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
+outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
+checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
+BPPARAM=NULL, workerID=1, ...)
 {
     params@distributed <- "single-cell"
     params@singleCell <- TRUE
@@ -190,15 +153,7 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
         checkpointInterval=checkpointInterval,
         checkpointInFile=checkpointInFile,
         transposeData=transposeData,
-        subsetIndices=subsetIndices,
-        subsetDim=subsetDim,
         BPPARAM=BPPARAM,
-        geneNames=geneNames,
-        sampleNames=sampleNames,
-        fixedPatterns=fixedPatterns,
-        whichMatrixFixed=whichMatrixFixed,
-        takePumpSamples=takePumpSamples,
-        outputToFile=outputToFile,
         workerID=workerID,
         ...
     )
@@ -220,12 +175,10 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
 #' params <- setParam(params, "nPatterns", 3)
 #' result <- GWCoGAPS(GIST.matrix, params, BPPARAM=BiocParallel::SerialParam())
 #' }
-GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1,
-messages=TRUE, outputFrequency=500, uncertainty=NULL,
-checkpointOutFile="gaps_checkpoint.out", checkpointInterval=1000,
-checkpointInFile=NULL, transposeData=FALSE, subsetIndices=NULL, subsetDim=0,
-BPPARAM=NULL, geneNames=NULL, sampleNames=NULL, fixedPatterns=NULL,
-whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
+GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
+outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
+checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
+BPPARAM=NULL, workerID=1, ...)
 {
     params@distributed <- "genome-wide"
     CoGAPS(
@@ -239,15 +192,7 @@ whichMatrixFixed='N', takePumpSamples=FALSE, outputToFile=NULL, workerID=1, ...)
         checkpointInterval=checkpointInterval,
         checkpointInFile=checkpointInFile,
         transposeData=transposeData,
-        subsetIndices=subsetIndices,
-        subsetDim=subsetDim,
         BPPARAM=BPPARAM,
-        geneNames=geneNames,
-        sampleNames=sampleNames,
-        fixedPatterns=fixedPatterns,
-        whichMatrixFixed=whichMatrixFixed,
-        takePumpSamples=takePumpSamples,
-        outputToFile=outputToFile,
         workerID=workerID,
         ...
     )

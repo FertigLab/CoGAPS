@@ -26,8 +26,8 @@ workerID)
     else
         allParams$sampleNames <- allParams$sampleNames[subsetIndices]
 
-    allParams$subsetIndices <- subsetIndices
-    allParams$subsetDim <- ifelse(genomeWide, 1, 2)
+    allParams$gaps@subsetIndices <- subsetIndices
+    allParams$gaps@subsetDim <- ifelse(genomeWide, 1, 2)
     allParams$workerID <- workerID
 
     # call CoGAPS
@@ -59,7 +59,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
         allParams$BPPARAM <- BiocParallel::MulticoreParam(workers=length(sets))
     
     initialResult <- NULL
-    if (is.null(allParams$fixedPatterns))
+    if (is.null(allParams$gaps@fixedPatterns))
     {
         # run Cogaps normally on each subset of the data
         gapsCat(allParams, "Running Across Subsets...\n\n")
@@ -76,17 +76,17 @@ distributedCogaps <- function(data, allParams, uncertainty)
 
         # match patterns in either A or P matrix
         gapsCat(allParams, "\nMatching Patterns Across Subsets...\n")
-        matchedPatterns <- findConsensusMatrix(unmatchedPatterns, allParams)
+        matchedPatterns <- findConsensusMatrix(unmatchedPatterns, allParams$gaps)
     }
     else
     {
-        matchedPatterns <- list(consensus=allParams$fixedPatterns)
+        matchedPatterns <- list(consensus=allParams$gaps@fixedPatterns)
     }
 
     # set fixed matrix
     allParams$gaps@nPatterns <- ncol(matchedPatterns$consensus)
-    allParams$fixedPatterns <- matchedPatterns$consensus
-    allParams$whichMatrixFixed <- ifelse(allParams$gaps@distributed
+    allParams$gaps@fixedPatterns <- matchedPatterns$consensus
+    allParams$gaps@whichMatrixFixed <- ifelse(allParams$gaps@distributed
         == "genome-wide", "P", "A")
         
     # run final phase with fixed matrix
@@ -99,8 +99,8 @@ distributedCogaps <- function(data, allParams, uncertainty)
     # concatenate final result
     fullResult <- stitchTogether(finalResult, allParams)
 
-    # add diagnostic information before returning
-    if (allParams$whichMatrixFixed == 'N') # no manual pattern matching
+    # add diagnostic information about initial run before returning
+    if (!is.null(initialResult)) # check that initial phase was run
     {
         fullResult$diagnostics$firstPass <- initialResult
         fullResult$diagnostics$unmatchedPatterns <- unmatchedPatterns
@@ -120,31 +120,31 @@ distributedCogaps <- function(data, allParams, uncertainty)
 
 
 #' find the consensus pattern matrix across all subsets
-#' @keywords internal
+#' @export
 #'
 #' @param unmatchedPatterns list of all unmatched pattern matrices from initial
 #' run of CoGAPS
-#' @param allParams list of all CoGAPS parameters
+#' @param gapsParams list of all CoGAPS parameters
 #' @return matrix of consensus patterns
-findConsensusMatrix <- function(unmatchedPatterns, allParams)
+findConsensusMatrix <- function(unmatchedPatterns, gapsParams)
 {
     allPatterns <- do.call(cbind, unmatchedPatterns)
-    comb <- expand.grid(1:allParams$gaps@nSets, 1:allParams$gaps@nPatterns)
+    comb <- expand.grid(1:gapsParams@nSets, 1:gapsParams@nPatterns)
     colnames(allPatterns) <- paste(comb[,1], comb[,2], sep=".")
-    return(patternMatch(allPatterns, allParams))
+    return(patternMatch(allPatterns, gapsParams))
 }
 
 #' Match Patterns Across Multiple Runs
 #' @keywords internal
 #'
 #' @param allPatterns matrix of patterns stored in the columns
-#' @param allParams list of all CoGAPS parameters
+#' @param gapsParams CoGAPS parameters object
 #' @return a matrix of consensus patterns
 #' @importFrom stats weighted.mean
-patternMatch <- function(allPatterns, allParams)
+patternMatch <- function(allPatterns, gapsParams)
 {
     # cluster patterns
-    clusters <- corcut(allPatterns, allParams$gaps@cut, allParams$gaps@minNS)
+    clusters <- corcut(allPatterns, gapsParams@cut, gapsParams@minNS)
 
     # function to split a cluster in two (might fail to do so)
     splitCluster <- function(list, index, minNS)
@@ -157,11 +157,11 @@ patternMatch <- function(allPatterns, allParams)
     }
 
     # split large clusters into two
-    tooLarge <- function(x) ncol(x) > allParams$gaps@maxNS
+    tooLarge <- function(x) ncol(x) > gapsParams@maxNS
     indx <- which(sapply(clusters, tooLarge))
     while (length(indx) > 0)
     {
-        clusters <- splitCluster(clusters, indx[1], allParams$gaps@minNS)
+        clusters <- splitCluster(clusters, indx[1], gapsParams@minNS)
         indx <- which(sapply(clusters, tooLarge))
     }
     names(clusters) <- as.character(1:length(clusters))

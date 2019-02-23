@@ -41,7 +41,8 @@ sampleNames, diagnostics=NULL, ...)
     patternNames <- paste("Pattern", 1:ncol(Amean), sep="_")
 
     if (length(geneNames) != nrow(.Object@featureLoadings))
-        stop("number of gene names doesn't match data size")
+        stop("number of gene names doesn't match data size, ",
+            length(geneNames), " != ", nrow(.Object@featureLoadings))
     if (length(sampleNames) != nrow(.Object@sampleFactors))
         stop("number of sample names doesn't match data size")
 
@@ -81,6 +82,32 @@ setValidity("CogapsResult",
 )    
 
 ################################### GENERICS ###################################
+
+#' return featureLoadings matrix from CogapsResult object
+#' @export
+#' @docType methods
+#' @rdname getFeatureLoadings-methods
+#'
+#' @param object an object of type CogapsResult
+#' @return featureLoadings matrix
+#' @examples
+#' data(GIST)
+#' getFeatureLoadings(GIST.result)
+setGeneric("getFeatureLoadings", function(object)
+    {standardGeneric("getFeatureLoadings")})
+
+#' return sampleFactors matrix from CogapsResult object
+#' @export
+#' @docType methods
+#' @rdname getSampleFactors-methods
+#'
+#' @param object an object of type CogapsResult
+#' @return sampleFactors matrix
+#' @examples
+#' data(GIST)
+#' getSampleFactors(GIST.result)
+setGeneric("getSampleFactors", function(object)
+    {standardGeneric("getSampleFactors")})
 
 #' return chi-sq of final matrices
 #' @export
