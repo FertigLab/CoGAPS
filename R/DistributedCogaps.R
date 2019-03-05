@@ -63,7 +63,8 @@ distributedCogaps <- function(data, allParams, uncertainty)
     {
         # run Cogaps normally on each subset of the data
         gapsCat(allParams, "Running Across Subsets...\n\n")
-        initialResult <- bplapply(1:length(sets), function(i)
+        initialResult <- bplapply(1:length(sets), BPPARAM=allParams$BPPARAM,
+        FUN=function(i)
         {
             callInternalCoGAPS(data, allParams, uncertainty, sets[[i]], i)
         })
@@ -91,7 +92,8 @@ distributedCogaps <- function(data, allParams, uncertainty)
         
     # run final phase with fixed matrix
     gapsCat(allParams, "Running Final Stage...\n\n")
-    finalResult <- bplapply(1:length(sets), function(i)
+    finalResult <- bplapply(1:length(sets), BPPARAM=allParams$BPPARAM,
+    FUN=function(i)
     {
         callInternalCoGAPS(data, allParams, uncertainty, sets[[i]], i)
     })
