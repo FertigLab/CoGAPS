@@ -1,3 +1,10 @@
+version: 3.3.41
+date: 2019-3-5
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fix bug where not all workers would start
+    - no longer ignore custom value for BPPARAM
+
 version: 3.3.40
 date: 2019-2-22
 author: Tom Sherman <tomsherman159@gmail.com>
