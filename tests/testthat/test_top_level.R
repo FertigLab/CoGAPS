@@ -82,7 +82,7 @@ test_that("Valid Top-Level CoGAPS Calls",
     expect_true(no_na_in_result(res))
 
     # genome-wide CoGAPS 
-    expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
+    expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE, distributed="genome-wide"), NA)
     expect_true(no_na_in_result(res))
 
@@ -97,7 +97,7 @@ test_that("Valid Top-Level CoGAPS Calls",
     expect_equal(nrow(res@sampleFactors), 9)
 
     # single-cell CoGAPS
-    expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
+    expect_error(res <- CoGAPS(gistCsvPath, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell",
         singleCell=TRUE, transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
@@ -105,7 +105,7 @@ test_that("Valid Top-Level CoGAPS Calls",
     expect_equal(nrow(res@featureLoadings), 9)
     expect_equal(nrow(res@sampleFactors), 1363)
 
-    expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
+    expect_error(res <- CoGAPS(gistMtxPath, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell",
         singleCell=TRUE, transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
@@ -210,8 +210,8 @@ test_that("Valid Top-Level CoGAPS Calls",
     params <- setFixedPatterns(params, matP, "P")
     saveRDS(params, file="temp_params.rds")
 
-    res1 <- CoGAPS(GIST.matrix, params)
-    res2 <- CoGAPS(GIST.matrix, "temp_params.rds")
+    res1 <- CoGAPS(gistMtxPath, params)
+    res2 <- CoGAPS(gistMtxPath, "temp_params.rds")
     
     expect_true(all(res1@featureLoadings == res2@featureLoadings))
     expect_true(all(res1@featureStdDev == res2@featureStdDev))

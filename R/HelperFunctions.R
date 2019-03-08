@@ -316,6 +316,8 @@ checkInputs <- function(data, uncertainty, allParams)
             stop("can't run multi-threaded and distributed CoGAPS at the same time")
         if (!is.null(allParams$checkpointInFile))
             stop("checkpoints not supported for distributed cogaps")
+        if (!is(data, "character"))
+            warning("running distributed cogaps without mtx/tsv/csv/gct data")
     }
 
     if (!is(data, "character"))
