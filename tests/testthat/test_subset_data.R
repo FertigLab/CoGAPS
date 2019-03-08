@@ -34,13 +34,10 @@ test_that("Subsetting Data",
 
     # running cogaps with given subsets
     sets <- list(1:225, 226:450, 451:675, 676:900)
-    mat <- GIST.matrix
-    rownames(mat) <- NULL
-    colnames(mat) <- NULL
     nPatterns <- ncol(getSampleFactors(GIST.result))
     params <- CogapsParams()
     params <- setFixedPatterns(params, getSampleFactors(GIST.result), "P")
-    result <- GWCoGAPS(mat, params, nPatterns=nPatterns, explicitSets=sets,
+    result <- GWCoGAPS(gistMtxPath, params, nPatterns=nPatterns, explicitSets=sets,
         nIterations=100, messages=FALSE, seed=42)
     subsets <- lapply(getSubsets(result), getIndices)
     expect_true(all(sapply(1:4, function(i) all.equal(sets[[i]], subsets[[i]]))))
