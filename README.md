@@ -29,4 +29,4 @@ devtools::install_github("FertigLab/CoGAPS")
 
 # Using CoGAPS
 
-Follow the vignette here: http://htmlpreview.github.io/?https://github.com/FertigLab/CoGAPS/blob/develop/vignettes/CoGAPS.html
+Follow the vignette [here](http://htmlpreview.github.io/?https://github.com/FertigLab/CoGAPS/blob/develop/vignettes/CoGAPS.html)
