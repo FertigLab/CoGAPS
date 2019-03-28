@@ -3,6 +3,39 @@
 #include "Math.h"
 #include "../data_structures/SparseIterator.h"
 
+float gaps::sparsity(const Matrix &mat)
+{
+    unsigned nNonZeroes = 0;
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        for (unsigned i = 0; i < mat.nRow(); ++i)
+        {
+            if (mat(i,j) > 0.f)
+            {
+                ++nNonZeroes;
+            }
+        }
+    }
+    float size = mat.nRow() * mat.nCol();
+    return 1.f - static_cast<float>(nNonZeroes) / size;
+}
+
+float gaps::sparsity(const SparseMatrix &mat)
+{
+    unsigned nNonZeroes = 0;
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        SparseIterator<1> it(mat.getCol(j));
+        while (!it.atEnd())
+        {
+            ++nNonZeroes;
+            it.next();
+        }
+    }
+    float size = mat.nRow() * mat.nCol();
+    return 1.f - static_cast<float>(nNonZeroes) / size;
+}
+
 float gaps::nonZeroMean(const Matrix &mat)
 {
     float sum = 0.f;

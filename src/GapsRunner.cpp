@@ -341,6 +341,12 @@ const DataType &uncertainty, GapsRandomState *randState)
     processFixedMatrix(params, ASampler, PSampler);
     gaps_check_interrupt();
 
+    // check if data is sparse and sparseOptimization is not enabled
+    if (params.printMessages && !params.useSparseOptimization && ASampler.dataSparsity() > 0.80f)
+    {
+        gaps_printf("\nWarning: data is more than 80%% sparse and sparseOptimization is not enabled\n");
+    }
+
     // elapsed time for reading data
     bpt::time_duration readDiff = bpt_now() - readStart;
     GapsTime elapsed(static_cast<unsigned>(readDiff.total_seconds()));
