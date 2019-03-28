@@ -229,31 +229,50 @@ corcut <- function(allPatterns, cut, minNS)
 #' @return list with all CoGAPS output
 stitchTogether <- function(result, allParams, sets)
 {
+    setIndices <- unlist(sets)
     if (allParams$gaps@distributed == "genome-wide")
     {
         # combine A matrices, re-order so it matches original data
         Amean <- do.call(rbind, lapply(result, function(x) x@featureLoadings))
         Asd <- do.call(rbind, lapply(result, function(x) x@featureStdDev))
-        reorder <- match(1:nrow(Amean), unlist(sets))
-        Amean <- Amean[reorder,]
-        Asd <- Asd[reorder,]
-    
+
         # copy P matrix - same for all sets
         Pmean <- result[[1]]@sampleFactors
         Psd <- matrix(0, nrow=nrow(Pmean), ncol=ncol(Pmean))
+
+        # if each feature was used once, re-order to match data
+        if (nrow(Amean) == length(setIndices))
+        {
+            indices <- 1:nrow(Amean)
+            if (identical(sort(indices), sort(setIndices)))
+            {
+                reorder <- match(indices, setIndices)
+                Amean <- Amean[reorder,]
+                Asd <- Asd[reorder,]
+            }
+        }
     }
     else
     {
         # combine P matrices, re-order so it matches original data
         Pmean <- do.call(rbind, lapply(result, function(x) x@sampleFactors))
         Psd <- do.call(rbind, lapply(result, function(x) x@sampleStdDev))
-        reorder <- match(1:nrow(Pmean), unlist(sets))
-        Pmean <- Pmean[reorder,]
-        Psd <- Psd[reorder,]
 
         # copy A matrix - same for all sets
         Amean <- result[[1]]@featureLoadings
         Asd <- matrix(0, nrow=nrow(Amean), ncol=ncol(Amean))
+
+        # if each sample was used once, re-order to match data
+        if (nrow(Pmean) == length(setIndices))
+        {
+            indices <- 1:nrow(Pmean)
+            if (identical(sort(indices), sort(setIndices)))
+            {
+                reorder <- match(indices, setIndices)
+                Pmean <- Pmean[reorder,]
+                Psd <- Psd[reorder,]
+            }
+        }
     }
 
     return(list("Amean"=Amean, "Asd"=Asd, "Pmean"=Pmean, "Psd"=Psd,
