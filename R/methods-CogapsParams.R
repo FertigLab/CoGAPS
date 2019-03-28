@@ -25,6 +25,7 @@ function(object)
         cat("distributed         ", object@distributed, "\n")
     cat("\n")
     cat("-- Sparsity Parameters --\n")
+
     if (object@alphaA == object@alphaP)
     {
         cat("alpha         ", object@alphaA, "\n")
@@ -44,6 +45,7 @@ function(object)
         cat("maxGibbsMassA ", object@maxGibbsMassA, "\n")
         cat("maxGibbsMassP ", object@maxGibbsMassP, "\n")
     }
+
     if (!is.null(object@distributed))
     {
         cat("\n")
@@ -52,6 +54,20 @@ function(object)
         cat("cut           ", object@cut, "\n")
         cat("minNS         ", object@minNS, "\n")
         cat("maxNS         ", object@maxNS, "\n")
+    }
+
+    if (!is.null(object@geneNames))
+    {
+        cat("\n")
+        cat(length(object@geneNames), "gene names provided\n")
+        cat("first gene name:", object@geneNames[1], "\n")
+    }
+
+    if (!is.null(object@sampleNames))
+    {
+        cat("\n")
+        cat(length(object@sampleNames), "sample names provided\n")
+        cat("first sample name:", object@sampleNames[1], "\n")
     }
 })
 
