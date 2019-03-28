@@ -99,7 +99,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
     })
 
     # concatenate final result
-    fullResult <- stitchTogether(finalResult, allParams)
+    fullResult <- stitchTogether(finalResult, allParams, sets)
 
     # add diagnostic information about initial run before returning
     if (!is.null(initialResult)) # check that initial phase was run
@@ -225,32 +225,40 @@ corcut <- function(allPatterns, cut, minNS)
 #'
 #' @param result list of CogapsResult object from all runs across subsets
 #' @param allParams list of all CoGAPS parameters
+#' @param sets indices of sets used to break apart data
 #' @return list with all CoGAPS output
-stitchTogether <- function(result, allParams)
+stitchTogether <- function(result, allParams, sets)
 {
     if (allParams$gaps@distributed == "genome-wide")
     {
-        consensus <- result[[1]]@sampleFactors
+        # combine A matrices, re-order so it matches original data
         Amean <- do.call(rbind, lapply(result, function(x) x@featureLoadings))
-        Asd   <- do.call(rbind, lapply(result, function(x) x@featureStdDev))
-        Pmean <- consensus
-        Psd   <- matrix(0, nrow=nrow(consensus), ncol=ncol(consensus))
-        geneNames <- unlist(sapply(result, function(x) rownames(x@featureLoadings)))
-        sampleNames <- allParams$sampleNames
+        Asd <- do.call(rbind, lapply(result, function(x) x@featureStdDev))
+        reorder <- match(1:nrow(Amean), unlist(sets))
+        Amean <- Amean[reorder,]
+        Asd <- Asd[reorder,]
+    
+        # copy P matrix - same for all sets
+        Pmean <- result[[1]]@sampleFactors
+        Psd <- matrix(0, nrow=nrow(Pmean), ncol=ncol(Pmean))
     }
     else
     {
-        consensus <- result[[1]]@featureLoadings
-        Amean <- consensus
-        Asd   <- matrix(0, nrow=nrow(consensus), ncol=ncol(consensus))
+        # combine P matrices, re-order so it matches original data
         Pmean <- do.call(rbind, lapply(result, function(x) x@sampleFactors))
-        Psd   <- do.call(rbind, lapply(result, function(x) x@sampleStdDev))
-        geneNames <- allParams$geneNames
-        sampleNames <- unlist(sapply(result, function(x) rownames(x@sampleFactors)))
+        Psd <- do.call(rbind, lapply(result, function(x) x@sampleStdDev))
+        reorder <- match(1:nrow(Pmean), unlist(sets))
+        Pmean <- Pmean[reorder,]
+        Psd <- Psd[reorder,]
+
+        # copy A matrix - same for all sets
+        Amean <- result[[1]]@featureLoadings
+        Asd <- matrix(0, nrow=nrow(Amean), ncol=ncol(Amean))
     }
 
     return(list("Amean"=Amean, "Asd"=Asd, "Pmean"=Pmean, "Psd"=Psd,
-        "seed"=allParams$gaps@seed, "geneNames"=geneNames, "sampleNames"=sampleNames,
+        "seed"=allParams$gaps@seed, "geneNames"=rownames(Amean),
+        "sampleNames"=rownames(Pmean),
         "meanChiSq"=sum(sapply(result, function(r) r@metadata$meanChiSq))))
 }
 

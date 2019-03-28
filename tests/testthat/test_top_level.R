@@ -88,6 +88,8 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     expect_equal(nrow(res@featureLoadings), 1363)
     expect_equal(nrow(res@sampleFactors), 9)
+    expect_equal(rownames(res@featureLoadings), rownames(GIST.matrix))
+    expect_equal(rownames(res@sampleFactors), colnames(GIST.matrix))
 
     expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE, distributed="genome-wide"), NA)
@@ -104,6 +106,8 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     expect_equal(nrow(res@featureLoadings), 9)
     expect_equal(nrow(res@sampleFactors), 1363)
+    expect_equal(rownames(res@featureLoadings), colnames(GIST.matrix))
+    expect_equal(rownames(res@sampleFactors), rownames(GIST.matrix))
 
     expect_error(res <- CoGAPS(gistMtxPath, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell",
