@@ -46,6 +46,7 @@ public:
 
     unsigned nAtoms() const;
     float getAverageQueueLength() const;
+    float dataSparsity() const;
 
     void update(unsigned nSteps, unsigned nThreads);
 
@@ -141,6 +142,12 @@ template <class StoragePolicy>
 unsigned GibbsSampler<StoragePolicy>::nAtoms() const
 {
     return mDomain.size();
+}
+
+template <class StoragePolicy>
+float GibbsSampler<StoragePolicy>::dataSparsity() const
+{
+    return gaps::sparsity(StoragePolicy::mDMatrix);
 }
 
 template <class StoragePolicy>

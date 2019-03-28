@@ -23,6 +23,9 @@ namespace gaps
     template <class MatrixType>
     float mean(const MatrixType &mat);
     
+    float sparsity(const Matrix &mat);
+    float sparsity(const SparseMatrix &mat);
+
     float nonZeroMean(const Matrix &mat);
     float nonZeroMean(const SparseMatrix &mat);
 
