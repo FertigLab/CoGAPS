@@ -4,12 +4,14 @@
 \alias{stitchTogether}
 \title{concatenate final results across subsets}
 \usage{
-stitchTogether(result, allParams)
+stitchTogether(result, allParams, sets)
 }
 \arguments{
 \item{result}{list of CogapsResult object from all runs across subsets}
 
 \item{allParams}{list of all CoGAPS parameters}
+
+\item{sets}{indices of sets used to break apart data}
 }
 \value{
 list with all CoGAPS output
