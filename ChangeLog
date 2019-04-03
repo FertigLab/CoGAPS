@@ -1,3 +1,12 @@
+version: 3.3.43
+date: 2019-4-3
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fixed bug where feature/sample names would get re-ordered in distributed runs
+    - add warning when data is sparse, but sparseOptimization is not enabled
+    - display feature/sample name information in parameters object
+    - remove debug pring statement when pattern matching results in NA's
+
 version: 3.3.42
 date: 2019-3-7
 author: Tom Sherman <tomsherman159@gmail.com>
