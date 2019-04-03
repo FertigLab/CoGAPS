@@ -203,8 +203,6 @@ corcut <- function(allPatterns, cut, minNS)
 
     if (any(is.na(corr.dist)))
     {
-        print(allPatterns)
-        print(corr.dist)
         stop("NA values in correlation of patterns")
     }
 
