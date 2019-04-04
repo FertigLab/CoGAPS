@@ -307,6 +307,8 @@ checkInputs <- function(data, uncertainty, allParams)
         stop("uncertainty must be a matrix unless data is a file path")
     if (!is.null(uncertainty) & allParams$gaps@sparseOptimization)
         stop("must use default uncertainty when enabling sparseOptimization")
+    if (!is.null(allParams$checkpointInFile) & !CoGAPS::checkpointsEnabled())
+        stop("CoGAPS was built with checkpoints disabled")
 
     if (!is.null(allParams$gaps@distributed))
     {

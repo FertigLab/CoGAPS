@@ -113,20 +113,10 @@ template <class DataType>
 static Rcpp::List cogapsRun(const DataType &data, const Rcpp::List &allParams,
 const DataType &uncertainty)
 {
-#ifdef GAPS_DISABLE_CHECKPOINTS
-    if (!Rf_isNull(allParams["checkpointInFile"]))
-    {
-        GAPS_ERROR("checkpoints are disabled");
-    }
-#endif
-
     // convert R parameters to GapsParameters struct
     GapsParameters params(getGapsParameters(data, allParams));
 #ifdef GAPS_DEBUG
-    if (params.printMessages)
-    {
-        params.print();
-    }
+    params.print();
 #endif
 
     // create GapsRunner, note we must first initialize the random generator
