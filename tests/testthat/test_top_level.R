@@ -10,6 +10,7 @@ no_na_in_result <- function(gapsResult)
 
 test_that("Valid Top-Level CoGAPS Calls",
 {
+    on.exit(file.remove("gaps_checkpoint.out"))
     data(GIST)
     testDataFrame <- GIST.data_frame
     testMatrix <- GIST.matrix
@@ -216,6 +217,7 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     res1 <- CoGAPS(gistMtxPath, params)
     res2 <- CoGAPS(gistMtxPath, "temp_params.rds")
+    file.remove("temp_params.rds")
     
     expect_true(all(res1@featureLoadings == res2@featureLoadings))
     expect_true(all(res1@featureStdDev == res2@featureStdDev))
