@@ -50,6 +50,7 @@ public:
     AtomicDomain(uint64_t nBins);
 
     // TODO can we have internal rng since these are always called sequentially
+
     // access atoms
     Atom* front();
     Atom* randomAtom(GapsRng *rng);
