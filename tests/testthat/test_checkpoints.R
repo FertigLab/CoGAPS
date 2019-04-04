@@ -9,6 +9,7 @@ test_that("Checkpoint System",
             checkpointOutFile="test.out", messages=FALSE, nIterations=100)
         run2 <- CoGAPS(GIST.matrix, checkpointInFile="test.out", messages=FALSE,
             nIterations=100)
+        file.remove("test.out")
 
         print(max(run1@featureLoadings - run2@featureLoadings))
 
