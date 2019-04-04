@@ -4,7 +4,7 @@
 #' @param allParams list of all CoGAPS parameters
 #' @param total total number of rows (cols) that are being paritioned
 #' @return list of subsets
-sampleWithExplictSets <- function(allParams, total)
+sampleWithExplictSets <- function(allParams)
 {
     if (all(sapply(allParams$gaps@explicitSets, function(s) is(s, "numeric"))))
     {
@@ -84,7 +84,8 @@ sampleUniformly <- function(allParams, total, setSize)
 #' @return list of sorted subsets of either genes or samples
 createSets <- function(data, allParams)
 {
-    subsetRows <- xor(allParams$transposeData, allParams$gaps@distributed == "genome-wide")
+    subsetRows <- xor(allParams$transposeData,
+        allParams$gaps@distributed == "genome-wide")
     total <- ifelse(subsetRows, nrowHelper(data), ncolHelper(data))
     setSize <- floor(total / allParams$gaps@nSets)
 
@@ -94,7 +95,7 @@ createSets <- function(data, allParams)
     {
         if (length(allParams$gaps@explicitSets) != allParams$gaps@nSets)
             stop("nSets does not match number of explicit sets given")
-        sets <- sampleWithExplictSets(allParams, total)
+        sets <- sampleWithExplictSets(allParams)
     }
     else if (!is.null(allParams$gaps@samplingAnnotation))
     {
