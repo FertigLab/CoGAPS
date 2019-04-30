@@ -8,7 +8,7 @@ Coordinated Gene Activity in Pattern Sets (CoGAPS) implements a Bayesian MCMC ma
 
 # Installing CoGAPS
 
-*CoGAPS* is a bioconductor R package and so the release version can be installed
+*CoGAPS* is a bioconductor R package ([link](https://bioconductor.org/packages/CoGAPS)) and so the release version can be installed
 as follows:
 
 ```
