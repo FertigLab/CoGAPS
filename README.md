@@ -20,11 +20,7 @@ The most up-to-date version of *CoGAPS* can be installed directly from the
 *FertigLab* Github Repository:
 
 ```
-## Method 1 using BiocManager
 BiocManager::install("FertigLab/CoGAPS")
-
-## Method 2 using devtools package
-devtools::install_github("FertigLab/CoGAPS")
 ```
 
 # Using CoGAPS
