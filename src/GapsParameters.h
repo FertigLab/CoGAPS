@@ -20,7 +20,7 @@ public:
     template <class DataType>
     explicit GapsParameters(const DataType &data, bool t_transposeData=false,
         bool t_subsetData=false, bool t_subsetGenes=false,
-        const std::vector<unsigned> t_dataIndicesSubset=std::vector<unsigned>());
+        const std::vector<unsigned> &t_dataIndicesSubset=std::vector<unsigned>());
 
     void print() const;
 
@@ -75,7 +75,7 @@ Archive& operator>>(Archive &ar, GapsParameters &p);
 template <class DataType>
 GapsParameters::GapsParameters(const DataType &data, bool t_transposeData,
 bool t_subsetData, bool t_subsetGenes,
-const std::vector<unsigned> t_dataIndicesSubset)
+const std::vector<unsigned> &t_dataIndicesSubset)
     :
 fixedPatterns(Matrix()),
 dataIndicesSubset(t_dataIndicesSubset),
