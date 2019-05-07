@@ -59,30 +59,30 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     }
 
     // create standard CoGAPS parameters struct
-    GapsParameters params(data, allParams["transposeData"], subsetDim > 0,
-        subsetGenes, subset);
+    GapsParameters params(data, Rcpp::as<bool>(allParams["transposeData"]),
+        subsetDim > 0, subsetGenes, subset);
     params.runningDistributed = subsetDim > 0;
     params.printThreadUsage = !params.runningDistributed;
 
     // get configuration parameters
-    params.maxThreads = allParams["nThreads"];
-    params.workerID = allParams["workerID"];
-    params.printMessages = allParams["messages"] && (params.workerID == 1);
-    params.outputFrequency = allParams["outputFrequency"];
+    params.maxThreads = Rcpp::as<int>(allParams["nThreads"]);
+    params.workerID = Rcpp::as<int>(allParams["workerID"]);
+    params.printMessages = Rcpp::as<bool>(allParams["messages"]) && (params.workerID == 1);
+    params.outputFrequency = Rcpp::as<int>(allParams["outputFrequency"]);
     params.checkpointOutFile = Rcpp::as<std::string>(allParams["checkpointOutFile"]);
-    params.checkpointInterval = allParams["checkpointInterval"];
-    params.takePumpSamples = gapsParams.slot("takePumpSamples");
+    params.checkpointInterval = Rcpp::as<int>(allParams["checkpointInterval"]);
+    params.takePumpSamples = Rcpp::as<bool>(gapsParams.slot("takePumpSamples"));
 
     // extract model specific parameters from list
-    params.seed = gapsParams.slot("seed");
-    params.nPatterns = gapsParams.slot("nPatterns");
+    params.seed = Rcpp::as<int>(gapsParams.slot("seed"));
+    params.nPatterns = Rcpp::as<int>(gapsParams.slot("nPatterns"));
     params.nIterations = gapsParams.slot("nIterations");
-    params.alphaA = gapsParams.slot("alphaA");
-    params.alphaP = gapsParams.slot("alphaP");
-    params.maxGibbsMassA = gapsParams.slot("maxGibbsMassA");
-    params.maxGibbsMassP = gapsParams.slot("maxGibbsMassP");
-    params.singleCell = gapsParams.slot("singleCell");
-    params.useSparseOptimization = gapsParams.slot("sparseOptimization");
+    params.alphaA = Rcpp::as<float>(gapsParams.slot("alphaA"));
+    params.alphaP = Rcpp::as<float>(gapsParams.slot("alphaP"));
+    params.maxGibbsMassA = Rcpp::as<float>(gapsParams.slot("maxGibbsMassA"));
+    params.maxGibbsMassP = Rcpp::as<float>(gapsParams.slot("maxGibbsMassP"));
+    params.singleCell = Rcpp::as<bool>(gapsParams.slot("singleCell"));
+    params.useSparseOptimization = Rcpp::as<bool>(gapsParams.slot("sparseOptimization"));
 
     // check if using fixed matrix
     params.whichMatrixFixed = Rcpp::as<char>(gapsParams.slot("whichMatrixFixed"));
