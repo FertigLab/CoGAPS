@@ -170,5 +170,7 @@ test_that("Valid Top-Level CoGAPS Calls",
     expect_true(all(res1@featureStdDev == res2@featureStdDev))
     expect_true(all(res1@sampleFactors == res2@sampleFactors))
     expect_true(all(res1@sampleStdDev== res2@sampleStdDev))
+
+    file.remove("temp_params.rds")
 })
 

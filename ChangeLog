@@ -1,3 +1,10 @@
+version: 3.3.44
+date: 2019-5-1
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fixed internal issues that would result in parameters being misread
+        on some systems
+
 version: 3.3.43
 date: 2019-4-3
 author: Tom Sherman <tomsherman159@gmail.com>
