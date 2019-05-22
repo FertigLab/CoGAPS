@@ -3,7 +3,6 @@
 
 #include "AlphaParameters.h"
 #include "../atomic/AtomicDomain.h"
-#include "../atomic/ProposalQueue.h"
 #include "../data_structures/Matrix.h"
 #include "../math/Math.h"
 #include "../math/VectorMath.h"
@@ -16,162 +15,108 @@
 #include <cmath>
 #include <stdint.h>
 
-//////////////////////////// SingleThreadedGibbsSampler Interface ////////////////////////////
+////////////////////////// SingleThreadedGibbsSampler Interface //////////////////////////
 
 class GapsStatistics;
 
-template <class StoragePolicy>
+template <class DataModel>
 class SingleThreadedGibbsSampler;
 
-template <class StoragePolicy>
-Archive& operator<<(Archive &ar, const SingleThreadedGibbsSampler<StoragePolicy> &sampler);
+template <class DataModel>
+Archive& operator<<(Archive &ar, const SingleThreadedGibbsSampler<DataModel> &sampler);
 
-template <class StoragePolicy>
-Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<StoragePolicy> &sampler);
+template <class DataModel>
+Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<DataModel> &sampler);
 
-template <class StoragePolicy>
-class SingleThreadedGibbsSampler : public StoragePolicy
+template <class DataModel>
+class SingleThreadedGibbsSampler : public DataModel
 {
 public:
-
-    friend class GapsStatistics;
 
     template <class DataType>
     SingleThreadedGibbsSampler(const DataType &data, bool transpose, bool subsetRows,
         float alpha, float maxGibbsMass, const GapsParameters &params,
         GapsRandomState *randState);
 
-    void setAnnealingTemp(float temp);
-    void setMatrix(const Matrix &mat);
-
     unsigned nAtoms() const;
-    float dataSparsity() const;
-    float getAverageQueueLength() const { return 0.f; }
+    float getAverageQueueLength() const;
 
     void update(unsigned nSteps, unsigned nThreads);
 
-    friend Archive& operator<< <StoragePolicy> (Archive &ar, const SingleThreadedGibbsSampler &s);
-    friend Archive& operator>> <StoragePolicy> (Archive &ar, SingleThreadedGibbsSampler &s);
+    friend Archive& operator<< <DataModel> (Archive &ar, const SingleThreadedGibbsSampler &s);
+    friend Archive& operator>> <DataModel> (Archive &ar, SingleThreadedGibbsSampler &s);
 
-#ifdef GAPS_DEBUG
-    bool internallyConsistent() const;
-#endif    
-
-#ifndef GAPS_INTERNAL_TESTS
 private:
-#endif
 
     AtomicDomain mDomain; // data structure providing access to atoms
 
-    GapsRandomState *mRandState;
     mutable GapsRng mRng;
 
-    float mAlpha;
-    float mLambda;
-    float mMaxGibbsMass;
-    float mAnnealingTemp;
-    
-    unsigned mNumPatterns;
     uint64_t mNumBins;
     uint64_t mBinLength;
+    uint64_t mNumPatterns;
 
     double mDomainLength; // length of entire atomic domain
+    double mAlpha;
 
-    unsigned mNumCols;
-
-    char getUpdateType();
+    char getUpdateType() const;
     void birth();
     void death();
     void move();
     void exchange();
-
-    bool canUseGibbs(unsigned col) const;
-    bool canUseGibbs(unsigned c1, unsigned c2) const;
 };
 
-//////////////////// SingleThreadedGibbsSampler - templated functions ////////////////////////
+/////////////////////// SingleThreadedGibbsSampler Implementation ////////////////////////
 
-template <class StoragePolicy>
+template <class DataModel>
 template <class DataType>
-SingleThreadedGibbsSampler<StoragePolicy>::SingleThreadedGibbsSampler(const DataType &data, bool transpose,
-bool subsetRows, float alpha, float maxGibbsMass, const GapsParameters &params,
-GapsRandomState *randState)
+SingleThreadedGibbsSampler<DataModel>::SingleThreadedGibbsSampler(const DataType &data,
+bool transpose, bool subsetRows, float alpha, float maxGibbsMass,
+const GapsParameters &params, GapsRandomState *randState)
     :
-StoragePolicy(data, transpose, subsetRows, params),
-mDomain(StoragePolicy::mMatrix.nRow() * params.nPatterns),
-mRandState(randState),
+DataModel(data, transpose, subsetRows, params, alpha),
+mDomain(DataModel::nElements()),
 mRng(randState),
-mAlpha(alpha),
-mLambda(0.f),
-mMaxGibbsMass(0.f),
-mAnnealingTemp(1.f),
-mNumPatterns(params.nPatterns),
-mNumBins(StoragePolicy::mMatrix.nRow() * params.nPatterns),
-mBinLength(std::numeric_limits<uint64_t>::max() / (StoragePolicy::mMatrix.nRow() * params.nPatterns)),
-mDomainLength(static_cast<double>(mBinLength * static_cast<uint64_t>(StoragePolicy::mMatrix.nRow() * params.nPatterns))),
-mNumCols(StoragePolicy::mMatrix.nCol())
-{
-    float meanD = params.singleCell ? gaps::nonZeroMean(StoragePolicy::mDMatrix) :
-       gaps::mean(StoragePolicy::mDMatrix);
+mNumBins(DataModel::nElements()),
+mBinLength(std::numeric_limits<uint64_t>::max() / (DataModel::nElements())),
+mNumPatterns(DataModel::nPatterns()),
+mDomainLength(mBinLength * DataModel::nElements()),
+mAlpha(alpha)
+{}
 
-    mLambda = mAlpha * std::sqrt(mNumPatterns / meanD);
-    mMaxGibbsMass = maxGibbsMass / mLambda;
-
-    static bool warningGiven = false; // prevent duplicate warnings
-    if (!warningGiven && gaps::max(StoragePolicy::mDMatrix) > 50.f)
-    {
-        warningGiven = true;
-        gaps_printf("\nWarning: Large values detected in data, "
-            "data needs to be log-transformed\n");
-    }
-}
-
-template <class StoragePolicy>
-void SingleThreadedGibbsSampler<StoragePolicy>::setAnnealingTemp(float temp)
-{
-    mAnnealingTemp = temp;
-}
-
-template <class StoragePolicy>
-void SingleThreadedGibbsSampler<StoragePolicy>::setMatrix(const Matrix &mat)
-{
-    StoragePolicy::mMatrix = mat;
-}
-
-template <class StoragePolicy>
-unsigned SingleThreadedGibbsSampler<StoragePolicy>::nAtoms() const
+template <class DataModel>
+unsigned SingleThreadedGibbsSampler<DataModel>::nAtoms() const
 {
     return mDomain.size();
 }
 
-template <class StoragePolicy>
-float SingleThreadedGibbsSampler<StoragePolicy>::dataSparsity() const
+template <class DataModel>
+float SingleThreadedGibbsSampler<DataModel>::getAverageQueueLength() const
 {
-    return gaps::sparsity(StoragePolicy::mDMatrix);
+    return 0.f;
 }
 
-template <class StoragePolicy>
-char SingleThreadedGibbsSampler<StoragePolicy>::getUpdateType()
+template <class DataModel>
+char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
 {
     if (mDomain.size() < 2)
     {
         return 'B'; // always birth when no atoms exist
     }
 
-    double nAtoms = static_cast<double>(mDomain.size());
-    double numer = nAtoms * mDomainLength;
-    float deathProb = numer / (numer + mAlpha * mNumBins * (mDomainLength - nAtoms));
-
     float u1 = mRng.uniform();
     if (u1 < 0.5f)
     {
+        double nAtoms = static_cast<double>(mDomain.size());
+        double numer = nAtoms * mDomainLength;
+        float deathProb = numer / (numer + mAlpha * mNumBins * (mDomainLength - nAtoms));
         return mRng.uniform() < deathProb ? 'D' : 'B';
     }
     return u1 < 0.75f ? 'M' : 'E';
 }
 
-template <class StoragePolicy>
-void SingleThreadedGibbsSampler<StoragePolicy>::update(unsigned nSteps, unsigned nThreads)
+template <class DataModel>
+void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThreads)
 {
     for (unsigned i = 0; i < nSteps; ++i)
     {
@@ -184,202 +129,143 @@ void SingleThreadedGibbsSampler<StoragePolicy>::update(unsigned nSteps, unsigned
         }
     }
 
-    //GAPS_ASSERT(internallyConsistent());
     GAPS_ASSERT(mDomain.isSorted());
-}
-
-inline float getDeltaLL_2(AlphaParameters alpha, float mass)
-{
-    return mass * (alpha.s_mu - alpha.s * mass / 2.f);
-}
-
-inline OptionalFloat gibbsMass_2(AlphaParameters alpha, float a, float b,
-float lambda, GapsRng *rng)
-{
-    if (alpha.s > gaps::epsilon)
-    {
-        float mean = (alpha.s_mu - lambda) / alpha.s;
-        float sd = 1.f / std::sqrt(alpha.s);
-        return rng->truncNormal(a, b, mean, sd);
-    }
-    return OptionalFloat();
 }
 
 // add an atom at a random position, calculate mass either with an
 // exponential distribution or with the gibbs mass distribution
-template <class StoragePolicy>
-void SingleThreadedGibbsSampler<StoragePolicy>::birth()
+template <class DataModel>
+void SingleThreadedGibbsSampler<DataModel>::birth()
 {
+    // get random open position in atomic domain, calculate row and col of the position
     uint64_t pos = mDomain.randomFreePosition(&mRng);
-    unsigned row = (pos / mBinLength) / mNumCols;
-    unsigned col = (pos / mBinLength) % mNumCols;
+    unsigned row = (pos / mBinLength) / mNumPatterns;
+    unsigned col = (pos / mBinLength) % mNumPatterns;
 
     // try to get mass using gibbs, resort to exponential if needed
-    OptionalFloat mass = canUseGibbs(col)
-        ? gibbsMass_2(StoragePolicy::alphaParameters(row, col) *
-            mAnnealingTemp, 0.f, mMaxGibbsMass, mLambda, &mRng)
-        : mRng.exponential(mLambda);
+    OptionalFloat mass = DataModel::canUseGibbs(col)
+        ? DataModel::sampleBirth(row, col, &mRng)
+        : mRng.exponential(DataModel::lambda());
 
     // accept mass as long as gibbs succeded or it's non-zero
-    if (mass.hasValue() && mass.value() >= gaps::epsilon)
+    if (mass.hasValue() && mass.value() > gaps::epsilon)
     {
         mDomain.insert(pos, mass.value());
-        StoragePolicy::changeMatrix(row, col, mass.value());
+        DataModel::changeMatrix(row, col, mass.value());
     }
 }
 
 // automatically accept death, attempt a rebirth at the same position, using
 // the original mass or the gibbs mass distribution
-template <class StoragePolicy>
-void SingleThreadedGibbsSampler<StoragePolicy>::death()
+template <class DataModel>
+void SingleThreadedGibbsSampler<DataModel>::death()
 {
+    // select atom at random and calculate it's row and col
     Atom *atom = mDomain.randomAtom(&mRng);
-    unsigned row = (atom->pos / mBinLength) / mNumCols;
-    unsigned col = (atom->pos / mBinLength) % mNumCols;
+    unsigned row = (atom->pos / mBinLength) / mNumPatterns;
+    unsigned col = (atom->pos / mBinLength) % mNumPatterns;
 
-    // calculate alpha parameters assuming atom dies
-    AlphaParameters alpha = StoragePolicy::alphaParametersWithChange(row,
-        col, -atom->mass);
-
-    float rebirthMass = atom->mass;
-    if (canUseGibbs(col))
+    // try to do a rebirth in the place of this atom
+    if (DataModel::canUseGibbs(col))
     {
-        OptionalFloat gMass = gibbsMass_2(alpha * mAnnealingTemp, 0.f,
-            mMaxGibbsMass, mLambda, &mRng);
-        if (gMass.hasValue())
+        OptionalFloat mass = DataModel::sampleDeathAndRebirth(row, col,
+            -1.f * atom->mass, &mRng);
+        if (mass.hasValue() && mass.value() >= gaps::epsilon)
         {
-            rebirthMass = gMass.value();
+            DataModel::safelyChangeMatrix(row, col, mass.value() - atom->mass);
+            atom->mass = mass.value();
+            return;
         }
     }
 
-    // accept/reject rebirth
-    float deltaLL = getDeltaLL_2(alpha, rebirthMass) * mAnnealingTemp;
-    if (std::log(mRng.uniform()) < deltaLL) // accept rebirth
-    {
-        if (rebirthMass != atom->mass)
-        {
-            StoragePolicy::safelyChangeMatrix(row, col,
-                rebirthMass - atom->mass);
-            atom->mass = rebirthMass;
-        }
-    }
-    else // reject rebirth
-    {
-        StoragePolicy::safelyChangeMatrix(row, col, -atom->mass);
-        mDomain.erase(atom->pos);
-    }
+    // if rebirth fails, then kill off atom
+    DataModel::safelyChangeMatrix(row, col, -1.f * atom->mass);
+    mDomain.erase(atom->pos);
 }
 
 // move mass from src to dest in the atomic domain
-template <class StoragePolicy>
-void SingleThreadedGibbsSampler<StoragePolicy>::move()
+template <class DataModel>
+void SingleThreadedGibbsSampler<DataModel>::move()
 {
+    // select atom at random and get it's right and left neighbors
     AtomNeighborhood hood = mDomain.randomAtomWithNeighbors(&mRng);
     uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
-    uint64_t rbound = hood.hasRight() ? hood.right->pos : static_cast<uint64_t>(mDomainLength);
+    uint64_t rbound = hood.hasRight() ? hood.right->pos :
+        static_cast<uint64_t>(mDomainLength);
 
+    // randomly select new position to move to and calculation the row and col of it
     uint64_t pos = mRng.uniform64(lbound + 1, rbound - 1);
     Atom *atom = hood.center;
-    unsigned r1 = (atom->pos / mBinLength) / mNumCols;
-    unsigned c1 = (atom->pos / mBinLength) % mNumCols;
-    unsigned r2 = (pos / mBinLength) / mNumCols;
-    unsigned c2 = (pos / mBinLength) % mNumCols;
+    unsigned r1 = (atom->pos / mBinLength) / mNumPatterns;
+    unsigned c1 = (atom->pos / mBinLength) % mNumPatterns;
+    unsigned r2 = (pos / mBinLength) / mNumPatterns;
+    unsigned c2 = (pos / mBinLength) % mNumPatterns;
 
+    // automatically accept move if it keeps atom in the same matrix element
     if (r1 == r2 && c1 == c2)
     {
         atom->pos = pos;
+        return;
     }
-    else
+    
+    // conditionally accept move based on change to likelihood
+    float deltaLL = DataModel::deltaLogLikelihood(r1, c1, r2, c2, atom->mass);
+    if (std::log(mRng.uniform()) < deltaLL)
     {
-        AlphaParameters alpha = StoragePolicy::alphaParameters(r1, c1, r2, c2);
-        if (std::log(mRng.uniform()) < getDeltaLL_2(alpha, -atom->mass) * mAnnealingTemp)
-        {
-            atom->pos = pos;
-            StoragePolicy::safelyChangeMatrix(r1, c1, -atom->mass);
-            StoragePolicy::changeMatrix(r2, c2, atom->mass);
-        }
+        atom->pos = pos;
+        DataModel::safelyChangeMatrix(r1, c1, -atom->mass);
+        DataModel::changeMatrix(r2, c2, atom->mass);
     }
 }
 
 // exchange some amount of mass between two positions, note it is possible
 // for one of the atoms to be deleted if it's mass becomes too small
-template <class StoragePolicy>
-void SingleThreadedGibbsSampler<StoragePolicy>::exchange()
+template <class DataModel>
+void SingleThreadedGibbsSampler<DataModel>::exchange()
 {
+    // select atom at random and get it's right neighbor
     AtomNeighborhood hood = mDomain.randomAtomWithRightNeighbor(&mRng);
     Atom *atom1 = hood.center;
     Atom *atom2 = hood.hasRight() ? hood.right : mDomain.front();
-    unsigned r1 = (atom1->pos / mBinLength) / mNumCols;
-    unsigned c1 = (atom1->pos / mBinLength) % mNumCols;
-    unsigned r2 = (atom2->pos / mBinLength) / mNumCols;
-    unsigned c2 = (atom2->pos / mBinLength) % mNumCols;
 
-    if (r1 == r2 && c1 == c2)
-    {
-        float newMass = mRng.truncGammaUpper(atom1->mass + atom2->mass, 1.f / mLambda);
-        float delta = (atom1->mass > atom2->mass) ? newMass - atom1->mass : atom2->mass - newMass;
-        if (atom1->mass + delta > gaps::epsilon && atom2->mass - delta > gaps::epsilon)
-        {
-            atom1->mass += delta;
-            atom2->mass -= delta;
-        }
-        return;
-    }
+    // calculate row and col of the atom and it's neighbor
+    unsigned r1 = (atom1->pos / mBinLength) / mNumPatterns;
+    unsigned c1 = (atom1->pos / mBinLength) % mNumPatterns;
+    unsigned r2 = (atom2->pos / mBinLength) / mNumPatterns;
+    unsigned c2 = (atom2->pos / mBinLength) % mNumPatterns;
 
-    AlphaParameters alpha = StoragePolicy::alphaParameters(r1, c1, r2, c2);
-    if (canUseGibbs(c1, c2))
+    // ignore exhanges in the same bin
+    if ((r1 != r2 || c1 != c2) && DataModel::canUseGibbs(c1, c2))
     {
-        OptionalFloat gMass = gibbsMass_2(alpha * mAnnealingTemp,
-            -atom1->mass, atom2->mass, 0.f, &mRng);
-        if (gMass.hasValue()
-        && atom1->mass + gMass.value() > gaps::epsilon
-        && atom2->mass - gMass.value() > gaps::epsilon)
+        OptionalFloat mass = DataModel::sampleExchange(r1, c1, atom1->mass,
+            r2, c2, atom2->mass, &mRng);
+        float newMass1 = atom1->mass + mass.value();
+        float newMass2 = atom2->mass - mass.value();
+        if (mass.hasValue() && newMass1 > gaps::epsilon && newMass2 > gaps::epsilon)
         {
-            atom1->mass += gMass.value();
-            atom2->mass -= gMass.value();
-            StoragePolicy::safelyChangeMatrix(r1, c1, gMass.value());
-            StoragePolicy::safelyChangeMatrix(r2, c2, -gMass.value());
+            atom1->mass = newMass1;
+            atom2->mass = newMass2;
+            DataModel::safelyChangeMatrix(r1, c1, newMass1 - atom1->mass);
+            DataModel::safelyChangeMatrix(r2, c2, newMass2 - atom2->mass);
+            return;
         }
-        return;
     }
 }
 
-template <class StoragePolicy>
-bool SingleThreadedGibbsSampler<StoragePolicy>::canUseGibbs(unsigned col) const
+template <class DataModel>
+Archive& operator<<(Archive &ar, const SingleThreadedGibbsSampler<DataModel> &s)
 {
-    return !gaps::isVectorZero(StoragePolicy::mOtherMatrix->getCol(col));
-}
-
-template <class StoragePolicy>
-bool SingleThreadedGibbsSampler<StoragePolicy>::canUseGibbs(unsigned c1, unsigned c2) const
-{
-    return canUseGibbs(c1) || canUseGibbs(c2);
-}
-
-template <class StoragePolicy>
-Archive& operator<<(Archive &ar, const SingleThreadedGibbsSampler<StoragePolicy> &s)
-{
-    operator<<(ar, static_cast<const StoragePolicy&>(s)) << s.mDomain
-        << s.mAlpha << s.mLambda << s.mMaxGibbsMass
-        << s.mAnnealingTemp << s.mNumPatterns << s.mNumBins << s.mBinLength;
+    operator<<(ar, static_cast<const DataModel&>(s)) << s.mDomain << s.mNumBins
+        << s.mBinLength << s.mNumPatterns << s.mDomainLength << s.mAlpha;
     return ar;
 }
 
-template <class StoragePolicy>
-Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<StoragePolicy> &s)
+template <class DataModel>
+Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<DataModel> &s)
 {
-    operator>>(ar, static_cast<StoragePolicy&>(s)) >> s.mDomain
-        >> s.mAlpha >> s.mLambda >> s.mMaxGibbsMass >> s.mAnnealingTemp
-        >> s.mNumPatterns >> s.mNumBins >> s.mBinLength;
+    operator>>(ar, static_cast<DataModel&>(s)) << s.mDomain << s.mNumBins
+        << s.mBinLength << s.mNumPatterns << s.mDomainLength << s.mAlpha;
     return ar;
 }
 
-#ifdef GAPS_DEBUG
-template <class StoragePolicy>
-bool SingleThreadedGibbsSampler<StoragePolicy>::internallyConsistent() const
-{
-    return true;
-}
-#endif
-
-#endif // __COGAPS_GIBBS_SAMPLER_H__
+#endif // __COGAPS_SINGLE_THREADED_GIBBS_SAMPLER_H__

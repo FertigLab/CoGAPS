@@ -3,6 +3,7 @@
 
 #include "AlphaParameters.h"
 #include "../GapsParameters.h"
+#include "../GapsStatistics.h"
 #include "../utils/Archive.h"
 #include "../data_structures/HybridMatrix.h"
 #include "../data_structures/SparseMatrix.h"
@@ -29,6 +30,8 @@ public:
     friend Archive& operator>>(Archive &ar, SparseStorage &s);
 
 protected:
+
+    friend GapsStatistics;
 
     void changeMatrix(unsigned row, unsigned col, float delta);
     void safelyChangeMatrix(unsigned row, unsigned col, float delta);

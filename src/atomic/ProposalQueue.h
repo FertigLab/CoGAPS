@@ -33,7 +33,7 @@ class ProposalQueue
 public:
 
     // initialize
-    ProposalQueue(unsigned nrow, unsigned ncol, GapsRandomState *randState);
+    ProposalQueue(uint64_t nElements, uint64_t nPatterns, GapsRandomState *randState);
     void setAlpha(float alpha);
     void setLambda(float lambda);
 

@@ -1,18 +1,19 @@
-#ifndef __COGAPS_DENSE_STORAGE_POLICY_H__
-#define __COGAPS_DENSE_STORAGE_POLICY_H__
+#ifndef __COGAPS_DENSE_NORMAL_WITH_UNCERTAINTY_MODEL_H__
+#define __COGAPS_DENSE_NORMAL_WITH_UNCERTAINTY_MODEL_H__
 
 #include "AlphaParameters.h"
 #include "../GapsParameters.h"
+#include "../GapsStatistics.h"
 #include "../data_structures/Matrix.h"
 #include "../math/MatrixMath.h"
 #include "../utils/Archive.h"
 
-class DenseStorage
+class DenseNormalWithUncertaintyModel
 {
 public:
 
     template <class DataType>
-    DenseStorage(const DataType &data, bool transpose, bool subsetRows,
+    DenseNormalWithUncertaintyModel(const DataType &data, bool transpose, bool subsetRows,
         const GapsParameters &params);
 
     template <class DataType>
@@ -20,15 +21,17 @@ public:
         const GapsParameters &params);
 
     float chiSq() const;
-    void sync(const DenseStorage &sampler, unsigned nThreads=1);
+    void sync(const DenseNormalWithUncertaintyModel &sampler, unsigned nThreads=1);
     void extraInitialization();
     
     float apSum() const;
 
-    friend Archive& operator<<(Archive &ar, const DenseStorage &s);
-    friend Archive& operator>>(Archive &ar, DenseStorage &s);
+    friend Archive& operator<<(Archive &ar, const DenseNormalWithUncertaintyModel &s);
+    friend Archive& operator>>(Archive &ar, DenseNormalWithUncertaintyModel &s);
 
 protected:
+
+    friend GapsStatistics;
 
     void changeMatrix(unsigned row, unsigned col, float delta);
     void safelyChangeMatrix(unsigned row, unsigned col, float delta);
@@ -37,8 +40,8 @@ protected:
     AlphaParameters alphaParametersWithChange(unsigned row, unsigned col, float ch);
     void updateAPMatrix(unsigned row, unsigned col, float delta);
 
-    DenseStorage(const DenseStorage&); // = delete (no c++11)
-    DenseStorage& operator=(const DenseStorage&); // = delete
+    DenseNormalWithUncertaintyModel(const DenseNormalWithUncertaintyModel&); // = delete (no c++11)
+    DenseNormalWithUncertaintyModel& operator=(const DenseNormalWithUncertaintyModel&); // = delete
 
     Matrix mDMatrix; // samples by genes for A, genes by samples for P
     Matrix mMatrix; // genes by patterns for A, samples by patterns for P
@@ -49,7 +52,7 @@ protected:
 };
 
 template <class DataType>
-DenseStorage::DenseStorage(const DataType &data, bool transpose,
+DenseNormalWithUncertaintyModel::DenseNormalWithUncertaintyModel(const DataType &data, bool transpose,
 bool subsetRows, const GapsParameters &params)
     :
 mDMatrix(data, transpose, subsetRows, params.dataIndicesSubset),
@@ -62,7 +65,7 @@ mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol())
 }
 
 template <class DataType>
-void DenseStorage::setUncertainty(const DataType &unc, bool transpose,
+void DenseNormalWithUncertaintyModel::setUncertainty(const DataType &unc, bool transpose,
 bool subsetRows, const GapsParameters &params)
 {
     mSMatrix = Matrix(unc, transpose, subsetRows, params.dataIndicesSubset);
