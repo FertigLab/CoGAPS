@@ -3,6 +3,7 @@
 
 #include "GapsParameters.h"
 #include "gibbs_sampler/GibbsSampler.h"
+#include "gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "gibbs_sampler/DenseStoragePolicy.h"
 #include "gibbs_sampler/SparseStoragePolicy.h"
 #include "math/Math.h"
@@ -38,8 +39,14 @@ public:
     std::vector<float> chisqHistory() const;
     std::vector<unsigned> atomHistory(char m) const;
     
+    // TODO covert to these
+    float meanChiSq(const DenseStorage &storage) const;
+    float meanChiSq(const SparseStorage &storage) const;
+
     float meanChiSq(const GibbsSampler<DenseStorage> &PSampler) const;
     float meanChiSq(const GibbsSampler<SparseStorage> &PSampler) const;
+    float meanChiSq(const SingleThreadedGibbsSampler<DenseStorage> &PSampler) const;
+    float meanChiSq(const SingleThreadedGibbsSampler<SparseStorage> &PSampler) const;
 
     // serialization
     friend Archive& operator<<(Archive &ar, const GapsStatistics &stat);

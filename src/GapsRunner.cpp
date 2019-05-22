@@ -2,6 +2,7 @@
 
 #include "utils/Archive.h"
 #include "gibbs_sampler/GibbsSampler.h"
+#include "gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "gibbs_sampler/DenseStoragePolicy.h"
 #include "gibbs_sampler/SparseStoragePolicy.h"
 
@@ -49,6 +50,30 @@ static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &param
 
 ////////////////////////////////////////////////////////////////////////////////
 
+template <class StorageType, class DataType>
+static GapsResult chooseSampler(const DataType &data, GapsParameters &params,
+const DataType &uncertainty, GapsRandomState *randState)
+{
+    if (params.asynchronousUpdates)
+    {
+        return runCoGAPSAlgorithm< GibbsSampler<StorageType> >(data,
+            params, uncertainty, randState);
+    }
+    return runCoGAPSAlgorithm< SingleThreadedGibbsSampler<StorageType> >(data,
+        params, uncertainty, randState);
+}
+
+template <class DataType>
+static GapsResult chooseStorage(const DataType &data, GapsParameters &params,
+const DataType &uncertainty, GapsRandomState *randState)
+{
+    if (params.useSparseOptimization)
+    {
+        return chooseSampler<SparseStorage>(data, params, uncertainty, randState);
+    }
+    return chooseSampler<DenseStorage>(data, params, uncertainty, randState);
+}
+
 // helper function, this dispatches the correct run function depending
 // on the type of GibbsSampler needed for the given parameters
 template <class DataType>
@@ -62,14 +87,7 @@ const DataType &uncertainty, GapsRandomState *randState)
         ar >> params;
         ar >> *randState;
     }
-
-    if (params.useSparseOptimization)
-    {
-        return runCoGAPSAlgorithm< GibbsSampler<SparseStorage> >(data, params,
-            uncertainty, randState);
-    }
-    return runCoGAPSAlgorithm< GibbsSampler<DenseStorage> >(data, params,
-        uncertainty, randState);
+    return chooseStorage(data, params, uncertainty, randState);
 }
 
 // these two functions are the top-level functions exposed to the C++
