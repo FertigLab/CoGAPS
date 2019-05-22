@@ -1,10 +1,10 @@
 #include "GapsRunner.h"
 
 #include "utils/Archive.h"
-#include "gibbs_sampler/GibbsSampler.h"
+#include "gibbs_sampler/AsynchronousGibbsSampler.h"
 #include "gibbs_sampler/SingleThreadedGibbsSampler.h"
-#include "gibbs_sampler/DenseStoragePolicy.h"
-#include "gibbs_sampler/SparseStoragePolicy.h"
+#include "gibbs_sampler/DenseNormalModel.h"
+#include "gibbs_sampler/SparseNormalModel.h"
 
 #ifdef __GAPS_R_BUILD__
 #include <Rcpp.h>
@@ -50,28 +50,28 @@ static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &param
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <class StorageType, class DataType>
+template <class DataModel, class DataType>
 static GapsResult chooseSampler(const DataType &data, GapsParameters &params,
 const DataType &uncertainty, GapsRandomState *randState)
 {
     if (params.asynchronousUpdates)
     {
-        return runCoGAPSAlgorithm< GibbsSampler<StorageType> >(data,
+        return runCoGAPSAlgorithm< AsynchronousGibbsSampler<DataModel> >(data,
             params, uncertainty, randState);
     }
-    return runCoGAPSAlgorithm< SingleThreadedGibbsSampler<StorageType> >(data,
+    return runCoGAPSAlgorithm< SingleThreadedGibbsSampler<DataModel> >(data,
         params, uncertainty, randState);
 }
 
 template <class DataType>
-static GapsResult chooseStorage(const DataType &data, GapsParameters &params,
+static GapsResult chooseDataModel(const DataType &data, GapsParameters &params,
 const DataType &uncertainty, GapsRandomState *randState)
 {
     if (params.useSparseOptimization)
     {
-        return chooseSampler<SparseStorage>(data, params, uncertainty, randState);
+        return chooseSampler<SparseNormalModel>(data, params, uncertainty, randState);
     }
-    return chooseSampler<DenseStorage>(data, params, uncertainty, randState);
+    return chooseSampler<DenseNormalModel>(data, params, uncertainty, randState);
 }
 
 // helper function, this dispatches the correct run function depending
@@ -87,7 +87,7 @@ const DataType &uncertainty, GapsRandomState *randState)
         ar >> params;
         ar >> *randState;
     }
-    return chooseStorage(data, params, uncertainty, randState);
+    return chooseDataModel(data, params, uncertainty, randState);
 }
 
 // these two functions are the top-level functions exposed to the C++

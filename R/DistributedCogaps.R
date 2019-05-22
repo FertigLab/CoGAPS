@@ -31,7 +31,7 @@ workerID)
     allParams$workerID <- workerID
 
     # call CoGAPS
-    internal <- ifelse(is(data, "character"), cogaps_cpp_from_file, cogaps_cpp)
+    internal <- ifelse(is(data, "character"), cogaps_from_file_cpp, cogaps_cpp)
     raw <- internal(data, allParams, uncertainty)
     return(createCogapsResult(raw, allParams))
 }

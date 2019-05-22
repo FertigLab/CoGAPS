@@ -51,12 +51,15 @@ Matrix GapsStatistics::Psd() const
     return mat;
 }
 
-float GapsStatistics::meanChiSq(const GibbsSampler<DenseStorage> &PSampler) const
+float GapsStatistics::meanChiSq(const DenseNormalModel &model) const
 {
+    GAPS_ASSERT(model.mDMatrix.nRow() == mAMeanMatrix.nRow());
+    GAPS_ASSERT(model.mDMatrix.nCol() == mPMeanMatrix.nRow());
+
     float chisq = 0.f;
-    for (unsigned i = 0; i < PSampler.mDMatrix.nRow(); ++i)
+    for (unsigned i = 0; i < model.mDMatrix.nRow(); ++i)
     {
-        for (unsigned j = 0; j < PSampler.mDMatrix.nCol(); ++j)
+        for (unsigned j = 0; j < model.mDMatrix.nCol(); ++j)
         {
             float m = 0.f;
             for (unsigned k = 0; k < mAMeanMatrix.nCol(); ++k)
@@ -65,20 +68,23 @@ float GapsStatistics::meanChiSq(const GibbsSampler<DenseStorage> &PSampler) cons
             }
             m /= GAPS_SQ(static_cast<float>(mStatUpdates));
 
-            float d = PSampler.mDMatrix(i,j);
-            float s = PSampler.mSMatrix(i,j);
+            float d = model.mDMatrix(i,j);
+            float s = model.mSMatrix(i,j);
             chisq += GAPS_SQ(d - m) / GAPS_SQ(s);
         }
     }
     return chisq;
 }
 
-float GapsStatistics::meanChiSq(const GibbsSampler<SparseStorage> &PSampler) const
+float GapsStatistics::meanChiSq(const SparseNormalModel &model) const
 {
+    GAPS_ASSERT(model.mDMatrix.nRow() == mAMeanMatrix.nRow());
+    GAPS_ASSERT(model.mDMatrix.nCol() == mPMeanMatrix.nRow());
+
     float chisq = 0.f;
-    for (unsigned i = 0; i < PSampler.mDMatrix.nRow(); ++i)
+    for (unsigned i = 0; i < model.mDMatrix.nRow(); ++i)
     {
-        for (unsigned j = 0; j < PSampler.mDMatrix.nCol(); ++j)
+        for (unsigned j = 0; j < model.mDMatrix.nCol(); ++j)
         {
             float m = 0.f;
             for (unsigned k = 0; k < mAMeanMatrix.nCol(); ++k)
@@ -87,51 +93,7 @@ float GapsStatistics::meanChiSq(const GibbsSampler<SparseStorage> &PSampler) con
             }
             m /= GAPS_SQ(static_cast<float>(mStatUpdates));
 
-            float d = PSampler.mDMatrix.getCol(j).at(i);
-            float s = gaps::max(d * 0.1f, 0.1f);
-            chisq += GAPS_SQ(d - m) / GAPS_SQ(s);
-        }
-    }
-    return chisq;
-}
-
-float GapsStatistics::meanChiSq(const SingleThreadedGibbsSampler<DenseStorage> &PSampler) const
-{
-    float chisq = 0.f;
-    for (unsigned i = 0; i < PSampler.mDMatrix.nRow(); ++i)
-    {
-        for (unsigned j = 0; j < PSampler.mDMatrix.nCol(); ++j)
-        {
-            float m = 0.f;
-            for (unsigned k = 0; k < mAMeanMatrix.nCol(); ++k)
-            {
-                m += mAMeanMatrix(i,k) * mPMeanMatrix(j,k);
-            }
-            m /= GAPS_SQ(static_cast<float>(mStatUpdates));
-
-            float d = PSampler.mDMatrix(i,j);
-            float s = PSampler.mSMatrix(i,j);
-            chisq += GAPS_SQ(d - m) / GAPS_SQ(s);
-        }
-    }
-    return chisq;
-}
-
-float GapsStatistics::meanChiSq(const SingleThreadedGibbsSampler<SparseStorage> &PSampler) const
-{
-    float chisq = 0.f;
-    for (unsigned i = 0; i < PSampler.mDMatrix.nRow(); ++i)
-    {
-        for (unsigned j = 0; j < PSampler.mDMatrix.nCol(); ++j)
-        {
-            float m = 0.f;
-            for (unsigned k = 0; k < mAMeanMatrix.nCol(); ++k)
-            {
-                m += mAMeanMatrix(i,k) * mPMeanMatrix(j,k);
-            }
-            m /= GAPS_SQ(static_cast<float>(mStatUpdates));
-
-            float d = PSampler.mDMatrix.getCol(j).at(i);
+            float d = model.mDMatrix.getCol(j).at(i);
             float s = gaps::max(d * 0.1f, 0.1f);
             chisq += GAPS_SQ(d - m) / GAPS_SQ(s);
         }

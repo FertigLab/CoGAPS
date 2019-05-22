@@ -14,19 +14,19 @@ AtomicProposal::AtomicProposal(char t, GapsRandomState *randState)
     
 //////////////////////////////// ProposalQueue /////////////////////////////////
 
-ProposalQueue::ProposalQueue(unsigned nrow, unsigned ncol,
+ProposalQueue::ProposalQueue(uint64_t nElements, uint64_t nPatterns,
 GapsRandomState *randState)
     :
-mUsedMatrixIndices(nrow),
+mUsedMatrixIndices(nElements / nPatterns),
 mRandState(randState),
 mRng(randState),
 mMinAtoms(0),
 mMaxAtoms(0),
-mBinLength(std::numeric_limits<uint64_t>::max() / static_cast<uint64_t>(nrow * ncol)),
-mNumCols(ncol),
+mBinLength(std::numeric_limits<uint64_t>::max() / nElements),
+mNumCols(nPatterns),
 mAlpha(0.0),
-mDomainLength(static_cast<double>(mBinLength * static_cast<uint64_t>(nrow * ncol))),
-mNumBins(static_cast<double>(nrow * ncol)),
+mDomainLength(static_cast<double>(mBinLength * nElements)),
+mNumBins(static_cast<double>(nElements)),
 mU1(0.f),
 mU2(0.f),
 mNumProcessed(0),

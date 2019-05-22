@@ -124,10 +124,7 @@ const DataType &uncertainty)
     // convert R parameters to GapsParameters struct
     GapsParameters params(getGapsParameters(data, allParams));
 #ifdef GAPS_DEBUG
-    if (params.printMessages)
-    {
-        params.print();
-    }
+    params.print();
 #endif
 
     // create GapsRunner, note we must first initialize the random generator
@@ -159,7 +156,7 @@ const DataType &uncertainty)
 /////////////////// functions exposed to the R package /////////////////////////
 
 // [[Rcpp::export]]
-Rcpp::List cogaps_cpp_from_file(const Rcpp::CharacterVector &data,
+Rcpp::List cogaps_from_file_cpp(const Rcpp::CharacterVector &data,
 const Rcpp::List &allParams,
 const Rcpp::Nullable<Rcpp::CharacterVector> &uncertainty)
 {

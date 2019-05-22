@@ -111,7 +111,7 @@ BPPARAM=NULL, workerID=1, ...)
     if (!is.null(allParams$gaps@distributed))
         dispatchFunc <- distributedCogaps # genome-wide or single-cell cogaps
     else if (is(data, "character"))
-        dispatchFunc <- cogaps_cpp_from_file # data is a file path
+        dispatchFunc <- cogaps_from_file_cpp # data is a file path
 
     # run cogaps
     startupMessage(data, allParams)

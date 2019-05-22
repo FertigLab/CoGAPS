@@ -1,6 +1,8 @@
 #ifndef __COGAPS_ALPHA_PARAMETERS_H__
 #define __COGAPS_ALPHA_PARAMETERS_H__
 
+#include "../math/Random.h"
+
 struct AlphaParameters
 {
     float s;
@@ -12,5 +14,8 @@ struct AlphaParameters
     AlphaParameters operator*(float v) const;
     void operator*=(float v);
 };
+
+OptionalFloat gibbsMass(AlphaParameters alpha, float a, float b, GapsRng *rng);
+OptionalFloat gibbsMass(AlphaParameters alpha, float a, float b, GapsRng *rng, float lambda);
 
 #endif // __COGAPS_ALPHA_PARAMETERS_H__
