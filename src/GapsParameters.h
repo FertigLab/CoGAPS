@@ -58,6 +58,7 @@ public:
     bool printThreadUsage;
     bool useSparseOptimization;
     bool takePumpSamples;
+    bool asynchronousUpdates;
 
     char whichMatrixFixed;
     unsigned workerID;
@@ -106,7 +107,8 @@ useSparseOptimization(false),
 takePumpSamples(false),
 whichMatrixFixed('N'),
 workerID(1),
-runningDistributed(false)
+runningDistributed(false),
+asynchronousUpdates(true)
 {
     calculateDataDimensions(data);
 }

@@ -43,6 +43,9 @@ struct AtomNeighborhood
 
 class ProposalQueue; // needed for friend
 
+template <class StoragePolicy>
+class SingleThreadedGibbsSampler; // needed for friend
+
 class AtomicDomain
 {
 public:
@@ -78,6 +81,10 @@ private:
 
     // only the proposal queue can insert, insert not thread-safe
     friend class ProposalQueue;
+    
+    template <class StoragePolicy>
+    friend class SingleThreadedGibbsSampler;
+
     Atom* insert(uint64_t pos, float mass);
 
     // size of atomic domain to ensure all bins are equal length

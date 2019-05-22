@@ -83,6 +83,7 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.maxGibbsMassP = Rcpp::as<float>(gapsParams.slot("maxGibbsMassP"));
     params.singleCell = Rcpp::as<bool>(gapsParams.slot("singleCell"));
     params.useSparseOptimization = Rcpp::as<bool>(gapsParams.slot("sparseOptimization"));
+    params.asynchronousUpdates = Rcpp::as<bool>(gapsParams.slot("asynchronousUpdates"));
 
     // check if using fixed matrix
     params.whichMatrixFixed = Rcpp::as<char>(gapsParams.slot("whichMatrixFixed"));
