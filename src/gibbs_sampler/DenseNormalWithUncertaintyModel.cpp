@@ -1,46 +1,40 @@
-#include "DenseStoragePolicy.h"
-
+#include "DenseNormalWithUncertaintyModel.h"
 #include "../math/Math.h"
 
 #define GAPS_SQ(x) ((x) * (x))
 
-float DenseStorage::chiSq() const
+void DenseNormalWithUncertaintyModel::setMatrix(const Matrix &mat)
 {
-    float chisq = 0.f;
-    for (unsigned i = 0; i < mDMatrix.nRow(); ++i)
-    {
-        for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
-        {
-            GAPS_ASSERT(mSMatrix(i,j) > 0.f);
-            chisq += GAPS_SQ((mDMatrix(i,j) - mAPMatrix(i,j)) / mSMatrix(i,j));
-        }
-    }
-    return chisq;
+    mMatrix = mat;
 }
 
-void DenseStorage::sync(const DenseStorage &sampler, unsigned nThreads)
+void DenseNormalWithUncertaintyModel::setAnnealingTemp(float temp)
 {
-    // copy transpose of other AP matrix
-    GAPS_ASSERT(sampler.mAPMatrix.nRow() == mAPMatrix.nCol());
-    GAPS_ASSERT(sampler.mAPMatrix.nCol() == mAPMatrix.nRow());
+    mAnnealingTemp = temp;
+}
 
-    unsigned nc = sampler.mAPMatrix.nCol();
-    unsigned nr = sampler.mAPMatrix.nRow();
+// copy transpose of other AP matrix
+void DenseNormalWithUncertaintyModel::sync(const DenseNormalWithUncertaintyModel &model, unsigned nThreads)
+{
+    GAPS_ASSERT(model.mAPMatrix.nRow() == mAPMatrix.nCol());
+    GAPS_ASSERT(model.mAPMatrix.nCol() == mAPMatrix.nRow());
+
+    unsigned nc = model.mAPMatrix.nCol();
+    unsigned nr = model.mAPMatrix.nRow();
 
     #pragma omp parallel for num_threads(nThreads)
     for (unsigned j = 0; j < nc; ++j)
     {
         for (unsigned i = 0; i < nr; ++i)
         {
-            mAPMatrix(j,i) = sampler.mAPMatrix(i,j);
+            mAPMatrix(j,i) = model.mAPMatrix(i,j);
         }
     }
-    mOtherMatrix = &(sampler.mMatrix); // update pointer
-    GAPS_ASSERT_MSG(mOtherMatrix->nCol() == mMatrix.nCol(),
-        mOtherMatrix->nCol() << " != " << mMatrix.nCol());
+    mOtherMatrix = &(model.mMatrix); // update pointer
+    GAPS_ASSERT(mOtherMatrix->nCol() == mMatrix.nCol());
 }
 
-void DenseStorage::extraInitialization()
+void DenseNormalWithUncertaintyModel::extraInitialization()
 {
     GAPS_ASSERT(mOtherMatrix->nRow() == mAPMatrix.nRow());
     GAPS_ASSERT(mOtherMatrix->nCol() == mMatrix.nCol());
@@ -59,12 +53,51 @@ void DenseStorage::extraInitialization()
     }
 }
 
-float DenseStorage::apSum() const
+float DenseNormalWithUncertaintyModel::chiSq() const
 {
-    return gaps::sum(mAPMatrix);
+    float chisq = 0.f;
+    for (unsigned i = 0; i < mDMatrix.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
+        {
+            GAPS_ASSERT(mSMatrix(i,j) > 0.f);
+            chisq += GAPS_SQ((mDMatrix(i,j) - mAPMatrix(i,j)) / mSMatrix(i,j));
+        }
+    }
+    return chisq;
 }
 
-void DenseStorage::changeMatrix(unsigned row, unsigned col, float delta)
+float DenseNormalWithUncertaintyModel::dataSparsity() const
+{
+    return gaps::sparsity(mDMatrix);
+}
+
+uint64_t DenseNormalWithUncertaintyModel::nElements() const
+{
+    return mDMatrix.nRow() * mMatrix.nCol();
+}
+
+uint64_t DenseNormalWithUncertaintyModel::nPatterns() const
+{
+    return mMatrix.nCol();
+}
+
+float DenseNormalWithUncertaintyModel::lambda() const
+{
+    return mLambda;
+}
+
+bool DenseNormalWithUncertaintyModel::canUseGibbs(unsigned col) const
+{
+    return !gaps::isVectorZero(mOtherMatrix->getCol(col));
+}
+
+bool DenseNormalWithUncertaintyModel::canUseGibbs(unsigned c1, unsigned c2) const
+{
+    return canUseGibbs(c1) || canUseGibbs(c2);
+}
+
+void DenseNormalWithUncertaintyModel::changeMatrix(unsigned row, unsigned col, float delta)
 {
     mMatrix(row, col) += delta;
     updateAPMatrix(row, col, delta);
@@ -72,7 +105,7 @@ void DenseStorage::changeMatrix(unsigned row, unsigned col, float delta)
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
-void DenseStorage::safelyChangeMatrix(unsigned row, unsigned col, float delta)
+void DenseNormalWithUncertaintyModel::safelyChangeMatrix(unsigned row, unsigned col, float delta)
 {
     float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
     updateAPMatrix(row, col, newVal - mMatrix(row, col));
@@ -81,8 +114,44 @@ void DenseStorage::safelyChangeMatrix(unsigned row, unsigned col, float delta)
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
+float DenseNormalWithUncertaintyModel::deltaLogLikelihood(unsigned r1, unsigned c1, unsigned r2,
+unsigned c2, float mass)
+{
+    AlphaParameters alpha = alphaParameters(r1, c1, r2, c2) * mAnnealingTemp;
+    return -1.f * mass * (alpha.s_mu + alpha.s * mass / 2.f);
+}
+
+OptionalFloat DenseNormalWithUncertaintyModel::sampleBirth(unsigned row, unsigned col, GapsRng *rng)
+{
+    AlphaParameters alpha = alphaParameters(row, col) * mAnnealingTemp;
+    return gibbsMass(alpha, 0.f, mMaxGibbsMass, rng, mLambda);
+}
+
+OptionalFloat DenseNormalWithUncertaintyModel::sampleDeathAndRebirth(unsigned row, unsigned col,
+float delta, GapsRng *rng)
+{
+    AlphaParameters alpha = alphaParametersWithChange(row, col, delta) * mAnnealingTemp;
+    OptionalFloat mass = gibbsMass(alpha, 0.f, mMaxGibbsMass, rng, mLambda);
+    if (mass.hasValue())
+    {
+        float deltaLL = mass.value() * (alpha.s_mu - alpha.s * mass.value() / 2.f);
+        if (std::log(rng->uniform()) < deltaLL)
+        {
+            return mass;
+        }
+    }
+    return OptionalFloat();
+}
+
+OptionalFloat DenseNormalWithUncertaintyModel::sampleExchange(unsigned r1, unsigned c1, float m1,
+unsigned r2, unsigned c2, float m2, GapsRng *rng)
+{
+    AlphaParameters alpha = alphaParameters(r1, c1, r2, c2) * mAnnealingTemp;
+    return gibbsMass(alpha, -m1, m2, rng);
+}
+
 // PERFORMANCE_CRITICAL
-AlphaParameters DenseStorage::alphaParameters(unsigned row, unsigned col)
+AlphaParameters DenseNormalWithUncertaintyModel::alphaParameters(unsigned row, unsigned col)
 {
     unsigned size = mDMatrix.nRow();
     const float *D = mDMatrix.getCol(row).ptr();
@@ -102,36 +171,11 @@ AlphaParameters DenseStorage::alphaParameters(unsigned row, unsigned col)
         partialS += pMat * ratio;
         partialS_mu += ratio * (pD - pAP);
     }
-    
-    float s = partialS.scalar();
-    float s_mu = partialS_mu.scalar();
-
-#if 0 // optional debug section, set to 1 to enable, 0 to disable
-#ifdef GAPS_DEBUG
-    float debug_s = 0.f, debug_smu = 0.f;
-    for (unsigned j = 0; j < size; ++j)
-    {
-        float ratio = mat[j] / (S[j] * S[j]);
-        debug_s += mat[j] * ratio;
-        debug_smu += ratio * (D[j] - AP[j]);
-    }
-   
-    float s_denom = debug_s < 10.f ? 10.f : debug_s;
-    float smu_denom = std::abs(debug_smu) < 10.f ? 10.f : std::abs(debug_smu);
-
-    const float tolerance = 0.01f;
-    GAPS_ASSERT_MSG(std::abs(s - debug_s) / s_denom < tolerance,
-        s << " != " << debug_s);
-    GAPS_ASSERT_MSG(std::abs(s_mu - debug_smu) / smu_denom < tolerance,
-        s_mu << " != " << debug_smu);
-#endif
-#endif
-
-    return AlphaParameters(s, s_mu);
+    return AlphaParameters(partialS.scalar(), partialS_mu.scalar());
 }
 
 // PERFORMANCE_CRITICAL
-AlphaParameters DenseStorage::alphaParameters(unsigned r1, unsigned c1,
+AlphaParameters DenseNormalWithUncertaintyModel::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
     if (r1 == r2)
@@ -162,7 +206,7 @@ unsigned r2, unsigned c2)
 }
 
 // PERFORMANCE_CRITICAL
-AlphaParameters DenseStorage::alphaParametersWithChange(unsigned row,
+AlphaParameters DenseNormalWithUncertaintyModel::alphaParametersWithChange(unsigned row,
 unsigned col, float ch)
 {
     unsigned size = mDMatrix.nRow();
@@ -188,7 +232,7 @@ unsigned col, float ch)
 }
 
 // PERFORMANCE_CRITICAL
-void DenseStorage::updateAPMatrix(unsigned row, unsigned col, float delta)
+void DenseNormalWithUncertaintyModel::updateAPMatrix(unsigned row, unsigned col, float delta)
 {
     const float *other = mOtherMatrix->getCol(col).ptr();
     float *ap = mAPMatrix.getCol(row).ptr();
@@ -205,15 +249,15 @@ void DenseStorage::updateAPMatrix(unsigned row, unsigned col, float delta)
     }
 }
 
-Archive& operator<<(Archive &ar, const DenseStorage &s)
+Archive& operator<<(Archive &ar, const DenseNormalWithUncertaintyModel &mod)
 {
-    ar << s.mMatrix;
+    ar << mod.mMatrix;
     return ar;
 }
 
-Archive& operator>>(Archive &ar, DenseStorage &s)
+Archive& operator>>(Archive &ar, DenseNormalWithUncertaintyModel &mod)
 {
-    ar >> s.mMatrix;
+    ar >> mod.mMatrix;
     return ar;
 }
 

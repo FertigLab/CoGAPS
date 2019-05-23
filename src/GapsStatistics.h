@@ -3,6 +3,7 @@
 
 #include "GapsParameters.h"
 #include "gibbs_sampler/DenseNormalModel.h"
+#include "gibbs_sampler/DenseNormalWithUncertaintyModel.h"
 #include "gibbs_sampler/SparseNormalModel.h"
 #include "math/Math.h"
 #include "math/MatrixMath.h"
@@ -39,6 +40,7 @@ public:
     
     float meanChiSq(const DenseNormalModel &model) const;
     float meanChiSq(const SparseNormalModel &model) const;
+    float meanChiSq(const DenseNormalWithUncertaintyModel &model) const;
 
     // serialization
     friend Archive& operator<<(Archive &ar, const GapsStatistics &stat);
