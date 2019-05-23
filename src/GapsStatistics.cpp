@@ -76,6 +76,31 @@ float GapsStatistics::meanChiSq(const DenseNormalModel &model) const
     return chisq;
 }
 
+float GapsStatistics::meanChiSq(const DenseNormalWithUncertaintyModel &model) const
+{
+    GAPS_ASSERT(model.mDMatrix.nRow() == mAMeanMatrix.nRow());
+    GAPS_ASSERT(model.mDMatrix.nCol() == mPMeanMatrix.nRow());
+
+    float chisq = 0.f;
+    for (unsigned i = 0; i < model.mDMatrix.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < model.mDMatrix.nCol(); ++j)
+        {
+            float m = 0.f;
+            for (unsigned k = 0; k < mAMeanMatrix.nCol(); ++k)
+            {
+                m += mAMeanMatrix(i,k) * mPMeanMatrix(j,k);
+            }
+            m /= GAPS_SQ(static_cast<float>(mStatUpdates));
+
+            float d = model.mDMatrix(i,j);
+            float s = model.mSMatrix(i,j);
+            chisq += GAPS_SQ(d - m) / GAPS_SQ(s);
+        }
+    }
+    return chisq;
+}
+
 float GapsStatistics::meanChiSq(const SparseNormalModel &model) const
 {
     GAPS_ASSERT(model.mDMatrix.nRow() == mAMeanMatrix.nRow());

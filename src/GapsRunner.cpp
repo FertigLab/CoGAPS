@@ -4,6 +4,7 @@
 #include "gibbs_sampler/AsynchronousGibbsSampler.h"
 #include "gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "gibbs_sampler/DenseNormalModel.h"
+#include "gibbs_sampler/DenseNormalWithUncertaintyModel.h"
 #include "gibbs_sampler/SparseNormalModel.h"
 
 #ifdef __GAPS_R_BUILD__
@@ -72,7 +73,11 @@ const DataType &uncertainty, GapsRandomState *randState)
     {
         return chooseSampler<SparseNormalModel>(data, params, uncertainty, randState);
     }
-    return chooseSampler<DenseNormalModel>(data, params, uncertainty, randState);
+    if (uncertainty.empty())
+    {
+        return chooseSampler<DenseNormalModel>(data, params, uncertainty, randState);
+    }
+    return chooseSampler<DenseNormalWithUncertaintyModel>(data, params, uncertainty, randState);
 }
 
 // helper function, this dispatches the correct run function depending
