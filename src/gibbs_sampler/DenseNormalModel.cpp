@@ -117,22 +117,21 @@ void DenseNormalModel::safelyChangeMatrix(unsigned row, unsigned col, float delt
 float DenseNormalModel::deltaLogLikelihood(unsigned r1, unsigned c1, unsigned r2,
 unsigned c2, float mass)
 {
-    AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
-    alpha *= mAnnealingTemp;
+    AlphaParameters alpha = alphaParameters(r1, c1, r2, c2) * mAnnealingTemp;
     return -1.f * mass * (alpha.s_mu + alpha.s * mass / 2.f);
 }
 
 OptionalFloat DenseNormalModel::sampleBirth(unsigned row, unsigned col, GapsRng *rng)
 {
-    AlphaParameters alpha = alphaParameters(row, col);
-    return gibbsMass(alpha * mAnnealingTemp, 0.f, mMaxGibbsMass, rng, mLambda);
+    AlphaParameters alpha = alphaParameters(row, col) * mAnnealingTemp;
+    return gibbsMass(alpha, 0.f, mMaxGibbsMass, rng, mLambda);
 }
 
 OptionalFloat DenseNormalModel::sampleDeathAndRebirth(unsigned row, unsigned col,
 float delta, GapsRng *rng)
 {
-    AlphaParameters alpha = alphaParametersWithChange(row, col, delta);
-    OptionalFloat mass = gibbsMass(alpha * mAnnealingTemp, 0.f, mMaxGibbsMass, rng, mLambda);
+    AlphaParameters alpha = alphaParametersWithChange(row, col, delta) * mAnnealingTemp;
+    OptionalFloat mass = gibbsMass(alpha, 0.f, mMaxGibbsMass, rng, mLambda);
     if (mass.hasValue())
     {
         float deltaLL = mass.value() * (alpha.s_mu - alpha.s * mass.value() / 2.f);
@@ -147,8 +146,8 @@ float delta, GapsRng *rng)
 OptionalFloat DenseNormalModel::sampleExchange(unsigned r1, unsigned c1, float m1,
 unsigned r2, unsigned c2, float m2, GapsRng *rng)
 {
-    AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
-    return gibbsMass(alpha * mAnnealingTemp, -m1, m2, rng);
+    AlphaParameters alpha = alphaParameters(r1, c1, r2, c2) * mAnnealingTemp;
+    return gibbsMass(alpha, -m1, m2, rng);
 }
 
 // PERFORMANCE_CRITICAL

@@ -42,6 +42,7 @@ Vector operator*(const HybridVector &hv, float f);
 Vector operator/(const HybridVector &hv, float f);
 
 // this function is frequently called on vectors with size less than 100
+// supported vectors have to be padded with 0 so that the length is a multiple of SIMD_INC
 template <class VectorType>
 float gaps::dot(const VectorType &a, const VectorType &b)
 {
