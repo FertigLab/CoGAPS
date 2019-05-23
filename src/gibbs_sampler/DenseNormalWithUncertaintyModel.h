@@ -3,45 +3,66 @@
 
 #include "AlphaParameters.h"
 #include "../GapsParameters.h"
-#include "../GapsStatistics.h"
 #include "../data_structures/Matrix.h"
 #include "../math/MatrixMath.h"
-#include "../utils/Archive.h"
+
+class GapsStatistics;
+class Archive;
 
 class DenseNormalWithUncertaintyModel
 {
 public:
 
+    friend class GapsStatistics;
+
     template <class DataType>
     DenseNormalWithUncertaintyModel(const DataType &data, bool transpose, bool subsetRows,
-        const GapsParameters &params);
+        const GapsParameters &params, float alpha);
 
     template <class DataType>
     void setUncertainty(const DataType &data, bool transpose, bool subsetRows,
         const GapsParameters &params);
 
-    float chiSq() const;
-    void sync(const DenseNormalWithUncertaintyModel &sampler, unsigned nThreads=1);
+    void setMatrix(const Matrix &mat);
+    void setAnnealingTemp(float temp);
+
+    void sync(const DenseNormalWithUncertaintyModel &model, unsigned nThreads=1);
     void extraInitialization();
-    
-    float apSum() const;
+
+    float chiSq() const;
+    float dataSparsity() const;
 
     friend Archive& operator<<(Archive &ar, const DenseNormalWithUncertaintyModel &s);
     friend Archive& operator>>(Archive &ar, DenseNormalWithUncertaintyModel &s);
 
 protected:
 
-    friend GapsStatistics;
+    uint64_t nElements() const;
+    uint64_t nPatterns() const;
+
+    float lambda() const;
+
+    bool canUseGibbs(unsigned col) const;
+    bool canUseGibbs(unsigned c1, unsigned c2) const;
 
     void changeMatrix(unsigned row, unsigned col, float delta);
     void safelyChangeMatrix(unsigned row, unsigned col, float delta);
+
+    float deltaLogLikelihood(unsigned r1, unsigned c1, unsigned r2, unsigned c2, float mass);
+    OptionalFloat sampleBirth(unsigned row, unsigned col, GapsRng *rng);
+    OptionalFloat sampleDeathAndRebirth(unsigned row, unsigned col, float delta, GapsRng *rng);
+    OptionalFloat sampleExchange(unsigned r1, unsigned c1, float m1, unsigned r2,
+        unsigned c2, float m2, GapsRng *rng);
+
+private:
+
     AlphaParameters alphaParameters(unsigned row, unsigned col);
     AlphaParameters alphaParameters(unsigned r1, unsigned c1, unsigned r2, unsigned c2);
     AlphaParameters alphaParametersWithChange(unsigned row, unsigned col, float ch);
     void updateAPMatrix(unsigned row, unsigned col, float delta);
 
     DenseNormalWithUncertaintyModel(const DenseNormalWithUncertaintyModel&); // = delete (no c++11)
-    DenseNormalWithUncertaintyModel& operator=(const DenseNormalWithUncertaintyModel&); // = delete
+    DenseNormalWithUncertaintyModel& operator=(const DenseNormalWithUncertaintyModel&); // = delete (no c++11)
 
     Matrix mDMatrix; // samples by genes for A, genes by samples for P
     Matrix mMatrix; // genes by patterns for A, samples by patterns for P
@@ -49,18 +70,33 @@ protected:
 
     Matrix mSMatrix; // uncertainty values for each data point
     Matrix mAPMatrix; // cached product of A and P
+
+    float mMaxGibbsMass;
+    float mAnnealingTemp;
+    float mLambda;
 };
 
 template <class DataType>
 DenseNormalWithUncertaintyModel::DenseNormalWithUncertaintyModel(const DataType &data, bool transpose,
-bool subsetRows, const GapsParameters &params)
+bool subsetRows, const GapsParameters &params, float alpha)
     :
 mDMatrix(data, transpose, subsetRows, params.dataIndicesSubset),
 mMatrix(mDMatrix.nCol(), params.nPatterns),
 mOtherMatrix(NULL),
 mSMatrix(gaps::pmax(mDMatrix, 0.1f)),
-mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol())
+mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
+mMaxGibbsMass(100.f),
+mAnnealingTemp(1.f),
+mLambda(0.f)
 {
+    float meanD = params.singleCell ? gaps::nonZeroMean(mDMatrix) : gaps::mean(mDMatrix);
+    mLambda = alpha * std::sqrt(nPatterns() / meanD);
+    mMaxGibbsMass = mMaxGibbsMass / mLambda;
+
+    if (gaps::max(mDMatrix) > 50.f)
+    {
+        gaps_printf("\nWarning: Large values detected, is data log transformed?\n");
+    }
     mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
 }
 
@@ -72,4 +108,4 @@ bool subsetRows, const GapsParameters &params)
     mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
 }
 
-#endif // __COGAPS_DENSE_STORAGE_POLICY_H__
+#endif // __COGAPS_DENSE_NORMAL_WITH_UNCERTAINTY_MODEL_H__
