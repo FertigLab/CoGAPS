@@ -243,10 +243,10 @@ void SingleThreadedGibbsSampler<DataModel>::exchange()
         float newMass2 = atom2->mass - mass.value();
         if (mass.hasValue() && newMass1 > gaps::epsilon && newMass2 > gaps::epsilon)
         {
-            atom1->mass = newMass1;
-            atom2->mass = newMass2;
             DataModel::safelyChangeMatrix(r1, c1, newMass1 - atom1->mass);
             DataModel::safelyChangeMatrix(r2, c2, newMass2 - atom2->mass);
+            atom1->mass = newMass1;
+            atom2->mass = newMass2;
             return;
         }
     }

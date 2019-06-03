@@ -4,7 +4,6 @@
 #include "gibbs_sampler/AsynchronousGibbsSampler.h"
 #include "gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "gibbs_sampler/DenseNormalModel.h"
-#include "gibbs_sampler/DenseNormalWithUncertaintyModel.h"
 #include "gibbs_sampler/SparseNormalModel.h"
 
 #ifdef __GAPS_R_BUILD__
@@ -58,9 +57,11 @@ const DataType &uncertainty, GapsRandomState *randState)
 {
     if (params.asynchronousUpdates)
     {
+        gaps_printf("Sampler Type: Asynchronous\n");
         return runCoGAPSAlgorithm< AsynchronousGibbsSampler<DataModel> >(data,
             params, uncertainty, randState);
     }
+    gaps_printf("Sampler Type: Sequential\n");
     return runCoGAPSAlgorithm< SingleThreadedGibbsSampler<DataModel> >(data,
         params, uncertainty, randState);
 }
@@ -71,13 +72,11 @@ const DataType &uncertainty, GapsRandomState *randState)
 {
     if (params.useSparseOptimization)
     {
+        gaps_printf("Data Model: Sparse, Normal\n");
         return chooseSampler<SparseNormalModel>(data, params, uncertainty, randState);
     }
-    if (uncertainty.empty())
-    {
-        return chooseSampler<DenseNormalModel>(data, params, uncertainty, randState);
-    }
-    return chooseSampler<DenseNormalWithUncertaintyModel>(data, params, uncertainty, randState);
+    gaps_printf("Data Model: Dense, Normal\n");        
+    return chooseSampler<DenseNormalModel>(data, params, uncertainty, randState);
 }
 
 // helper function, this dispatches the correct run function depending

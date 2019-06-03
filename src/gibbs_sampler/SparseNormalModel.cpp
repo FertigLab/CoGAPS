@@ -63,7 +63,7 @@ float SparseNormalModel::dataSparsity() const
 
 uint64_t SparseNormalModel::nElements() const
 {
-    return mDMatrix.nRow() * mMatrix.nCol();
+    return mMatrix.nRow() * mMatrix.nCol();
 }
 
 uint64_t SparseNormalModel::nPatterns() const
