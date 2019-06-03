@@ -55,7 +55,7 @@ protected:
     OptionalFloat sampleExchange(unsigned r1, unsigned c1, float m1, unsigned r2,
         unsigned c2, float m2, GapsRng *rng);
 
-private:
+//private:
 
     void generateLookupTables();
 
