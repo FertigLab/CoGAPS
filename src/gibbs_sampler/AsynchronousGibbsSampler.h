@@ -206,10 +206,10 @@ void AsynchronousGibbsSampler<DataModel>::exchange(const AtomicProposal &prop)
         float newMass2 = prop.atom2->mass - mass.value();
         if (mass.hasValue() && newMass1 > gaps::epsilon && newMass2 > gaps::epsilon)
         {
-            prop.atom1->mass = newMass1;
-            prop.atom2->mass = newMass2;
             DataModel::safelyChangeMatrix(prop.r1, prop.c1, newMass1 - prop.atom1->mass);
             DataModel::safelyChangeMatrix(prop.r2, prop.c2, newMass2 - prop.atom2->mass);
+            prop.atom1->mass = newMass1;
+            prop.atom2->mass = newMass2;
             return;
         }
     }

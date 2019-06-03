@@ -74,7 +74,7 @@ float DenseNormalModel::dataSparsity() const
 
 uint64_t DenseNormalModel::nElements() const
 {
-    return mDMatrix.nRow() * mMatrix.nCol();
+    return mMatrix.nRow() * mMatrix.nCol();
 }
 
 uint64_t DenseNormalModel::nPatterns() const
