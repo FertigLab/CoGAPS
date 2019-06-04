@@ -145,7 +145,7 @@ char phase, unsigned iter, GapsStatistics &stats)
         stats.addChiSq(cs);
         stats.addAtomCount(nA, nP);
 
-        gaps_printf("%d of %d, Atoms: %d(%d), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
+        gaps_printf("%d of %d, Atoms: %d(A), %d(P), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
             iter + 1, params.nIterations, nA, nP, cs, elapsedTime.hours,
             elapsedTime.minutes, elapsedTime.seconds, totalTime.hours,
             totalTime.minutes, totalTime.seconds);
