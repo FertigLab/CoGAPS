@@ -21,5 +21,5 @@ return sampleFactors matrix from CogapsResult object
 }
 \examples{
 data(GIST)
-getSampleFactors(GIST.result)
+sFactors <- getSampleFactors(GIST.result)
 }

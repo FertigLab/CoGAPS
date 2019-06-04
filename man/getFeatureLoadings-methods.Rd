@@ -21,5 +21,5 @@ return featureLoadings matrix from CogapsResult object
 }
 \examples{
 data(GIST)
-getFeatureLoadings(GIST.result)
+fLoadings <- getFeatureLoadings(GIST.result)
 }

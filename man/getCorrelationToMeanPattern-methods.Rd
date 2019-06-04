@@ -21,5 +21,5 @@ return correlation between each pattern and the cluster mean
 }
 \examples{
 data(GIST)
-getCorrelationToMeanPattern(GIST.result)
+corrToMeanPattern <- getCorrelationToMeanPattern(GIST.result)
 }
