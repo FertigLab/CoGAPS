@@ -21,5 +21,5 @@ return original parameters used to generate this result
 }
 \examples{
 data(GIST)
-getOriginalParameters(GIST.result)
+params <- getOriginalParameters(GIST.result)
 }

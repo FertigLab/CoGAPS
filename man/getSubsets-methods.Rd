@@ -21,5 +21,5 @@ return the names of the genes (samples) in each subset
 }
 \examples{
 data(GIST)
-getSubsets(GIST.result)
+subsets <- getSubsets(GIST.result)
 }

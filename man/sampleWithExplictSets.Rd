@@ -4,7 +4,7 @@
 \alias{sampleWithExplictSets}
 \title{use user provided subsets}
 \usage{
-sampleWithExplictSets(allParams, total)
+sampleWithExplictSets(allParams)
 }
 \arguments{
 \item{allParams}{list of all CoGAPS parameters}

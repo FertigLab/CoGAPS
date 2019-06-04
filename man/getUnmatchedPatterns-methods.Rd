@@ -21,5 +21,5 @@ return unmatched patterns from each subset
 }
 \examples{
 data(GIST)
-getUnmatchedPatterns(GIST.result)
+unmatchedPatterns <- getUnmatchedPatterns(GIST.result)
 }

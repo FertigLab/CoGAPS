@@ -23,5 +23,5 @@ reconstruct gene
 }
 \examples{
 data(GIST)
-D_estimate <- reconstructGene(GIST.result)
+estimatedD <- reconstructGene(GIST.result)
 }

@@ -25,5 +25,5 @@ and standard deviation matrices
 }
 \examples{
 data(GIST)
-feature_zscore <- calcZ(GIST.result)
+featureZScore <- calcZ(GIST.result)
 }

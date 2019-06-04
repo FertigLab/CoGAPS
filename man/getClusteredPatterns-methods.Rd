@@ -21,5 +21,5 @@ return clustered patterns from set of all patterns across all subsets
 }
 \examples{
 data(GIST)
-getClusteredPatterns(GIST.result)
+clusteredPatterns <- getClusteredPatterns(GIST.result)
 }

@@ -92,7 +92,7 @@ setValidity("CogapsResult",
 #' @return featureLoadings matrix
 #' @examples
 #' data(GIST)
-#' getFeatureLoadings(GIST.result)
+#' fLoadings <- getFeatureLoadings(GIST.result)
 setGeneric("getFeatureLoadings", function(object)
     {standardGeneric("getFeatureLoadings")})
 
@@ -105,7 +105,7 @@ setGeneric("getFeatureLoadings", function(object)
 #' @return sampleFactors matrix
 #' @examples
 #' data(GIST)
-#' getSampleFactors(GIST.result)
+#' sFactors <- getSampleFactors(GIST.result)
 setGeneric("getSampleFactors", function(object)
     {standardGeneric("getSampleFactors")})
 
@@ -144,7 +144,7 @@ setGeneric("getVersion", function(object)
 #' @return CogapsParams object
 #' @examples
 #' data(GIST)
-#' getOriginalParameters(GIST.result)
+#' params <- getOriginalParameters(GIST.result)
 setGeneric("getOriginalParameters", function(object)
     {standardGeneric("getOriginalParameters")})
 
@@ -157,7 +157,7 @@ setGeneric("getOriginalParameters", function(object)
 #' @return CogapsParams object
 #' @examples
 #' data(GIST)
-#' getUnmatchedPatterns(GIST.result)
+#' unmatchedPatterns <- getUnmatchedPatterns(GIST.result)
 setGeneric("getUnmatchedPatterns", function(object)
     {standardGeneric("getUnmatchedPatterns")})
 
@@ -170,7 +170,7 @@ setGeneric("getUnmatchedPatterns", function(object)
 #' @return CogapsParams object
 #' @examples
 #' data(GIST)
-#' getClusteredPatterns(GIST.result)
+#' clusteredPatterns <- getClusteredPatterns(GIST.result)
 setGeneric("getClusteredPatterns", function(object)
     {standardGeneric("getClusteredPatterns")})
 
@@ -183,7 +183,7 @@ setGeneric("getClusteredPatterns", function(object)
 #' @return CogapsParams object
 #' @examples
 #' data(GIST)
-#' getCorrelationToMeanPattern(GIST.result)
+#' corrToMeanPattern <- getCorrelationToMeanPattern(GIST.result)
 setGeneric("getCorrelationToMeanPattern", function(object)
     {standardGeneric("getCorrelationToMeanPattern")})
 
@@ -196,7 +196,7 @@ setGeneric("getCorrelationToMeanPattern", function(object)
 #' @return CogapsParams object
 #' @examples
 #' data(GIST)
-#' getSubsets(GIST.result)
+#' subsets <- getSubsets(GIST.result)
 setGeneric("getSubsets", function(object)
     {standardGeneric("getSubsets")})
 
@@ -213,7 +213,7 @@ setGeneric("getSubsets", function(object)
 #' @return matrix of z-scores
 #' @examples
 #' data(GIST)
-#' feature_zscore <- calcZ(GIST.result)
+#' featureZScore <- calcZ(GIST.result)
 setGeneric("calcZ", function(object, which="feature")
     {standardGeneric("calcZ")})
 
@@ -227,7 +227,7 @@ setGeneric("calcZ", function(object, which="feature")
 #' @return the D' estimate of a gene or set of genes
 #' @examples
 #' data(GIST)
-#' D_estimate <- reconstructGene(GIST.result)
+#' estimatedD <- reconstructGene(GIST.result)
 setGeneric("reconstructGene", function(object, genes=NULL)
     {standardGeneric("reconstructGene")})
 
