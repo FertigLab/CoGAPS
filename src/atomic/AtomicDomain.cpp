@@ -72,11 +72,14 @@ bool AtomNeighborhood::hasRight()
 
 ////////////////////////////// ATOMIC DOMAIN ///////////////////////////////////
 
-#ifdef __GAPS_USE_POOLED_ALLOCATOR__
-AtomicDomain::AtomicDomain(uint64_t nBins) : mAtomPool(16384, 0)
+#if __GAPS_USE_POOLED_ALLOCATOR__
+AtomicDomain::AtomicDomain(uint64_t nBins, GapsRandomState *randState)
+    : mAtomPool(16384, 0),
 #else
-AtomicDomain::AtomicDomain(uint64_t nBins)
+AtomicDomain::AtomicDomain(uint64_t nBins, GapsRandomState *randState)
+    :
 #endif
+mRng(randState)
 {
     uint64_t binLength = std::numeric_limits<uint64_t>::max() / nBins;
     mDomainLength = binLength * nBins;
@@ -89,12 +92,30 @@ Atom* AtomicDomain::front()
     return mAtoms.front();
 }
 
+Atom* AtomicDomain::randomAtom()
+{
+    GAPS_ASSERT(size() > 0);
+
+    unsigned index = mRng.uniform32(0, mAtoms.size() - 1);
+    return mAtoms[index];
+}
+
 Atom* AtomicDomain::randomAtom(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
 
     unsigned index = rng->uniform32(0, mAtoms.size() - 1);
     return mAtoms[index];
+}
+
+AtomNeighborhood AtomicDomain::randomAtomWithNeighbors()
+{
+    GAPS_ASSERT(size() > 0);
+
+    unsigned index = mRng.uniform32(0, mAtoms.size() - 1);
+    Atom* left = (index == 0) ? NULL : mAtoms[index - 1];
+    Atom* right = (index == mAtoms.size() - 1) ? NULL : mAtoms[index + 1];
+    return AtomNeighborhood(left, mAtoms[index], right);
 }
 
 AtomNeighborhood AtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
@@ -107,6 +128,15 @@ AtomNeighborhood AtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
     return AtomNeighborhood(left, mAtoms[index], right);
 }
 
+AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor()
+{
+    GAPS_ASSERT(size() > 0);
+
+    unsigned index = mRng.uniform32(0, mAtoms.size() - 1);
+    Atom* right = (index == mAtoms.size() - 1) ? NULL : mAtoms[index + 1];
+    return AtomNeighborhood(NULL, mAtoms[index], right);
+}
+
 AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
@@ -114,6 +144,16 @@ AtomNeighborhood AtomicDomain::randomAtomWithRightNeighbor(GapsRng *rng)
     unsigned index = rng->uniform32(0, mAtoms.size() - 1);
     Atom* right = (index == mAtoms.size() - 1) ? NULL : mAtoms[index + 1];
     return AtomNeighborhood(NULL, mAtoms[index], right);
+}
+
+uint64_t AtomicDomain::randomFreePosition() const
+{
+    uint64_t pos = mRng.uniform64(1, mDomainLength);
+    while (vecContains(mAtoms, pos))
+    {
+        pos = mRng.uniform64(1, mDomainLength);
+    }
+    return pos;
 }
 
 uint64_t AtomicDomain::randomFreePosition(GapsRng *rng) const
@@ -138,7 +178,7 @@ Atom* AtomicDomain::insert(uint64_t pos, float mass)
     std::vector<Atom*>::iterator it;
     it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
 
-#ifdef __GAPS_USE_POOLED_ALLOCATOR__
+#if __GAPS_USE_POOLED_ALLOCATOR__
     it = mAtoms.insert(it, mAtomPool.construct(pos, mass));
 #else
     it = mAtoms.insert(it, new Atom(pos, mass));
@@ -158,7 +198,7 @@ void AtomicDomain::erase(uint64_t pos)
         std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
             mAtoms.end(), pos, compareAtomLower);
 
-    #ifdef __GAPS_USE_POOLED_ALLOCATOR__
+    #if __GAPS_USE_POOLED_ALLOCATOR__
         mAtomPool.destroy(*it);
     #else
         delete *it;

@@ -69,7 +69,7 @@ bool transpose, bool subsetRows, float alpha, float maxGibbsMass,
 const GapsParameters &params, GapsRandomState *randState)
     :
 DataModel(data, transpose, subsetRows, params, alpha),
-mDomain(DataModel::nElements()),
+mDomain(DataModel::nElements(), randState),
 mQueue(DataModel::nElements(), DataModel::nPatterns(), randState),
 mAvgQueueLength(0),
 mNumQueueSamples(0)

@@ -7,10 +7,10 @@
 
 #include <vector>
 
-// comment out to use 'new' operator for allocating atoms
-//#define __GAPS_USE_POOLED_ALLOCATOR__
+// use a pooled allocator when creating atoms
+#define __GAPS_USE_POOLED_ALLOCATOR__ 0
 
-#ifdef __GAPS_USE_POOLED_ALLOCATOR__
+#if __GAPS_USE_POOLED_ALLOCATOR__
 #include "boost/pool/object_pool.hpp"
 #endif
 
@@ -50,15 +50,23 @@ class AtomicDomain
 {
 public:
 
-    AtomicDomain(uint64_t nBins);
+    AtomicDomain(uint64_t nBins, GapsRandomState *randState);
 
     // TODO can we have internal rng since these are always called sequentially
+    //   need to make a rollback function for the async sampler, for now have
+    //   two versions of the random functions - one that accept an external rng
+    //   and one that uses the internal rng
+
     // access atoms
     Atom* front();
+    Atom* randomAtom();
     Atom* randomAtom(GapsRng *rng);
+    AtomNeighborhood randomAtomWithNeighbors();
     AtomNeighborhood randomAtomWithNeighbors(GapsRng *rng);
+    AtomNeighborhood randomAtomWithRightNeighbor();
     AtomNeighborhood randomAtomWithRightNeighbor(GapsRng *rng);
 
+    uint64_t randomFreePosition() const;
     uint64_t randomFreePosition(GapsRng *rng) const;
     uint64_t size() const;
 
@@ -87,12 +95,14 @@ private:
 
     Atom* insert(uint64_t pos, float mass);
 
+    mutable GapsRng mRng;
+
     // size of atomic domain to ensure all bins are equal length
     uint64_t mDomainLength;
 
     // domain storage, sorted vector of pointers to atoms created by allocator
     std::vector<Atom*> mAtoms;
-#ifdef __GAPS_USE_POOLED_ALLOCATOR__
+#if __GAPS_USE_POOLED_ALLOCATOR__
     boost::object_pool<Atom> mAtomPool;
 #endif
 };
