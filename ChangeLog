@@ -1,3 +1,9 @@
+version: 3.4.0
+date: 2019-6-4
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - synced github repo with bioc (3.9) release version
+
 version: 3.3.44
 date: 2019-5-1
 author: Tom Sherman <tomsherman159@gmail.com>
