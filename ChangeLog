@@ -1,3 +1,11 @@
+version: 3.3.45
+date: 2019-6-4
+author: Tom Sherman <tomsherman159@gmail.com>
+    
+    - added a clearer display message in for the number of atoms in each domain
+    - added a warning message when using scCoGAPS or GWCoGAPS instead of the main
+        function CoGAPS with the distributed argument
+
 version: 3.3.44
 date: 2019-5-1
 author: Tom Sherman <tomsherman159@gmail.com>
