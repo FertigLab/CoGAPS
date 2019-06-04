@@ -140,6 +140,8 @@ outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, ...)
 {
+    warning(paste("scCoGAPS is deprecated, use the main function CoGAPS",
+        "with the argument: distributed=\"single-cell\""))
     params@distributed <- "single-cell"
     params@singleCell <- TRUE
     CoGAPS(
@@ -180,6 +182,8 @@ outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, ...)
 {
+    warning(paste("GWCoGAPS is deprecated, use the main function CoGAPS",
+        "with the argument: distributed=\"genome-wide\""))
     params@distributed <- "genome-wide"
     CoGAPS(
         data=data,
