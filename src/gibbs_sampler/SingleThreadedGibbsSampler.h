@@ -128,7 +128,6 @@ void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nTh
             case 'E': exchange(); break;
         }
     }
-
     GAPS_ASSERT(mDomain.isSorted());
 }
 
