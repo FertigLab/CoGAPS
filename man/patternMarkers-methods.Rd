@@ -23,9 +23,12 @@ markers. If NA markers for each pattern of the A matrix will be used.}
 }
 \value{
 By default a non-overlapping list of genes associated with each
-\code{lp}. If \code{full=TRUE} a data.frame of genes rankings with a column
-for each \code{lp} will also be returned.
+\code{lp}.
 }
 \description{
 calculate the most associated pattern for each gene
+}
+\examples{
+data(GIST)
+pm <- patternMarkers(GIST.result)
 }
