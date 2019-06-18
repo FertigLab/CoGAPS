@@ -1,7 +1,7 @@
 #ifndef __COGAPS_ASYNCHRONOUS_GIBBS_SAMPLER_H__
 #define __COGAPS_ASYNCHRONOUS_GIBBS_SAMPLER_H__
 
-#include "../atomic/AtomicDomain.h"
+#include "../atomic/ConcurrentAtomicDomain.h"
 #include "../atomic/ProposalQueue.h"
 #include "../data_structures/Matrix.h"
 #include "../math/Math.h"
@@ -48,7 +48,7 @@ public:
 
 private:
 
-    AtomicDomain mDomain; // data structure providing access to atoms
+    ConcurrentAtomicDomain mDomain; // data structure providing access to atoms
     ProposalQueue mQueue; // creates queue of proposals that get evaluated by sampler
 
     float mAvgQueueLength;
@@ -69,7 +69,7 @@ bool transpose, bool subsetRows, float alpha, float maxGibbsMass,
 const GapsParameters &params, GapsRandomState *randState)
     :
 DataModel(data, transpose, subsetRows, params, alpha),
-mDomain(DataModel::nElements(), randState),
+mDomain(DataModel::nElements()),
 mQueue(DataModel::nElements(), DataModel::nPatterns(), randState),
 mAvgQueueLength(0),
 mNumQueueSamples(0)
