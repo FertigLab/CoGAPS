@@ -1,7 +1,7 @@
-#ifndef __GAPS_PROPOSAL_QUEUE_H__
-#define __GAPS_PROPOSAL_QUEUE_H__
+#ifndef __COGAPS_PROPOSAL_QUEUE_H__
+#define __COGAPS_PROPOSAL_QUEUE_H__
 
-#include "AtomicDomain.h"
+#include "ConcurrentAtomicDomain.h"
 #include "../data_structures/HashSets.h"
 #include "../math/Random.h"
 #include "../utils/Archive.h"
@@ -38,7 +38,7 @@ public:
     void setLambda(float lambda);
 
     // modify/access queue
-    void populate(AtomicDomain &domain, unsigned limit);
+    void populate(ConcurrentAtomicDomain &domain, unsigned limit);
     void clear();
     unsigned size() const;
     AtomicProposal& operator[](int n);
@@ -87,11 +87,11 @@ private:
 
     float deathProb(double nAtoms) const;
 
-    bool makeProposal(AtomicDomain &domain);
-    bool birth(AtomicDomain &domain);
-    bool death(AtomicDomain &domain);
-    bool move(AtomicDomain &domain);
-    bool exchange(AtomicDomain &domain);
+    bool makeProposal(ConcurrentAtomicDomain &domain);
+    bool birth(ConcurrentAtomicDomain &domain);
+    bool death(ConcurrentAtomicDomain &domain);
+    bool move(ConcurrentAtomicDomain &domain);
+    bool exchange(ConcurrentAtomicDomain &domain);
 };
 
-#endif
+#endif // __COGAPS_PROPOSAL_QUEUE_H__

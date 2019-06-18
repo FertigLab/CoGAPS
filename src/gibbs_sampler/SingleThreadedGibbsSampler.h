@@ -75,7 +75,7 @@ bool transpose, bool subsetRows, float alpha, float maxGibbsMass,
 const GapsParameters &params, GapsRandomState *randState)
     :
 DataModel(data, transpose, subsetRows, params, alpha),
-mDomain(DataModel::nElements(), randState),
+mDomain(DataModel::nElements()),
 mRng(randState),
 mNumBins(DataModel::nElements()),
 mBinLength(std::numeric_limits<uint64_t>::max() / (DataModel::nElements())),
@@ -137,7 +137,7 @@ template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::birth()
 {
     // get random open position in atomic domain, calculate row and col of the position
-    uint64_t pos = mDomain.randomFreePosition();
+    uint64_t pos = mDomain.randomFreePosition(&mRng);
     unsigned row = (pos / mBinLength) / mNumPatterns;
     unsigned col = (pos / mBinLength) % mNumPatterns;
 
@@ -160,7 +160,7 @@ template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::death()
 {
     // select atom at random and calculate it's row and col
-    Atom *atom = mDomain.randomAtom();
+    Atom *atom = mDomain.randomAtom(&mRng);
     unsigned row = (atom->pos / mBinLength) / mNumPatterns;
     unsigned col = (atom->pos / mBinLength) % mNumPatterns;
 
@@ -187,7 +187,7 @@ template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::move()
 {
     // select atom at random and get it's right and left neighbors
-    AtomNeighborhood hood = mDomain.randomAtomWithNeighbors();
+    AtomNeighborhood hood = mDomain.randomAtomWithNeighbors(&mRng);
     uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
     uint64_t rbound = hood.hasRight() ? hood.right->pos :
         static_cast<uint64_t>(mDomainLength);
@@ -223,7 +223,7 @@ template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::exchange()
 {
     // select atom at random and get it's right neighbor
-    AtomNeighborhood hood = mDomain.randomAtomWithRightNeighbor();
+    AtomNeighborhood hood = mDomain.randomAtomWithRightNeighbor(&mRng);
     Atom *atom1 = hood.center;
     Atom *atom2 = hood.hasRight() ? hood.right : mDomain.front();
 
