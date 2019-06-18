@@ -1,7 +1,7 @@
-#include "SparseStoragePolicy.h"
-
+#include "SparseNormalModel.h"
 #include "../data_structures/SparseIterator.h"
 #include "../math/Math.h"
+#include "../math/MatrixMath.h"
 #include "../math/VectorMath.h"
 
 #define GAPS_SQ(x) ((x) * (x))
@@ -11,7 +11,29 @@
 #define COUNT_BITS(u) __builtin_popcountll(u)
 #define GET_FIRST_SET_BIT(u) (__builtin_ffsll(u) - 1)
 
-float SparseStorage::chiSq() const
+void SparseNormalModel::setMatrix(const Matrix &mat)
+{
+    mMatrix = mat;
+}
+
+void SparseNormalModel::setAnnealingTemp(float temp)
+{
+    mAnnealingTemp = temp;
+}
+
+void SparseNormalModel::sync(const SparseNormalModel &model, unsigned nThreads)
+{
+    mOtherMatrix = &(model.mMatrix);
+    generateLookupTables();
+}
+
+// required for GibbsSampler interface
+void SparseNormalModel::extraInitialization()
+{
+    // nop - not needed
+}
+
+float SparseNormalModel::chiSq() const
 {
     float chisq = 0.f;
     for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
@@ -34,34 +56,44 @@ float SparseStorage::chiSq() const
     return chisq * mBeta;
 }
 
-void SparseStorage::sync(const SparseStorage &sampler, unsigned nThreads)
+float SparseNormalModel::dataSparsity() const
 {
-    mOtherMatrix = &(sampler.mMatrix);
-    generateLookupTables();
+    return gaps::sparsity(mDMatrix);
 }
 
-// required for GibbsSampler interface
-void SparseStorage::extraInitialization()
+uint64_t SparseNormalModel::nElements() const
 {
-    // nop - not needed
+    return mMatrix.nRow() * mMatrix.nCol();
 }
 
-// required for GibbsSampler interface
-float SparseStorage::apSum() const
+uint64_t SparseNormalModel::nPatterns() const
 {
-    return 0.f;
+    return mMatrix.nCol();
 }
 
-void SparseStorage::changeMatrix(unsigned row, unsigned col,
-float delta)
+float SparseNormalModel::lambda() const
+{
+    return mLambda;
+}
+
+bool SparseNormalModel::canUseGibbs(unsigned col) const
+{
+    return !gaps::isVectorZero(mOtherMatrix->getCol(col));
+}
+
+bool SparseNormalModel::canUseGibbs(unsigned c1, unsigned c2) const
+{
+    return canUseGibbs(c1) || canUseGibbs(c2);
+}
+
+void SparseNormalModel::changeMatrix(unsigned row, unsigned col, float delta)
 {
     mMatrix.add(row, col, delta);
 
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
-void SparseStorage::safelyChangeMatrix(unsigned row,
-unsigned col, float delta)
+void SparseNormalModel::safelyChangeMatrix(unsigned row, unsigned col, float delta)
 {
     float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
     mMatrix.add(row, col, newVal - mMatrix(row, col));
@@ -69,8 +101,45 @@ unsigned col, float delta)
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
+float SparseNormalModel::deltaLogLikelihood(unsigned r1, unsigned c1, unsigned r2,
+unsigned c2, float mass)
+{
+    AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
+    alpha *= mAnnealingTemp;
+    return -1.f * mass * (alpha.s_mu + alpha.s * mass / 2.f);
+}
+
+OptionalFloat SparseNormalModel::sampleBirth(unsigned row, unsigned col, GapsRng *rng)
+{
+    AlphaParameters alpha = alphaParameters(row, col);
+    return gibbsMass(alpha * mAnnealingTemp, 0.f, mMaxGibbsMass, rng, mLambda);
+}
+
+OptionalFloat SparseNormalModel::sampleDeathAndRebirth(unsigned row, unsigned col,
+float delta, GapsRng *rng)
+{
+    AlphaParameters alpha = alphaParametersWithChange(row, col, delta);
+    OptionalFloat mass = gibbsMass(alpha * mAnnealingTemp, 0.f, mMaxGibbsMass, rng, mLambda);
+    if (mass.hasValue())
+    {
+        float deltaLL = mass.value() * (alpha.s_mu - alpha.s * mass.value() / 2.f);
+        if (std::log(rng->uniform()) < deltaLL)
+        {
+            return mass;
+        }
+    }
+    return OptionalFloat();
+}
+
+OptionalFloat SparseNormalModel::sampleExchange(unsigned r1, unsigned c1, float m1,
+unsigned r2, unsigned c2, float m2, GapsRng *rng)
+{
+    AlphaParameters alpha = alphaParameters(r1, c1, r2, c2);
+    return gibbsMass(alpha * mAnnealingTemp, -m1, m2, rng);
+}
+
 // PERFORMANCE_CRITICAL
-AlphaParameters SparseStorage::alphaParameters(unsigned row, unsigned col)
+AlphaParameters SparseNormalModel::alphaParameters(unsigned row, unsigned col)
 {
     const SparseVector &D(mDMatrix.getCol(row));
     const HybridVector &V(mOtherMatrix->getCol(col));
@@ -113,7 +182,7 @@ AlphaParameters SparseStorage::alphaParameters(unsigned row, unsigned col)
 }
 
 // PERFORMANCE_CRITICAL
-AlphaParameters SparseStorage::alphaParametersWithChange(unsigned row,
+AlphaParameters SparseNormalModel::alphaParametersWithChange(unsigned row,
 unsigned col, float ch)
 {
     const SparseVector &D(mDMatrix.getCol(row));
@@ -159,7 +228,7 @@ unsigned col, float ch)
 }
 
 // PERFORMANCE_CRITICAL
-AlphaParameters SparseStorage::alphaParameters(unsigned r1, unsigned c1,
+AlphaParameters SparseNormalModel::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
     if (r1 == r2)
@@ -211,7 +280,7 @@ unsigned r2, unsigned c2)
     return alphaParameters(r1, c1) + alphaParameters(r2, c2);
 }
 
-void SparseStorage::generateLookupTables()
+void SparseNormalModel::generateLookupTables()
 {
     unsigned nPatterns = mZ1.size();
     for (unsigned i = 0; i < nPatterns; ++i)
@@ -230,15 +299,15 @@ void SparseStorage::generateLookupTables()
     }
 }
 
-Archive& operator<<(Archive &ar, const SparseStorage &s)
+Archive& operator<<(Archive &ar, const SparseNormalModel &mod)
 {
-    ar << s.mMatrix << s.mBeta;
+    ar << mod.mMatrix << mod.mBeta;
     return ar;
 }
 
-Archive& operator>>(Archive &ar, SparseStorage &s)
+Archive& operator>>(Archive &ar, SparseNormalModel &mod)
 {
-    ar >> s.mMatrix >> s.mBeta;
+    ar >> mod.mMatrix >> mod.mBeta;
     return ar;
 }
 

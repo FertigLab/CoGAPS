@@ -1,5 +1,5 @@
 #include "catch.h"
-#include "../gibbs_sampler/GibbsSampler.h"
+#include "../gibbs_sampler/AsynchronousGibbsSampler.h"
 #include "../gibbs_sampler/DenseStoragePolicy.h"
 
 TEST_CASE("Test DenseGibbsSampler")

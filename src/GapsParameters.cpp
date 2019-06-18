@@ -36,6 +36,7 @@ void GapsParameters::print() const
 
     gaps_printf("singleCell: %s\n", singleCell ? "TRUE" : "FALSE");
     gaps_printf("useSparseOptimization: %s\n", useSparseOptimization ? "TRUE" : "FALSE");
+    gaps_printf("asynchronousUpdates: %s\n", asynchronousUpdates ? "TRUE" : "FALSE");
     gaps_printf("takePumpSamples: %s\n", takePumpSamples ? "TRUE" : "FALSE");
     gaps_printf("\n");
 

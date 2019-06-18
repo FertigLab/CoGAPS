@@ -2,9 +2,8 @@
 #define __COGAPS_GAPS_STATISTICS_H__
 
 #include "GapsParameters.h"
-#include "gibbs_sampler/GibbsSampler.h"
-#include "gibbs_sampler/DenseStoragePolicy.h"
-#include "gibbs_sampler/SparseStoragePolicy.h"
+#include "gibbs_sampler/DenseNormalModel.h"
+#include "gibbs_sampler/SparseNormalModel.h"
 #include "math/Math.h"
 #include "math/MatrixMath.h"
 #include "math/VectorMath.h"
@@ -18,11 +17,11 @@ public:
 
     GapsStatistics(unsigned nGenes, unsigned nSamples, unsigned nPatterns);
 
-    template <class Sampler>
-    void update(const Sampler &ASampler, const Sampler &PSampler);
+    template <class DataModel>
+    void update(const DataModel &AModel, const DataModel &PModel);
 
-    template <class Sampler>
-    void updatePump(const Sampler &ASampler);
+    template <class DataModel>
+    void updatePump(const DataModel &AModel);
 
     Matrix Amean() const;
     Matrix Pmean() const;
@@ -38,8 +37,8 @@ public:
     std::vector<float> chisqHistory() const;
     std::vector<unsigned> atomHistory(char m) const;
     
-    float meanChiSq(const GibbsSampler<DenseStorage> &PSampler) const;
-    float meanChiSq(const GibbsSampler<SparseStorage> &PSampler) const;
+    float meanChiSq(const DenseNormalModel &model) const;
+    float meanChiSq(const SparseNormalModel &model) const;
 
     // serialization
     friend Archive& operator<<(Archive &ar, const GapsStatistics &stat);
@@ -120,41 +119,41 @@ inline void pumpMatrixCutThreshold(const FactorMatrix &AMatrix, Matrix *statMatr
     }
 }
 
-template <class Sampler>
-void GapsStatistics::updatePump(const Sampler &ASampler)
+template <class DataModel>
+void GapsStatistics::updatePump(const DataModel &AModel)
 {
     ++mPumpUpdates;
     if (mPumpThreshold == PUMP_UNIQUE)
     {
-        pumpMatrixCutThreshold(ASampler.mMatrix, &mPumpMatrix);
+        pumpMatrixCutThreshold(AModel.mMatrix, &mPumpMatrix);
     }
     else
     {
-        pumpMatrixUniqueThreshold(ASampler.mMatrix, &mPumpMatrix);
+        pumpMatrixUniqueThreshold(AModel.mMatrix, &mPumpMatrix);
     }
 }
 
-template <class Sampler>
-void GapsStatistics::update(const Sampler &ASampler, const Sampler &PSampler)
+template <class DataModel>
+void GapsStatistics::update(const DataModel &AModel, const DataModel &PModel)
 {
-    mStatUpdates++;
+    ++mStatUpdates;
 
-    GAPS_ASSERT(mNumPatterns == ASampler.mMatrix.nCol());
-    GAPS_ASSERT(mNumPatterns == PSampler.mMatrix.nCol());
+    GAPS_ASSERT(mNumPatterns == AModel.mMatrix.nCol());
+    GAPS_ASSERT(mNumPatterns == PModel.mMatrix.nCol());
 
     // precision loss? use double?
     for (unsigned j = 0; j < mNumPatterns; ++j)
     {
-        float norm = gaps::max(PSampler.mMatrix.getCol(j));
+        float norm = gaps::max(PModel.mMatrix.getCol(j));
         norm = norm == 0.f ? 1.f : norm;
         GAPS_ASSERT(norm > 0.f);
 
-        Vector quot(PSampler.mMatrix.getCol(j) / norm);
+        Vector quot(PModel.mMatrix.getCol(j) / norm);
         GAPS_ASSERT(gaps::min(quot) >= 0.f);
         mPMeanMatrix.getCol(j) += quot;
         mPStdMatrix.getCol(j) += gaps::elementSq(quot);
 
-        Vector prod(ASampler.mMatrix.getCol(j) * norm);
+        Vector prod(AModel.mMatrix.getCol(j) * norm);
         GAPS_ASSERT(gaps::min(prod) >= 0.f);
         mAMeanMatrix.getCol(j) += prod;
         mAStdMatrix.getCol(j) += gaps::elementSq(prod);
