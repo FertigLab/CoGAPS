@@ -16,14 +16,15 @@ struct GapsResult
     Matrix pumpMatrix;
     Matrix meanPatternAssignment;
 
-    float meanChiSq;
-    uint32_t seed;
-    unsigned totalRunningTime;
-
     std::vector<float> chisqHistory;
     std::vector<unsigned> atomHistoryA;
     std::vector<unsigned> atomHistoryP;
 
+    uint64_t totalUpdates;
+    uint32_t seed;
+    unsigned totalRunningTime;
+
+    float meanChiSq;
     float averageQueueLengthA;
     float averageQueueLengthP;
 

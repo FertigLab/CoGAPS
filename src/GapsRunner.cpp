@@ -243,10 +243,11 @@ GapsRng &rng, char &phase, unsigned &currentIter)
 }
 
 template <class Sampler>
-static void runOnePhase(const GapsParameters &params, Sampler &ASampler,
+static uint64_t runOnePhase(const GapsParameters &params, Sampler &ASampler,
 Sampler &PSampler, GapsStatistics &stats, const GapsRandomState *randState,
 GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
 {
+    uint64_t totalUpdates = 0;
     for (; currentIter < params.nIterations; ++currentIter)
     {
         gaps_check_interrupt();
@@ -266,6 +267,7 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
         unsigned nA = rng.poisson(gaps::max(ASampler.nAtoms(), 10));
         unsigned nP = rng.poisson(gaps::max(PSampler.nAtoms(), 10));
         updateSampler(params, ASampler, PSampler, nA, nP);
+        totalUpdates += nA + nP;
 
         if (phase == 'S')
         {
@@ -278,6 +280,7 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
         displayStatus(params, ASampler, PSampler, startTime, phase,
             currentIter, stats);
     }
+    return totalUpdates;
 }
 
 template <class Sampler>
@@ -405,19 +408,20 @@ const DataType &uncertainty, GapsRandomState *randState)
 
     // fallthrough through phases, allows algorithm to be resumed in either phase
     GAPS_ASSERT(phase == 'C' || phase == 'S');
+    uint64_t totalUpdates = 0;
     switch (phase)
     {
         case 'C':
             GAPS_MESSAGE(params.printMessages, "-- Calibration Phase --\n");
-            runOnePhase(params, ASampler, PSampler, stats, randState, rng,
-                startTime, phase, currentIter);
+            totalUpdates += runOnePhase(params, ASampler, PSampler, stats, randState,
+                rng, startTime, phase, currentIter);
             phase = 'S';
             currentIter = 0;
 
         case 'S':
             GAPS_MESSAGE(params.printMessages, "-- Sampling Phase --\n");
-            runOnePhase(params, ASampler, PSampler, stats, randState, rng,
-                startTime, phase, currentIter);
+            totalUpdates += runOnePhase(params, ASampler, PSampler, stats, randState,
+                rng, startTime, phase, currentIter);
     }
     
     // get result
@@ -426,6 +430,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     result.meanChiSq = stats.meanChiSq(PSampler);
     result.averageQueueLengthA = ASampler.getAverageQueueLength();
     result.averageQueueLengthP = PSampler.getAverageQueueLength();
+    result.totalUpdates = totalUpdates;
 
     // handle pump statistics
     if (params.takePumpSamples)
@@ -442,7 +447,6 @@ const DataType &uncertainty, GapsRandomState *randState)
             params.workerID, elapsed.hours, elapsed.minutes, elapsed.seconds);
         gaps_flush();
     }
-
     return result;
 }
 
