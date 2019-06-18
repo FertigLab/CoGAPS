@@ -220,66 +220,75 @@ function(object, data, uncertainty)
         lwid=c(1,10), lhei=c(1, 4, 1.2 ), main="Heatmap of Residuals")
 })
 
-#' @rdname patternMarkers-methods
-#' @aliases patternMarkers
-setMethod("patternMarkers", signature(object="CogapsResult"),
-function(object, threshold, lp)
+patternMarkersCalculation <- function(mat, threshold, lp)
 {
-    nGenes <- nrow(object@featureLoadings)
-    nPatterns <- ncol(object@featureLoadings)
-
-    # find the A with the highest magnitude
-    Arowmax <- t(apply(object@featureLoadings, 1, function(x) x/max(x)))
-
+    nMeasurements <- nrow(mat)
+    nPatterns <- ncol(mat)
+    rowMax <- t(apply(mat, 1, function(x) x / max(x)))
+    
     if (!is.na(lp))
     {
         if (length(lp) != nPatterns)
         {
             warning("lp length must equal the number of columns of the Amatrix")
         }
-        sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
-        ssranks <-rank(sstat)
+        sstat <- apply(rowMax, 1, function(x) sqrt(t(x-lp) %*% (x-lp)))
+        ssranks <- rank(sstat)
         ssgenes.th <- names(sort(sstat,decreasing=FALSE,na.last=TRUE))
     }
     else
     {
-        # determine which genes are most associated with each pattern
-        sstat <- matrix(NA, nrow=nGenes, ncol=nPatterns,
-            dimnames=dimnames(object@featureLoadings))
-        ssranks <- matrix(NA, nrow=nGenes, ncol=nPatterns,
-            dimnames=dimnames(object@featureLoadings))
-        ssgenes <- matrix(NA, nrow=nGenes, ncol=nPatterns, dimnames=NULL)
+        # determine which measurements are most associated with each pattern
+        sstat <- matrix(NA, nrow=nMeasurements, ncol=nPatterns, dimnames=dimnames(mat))
+        ssranks <- matrix(NA, nrow=nMeasurements, ncol=nPatterns, dimnames=dimnames(mat))
+        ssgenes <- matrix(NA, nrow=nMeasurements, ncol=nPatterns, dimnames=NULL)
         for (i in 1:nPatterns)
         {
             lp <- rep(0,nPatterns)
             lp[i] <- 1
-            sstat[,i] <- unlist(apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp))))
-            ssranks[,i]<-rank(sstat[,i])
-            ssgenes[,i]<-names(sort(sstat[,i],decreasing=FALSE,na.last=TRUE))
+            sstat[,i] <- unlist(apply(rowMax, 1, function(x) sqrt(t(x-lp) %*% (x-lp))))
+            ssranks[,i] <- rank(sstat[,i])
+            ssgenes[,i] <- names(sort(sstat[,i], decreasing=FALSE, na.last=TRUE))
         }
         if (threshold=="cut")
         {
-            geneThresh <- sapply(1:nPatterns,function(x) min(which(ssranks[ssgenes[,x],x] > apply(ssranks[ssgenes[,x],],1,min))))
-            ssgenes.th <- sapply(1:nPatterns,function(x) ssgenes[1:geneThresh[x],x])
+            geneThresh <- sapply(1:nPatterns, function(x) min(which(ssranks[ssgenes[,x],x] > apply(ssranks[ssgenes[,x],],1,min))))
+            ssgenes.th <- sapply(1:nPatterns, function(x) ssgenes[1:geneThresh[x],x])
         }
         else if (threshold=="all")
         {
-            pIndx<-unlist(apply(sstat,1,which.min))
+            pIndx <- unlist(apply(sstat, 1, which.min))
             gBYp <- list()
-            for(i in sort(unique(pIndx)))
+            for (i in sort(unique(pIndx)))
             {
-                gBYp[[i]]<-sapply(strsplit(names(pIndx[pIndx==i]),"[.]"),function(x) x[[1]][1])
+                gBYp[[i]] <- sapply(strsplit(names(pIndx[pIndx==i]),"[.]"),function(x) x[[1]][1])
             }
             ssgenes.th <- lapply(1:max(sort(unique(pIndx))), function(x)
                 ssgenes[which(ssgenes[,x] %in% gBYp[[x]]),x])
         }
         else
         {
-            stop("Threshold arguement not viable option")
+            stop("invalid thresold argument")
         }
     }
     return(list("PatternMarkers"=ssgenes.th, "PatternRanks"=ssranks,
-        "PatternMarkerScores"=sstat))
+        "PatternMarkerScores"=sstat))       
+}
+
+#' @rdname patternMarkers-methods
+#' @aliases patternMarkers
+setMethod("patternMarkers", signature(object="CogapsResult"),
+function(object, threshold, lp)
+{
+    patternMarkersCalculation(object@feataureLoadings, threshold, lp)
+})
+
+#' @rdname amplitudeMarkers-methods
+#' @aliases amplitudeMarkers
+setMethod("amplitudeMarkers", signature(object="CogapsResult"),
+function(object, threshold, lp)
+{
+    patternMarkersCalculation(object@sampleFactors, threshold, lp)
 })
 
 #' heatmap of original data clustered by pattern markers statistic
