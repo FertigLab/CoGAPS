@@ -14,19 +14,19 @@ AtomicProposal::AtomicProposal(char t, GapsRandomState *randState)
     
 //////////////////////////////// ProposalQueue /////////////////////////////////
 
-ProposalQueue::ProposalQueue(unsigned nrow, unsigned ncol,
+ProposalQueue::ProposalQueue(uint64_t nElements, uint64_t nPatterns,
 GapsRandomState *randState)
     :
-mUsedMatrixIndices(nrow),
+mUsedMatrixIndices(nElements / nPatterns),
 mRandState(randState),
 mRng(randState),
 mMinAtoms(0),
 mMaxAtoms(0),
-mBinLength(std::numeric_limits<uint64_t>::max() / static_cast<uint64_t>(nrow * ncol)),
-mNumCols(ncol),
+mBinLength(std::numeric_limits<uint64_t>::max() / nElements),
+mNumCols(nPatterns),
 mAlpha(0.0),
-mDomainLength(static_cast<double>(mBinLength * static_cast<uint64_t>(nrow * ncol))),
-mNumBins(static_cast<double>(nrow * ncol)),
+mDomainLength(static_cast<double>(mBinLength * nElements)),
+mNumBins(static_cast<double>(nElements)),
 mU1(0.f),
 mU2(0.f),
 mNumProcessed(0),
@@ -48,7 +48,7 @@ unsigned ProposalQueue::nProcessed() const
     return mNumProcessed;
 }
 
-void ProposalQueue::populate(AtomicDomain &domain, unsigned limit)
+void ProposalQueue::populate(ConcurrentAtomicDomain &domain, unsigned limit)
 {
     GAPS_ASSERT(mQueue.empty());
     GAPS_ASSERT(mUsedAtoms.isEmpty());
@@ -126,7 +126,7 @@ float ProposalQueue::deathProb(double nAtoms) const
     return numer / (numer + mAlpha * mNumBins * (mDomainLength - nAtoms));
 }
 
-bool ProposalQueue::makeProposal(AtomicDomain &domain)
+bool ProposalQueue::makeProposal(ConcurrentAtomicDomain &domain)
 {
     mU1 = mUseCachedRng ? mU1 : mRng.uniform();
     mU2 = mUseCachedRng ? mU2: mRng.uniform();
@@ -160,7 +160,7 @@ bool ProposalQueue::makeProposal(AtomicDomain &domain)
     return (mU1 < 0.75f) ? move(domain) : exchange(domain);
 }
 
-bool ProposalQueue::birth(AtomicDomain &domain)
+bool ProposalQueue::birth(ConcurrentAtomicDomain &domain)
 {
     AtomicProposal prop('B', mRandState);
     uint64_t pos = domain.randomFreePosition(&(prop.rng));
@@ -187,7 +187,7 @@ bool ProposalQueue::birth(AtomicDomain &domain)
     return true;
 }
 
-bool ProposalQueue::death(AtomicDomain &domain)
+bool ProposalQueue::death(ConcurrentAtomicDomain &domain)
 {
     AtomicProposal prop('D', mRandState);
     prop.atom1 = domain.randomAtom(&(prop.rng));
@@ -207,7 +207,7 @@ bool ProposalQueue::death(AtomicDomain &domain)
     return true;
 }
 
-bool ProposalQueue::move(AtomicDomain &domain)
+bool ProposalQueue::move(ConcurrentAtomicDomain &domain)
 {
     AtomicProposal prop('M', mRandState);
     AtomNeighborhood hood = domain.randomAtomWithNeighbors(&(prop.rng));
@@ -248,7 +248,7 @@ bool ProposalQueue::move(AtomicDomain &domain)
     return true;
 }
 
-bool ProposalQueue::exchange(AtomicDomain &domain)
+bool ProposalQueue::exchange(ConcurrentAtomicDomain &domain)
 {
     AtomicProposal prop('E', mRandState);
     AtomNeighborhood hood = domain.randomAtomWithRightNeighbor(&(prop.rng));

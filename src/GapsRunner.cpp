@@ -1,9 +1,10 @@
 #include "GapsRunner.h"
 
 #include "utils/Archive.h"
-#include "gibbs_sampler/GibbsSampler.h"
-#include "gibbs_sampler/DenseStoragePolicy.h"
-#include "gibbs_sampler/SparseStoragePolicy.h"
+#include "gibbs_sampler/AsynchronousGibbsSampler.h"
+#include "gibbs_sampler/SingleThreadedGibbsSampler.h"
+#include "gibbs_sampler/DenseNormalModel.h"
+#include "gibbs_sampler/SparseNormalModel.h"
 
 #ifdef __GAPS_R_BUILD__
 #include <Rcpp.h>
@@ -26,6 +27,7 @@ namespace bpt = boost::posix_time;
         } \
     } while(0)
 
+// for converting seconds to h:m:s
 struct GapsTime
 {
     unsigned hours;
@@ -49,8 +51,36 @@ static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &param
 
 ////////////////////////////////////////////////////////////////////////////////
 
+template <class DataModel, class DataType>
+static GapsResult chooseSampler(const DataType &data, GapsParameters &params,
+const DataType &uncertainty, GapsRandomState *randState)
+{
+    if (params.asynchronousUpdates)
+    {
+        gaps_printf("Sampler Type: Asynchronous\n");
+        return runCoGAPSAlgorithm< AsynchronousGibbsSampler<DataModel> >(data,
+            params, uncertainty, randState);
+    }
+    gaps_printf("Sampler Type: Sequential\n");
+    return runCoGAPSAlgorithm< SingleThreadedGibbsSampler<DataModel> >(data,
+        params, uncertainty, randState);
+}
+
+template <class DataType>
+static GapsResult chooseDataModel(const DataType &data, GapsParameters &params,
+const DataType &uncertainty, GapsRandomState *randState)
+{
+    if (params.useSparseOptimization)
+    {
+        gaps_printf("Data Model: Sparse, Normal\n");
+        return chooseSampler<SparseNormalModel>(data, params, uncertainty, randState);
+    }
+    gaps_printf("Data Model: Dense, Normal\n");        
+    return chooseSampler<DenseNormalModel>(data, params, uncertainty, randState);
+}
+
 // helper function, this dispatches the correct run function depending
-// on the type of GibbsSampler needed for the given parameters
+// on the type of GibbsSampler and DataModel needed for the given parameters
 template <class DataType>
 static GapsResult run_helper(const DataType &data, GapsParameters &params,
 const DataType &uncertainty, GapsRandomState *randState)
@@ -62,14 +92,7 @@ const DataType &uncertainty, GapsRandomState *randState)
         ar >> params;
         ar >> *randState;
     }
-
-    if (params.useSparseOptimization)
-    {
-        return runCoGAPSAlgorithm< GibbsSampler<SparseStorage> >(data, params,
-            uncertainty, randState);
-    }
-    return runCoGAPSAlgorithm< GibbsSampler<DenseStorage> >(data, params,
-        uncertainty, randState);
+    return chooseDataModel(data, params, uncertainty, randState);
 }
 
 // these two functions are the top-level functions exposed to the C++
@@ -113,13 +136,10 @@ const Sampler &ASampler, const Sampler &PSampler, char phase, unsigned iter)
     }
 
     double totalIter = 2.0 * static_cast<double>(params.nIterations);
-
     double estimatedCompleted = estimatedNumUpdates(nIter, nIter, nAtomsA) + 
         estimatedNumUpdates(nIter, nIter, nAtomsP);
-
     double estimatedTotal = estimatedNumUpdates(nIter, totalIter, nAtomsA) + 
         estimatedNumUpdates(nIter, totalIter, nAtomsP);
-
     return estimatedCompleted / estimatedTotal;
 }
 
@@ -181,8 +201,7 @@ static void createCheckpoint(const GapsParameters &params,
 Sampler &ASampler, Sampler &PSampler, const GapsRandomState *randState,
 const GapsStatistics &stats, const GapsRng &rng, char phase, unsigned iter)
 {
-    if (params.checkpointInterval > 0
-    && ((iter + 1) % params.checkpointInterval) == 0
+    if (params.checkpointInterval > 0 && ((iter + 1) % params.checkpointInterval) == 0
     && !params.subsetData)
     {
         // create backup file
@@ -198,6 +217,11 @@ const GapsStatistics &stats, const GapsRng &rng, char phase, unsigned iter)
         // delete backup file
         std::remove((params.checkpointOutFile + ".backup").c_str());
 
+        // running the extra initialization here allows for consistency with runs
+        // started from a checkpoint. This initialization phase will be run first 
+        // thing once a checkpoint is loaded since large matrices which aren't stored
+        // need to be initialized. By running it here we make sure that the algorithm
+        // is in the same state it will be when started from a checkpoint
         ASampler.extraInitialization();
         PSampler.extraInitialization();
     }
@@ -314,7 +338,7 @@ const DataType &uncertainty, GapsRandomState *randState)
 {
     // check if running in debug mode
     #ifdef GAPS_DEBUG
-    GAPS_MESSAGE(params.printMessages, "Running in debug mode\n");
+    gaps_printf("Running in debug mode\n");
     #endif
 
     // load data into gibbs samplers
@@ -328,7 +352,6 @@ const DataType &uncertainty, GapsRandomState *randState)
     // the process or waiting for it to finish
     GAPS_MESSAGE(params.printMessages, "Loading Data...");
     bpt::ptime readStart = bpt_now();
-
     gaps_check_interrupt();
     Sampler ASampler(data, !params.transposeData, !params.subsetGenes,
         params.alphaA, params.maxGibbsMassA, params, randState);
@@ -341,12 +364,6 @@ const DataType &uncertainty, GapsRandomState *randState)
     processFixedMatrix(params, ASampler, PSampler);
     gaps_check_interrupt();
 
-    // check if data is sparse and sparseOptimization is not enabled
-    if (params.printMessages && !params.useSparseOptimization && ASampler.dataSparsity() > 0.80f)
-    {
-        gaps_printf("\nWarning: data is more than 80%% sparse and sparseOptimization is not enabled\n");
-    }
-
     // elapsed time for reading data
     bpt::time_duration readDiff = bpt_now() - readStart;
     GapsTime elapsed(static_cast<unsigned>(readDiff.total_seconds()));
@@ -354,6 +371,12 @@ const DataType &uncertainty, GapsRandomState *randState)
     {
         gaps_printf("Done! (%02d:%02d:%02d)\n", elapsed.hours, elapsed.minutes,
             elapsed.seconds);
+    }
+
+    // check if data is sparse and sparseOptimization is not enabled
+    if (params.printMessages && !params.useSparseOptimization && ASampler.dataSparsity() > 0.80f)
+    {
+        gaps_printf("\nWarning: data is more than 80%% sparse and sparseOptimization is not enabled\n");
     }
 
     // if we are running distributed, each worker needs to print when it's started
@@ -368,8 +391,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     GapsRng rng(randState);
     char phase = 'C';
     unsigned currentIter = 0;
-    processCheckpoint(params, ASampler, PSampler, randState, stats, rng,
-        phase, currentIter);
+    processCheckpoint(params, ASampler, PSampler, randState, stats, rng, phase, currentIter);
     calculateNumberOfThreads(params);
 
     // sync samplers and run any additional initialization needed
@@ -400,10 +422,12 @@ const DataType &uncertainty, GapsRandomState *randState)
     
     // get result
     GapsResult result(stats);
+    result.totalRunningTime = static_cast<unsigned>((bpt_now() - startTime).total_seconds());
     result.meanChiSq = stats.meanChiSq(PSampler);
     result.averageQueueLengthA = ASampler.getAverageQueueLength();
     result.averageQueueLengthP = PSampler.getAverageQueueLength();
 
+    // handle pump statistics
     if (params.takePumpSamples)
     {
         result.pumpMatrix = stats.pumpMatrix();
@@ -413,8 +437,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     // if we are running distributed, each worker needs to print when it's done
     if (params.runningDistributed && params.printMessages)
     {
-        bpt::time_duration diff = bpt_now() - startTime;
-        GapsTime elapsed(static_cast<unsigned>(diff.total_seconds()));
+        GapsTime elapsed(static_cast<unsigned>((bpt_now() - startTime).total_seconds()));
         gaps_printf("    worker %d is finished! Time: %02d:%02d:%02d\n",
             params.workerID, elapsed.hours, elapsed.minutes, elapsed.seconds);
         gaps_flush();

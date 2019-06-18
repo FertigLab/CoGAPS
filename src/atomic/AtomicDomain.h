@@ -4,52 +4,19 @@
 #include "../data_structures/HashSets.h"
 #include "../math/Random.h"
 #include "../utils/Archive.h"
+#include "Atom.h"
 
 #include <vector>
 
-// comment out to use 'new' operator for allocating atoms
-//#define __GAPS_USE_POOLED_ALLOCATOR__
-
-#ifdef __GAPS_USE_POOLED_ALLOCATOR__
-#include "boost/pool/object_pool.hpp"
-#endif
-
-struct Atom
-{
-    uint64_t pos;
-    float mass;
-
-    Atom();
-    Atom(uint64_t p, float m);
-
-    void operator=(Atom other);
-
-    friend Archive& operator<<(Archive& ar, const Atom &a);
-    friend Archive& operator>>(Archive& ar, Atom &a);
-};
-
-struct AtomNeighborhood
-{
-    Atom* center;
-    Atom* left;
-    Atom* right;
-
-    AtomNeighborhood();
-    AtomNeighborhood(Atom *l, Atom *c, Atom *r);
-
-    bool hasLeft();
-    bool hasRight();
-};
-
-class ProposalQueue; // needed for friend
+// needed for friend declarations
+template <class StoragePolicy>
+class SingleThreadedGibbsSampler;
 
 class AtomicDomain
 {
 public:
 
     AtomicDomain(uint64_t nBins);
-
-    // TODO can we have internal rng since these are always called sequentially
 
     // access atoms
     Atom* front();
@@ -59,9 +26,6 @@ public:
 
     uint64_t randomFreePosition(GapsRng *rng) const;
     uint64_t size() const;
-
-    // this needs to happen concurrently without invalidating pointers
-    void erase(uint64_t pos);
 
     // serialization
     friend Archive& operator<<(Archive &ar, const AtomicDomain &domain);
@@ -73,22 +37,23 @@ public:
     bool isSorted();
 #endif
 
-#ifndef GAPS_INTERNAL_TESTS
 private:
-#endif
 
-    // only the proposal queue can insert, insert not thread-safe
-    friend class ProposalQueue;
+    // both insert and erase will invalidate pointers to atoms and neither
+    // of these functions should be considered thread-safe in any way. This
+    // class can provide increased performance when thread-safety and 
+    // concurrency is not needed. Friend classes are declared here as a way
+    // to enforce this contract between classes.
+    template <class StoragePolicy>
+    friend class SingleThreadedGibbsSampler;
     Atom* insert(uint64_t pos, float mass);
+    void erase(uint64_t pos);
 
     // size of atomic domain to ensure all bins are equal length
     uint64_t mDomainLength;
 
     // domain storage, sorted vector of pointers to atoms created by allocator
-    std::vector<Atom*> mAtoms;
-#ifdef __GAPS_USE_POOLED_ALLOCATOR__
-    boost::object_pool<Atom> mAtomPool;
-#endif
+    std::vector<Atom> mAtoms;
 };
 
 #endif // __COGAPS_ATOMIC_DOMAIN_H__

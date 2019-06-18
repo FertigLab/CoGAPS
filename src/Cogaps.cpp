@@ -83,6 +83,7 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.maxGibbsMassP = Rcpp::as<float>(gapsParams.slot("maxGibbsMassP"));
     params.singleCell = Rcpp::as<bool>(gapsParams.slot("singleCell"));
     params.useSparseOptimization = Rcpp::as<bool>(gapsParams.slot("sparseOptimization"));
+    params.asynchronousUpdates = Rcpp::as<bool>(gapsParams.slot("asynchronousUpdates"));
 
     // check if using fixed matrix
     params.whichMatrixFixed = Rcpp::as<char>(gapsParams.slot("whichMatrixFixed"));
@@ -140,7 +141,8 @@ const DataType &uncertainty)
             Rcpp::Named("pumpStat") = createRMatrix(result.pumpMatrix),
             Rcpp::Named("meanPatternAssignment") = createRMatrix(result.meanPatternAssignment),
             Rcpp::Named("averageQueueLengthA") = result.averageQueueLengthA,
-            Rcpp::Named("averageQueueLengthP") = result.averageQueueLengthP
+            Rcpp::Named("averageQueueLengthP") = result.averageQueueLengthP,
+            Rcpp::Named("totalRunningTime") = result.totalRunningTime
         )
     );
 }
@@ -148,7 +150,7 @@ const DataType &uncertainty)
 /////////////////// functions exposed to the R package /////////////////////////
 
 // [[Rcpp::export]]
-Rcpp::List cogaps_cpp_from_file(const Rcpp::CharacterVector &data,
+Rcpp::List cogaps_from_file_cpp(const Rcpp::CharacterVector &data,
 const Rcpp::List &allParams,
 const Rcpp::Nullable<Rcpp::CharacterVector> &uncertainty)
 {

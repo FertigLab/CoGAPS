@@ -27,6 +27,7 @@ private :
     bool mHasValue;
 };
 
+// TODO allow this to be rolled back
 // PCG random number generator
 // This is constructed with a seed pulled from the global state
 class GapsRng

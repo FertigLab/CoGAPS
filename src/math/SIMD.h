@@ -97,21 +97,15 @@ public:
     float scalar()
     {
     #if defined( __GAPS_AVX__ )
-
         float* ra = reinterpret_cast<float*>(&mData); // NOLINT
         mData = _mm256_hadd_ps(mData, mData);
         mData = _mm256_hadd_ps(mData, mData);
         return ra[0] + ra[4];
-
     #elif defined( __GAPS_SSE__ )
-
         float* ra = reinterpret_cast<float*>(&mData); // NOLINT
         return ra[0] + ra[1] + ra[2] + ra[3];
-
     #else
-
         return mData;
-
     #endif
     }
 
@@ -123,21 +117,15 @@ private:
 inline float getScalar(gaps_packed_t pf)
 {
     #if defined( __GAPS_AVX__ )
-
         pf = _mm256_hadd_ps(pf, pf);
         pf = _mm256_hadd_ps(pf, pf);
         float* ra = reinterpret_cast<float*>(&pf); // NOLINT
         return ra[0] + ra[4];
-
     #elif defined( __GAPS_SSE__ )
-
         float* ra = reinterpret_cast<float*>(&pf); // NOLINT
         return ra[0] + ra[1] + ra[2] + ra[3];
-
     #else
-
         return pf;
-
     #endif
 }
 

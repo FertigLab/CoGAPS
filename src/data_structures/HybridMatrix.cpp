@@ -20,6 +20,9 @@ unsigned HybridMatrix::nCol() const
 
 void HybridMatrix::add(unsigned i, unsigned j, float v)
 {
+    GAPS_ASSERT(i < mNumRows);
+    GAPS_ASSERT(j < mNumCols);
+
     mRows[i][j] += v;
     mCols[j].add(i, v);
 }
