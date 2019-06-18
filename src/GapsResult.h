@@ -18,6 +18,7 @@ struct GapsResult
 
     float meanChiSq;
     uint32_t seed;
+    unsigned totalRunningTime;
 
     std::vector<float> chisqHistory;
     std::vector<unsigned> atomHistoryA;

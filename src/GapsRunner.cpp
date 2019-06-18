@@ -422,6 +422,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     
     // get result
     GapsResult result(stats);
+    result.totalRunningTime = static_cast<unsigned>((bpt_now() - startTime).total_seconds());
     result.meanChiSq = stats.meanChiSq(PSampler);
     result.averageQueueLengthA = ASampler.getAverageQueueLength();
     result.averageQueueLengthP = PSampler.getAverageQueueLength();
@@ -436,8 +437,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     // if we are running distributed, each worker needs to print when it's done
     if (params.runningDistributed)
     {
-        bpt::time_duration diff = bpt_now() - startTime;
-        GapsTime elapsed(static_cast<unsigned>(diff.total_seconds()));
+        GapsTime elapsed(static_cast<unsigned>((bpt_now() - startTime).total_seconds()));
         gaps_printf("    worker %d is finished! Time: %02d:%02d:%02d\n",
             params.workerID, elapsed.hours, elapsed.minutes, elapsed.seconds);
         gaps_flush();

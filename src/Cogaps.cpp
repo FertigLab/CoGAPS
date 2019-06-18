@@ -148,7 +148,8 @@ const DataType &uncertainty)
             Rcpp::Named("pumpStat") = createRMatrix(result.pumpMatrix),
             Rcpp::Named("meanPatternAssignment") = createRMatrix(result.meanPatternAssignment),
             Rcpp::Named("averageQueueLengthA") = result.averageQueueLengthA,
-            Rcpp::Named("averageQueueLengthP") = result.averageQueueLengthP
+            Rcpp::Named("averageQueueLengthP") = result.averageQueueLengthP,
+            Rcpp::Named("totalRunningTime") = result.totalRunningTime
         )
     );
 }
