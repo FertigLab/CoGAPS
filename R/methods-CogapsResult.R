@@ -280,7 +280,7 @@ patternMarkersCalculation <- function(mat, threshold, lp)
 setMethod("patternMarkers", signature(object="CogapsResult"),
 function(object, threshold, lp)
 {
-    patternMarkersCalculation(object@feataureLoadings, threshold, lp)
+    patternMarkersCalculation(object@featureLoadings, threshold, lp)
 })
 
 #' @rdname amplitudeMarkers-methods
