@@ -7,6 +7,18 @@ sudo: required
 bioc_required: true
 bioc_use_devel: false
 
+cache:
+  - packages: true
+  - ccache
+
+addons:
+  apt:
+    packages:
+     - ccache
+
+before_install:
+  - mkdir -p $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+
 # notification setup
 notifications:
   slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts
