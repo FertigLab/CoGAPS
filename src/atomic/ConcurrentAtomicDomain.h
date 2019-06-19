@@ -9,7 +9,7 @@
 #include <vector>
 
 // use a pooled allocator when creating atoms
-#define __GAPS_USE_POOLED_ALLOCATOR__ 1
+#define __GAPS_USE_POOLED_ALLOCATOR__ 0
 
 #if __GAPS_USE_POOLED_ALLOCATOR__
 #pragma GCC diagnostic push

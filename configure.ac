@@ -1,5 +1,5 @@
 # get version of CoGAPS from DESCRIPTION file
-AC_INIT(CoGAPS, m4_esyscmd_s([awk -e '/^Version:/ {print $2}' DESCRIPTION]))
+AC_INIT(CoGAPS, m4_esyscmd_s([awk '/^Version:/ {print $2}' DESCRIPTION]))
 
 # get C++ compiler from R configuration
 CXX=`"${R_HOME}/bin/R" CMD config CXX`
