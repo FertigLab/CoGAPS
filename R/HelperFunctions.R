@@ -105,24 +105,9 @@ getValueOrRds <- function(input)
 #' @importFrom tools file_ext
 nrowHelper <- function(data)
 {
-    nrowMtx <- function(file)
-    {
-        i <- 1
-        while (unname(data.table::fread(file, nrows=i, fill=TRUE)[i,1] == "%"))
-        {
-            i <- i + 1
-        }
-        return(unname(as.numeric(data.table::fread(file, nrow=i, fill=TRUE)[i,1])))
-    }
-
     if (is(data, "character"))
     {
-        return(switch(tools::file_ext(data),
-            "csv" = nrow(data.table::fread(data, select=1)),
-            "tsv" = nrow(data.table::fread(data, select=1)),
-            "mtx" = nrowMtx(data),
-            "gct" = as.numeric(strsplit(as.matrix(data.table::fread(data, nrows=1, sep='\t')), "\\s+")[[1]][1])
-        ))
+        return(getFileInfo_cpp(data)[["dimensions"]][1])
     }
     return(nrow(data))
 }
@@ -136,24 +121,9 @@ nrowHelper <- function(data)
 #' @importFrom tools file_ext
 ncolHelper <- function(data)
 {
-    ncolMtx <- function(file)
-    {
-        i <- 1
-        while (unname(data.table::fread(file, nrows=i, fill=TRUE)[i,1] == "%"))
-        {
-            i <- i + 1
-        }
-        return(unname(as.numeric(data.table::fread(file, nrow=i, fill=TRUE)[i,2])))
-    }
-
     if (is(data, "character"))
     {
-        return(switch(tools::file_ext(data),
-            "csv" = ncol(data.table::fread(data, nrows=1)) - 1,
-            "tsv" = ncol(data.table::fread(data, nrows=1)) - 1,
-            "mtx" = ncolMtx(data),
-            "gct" = as.numeric(strsplit(as.matrix(data.table::fread(data, nrows=1, sep='\t')), "\\s+")[[1]][2])
-        ))
+        return(getFileInfo_cpp(data)[["dimensions"]][2])
     }
     return(ncol(data))
 }
@@ -165,22 +135,11 @@ getGeneNames <- function(data, transpose)
 {
     if (transpose)
         return(getSampleNames(data, FALSE))
-
-    names <- NULL
     if (is(data, "character"))
-    {
-        names <- switch(tools::file_ext(data),
-            "csv" = as.matrix(data.table::fread(data, select=1))[,1],
-            "tsv" = as.matrix(data.table::fread(data, select=1))[,1],
-            "gct" = suppressWarnings(gsub("\"", "", as.matrix(data.table::fread(data, select=1))))
-        )
-    }
+        names <- getFileInfo_cpp(data)[["rowNames"]]
     else
-    {
         names <- rownames(data)
-    }
-
-    if (is.null(names))
+    if (is.null(names) | length(names) == 0)
         return(paste("Gene", 1:nrowHelper(data), sep="_"))
     return(names)
 }
@@ -192,21 +151,10 @@ getSampleNames <- function(data, transpose)
 {
     if (transpose)
         return(getGeneNames(data, FALSE))
-
-    names <- NULL
     if (is(data, "character"))
-    {
-        names <- switch(tools::file_ext(data),
-            "csv" = colnames(data.table::fread(data, nrows=1))[-1],
-            "tsv" = colnames(data.table::fread(data, nrows=1))[-1],
-            "gct" = suppressWarnings(colnames(data.table::fread(data, skip=2, nrows=1))[-1:-2])
-        )
-    }
+        names <- getFileInfo_cpp(data)[["colNames"]]
     else
-    {
         names <- colnames(data)
-    }
-
     if (is.null(names))
         return(paste("Sample", 1:ncolHelper(data), sep="_"))
     return(names)

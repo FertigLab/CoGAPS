@@ -51,6 +51,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// getFileInfo_cpp
+Rcpp::List getFileInfo_cpp(const std::string& path);
+RcppExport SEXP _CoGAPS_getFileInfo_cpp(SEXP pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string& >::type path(pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(getFileInfo_cpp(path));
+    return rcpp_result_gen;
+END_RCPP
+}
 // run_catch_unit_tests
 int run_catch_unit_tests();
 RcppExport SEXP _CoGAPS_run_catch_unit_tests() {
@@ -67,6 +78,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_CoGAPS_cogaps_cpp", (DL_FUNC) &_CoGAPS_cogaps_cpp, 3},
     {"_CoGAPS_getBuildReport_cpp", (DL_FUNC) &_CoGAPS_getBuildReport_cpp, 0},
     {"_CoGAPS_checkpointsEnabled_cpp", (DL_FUNC) &_CoGAPS_checkpointsEnabled_cpp, 0},
+    {"_CoGAPS_getFileInfo_cpp", (DL_FUNC) &_CoGAPS_getFileInfo_cpp, 1},
     {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 0},
     {NULL, NULL, 0}
 };
