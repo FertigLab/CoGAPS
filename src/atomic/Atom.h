@@ -5,11 +5,25 @@
 
 struct Atom;
 class AtomicDomain;
-class ConcurrentAtomicDomain;
 
 // this is the map used internally by the atomic domain
 #include "../data_structures/MutableMap.h"
-typedef MutableMap<uint64_t, Atom*> AtomMapType;
+typedef MutableMap<uint64_t, unsigned> AtomMapType;
+
+struct AtomNeighborhood
+{
+    Atom* center;
+    Atom* left;
+    Atom* right;
+
+    AtomNeighborhood() : center(NULL), left(NULL), right(NULL) {}
+    AtomNeighborhood(Atom *l, Atom *c, Atom *r)
+        : center(c), left(l), right(r)
+    {}
+
+    bool hasLeft() const { return left != NULL; }
+    bool hasRight() const { return right != NULL; }
+};
 
 struct Atom
 {
@@ -19,12 +33,6 @@ public:
 
     uint64_t pos() const;
     float mass() const;
-
-    bool hasLeft() const;
-    bool hasRight() const;
-    Atom* left() const;
-    Atom* right() const;
-
     void updateMass(float newMass);
 
     friend Archive& operator<<(Archive& ar, const Atom &a);
@@ -35,25 +43,28 @@ private:
     // only the atomic domain can change the position of an atom, since it is
     // responsible for keeping them ordered
     friend class AtomicDomain;
-    friend class ConcurrentAtomicDomain;
     void updatePos(uint64_t newPos);
 
-    void setLeft(Atom* atom);
-    void setRight(Atom* atom);
-    void setIndex(unsigned index);
+    void setLeftIndex(int index);
+    void setRightIndex(int index);
+    void setIndex(int index);
     void setIterator(AtomMapType::iterator it);    
 
-    unsigned index() const;
+    bool hasLeft() const;
+    bool hasRight() const;
+    int leftIndex() const;
+    int rightIndex() const;
+    int index() const;
     AtomMapType::iterator iterator() const;
 
-    Atom* mLeft;
-    Atom* mRight;
-
     uint64_t mPos;
-
     AtomMapType::iterator mIterator; // iterator to position in map
 
-    unsigned mIndex; // storing the index allows vector lookup once found in map
+    // storing the index allows vector lookup once found in map
+    int mLeftIndex;
+    int mRightIndex;
+    int mIndex;
+
     float mMass;
 };
 

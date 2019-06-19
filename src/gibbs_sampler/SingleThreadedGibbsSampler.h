@@ -2,7 +2,6 @@
 #define __COGAPS_SINGLE_THREADED_GIBBS_SAMPLER_H__
 
 #include "AlphaParameters.h"
-#include "../atomic/ConcurrentAtomicDomain.h"
 #include "../data_structures/Matrix.h"
 #include "../math/Math.h"
 #include "../math/VectorMath.h"
@@ -14,6 +13,11 @@
 #include <limits>
 #include <cmath>
 #include <stdint.h>
+
+#include "../atomic/AtomicDomain.h"
+typedef Atom AtomType;
+typedef AtomNeighborhood AtomNeighborhoodType;
+typedef AtomicDomain AtomicDomainType;
 
 ////////////////////////// SingleThreadedGibbsSampler Interface //////////////////////////
 
@@ -48,7 +52,7 @@ public:
 
 private:
 
-    ConcurrentAtomicDomain mDomain; // data structure providing access to atoms
+    AtomicDomainType mDomain; // data structure providing access to atoms
 
     mutable GapsRng mRng;
 
@@ -160,7 +164,7 @@ template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::death()
 {
     // select atom at random and calculate it's row and col
-    Atom *atom = mDomain.randomAtom(&mRng);
+    AtomType *atom = mDomain.randomAtom(&mRng);
     unsigned row = (atom->pos() / mBinLength) / mNumPatterns;
     unsigned col = (atom->pos() / mBinLength) % mNumPatterns;
 
@@ -187,9 +191,10 @@ template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::move()
 {
     // select atom at random and get it's right and left neighbors
-    Atom *atom = mDomain.randomAtom(&mRng);
-    uint64_t lbound = atom->hasLeft() ? atom->left()->pos() : 0;
-    uint64_t rbound = atom->hasRight() ? atom->right()->pos() :
+    AtomNeighborhoodType hood = mDomain.randomAtomWithNeighbors(&mRng);
+    AtomType *atom = hood.center;
+    uint64_t lbound = hood.hasLeft() ? hood.left->pos() : 0;
+    uint64_t rbound = hood.hasRight() ? hood.right->pos() :
         static_cast<uint64_t>(mDomainLength);
 
     // randomly select new position to move to and calculation the row and col of it
@@ -222,8 +227,9 @@ template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::exchange()
 {
     // select atom at random and get it's right neighbor
-    Atom *atom1 = mDomain.randomAtom(&mRng);
-    Atom *atom2 = atom1->hasRight() ? atom1->right() : mDomain.front();
+    AtomNeighborhoodType hood = mDomain.randomAtomWithNeighbors(&mRng);
+    AtomType *atom1 = hood.center;
+    AtomType *atom2 = hood.hasRight() ? hood.right : mDomain.front();
 
     // calculate row and col of the atom and it's neighbor
     unsigned r1 = (atom1->pos() / mBinLength) / mNumPatterns;
@@ -231,7 +237,7 @@ void SingleThreadedGibbsSampler<DataModel>::exchange()
     unsigned r2 = (atom2->pos() / mBinLength) / mNumPatterns;
     unsigned c2 = (atom2->pos() / mBinLength) % mNumPatterns;
 
-    // ignore exhanges in the same bin
+    // ignore exchanges in the same bin
     if ((r1 != r2 || c1 != c2) && DataModel::canUseGibbs(c1, c2))
     {
         OptionalFloat mass = DataModel::sampleExchange(r1, c1, atom1->mass(),

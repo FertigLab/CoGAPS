@@ -4,7 +4,10 @@
 #include "GapsPrint.h"
 
 #ifdef __GAPS_R_BUILD__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <Rcpp.h>
+#pragma GCC diagnostic pop
 #endif
 
 #ifndef __GAPS_R_BUILD__

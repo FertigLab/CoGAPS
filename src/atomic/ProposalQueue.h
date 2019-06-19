@@ -15,8 +15,8 @@ struct AtomicProposal
     mutable GapsRng rng; // used for consistency no matter number of threads 
  
     uint64_t pos; // used for move
-    Atom *atom1; // used for birth/death/move/exchange
-    Atom *atom2; // used for exchange
+    ConcurrentAtom *atom1; // used for birth/death/move/exchange
+    ConcurrentAtom *atom2; // used for exchange
 
     uint32_t r1; // row of atom1
     uint32_t c1; // col of atom1
