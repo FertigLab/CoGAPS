@@ -296,9 +296,9 @@ Sampler &PSampler)
     // check if we're fixing a matrix
     if (params.useFixedPatterns)
     {
+        GAPS_ASSERT(params.fixedPatterns.nCol() == params.nPatterns);
         switch (params.whichMatrixFixed)
         {
-            GAPS_ASSERT(params.fixedPatterns.nCol() == params.nPatterns);
             case 'A' :
                 GAPS_ASSERT(params.fixedPatterns.nRow() == params.nGenes);
                 ASampler.setMatrix(params.fixedPatterns);
