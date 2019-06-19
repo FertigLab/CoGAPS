@@ -210,10 +210,11 @@ bool ProposalQueue::death(ConcurrentAtomicDomain &domain)
 bool ProposalQueue::move(ConcurrentAtomicDomain &domain)
 {
     AtomicProposal prop('M', mRandState);
-    prop.atom1 = domain.randomAtom(&(prop.rng));
+    ConcurrentAtomNeighborhood hood = domain.randomAtomWithNeighbors(&(prop.rng));
+    prop.atom1 = hood.center;
 
-    uint64_t lbound = prop.atom1->hasLeft() ? prop.atom1->left()->pos() : 0;
-    uint64_t rbound = prop.atom1->hasRight() ? prop.atom1->right()->pos() : static_cast<uint64_t>(mDomainLength);
+    uint64_t lbound = hood.hasLeft() ? hood.left->pos() : 0;
+    uint64_t rbound = hood.hasRight() ? hood.right->pos() : static_cast<uint64_t>(mDomainLength);
 
     if (mUsedAtoms.contains(lbound) || mUsedAtoms.contains(rbound))
     {
@@ -250,8 +251,9 @@ bool ProposalQueue::move(ConcurrentAtomicDomain &domain)
 bool ProposalQueue::exchange(ConcurrentAtomicDomain &domain)
 {
     AtomicProposal prop('E', mRandState);
-    prop.atom1 = domain.randomAtom(&(prop.rng));
-    prop.atom2 = prop.atom1->hasRight() ? prop.atom1->right() : domain.front();
+    ConcurrentAtomNeighborhood hood = domain.randomAtomWithNeighbors(&(prop.rng));
+    prop.atom1 = hood.center;
+    prop.atom2 = hood.hasRight() ? hood.right : domain.front();
     prop.r1 = (prop.atom1->pos() / mBinLength) / mNumCols;
     prop.c1 = (prop.atom1->pos() / mBinLength) % mNumCols;
     prop.r2 = (prop.atom2->pos() / mBinLength) / mNumCols;

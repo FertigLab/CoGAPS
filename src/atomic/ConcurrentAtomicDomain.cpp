@@ -9,7 +9,7 @@
 
 #if __GAPS_USE_POOLED_ALLOCATOR__
 ConcurrentAtomicDomain::ConcurrentAtomicDomain(uint64_t nBins)
-    : mAtomPool(16384, 0),
+    : mAtomPool(16384, 0)
 #else
 ConcurrentAtomicDomain::ConcurrentAtomicDomain(uint64_t nBins)
 #endif
@@ -18,17 +18,24 @@ ConcurrentAtomicDomain::ConcurrentAtomicDomain(uint64_t nBins)
     mDomainLength = binLength * nBins;
 }
 
-Atom* ConcurrentAtomicDomain::front()
+ConcurrentAtom* ConcurrentAtomicDomain::front()
 {
     GAPS_ASSERT(size() > 0);
     return (*mAtomMap.begin()).second;
 }
 
-Atom* ConcurrentAtomicDomain::randomAtom(GapsRng *rng)
+ConcurrentAtom* ConcurrentAtomicDomain::randomAtom(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
     unsigned index = rng->uniform32(0, mAtoms.size() - 1);
     return mAtoms[index];
+}
+
+ConcurrentAtomNeighborhood ConcurrentAtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
+{
+    GAPS_ASSERT(size() > 0);
+    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
+    return ConcurrentAtomNeighborhood(mAtoms[index]->left(), mAtoms[index], mAtoms[index]->right());
 }
 
 uint64_t ConcurrentAtomicDomain::randomFreePosition(GapsRng *rng) const
@@ -46,30 +53,30 @@ uint64_t ConcurrentAtomicDomain::size() const
     return mAtoms.size();
 }
 
-Atom* ConcurrentAtomicDomain::insert(uint64_t pos, float mass)
+ConcurrentAtom* ConcurrentAtomicDomain::insert(uint64_t pos, float mass)
 {
-    Atom *atom;
+    ConcurrentAtom *atom;
     #pragma omp critical(AtomicInsertOrErase)
     {
     #if __GAPS_USE_POOLED_ALLOCATOR__
         atom = mAtomPool.construct(pos, mass);
     #else
-        atom = new Atom(pos, mass);
+        atom = new ConcurrentAtom(pos, mass);
     #endif
 
         // insert atom into vector and map, record the iterator and index in each
-        atom->setIterator(mAtomMap.insert(std::pair<uint64_t, Atom*>(pos, atom)).first);
+        atom->setIterator(mAtomMap.insert(std::pair<uint64_t, ConcurrentAtom*>(pos, atom)).first);
         atom->setIndex(mAtoms.size());
         mAtoms.push_back(atom);
 
         // connect with right and left neighbors
-        AtomMapType::iterator itRight(atom->iterator());
+        ConcurrentAtomMapType::iterator itRight(atom->iterator());
         if (++itRight != mAtomMap.end())
         {
             atom->setRight((*itRight).second);
             (*itRight).second->setLeft(atom);
         }
-        AtomMapType::iterator itLeft(atom->iterator());
+        ConcurrentAtomMapType::iterator itLeft(atom->iterator());
         if (itLeft != mAtomMap.begin())
         {
             --itLeft;
@@ -80,7 +87,7 @@ Atom* ConcurrentAtomicDomain::insert(uint64_t pos, float mass)
     return atom;
 }
 
-void ConcurrentAtomicDomain::erase(Atom *atom)
+void ConcurrentAtomicDomain::erase(ConcurrentAtom *atom)
 {
     #pragma omp critical(AtomicInsertOrErase)
     {
@@ -106,7 +113,7 @@ void ConcurrentAtomicDomain::erase(Atom *atom)
     }
 }
 
-void ConcurrentAtomicDomain::move(Atom *atom, uint64_t newPos)
+void ConcurrentAtomicDomain::move(ConcurrentAtom *atom, uint64_t newPos)
 {
     atom->updatePos(newPos);
     mAtomMap.updateKey(atom->iterator(), newPos);
@@ -124,7 +131,7 @@ Archive& operator<<(Archive &ar, const ConcurrentAtomicDomain &domain)
 
 Archive& operator>>(Archive &ar, ConcurrentAtomicDomain &domain)
 {
-    Atom temp(0, 0.f);
+    ConcurrentAtom temp(0, 0.f);
     uint64_t size = 0;
     ar >> domain.mDomainLength >> size;
     for (unsigned i = 0; i < size; ++i)

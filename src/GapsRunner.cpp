@@ -7,7 +7,10 @@
 #include "gibbs_sampler/SparseNormalModel.h"
 
 #ifdef __GAPS_R_BUILD__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <Rcpp.h>
+#pragma GCC diagnostic pop
 #endif
 
 #ifdef __GAPS_OPENMP__
@@ -15,7 +18,10 @@
 #endif
 
 // boost time helpers
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#pragma GCC diagnostic pop
 namespace bpt = boost::posix_time;
 #define bpt_now() bpt::microsec_clock::local_time()
 

@@ -1,7 +1,7 @@
 #include "Atom.h"
 
 Atom::Atom(uint64_t p, float m)
-    : mLeft(NULL), mRight(NULL), mPos(p), mIterator(), mIndex(0), mMass(m)
+    : mPos(p), mIterator(), mLeftIndex(-1), mRightIndex(-1), mIndex(-1), mMass(m)
 {}
 
 uint64_t Atom::pos() const
@@ -14,26 +14,6 @@ float Atom::mass() const
     return mMass;
 }
 
-bool Atom::hasLeft() const
-{
-    return mLeft != NULL;
-}
-
-bool Atom::hasRight() const
-{
-    return mRight != NULL;
-}
-
-Atom* Atom::left() const
-{
-    return mLeft;
-}
-
-Atom* Atom::right() const
-{
-    return mRight;
-}
-
 void Atom::updateMass(float newMass)
 {
     mMass = newMass;
@@ -44,17 +24,17 @@ void Atom::updatePos(uint64_t newPos)
     mPos = newPos;
 }
 
-void Atom::setLeft(Atom* atom)
+void Atom::setLeftIndex(int index)
 {
-    mLeft = atom;
+    mLeftIndex = index;
 }
 
-void Atom::setRight(Atom* atom)
+void Atom::setRightIndex(int index)
 {
-    mRight = atom;
+    mRightIndex = index;
 }
 
-void Atom::setIndex(unsigned index)
+void Atom::setIndex(int index)
 {
     mIndex = index;
 }
@@ -64,7 +44,27 @@ void Atom::setIterator(AtomMapType::iterator it)
     mIterator = it;
 }
 
-unsigned Atom::index() const
+bool Atom::hasLeft() const
+{
+    return mLeftIndex >= 0;
+}
+
+bool Atom::hasRight() const
+{
+    return mRightIndex >= 0;
+}
+
+int Atom::leftIndex() const
+{
+    return mLeftIndex;
+}
+
+int Atom::rightIndex() const
+{
+    return mRightIndex;
+}
+
+int Atom::index() const
 {
     return mIndex;
 }

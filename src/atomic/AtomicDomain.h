@@ -21,6 +21,7 @@ public:
     // access atoms
     Atom* front();
     Atom* randomAtom(GapsRng *rng);
+    AtomNeighborhood randomAtomWithNeighbors(GapsRng *rng);
 
     uint64_t randomFreePosition(GapsRng *rng) const;
     uint64_t size() const;
@@ -31,13 +32,14 @@ public:
    
 private:
 
+    template <class StoragePolicy>
+    friend class SingleThreadedGibbsSampler;
+
     // both insert and erase will invalidate pointers to atoms and neither
     // of these functions should be considered thread-safe in any way. This
     // class can provide increased performance when thread-safety and 
     // concurrency is not needed. Friend classes are declared here as a way
     // to enforce this contract between classes.
-    template <class StoragePolicy>
-    friend class SingleThreadedGibbsSampler;
     Atom* insert(uint64_t pos, float mass);
     void erase(Atom *atom);
     void move(Atom *atom, uint64_t newPos);
