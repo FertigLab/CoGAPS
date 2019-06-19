@@ -5,71 +5,6 @@
 #include <limits>
 #include <vector>
 
-////////////////////////////////// HELPER //////////////////////////////////////
-
-// used with std::lower_bound
-static bool compareAtomLower(const Atom* lhs, uint64_t pos)
-{
-    return lhs->pos < pos;
-}
-
-// used with std::binary_search
-static bool compareAtom(const Atom *lhs, const Atom *rhs)
-{
-    return lhs->pos < rhs->pos;
-}
-
-// check if a position in contained in a vector of atoms
-static bool vecContains(const std::vector<Atom*> &vec, uint64_t pos)
-{
-    Atom temp(pos, 0.f);
-    return std::binary_search(vec.begin(), vec.end(), &temp, compareAtom);
-}
-
-////////////////////////////////// Atom ////////////////////////////////////////
-
-Atom::Atom() : pos(0), mass(0.f) {}
-
-Atom::Atom(uint64_t p, float m) : pos(p), mass(m) {}
-
-void Atom::operator=(Atom other)
-{
-    pos = other.pos;
-    mass = other.mass;
-}
-
-Archive& operator<<(Archive &ar, const Atom &a)
-{
-    ar << a.pos << a.mass;
-    return ar;
-}
-
-Archive& operator>>(Archive &ar, Atom &a)
-{
-    ar >> a.pos >> a.mass;
-    return ar;
-}
-
-//////////////////////////// ATOM NEIGHBORHOOD /////////////////////////////////
-
-AtomNeighborhood::AtomNeighborhood()
-    : center(NULL), left(NULL), right(NULL)
-{}
-
-AtomNeighborhood::AtomNeighborhood(Atom *l, Atom *c, Atom *r)
-    : center(c), left(l), right(r)
-{}
-
-bool AtomNeighborhood::hasLeft()
-{
-    return left != NULL;
-}
-
-bool AtomNeighborhood::hasRight()
-{
-    return right != NULL;
-}
-
 ////////////////////////////// ATOMIC DOMAIN ///////////////////////////////////
 
 #if __GAPS_USE_POOLED_ALLOCATOR__
@@ -86,41 +21,20 @@ ConcurrentAtomicDomain::ConcurrentAtomicDomain(uint64_t nBins)
 Atom* ConcurrentAtomicDomain::front()
 {
     GAPS_ASSERT(size() > 0);
-
-    return mAtoms.front();
+    return (*mAtomMap.begin()).second;
 }
 
 Atom* ConcurrentAtomicDomain::randomAtom(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
-
     unsigned index = rng->uniform32(0, mAtoms.size() - 1);
     return mAtoms[index];
-}
-
-AtomNeighborhood ConcurrentAtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
-{
-    GAPS_ASSERT(size() > 0);
-
-    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
-    Atom* left = (index == 0) ? NULL : mAtoms[index - 1];
-    Atom* right = (index == mAtoms.size() - 1) ? NULL : mAtoms[index + 1];
-    return AtomNeighborhood(left, mAtoms[index], right);
-}
-
-AtomNeighborhood ConcurrentAtomicDomain::randomAtomWithRightNeighbor(GapsRng *rng)
-{
-    GAPS_ASSERT(size() > 0);
-
-    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
-    Atom* right = (index == mAtoms.size() - 1) ? NULL : mAtoms[index + 1];
-    return AtomNeighborhood(NULL, mAtoms[index], right);
 }
 
 uint64_t ConcurrentAtomicDomain::randomFreePosition(GapsRng *rng) const
 {
     uint64_t pos = rng->uniform64(1, mDomainLength);
-    while (vecContains(mAtoms, pos))
+    while (mAtomMap.count(pos))
     {
         pos = rng->uniform64(1, mDomainLength);
     }
@@ -134,39 +48,68 @@ uint64_t ConcurrentAtomicDomain::size() const
 
 Atom* ConcurrentAtomicDomain::insert(uint64_t pos, float mass)
 {
-    Atom *insertedAtom = NULL;
+    Atom *atom;
     #pragma omp critical(AtomicInsertOrErase)
     {
-        std::vector<Atom*>::iterator it;
-        GAPS_ASSERT(!vecContains(mAtoms, pos));
-        it = std::lower_bound(mAtoms.begin(), mAtoms.end(), pos, compareAtomLower);
     #if __GAPS_USE_POOLED_ALLOCATOR__
-        it = mAtoms.insert(it, mAtomPool.construct(pos, mass));
+        atom = mAtomPool.construct(pos, mass);
     #else
-        it = mAtoms.insert(it, new Atom(pos, mass));
+        atom = new Atom(pos, mass);
     #endif
-        GAPS_ASSERT(vecContains(mAtoms, pos));
-        insertedAtom = *it;
+
+        // insert atom into vector and map, record the iterator and index in each
+        atom->setIterator(mAtomMap.insert(std::pair<uint64_t, Atom*>(pos, atom)).first);
+        atom->setIndex(mAtoms.size());
+        mAtoms.push_back(atom);
+
+        // connect with right and left neighbors
+        AtomMapType::iterator itRight(atom->iterator());
+        if (++itRight != mAtomMap.end())
+        {
+            atom->setRight((*itRight).second);
+            (*itRight).second->setLeft(atom);
+        }
+        AtomMapType::iterator itLeft(atom->iterator());
+        if (itLeft != mAtomMap.begin())
+        {
+            --itLeft;
+            atom->setLeft((*itLeft).second);
+            (*itLeft).second->setRight(atom);
+        }
     }
-    return insertedAtom;
+    return atom;
 }
 
-void ConcurrentAtomicDomain::erase(uint64_t pos)
+void ConcurrentAtomicDomain::erase(Atom *atom)
 {
     #pragma omp critical(AtomicInsertOrErase)
     {
-        GAPS_ASSERT(size() > 0);
-        GAPS_ASSERT_MSG(vecContains(mAtoms, pos), pos);
-        std::vector<Atom*>::iterator it = std::lower_bound(mAtoms.begin(),
-            mAtoms.end(), pos, compareAtomLower);
+        mAtomMap.erase(atom->iterator());
+        mAtoms[atom->index()] = mAtoms.back();
+        mAtoms[atom->index()]->setIndex(atom->index());
+        mAtoms.pop_back();
+        
+        if (atom->hasLeft())
+        {
+            atom->left()->setRight(atom->right());
+        }
+
+        if (atom->hasRight())
+        {
+            atom->right()->setLeft(atom->left());
+        }
     #if __GAPS_USE_POOLED_ALLOCATOR__
-        mAtomPool.destroy(*it);
+        mAtomPool.destroy(atom);
     #else
-        delete *it;
+        delete atom;
     #endif
-        mAtoms.erase(it);
-        GAPS_ASSERT(!vecContains(mAtoms, pos));
     }
+}
+
+void ConcurrentAtomicDomain::move(Atom *atom, uint64_t newPos)
+{
+    atom->updatePos(newPos);
+    mAtomMap.updateKey(atom->iterator(), newPos);
 }
 
 Archive& operator<<(Archive &ar, const ConcurrentAtomicDomain &domain)
@@ -181,44 +124,13 @@ Archive& operator<<(Archive &ar, const ConcurrentAtomicDomain &domain)
 
 Archive& operator>>(Archive &ar, ConcurrentAtomicDomain &domain)
 {
-    Atom temp;
+    Atom temp(0, 0.f);
     uint64_t size = 0;
     ar >> domain.mDomainLength >> size;
     for (unsigned i = 0; i < size; ++i)
     {
         ar >> temp;
-        domain.insert(temp.pos, temp.mass);
+        domain.insert(temp.pos(), temp.mass());
     }
     return ar;
 }
-
-////////////////////// ATOMIC DOMAIN DEBUG FUNCTIONS ///////////////////////////
-
-#ifdef GAPS_DEBUG
-
-std::vector<Atom*>::iterator ConcurrentAtomicDomain::begin()
-{
-    return mAtoms.begin();
-}
-
-std::vector<Atom*>::iterator ConcurrentAtomicDomain::end()
-{
-    return mAtoms.end();
-}
-
-// used in debug mode to check if vector is always sorted
-bool ConcurrentAtomicDomain::isSorted()
-{
-    for (unsigned i = 1; i < mAtoms.size(); ++i)
-    {
-        if (mAtoms[i]->pos <= mAtoms[i-1]->pos)
-        {
-            gaps_printf("unsorted\n%llu\n%llu\n", mAtoms[i-1]->pos, mAtoms[i]->pos);
-            return false;
-        }
-    }
-    return true;
-}
-
-#endif
-

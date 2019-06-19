@@ -2,7 +2,7 @@
 #define __COGAPS_SINGLE_THREADED_GIBBS_SAMPLER_H__
 
 #include "AlphaParameters.h"
-#include "../atomic/AtomicDomain.h"
+#include "../atomic/ConcurrentAtomicDomain.h"
 #include "../data_structures/Matrix.h"
 #include "../math/Math.h"
 #include "../math/VectorMath.h"
@@ -48,7 +48,7 @@ public:
 
 private:
 
-    AtomicDomain mDomain; // data structure providing access to atoms
+    ConcurrentAtomicDomain mDomain; // data structure providing access to atoms
 
     mutable GapsRng mRng;
 
@@ -161,25 +161,25 @@ void SingleThreadedGibbsSampler<DataModel>::death()
 {
     // select atom at random and calculate it's row and col
     Atom *atom = mDomain.randomAtom(&mRng);
-    unsigned row = (atom->pos / mBinLength) / mNumPatterns;
-    unsigned col = (atom->pos / mBinLength) % mNumPatterns;
+    unsigned row = (atom->pos() / mBinLength) / mNumPatterns;
+    unsigned col = (atom->pos() / mBinLength) % mNumPatterns;
 
     // try to do a rebirth in the place of this atom
     if (DataModel::canUseGibbs(col))
     {
         OptionalFloat mass = DataModel::sampleDeathAndRebirth(row, col,
-            -1.f * atom->mass, &mRng);
+            -1.f * atom->mass(), &mRng);
         if (mass.hasValue() && mass.value() >= gaps::epsilon)
         {
-            DataModel::safelyChangeMatrix(row, col, mass.value() - atom->mass);
-            atom->mass = mass.value();
+            DataModel::safelyChangeMatrix(row, col, mass.value() - atom->mass());
+            atom->updateMass(mass.value());
             return;
         }
     }
 
     // if rebirth fails, then kill off atom
-    DataModel::safelyChangeMatrix(row, col, -1.f * atom->mass);
-    mDomain.erase(atom->pos);
+    DataModel::safelyChangeMatrix(row, col, -1.f * atom->mass());
+    mDomain.erase(atom);
 }
 
 // move mass from src to dest in the atomic domain
@@ -187,33 +187,32 @@ template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::move()
 {
     // select atom at random and get it's right and left neighbors
-    AtomNeighborhood hood = mDomain.randomAtomWithNeighbors(&mRng);
-    uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
-    uint64_t rbound = hood.hasRight() ? hood.right->pos :
+    Atom *atom = mDomain.randomAtom(&mRng);
+    uint64_t lbound = atom->hasLeft() ? atom->left()->pos() : 0;
+    uint64_t rbound = atom->hasRight() ? atom->right()->pos() :
         static_cast<uint64_t>(mDomainLength);
 
     // randomly select new position to move to and calculation the row and col of it
     uint64_t pos = mRng.uniform64(lbound + 1, rbound - 1);
-    Atom *atom = hood.center;
-    unsigned r1 = (atom->pos / mBinLength) / mNumPatterns;
-    unsigned c1 = (atom->pos / mBinLength) % mNumPatterns;
+    unsigned r1 = (atom->pos() / mBinLength) / mNumPatterns;
+    unsigned c1 = (atom->pos() / mBinLength) % mNumPatterns;
     unsigned r2 = (pos / mBinLength) / mNumPatterns;
     unsigned c2 = (pos / mBinLength) % mNumPatterns;
 
     // automatically accept move if it keeps atom in the same matrix element
     if (r1 == r2 && c1 == c2)
     {
-        atom->pos = pos;
+        mDomain.move(atom, pos);
         return;
     }
     
     // conditionally accept move based on change to likelihood
-    float deltaLL = DataModel::deltaLogLikelihood(r1, c1, r2, c2, atom->mass);
+    float deltaLL = DataModel::deltaLogLikelihood(r1, c1, r2, c2, atom->mass());
     if (std::log(mRng.uniform()) < deltaLL)
     {
-        atom->pos = pos;
-        DataModel::safelyChangeMatrix(r1, c1, -atom->mass);
-        DataModel::changeMatrix(r2, c2, atom->mass);
+        mDomain.move(atom, pos);
+        DataModel::safelyChangeMatrix(r1, c1, -atom->mass());
+        DataModel::changeMatrix(r2, c2, atom->mass());
     }
 }
 
@@ -223,29 +222,28 @@ template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::exchange()
 {
     // select atom at random and get it's right neighbor
-    AtomNeighborhood hood = mDomain.randomAtomWithRightNeighbor(&mRng);
-    Atom *atom1 = hood.center;
-    Atom *atom2 = hood.hasRight() ? hood.right : mDomain.front();
+    Atom *atom1 = mDomain.randomAtom(&mRng);
+    Atom *atom2 = atom1->hasRight() ? atom1->right() : mDomain.front();
 
     // calculate row and col of the atom and it's neighbor
-    unsigned r1 = (atom1->pos / mBinLength) / mNumPatterns;
-    unsigned c1 = (atom1->pos / mBinLength) % mNumPatterns;
-    unsigned r2 = (atom2->pos / mBinLength) / mNumPatterns;
-    unsigned c2 = (atom2->pos / mBinLength) % mNumPatterns;
+    unsigned r1 = (atom1->pos() / mBinLength) / mNumPatterns;
+    unsigned c1 = (atom1->pos() / mBinLength) % mNumPatterns;
+    unsigned r2 = (atom2->pos() / mBinLength) / mNumPatterns;
+    unsigned c2 = (atom2->pos() / mBinLength) % mNumPatterns;
 
     // ignore exhanges in the same bin
     if ((r1 != r2 || c1 != c2) && DataModel::canUseGibbs(c1, c2))
     {
-        OptionalFloat mass = DataModel::sampleExchange(r1, c1, atom1->mass,
-            r2, c2, atom2->mass, &mRng);
-        float newMass1 = atom1->mass + mass.value();
-        float newMass2 = atom2->mass - mass.value();
+        OptionalFloat mass = DataModel::sampleExchange(r1, c1, atom1->mass(),
+            r2, c2, atom2->mass(), &mRng);
+        float newMass1 = atom1->mass() + mass.value();
+        float newMass2 = atom2->mass() - mass.value();
         if (mass.hasValue() && newMass1 > gaps::epsilon && newMass2 > gaps::epsilon)
         {
-            DataModel::safelyChangeMatrix(r1, c1, newMass1 - atom1->mass);
-            DataModel::safelyChangeMatrix(r2, c2, newMass2 - atom2->mass);
-            atom1->mass = newMass1;
-            atom2->mass = newMass2;
+            DataModel::safelyChangeMatrix(r1, c1, newMass1 - atom1->mass());
+            DataModel::safelyChangeMatrix(r2, c2, newMass2 - atom2->mass());
+            atom1->updateMass(newMass1);
+            atom2->updateMass(newMass2);
             return;
         }
     }

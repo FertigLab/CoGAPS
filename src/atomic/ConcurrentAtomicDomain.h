@@ -18,6 +18,8 @@
 // needed for friend declarations
 template <class StoragePolicy>
 class AsynchronousGibbsSampler;
+template <class StoragePolicy>
+class SingleThreadedGibbsSampler;
 class ProposalQueue;
 
 class ConcurrentAtomicDomain
@@ -29,8 +31,6 @@ public:
     // access atoms
     Atom* front();
     Atom* randomAtom(GapsRng *rng);
-    AtomNeighborhood randomAtomWithNeighbors(GapsRng *rng);
-    AtomNeighborhood randomAtomWithRightNeighbor(GapsRng *rng);
 
     uint64_t randomFreePosition(GapsRng *rng) const;
     uint64_t size() const;
@@ -39,12 +39,6 @@ public:
     friend Archive& operator<<(Archive &ar, const ConcurrentAtomicDomain &domain);
     friend Archive& operator>>(Archive &ar, ConcurrentAtomicDomain &domain);
    
-#ifdef GAPS_DEBUG
-    std::vector<Atom*>::iterator begin();
-    std::vector<Atom*>::iterator end();
-    bool isSorted();
-#endif
-
 private:
 
     // both insert and erase will keep pointers to atoms valid, and both insert
@@ -54,18 +48,22 @@ private:
     // here as a way to enforce this contract between classes.
     template <class StoragePolicy>
     friend class AsynchronousGibbsSampler;
+    template <class StoragePolicy>
+    friend class SingleThreadedGibbsSampler;
     friend class ProposalQueue;
     Atom* insert(uint64_t pos, float mass);
-    void erase(uint64_t pos);
+    void erase(Atom *atom);
+    void move(Atom *atom, uint64_t newPos);
 
-    // size of atomic domain to ensure all bins are equal length
-    uint64_t mDomainLength;
+    AtomMapType mAtomMap; // sorted, used when inserting atoms to find neighbors
+    std::vector<Atom*> mAtoms; // unsorted, used for reads
 
-    // domain storage, sorted vector of pointers to atoms created by allocator
-    std::vector<Atom*> mAtoms;
 #if __GAPS_USE_POOLED_ALLOCATOR__
     boost::object_pool<Atom> mAtomPool;
 #endif
+
+    // size of atomic domain to ensure all bins are equal length
+    uint64_t mDomainLength;
 };
 
 #endif // __COGAPS_CONCURRENT_ATOMIC_DOMAIN_H__

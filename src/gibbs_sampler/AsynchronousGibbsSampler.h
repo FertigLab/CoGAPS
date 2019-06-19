@@ -140,14 +140,14 @@ void AsynchronousGibbsSampler<DataModel>::birth(const AtomicProposal &prop)
     if (mass.hasValue() && mass.value() >= gaps::epsilon)
     {
         mQueue.acceptBirth();
-        prop.atom1->mass = mass.value();
+        prop.atom1->updateMass(mass.value());
         DataModel::changeMatrix(prop.r1, prop.c1, mass.value());
         return;
     }
 
     // otherwise reject birth
     mQueue.rejectBirth();
-    mDomain.erase(prop.atom1->pos);
+    mDomain.erase(prop.atom1);
 }
 
 // attempt to rebirth an atom in place of the killed atom
@@ -158,20 +158,20 @@ void AsynchronousGibbsSampler<DataModel>::death(const AtomicProposal &prop)
     if (DataModel::canUseGibbs(prop.c1))
     {
         OptionalFloat mass = DataModel::sampleDeathAndRebirth(prop.r1, prop.c1,
-            -1.f * prop.atom1->mass, &(prop.rng));
+            -1.f * prop.atom1->mass(), &(prop.rng));
         if (mass.hasValue() && mass.value() >= gaps::epsilon)
         {
             mQueue.rejectDeath();
-            DataModel::safelyChangeMatrix(prop.r1, prop.c1, mass.value() - prop.atom1->mass);
-            prop.atom1->mass = mass.value();
+            DataModel::safelyChangeMatrix(prop.r1, prop.c1, mass.value() - prop.atom1->mass());
+            prop.atom1->updateMass(mass.value());
             return;
         }
     }
 
     // if rebirth fails, then kill off atom
     mQueue.acceptDeath();
-    DataModel::safelyChangeMatrix(prop.r1, prop.c1, -1.f * prop.atom1->mass);
-    mDomain.erase(prop.atom1->pos);
+    DataModel::safelyChangeMatrix(prop.r1, prop.c1, -1.f * prop.atom1->mass());
+    mDomain.erase(prop.atom1);
 }
 
 // move mass from src to dest in the atomic domain
@@ -181,12 +181,12 @@ void AsynchronousGibbsSampler<DataModel>::move(const AtomicProposal &prop)
     GAPS_ASSERT(prop.r1 != prop.r2 || prop.c1 != prop.c2);
 
     float deltaLL = DataModel::deltaLogLikelihood(prop.r1, prop.c1, prop.r2, prop.c2,
-        prop.atom1->mass);
+        prop.atom1->mass());
     if (std::log(prop.rng.uniform()) < deltaLL)
     {
-        prop.atom1->pos = prop.pos;
-        DataModel::safelyChangeMatrix(prop.r1, prop.c1, -prop.atom1->mass);
-        DataModel::changeMatrix(prop.r2, prop.c2, prop.atom1->mass);
+        mDomain.move(prop.atom1, prop.pos);
+        DataModel::safelyChangeMatrix(prop.r1, prop.c1, -prop.atom1->mass());
+        DataModel::changeMatrix(prop.r2, prop.c2, prop.atom1->mass());
         return;
     }
 }
@@ -200,16 +200,16 @@ void AsynchronousGibbsSampler<DataModel>::exchange(const AtomicProposal &prop)
 
     if (DataModel::canUseGibbs(prop.c1, prop.c2))
     {
-        OptionalFloat mass = DataModel::sampleExchange(prop.r1, prop.c1, prop.atom1->mass,
-            prop.r2, prop.c2, prop.atom2->mass, &(prop.rng));
-        float newMass1 = prop.atom1->mass + mass.value();
-        float newMass2 = prop.atom2->mass - mass.value();
+        OptionalFloat mass = DataModel::sampleExchange(prop.r1, prop.c1, prop.atom1->mass(),
+            prop.r2, prop.c2, prop.atom2->mass(), &(prop.rng));
+        float newMass1 = prop.atom1->mass() + mass.value();
+        float newMass2 = prop.atom2->mass() - mass.value();
         if (mass.hasValue() && newMass1 > gaps::epsilon && newMass2 > gaps::epsilon)
         {
-            DataModel::safelyChangeMatrix(prop.r1, prop.c1, newMass1 - prop.atom1->mass);
-            DataModel::safelyChangeMatrix(prop.r2, prop.c2, newMass2 - prop.atom2->mass);
-            prop.atom1->mass = newMass1;
-            prop.atom2->mass = newMass2;
+            DataModel::safelyChangeMatrix(prop.r1, prop.c1, newMass1 - prop.atom1->mass());
+            DataModel::safelyChangeMatrix(prop.r2, prop.c2, newMass2 - prop.atom2->mass());
+            prop.atom1->updateMass(newMass1);
+            prop.atom2->updateMass(newMass2);
             return;
         }
     }
