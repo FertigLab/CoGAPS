@@ -25,6 +25,7 @@ struct GapsResult
 
     float averageQueueLengthA;
     float averageQueueLengthP;
+    unsigned totalRunningTime;
 
     explicit GapsResult(const GapsStatistics &stat);
 

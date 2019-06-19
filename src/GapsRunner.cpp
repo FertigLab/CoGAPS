@@ -400,6 +400,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     
     // get result
     GapsResult result(stats);
+    result.totalRunningTime = static_cast<unsigned>((bpt_now() - startTime).total_seconds());
     result.meanChiSq = stats.meanChiSq(PSampler);
     result.averageQueueLengthA = ASampler.getAverageQueueLength();
     result.averageQueueLengthP = PSampler.getAverageQueueLength();
