@@ -73,7 +73,7 @@ checkpointsEnabled <- function()
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
 outputFrequency=2500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
-BPPARAM=NULL, workerID=1, ...)
+BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, ...)
 {
     # pre-process inputs
     data <- getValueOrRds(data)
@@ -94,7 +94,8 @@ BPPARAM=NULL, workerID=1, ...)
         "transposeData"=transposeData,
         "BPPARAM"=BPPARAM,
         "outputToFile"=NULL,
-        "workerID"=workerID
+        "workerID"=workerID,
+        "asynchronousUpdates"=asynchronousUpdates
     )
     allParams <- parseExtraParams(allParams, list(...))
     allParams <- getDimNames(data, allParams)

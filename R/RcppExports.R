@@ -17,6 +17,10 @@ checkpointsEnabled_cpp <- function() {
     .Call('_CoGAPS_checkpointsEnabled_cpp', PACKAGE = 'CoGAPS')
 }
 
+getFileInfo_cpp <- function(path) {
+    .Call('_CoGAPS_getFileInfo_cpp', PACKAGE = 'CoGAPS', path)
+}
+
 run_catch_unit_tests <- function() {
     .Call('_CoGAPS_run_catch_unit_tests', PACKAGE = 'CoGAPS')
 }

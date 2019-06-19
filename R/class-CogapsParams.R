@@ -63,8 +63,7 @@ setClass("CogapsParams", slots = c(
     sampleNames="character_OR_NULL",
     fixedPatterns="ANY",
     whichMatrixFixed="character",
-    takePumpSamples="logical",
-    asynchronousUpdates="logical"
+    takePumpSamples="logical"
 ))
 
 #' constructor for CogapsParams
@@ -115,7 +114,6 @@ setMethod("initialize", "CogapsParams",
         .Object@fixedPatterns <- NULL
         .Object@whichMatrixFixed <- 'N'
         .Object@takePumpSamples <- FALSE
-        .Object@asynchronousUpdates <- TRUE
 
         .Object <- callNextMethod(.Object, ...)
         .Object

@@ -8,7 +8,7 @@ CoGAPS(data, params = new("CogapsParams"), nThreads = 1,
   messages = TRUE, outputFrequency = 2500, uncertainty = NULL,
   checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 0,
   checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
-  workerID = 1, ...)
+  workerID = 1, asynchronousUpdates = TRUE, ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}

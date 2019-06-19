@@ -83,7 +83,7 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.maxGibbsMassP = Rcpp::as<float>(gapsParams.slot("maxGibbsMassP"));
     params.singleCell = Rcpp::as<bool>(gapsParams.slot("singleCell"));
     params.useSparseOptimization = Rcpp::as<bool>(gapsParams.slot("sparseOptimization"));
-    params.asynchronousUpdates = Rcpp::as<bool>(gapsParams.slot("asynchronousUpdates"));
+    params.asynchronousUpdates = Rcpp::as<bool>(allParams["asynchronousUpdates"]);
 
     // check if using fixed matrix
     params.whichMatrixFixed = Rcpp::as<char>(gapsParams.slot("whichMatrixFixed"));
@@ -190,4 +190,18 @@ bool checkpointsEnabled_cpp()
 #else
     return true;
 #endif
+}
+
+// [[Rcpp::export]]
+Rcpp::List getFileInfo_cpp(const std::string &path)
+{
+    FileParser fp(path);
+    Rcpp::NumericVector dim(2);
+    dim[0] = fp.nRow();
+    dim[1] = fp.nCol();
+    return Rcpp::List::create(
+        Rcpp::Named("dimensions") = dim,
+        Rcpp::Named("rowNames") = Rcpp::wrap(fp.rowNames()),
+        Rcpp::Named("colNames") = Rcpp::wrap(fp.colNames())
+    );
 }
