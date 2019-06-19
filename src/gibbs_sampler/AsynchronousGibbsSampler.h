@@ -122,8 +122,6 @@ void AsynchronousGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThre
         }
         mQueue.clear();
     }
-
-    GAPS_ASSERT(mDomain.isSorted());
 }
 
 // add an atom at a random position, calculate mass either with an
@@ -179,7 +177,6 @@ template <class DataModel>
 void AsynchronousGibbsSampler<DataModel>::move(const AtomicProposal &prop)
 {
     GAPS_ASSERT(prop.r1 != prop.r2 || prop.c1 != prop.c2);
-
     float deltaLL = DataModel::deltaLogLikelihood(prop.r1, prop.c1, prop.r2, prop.c2,
         prop.atom1->mass());
     if (std::log(prop.rng.uniform()) < deltaLL)
