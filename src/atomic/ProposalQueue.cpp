@@ -181,7 +181,7 @@ bool ProposalQueue::birth(ConcurrentAtomicDomain &domain)
     prop.atom1 = domain.insert(pos, 0.f);
 
     mUsedMatrixIndices.insert(prop.r1);
-    mUsedAtoms.insert(prop.atom1->pos);
+    mUsedAtoms.insert(prop.atom1->pos());
     mQueue.push_back(prop);
     ++mMaxAtoms;
     return true;
@@ -191,8 +191,8 @@ bool ProposalQueue::death(ConcurrentAtomicDomain &domain)
 {
     AtomicProposal prop('D', mRandState);
     prop.atom1 = domain.randomAtom(&(prop.rng));
-    prop.r1 = (prop.atom1->pos / mBinLength) / mNumCols;
-    prop.c1 = (prop.atom1->pos / mBinLength) % mNumCols;
+    prop.r1 = (prop.atom1->pos() / mBinLength) / mNumCols;
+    prop.c1 = (prop.atom1->pos() / mBinLength) % mNumCols;
 
     if (mUsedMatrixIndices.contains(prop.r1))
     {
@@ -201,7 +201,7 @@ bool ProposalQueue::death(ConcurrentAtomicDomain &domain)
     }
 
     mUsedMatrixIndices.insert(prop.r1);
-    mUsedAtoms.insert(prop.atom1->pos);
+    mUsedAtoms.insert(prop.atom1->pos());
     mQueue.push_back(prop);
     --mMinAtoms;
     return true;
@@ -210,10 +210,10 @@ bool ProposalQueue::death(ConcurrentAtomicDomain &domain)
 bool ProposalQueue::move(ConcurrentAtomicDomain &domain)
 {
     AtomicProposal prop('M', mRandState);
-    AtomNeighborhood hood = domain.randomAtomWithNeighbors(&(prop.rng));
+    prop.atom1 = domain.randomAtom(&(prop.rng));
 
-    uint64_t lbound = hood.hasLeft() ? hood.left->pos : 0;
-    uint64_t rbound = hood.hasRight() ? hood.right->pos : static_cast<uint64_t>(mDomainLength);
+    uint64_t lbound = prop.atom1->hasLeft() ? prop.atom1->left()->pos() : 0;
+    uint64_t rbound = prop.atom1->hasRight() ? prop.atom1->right()->pos() : static_cast<uint64_t>(mDomainLength);
 
     if (mUsedAtoms.contains(lbound) || mUsedAtoms.contains(rbound))
     {
@@ -222,9 +222,8 @@ bool ProposalQueue::move(ConcurrentAtomicDomain &domain)
     }
 
     prop.pos = prop.rng.uniform64(lbound + 1, rbound - 1);
-    prop.atom1 = hood.center;
-    prop.r1 = (prop.atom1->pos / mBinLength) / mNumCols;
-    prop.c1 = (prop.atom1->pos / mBinLength) % mNumCols;
+    prop.r1 = (prop.atom1->pos() / mBinLength) / mNumCols;
+    prop.c1 = (prop.atom1->pos() / mBinLength) % mNumCols;
     prop.r2 = (prop.pos / mBinLength) / mNumCols;
     prop.c2 = (prop.pos / mBinLength) % mNumCols;
 
@@ -236,28 +235,27 @@ bool ProposalQueue::move(ConcurrentAtomicDomain &domain)
 
     if (prop.r1 == prop.r2 && prop.c1 == prop.c2)
     {
-        prop.atom1->pos = prop.pos;
+        domain.move(prop.atom1, prop.pos);
         return true; // automatically accept moves in same bin
     }
 
     mQueue.push_back(prop);
     mUsedMatrixIndices.insert(prop.r1);
     mUsedMatrixIndices.insert(prop.r2);
-    mUsedAtoms.insert(prop.atom1->pos);
-    mProposedMoves.insert(prop.atom1->pos, prop.pos);
+    mUsedAtoms.insert(prop.atom1->pos());
+    mProposedMoves.insert(prop.atom1->pos(), prop.pos);
     return true;
 }
 
 bool ProposalQueue::exchange(ConcurrentAtomicDomain &domain)
 {
     AtomicProposal prop('E', mRandState);
-    AtomNeighborhood hood = domain.randomAtomWithRightNeighbor(&(prop.rng));
-    prop.atom1 = hood.center;
-    prop.atom2 = hood.hasRight() ? hood.right : domain.front();
-    prop.r1 = (prop.atom1->pos / mBinLength) / mNumCols;
-    prop.c1 = (prop.atom1->pos / mBinLength) % mNumCols;
-    prop.r2 = (prop.atom2->pos / mBinLength) / mNumCols;
-    prop.c2 = (prop.atom2->pos / mBinLength) % mNumCols;
+    prop.atom1 = domain.randomAtom(&(prop.rng));
+    prop.atom2 = prop.atom1->hasRight() ? prop.atom1->right() : domain.front();
+    prop.r1 = (prop.atom1->pos() / mBinLength) / mNumCols;
+    prop.c1 = (prop.atom1->pos() / mBinLength) % mNumCols;
+    prop.r2 = (prop.atom2->pos() / mBinLength) / mNumCols;
+    prop.c2 = (prop.atom2->pos() / mBinLength) % mNumCols;
 
     if (mUsedMatrixIndices.contains(prop.r1) || mUsedMatrixIndices.contains(prop.r2))
     {
@@ -267,12 +265,12 @@ bool ProposalQueue::exchange(ConcurrentAtomicDomain &domain)
 
     if (prop.r1 == prop.r2 && prop.c1 == prop.c2)
     {
-        float newMass = prop.rng.truncGammaUpper(prop.atom1->mass + prop.atom2->mass, 1.f / mLambda);
-        float delta = (prop.atom1->mass > prop.atom2->mass) ? newMass - prop.atom1->mass : prop.atom2->mass - newMass;
-        if (prop.atom1->mass + delta > gaps::epsilon && prop.atom2->mass - delta > gaps::epsilon)
+        float newMass = prop.rng.truncGammaUpper(prop.atom1->mass() + prop.atom2->mass(), 1.f / mLambda);
+        float delta = (prop.atom1->mass() > prop.atom2->mass()) ? newMass - prop.atom1->mass() : prop.atom2->mass() - newMass;
+        if (prop.atom1->mass() + delta > gaps::epsilon && prop.atom2->mass() - delta > gaps::epsilon)
         {
-            prop.atom1->mass += delta;
-            prop.atom2->mass -= delta;
+            prop.atom1->updateMass(prop.atom1->mass() + delta);
+            prop.atom2->updateMass(prop.atom2->mass() - delta);
         }        
         return true; // automatically accept exchanges in same bin
     }
