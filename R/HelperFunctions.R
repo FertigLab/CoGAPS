@@ -155,7 +155,7 @@ getSampleNames <- function(data, transpose)
         names <- getFileInfo_cpp(data)[["colNames"]]
     else
         names <- colnames(data)
-    if (is.null(names))
+    if (is.null(names) | length(names) == 0)
         return(paste("Sample", 1:ncolHelper(data), sep="_"))
     return(names)
 }
@@ -177,8 +177,8 @@ startupMessage <- function(data, allParams)
         dist_message <- allParams$gaps@distributed
 
     cat("\nThis is CoGAPS version", as.character(packageVersion("CoGAPS")), "\n")
-    cat("Running", dist_message, "CoGAPS on", nGenes, "genes and",
-        nSamples, "samples")
+    cat("Running", dist_message, "CoGAPS on", allParams$dataName,
+        paste("(", nGenes, " genes and ", nSamples, " samples)", sep=""))
 
     if (allParams$messages)
     {
@@ -310,9 +310,9 @@ getDimNames <- function(data, allParams)
 
     # check that names align with expected number of genes/samples
     if (length(geneNames) != nGenes)
-        stop("incorrect number of gene names given")
+        stop(length(geneNames), " != ", nGenes, " incorrect number of gene names given")
     if (length(sampleNames) != nSamples)
-        stop("incorrect number of sample names given")
+        stop(length(sampleNames), " != ", nSamples, " incorrect number of sample names given")
 
     # store processed gene/sample names directly in allParams list
     # this is an important distinction - allParams@gaps contains the
