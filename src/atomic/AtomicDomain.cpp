@@ -106,6 +106,8 @@ void AtomicDomain::erase(Atom *atom)
 
 void AtomicDomain::move(Atom *atom, uint64_t newPos)
 {
+    GAPS_ASSERT(newPos > (atom->hasLeft() ? mAtoms[atom->leftIndex()].pos() : 0));
+    GAPS_ASSERT(newPos < (atom->hasRight() ? mAtoms[atom->rightIndex()].pos() : mDomainLength));
     atom->updatePos(newPos);
     mAtomMap.updateKey(atom->iterator(), newPos);
 }

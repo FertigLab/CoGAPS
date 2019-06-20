@@ -3,16 +3,8 @@
 
 #include <algorithm>
 #include <limits>
-#include <vector>
 
-////////////////////////////// ATOMIC DOMAIN ///////////////////////////////////
-
-#if __GAPS_USE_POOLED_ALLOCATOR__
 ConcurrentAtomicDomain::ConcurrentAtomicDomain(uint64_t nBins)
-    : mAtomPool(16384, 0)
-#else
-ConcurrentAtomicDomain::ConcurrentAtomicDomain(uint64_t nBins)
-#endif
 {
     uint64_t binLength = std::numeric_limits<uint64_t>::max() / nBins;
     mDomainLength = binLength * nBins;
@@ -58,13 +50,8 @@ ConcurrentAtom* ConcurrentAtomicDomain::insert(uint64_t pos, float mass)
     ConcurrentAtom *atom;
     #pragma omp critical(AtomicInsertOrErase)
     {
-    #if __GAPS_USE_POOLED_ALLOCATOR__
-        atom = mAtomPool.construct(pos, mass);
-    #else
-        atom = new ConcurrentAtom(pos, mass);
-    #endif
-
         // insert atom into vector and map, record the iterator and index in each
+        atom = new ConcurrentAtom(pos, mass);
         atom->setIterator(mAtomMap.insert(std::pair<uint64_t, ConcurrentAtom*>(pos, atom)).first);
         atom->setIndex(mAtoms.size());
         mAtoms.push_back(atom);
@@ -95,26 +82,22 @@ void ConcurrentAtomicDomain::erase(ConcurrentAtom *atom)
         mAtoms[atom->index()] = mAtoms.back();
         mAtoms[atom->index()]->setIndex(atom->index());
         mAtoms.pop_back();
-        
         if (atom->hasLeft())
         {
             atom->left()->setRight(atom->right());
         }
-
         if (atom->hasRight())
         {
             atom->right()->setLeft(atom->left());
         }
-    #if __GAPS_USE_POOLED_ALLOCATOR__
-        mAtomPool.destroy(atom);
-    #else
         delete atom;
-    #endif
     }
 }
 
 void ConcurrentAtomicDomain::move(ConcurrentAtom *atom, uint64_t newPos)
 {
+    GAPS_ASSERT(newPos > (atom->hasLeft() ? atom->left()->pos() : 0));
+    GAPS_ASSERT(newPos < (atom->hasRight() ? atom->right()->pos() : mDomainLength));
     atom->updatePos(newPos);
     mAtomMap.updateKey(atom->iterator(), newPos);
 }
