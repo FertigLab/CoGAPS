@@ -12,7 +12,7 @@ class CharacterDelimitedParser : public AbstractFileParser
 {
 public:
 
-    explicit CharacterDelimitedParser(const std::string &path, char delimiter);
+    explicit CharacterDelimitedParser(const std::string &path, char delimiter, bool gctFormat=false);
     ~CharacterDelimitedParser();
 
     std::vector<std::string> rowNames() const;
@@ -29,7 +29,7 @@ private:
     std::vector<std::string> mRowNames;
     std::vector<std::string> mColNames;
 
-    std::string mBuffer;
+    std::vector<std::string> mCurrentLine;
 
     unsigned mNumRows;
     unsigned mNumCols;
@@ -39,6 +39,10 @@ private:
 
     bool mRowNamesPresent;
     char mDelimiter;
+    bool mGctFormat;
+
+    void parseNextLine();
+    void checkFileState() const;
 
     CharacterDelimitedParser(const CharacterDelimitedParser &p); // don't allow copies
     CharacterDelimitedParser& operator=(const CharacterDelimitedParser &p); // don't allow copies
