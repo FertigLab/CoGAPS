@@ -8,16 +8,6 @@
 
 #include <vector>
 
-// use a pooled allocator when creating atoms
-#define __GAPS_USE_POOLED_ALLOCATOR__ 0
-
-#if __GAPS_USE_POOLED_ALLOCATOR__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include "boost/pool/object_pool.hpp"
-#pragma GCC diagnostic pop
-#endif
-
 // needed for friend declarations
 template <class StoragePolicy>
 class AsynchronousGibbsSampler;
@@ -62,10 +52,6 @@ private:
 
     ConcurrentAtomMapType mAtomMap; // sorted, used when inserting atoms to find neighbors
     std::vector<ConcurrentAtom*> mAtoms; // unsorted, used for reads
-
-#if __GAPS_USE_POOLED_ALLOCATOR__
-    boost::object_pool<ConcurrentAtom> mAtomPool;
-#endif
 
     // size of atomic domain to ensure all bins are equal length
     uint64_t mDomainLength;
