@@ -9,26 +9,39 @@ MtxParser::MtxParser(const std::string &path) : mNumRows(0), mNumCols(0)
 {
     mFile.open(path.c_str());
 
-    std::string line;
-    std::getline(mFile, line);
+    // skip over comments
+    std::string line = "%";
+    while (line.find('%') != std::string::npos)
+    {
+        std::getline(mFile, line);
+        checkFileState();
+    }
+
+    std::stringstream ss(line); // this line contains dimensions
+    ss >> mNumRows >> mNumCols;
+}
+
+MtxParser::~MtxParser()
+{
+    mFile.close();
+}
+
+unsigned MtxParser::nRow() const
+{
+    return mNumRows;
+}
+
+unsigned MtxParser::nCol() const
+{
+    return mNumCols;
+}
+
+void MtxParser::checkFileState() const
+{
     if (mFile.eof() || mFile.fail())
     {
         GAPS_ERROR("Invalid MTX file");
     }
-
-    // skip over comments
-    while (line.find('%') != std::string::npos)
-    {
-        std::getline(mFile, line);
-        if (mFile.eof() || mFile.fail())
-        {
-            GAPS_ERROR("Invalid MTX file");
-        }
-    }
-    std::stringstream ss(line); // this line contains dimensions
-
-    // store dimensions
-    ss >> mNumRows >> mNumCols;
 }
 
 bool MtxParser::hasNext()
@@ -39,7 +52,8 @@ bool MtxParser::hasNext()
 
 MatrixElement MtxParser::getNext()
 {
-    unsigned row = 0, col = 0;
+    unsigned row = 0;
+    unsigned col = 0;
     float val = 0.f;
     mFile >> row;
     mFile >> col;
