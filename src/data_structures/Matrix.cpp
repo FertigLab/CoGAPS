@@ -58,6 +58,7 @@ std::vector<unsigned> indices)
                 ? indices[genesInCols ? i : j] - 1
                 : genesInCols ? i : j;
 
+            GAPS_ASSERT(i < nGenes);
             mCols[j][i] = mat(dataRow, dataCol);
         }
     }
@@ -102,7 +103,7 @@ std::vector<unsigned> indices)
             MatrixElement e(fp.getNext());
             unsigned row = genesInCols ? e.col : e.row;
             unsigned col = genesInCols ? e.row : e.col;
-            mCols[col][row] = e.value;
+            this->operator()(row, col) = e.value;
         }
     }
     else
@@ -124,7 +125,7 @@ std::vector<unsigned> indices)
                 unsigned col = !subsetGenes
                     ? std::distance(indices.begin(), pos)
                     : genesInCols ? e.row : e.col;
-                mCols[col][row] = e.value;
+                this->operator()(row, col) = e.value;
             }
         }
     }
