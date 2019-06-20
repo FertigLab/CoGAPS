@@ -4,26 +4,26 @@
 #include <fstream>
 #include <iostream>
 
-static const std::string whitespace = " \r\n";
+static const std::string trimChars = " \r\n\"";
 
-std::string ltrim(const std::string &s)
+static std::string ltrim(const std::string &s)
 {
-    std::size_t start = s.find_first_not_of(whitespace);
+    std::size_t start = s.find_first_not_of(trimChars);
     return (start == std::string::npos) ? "" : s.substr(start);
 }
 
-std::string rtrim(const std::string &s)
+static std::string rtrim(const std::string &s)
 {
-    std::size_t end = s.find_last_not_of(whitespace);
+    std::size_t end = s.find_last_not_of(trimChars);
     return (end == std::string::npos) ? "" : s.substr(0, end + 1);
 }
 
-std::string trim(const std::string &s)
+static std::string trim(const std::string &s)
 {
     return rtrim(ltrim(s));
 }
 
-std::string trimNewline(const std::string &s)
+static std::string trimNewline(const std::string &s)
 {
     std::size_t pos;
     if ((pos = s.find('\n')) == std::string::npos)
@@ -31,66 +31,76 @@ std::string trimNewline(const std::string &s)
     return s.substr(0, pos);
 }
 
-// read through whole file once, store row/col names - gives dimensions
-// open file, throw away column names
-CharacterDelimitedParser::CharacterDelimitedParser(const std::string &path, char delimiter)
-    :
-mNumRows(0), mNumCols(0), mCurrentRow(0), mCurrentCol(0), mRowNamesPresent(false),
-mDelimiter(delimiter)
+static std::vector<std::string> split(const std::string &s, char delimiter)
 {
-    // open file stream
-    std::ifstream file_str(path.c_str());
+    std::vector<std::string> tokens;
+    std::string temp;
+    std::stringstream ss(s);
+    while (std::getline(ss, temp, ','))
+        tokens.push_back(trim(temp));
+    return tokens;    
+}
 
-    // read first entry
-    std::string line;
-    std::getline(file_str, line, mDelimiter);
-    if (file_str.eof() || file_str.fail())
+void CharacterDelimitedParser::checkFileState() const
+{
+    if (mFile.eof() || mFile.fail())
     {
         GAPS_ERROR("Invalid character delimited file");
     }
+}
 
-    // check if row names are given, if not count this first read as a column
-    mRowNamesPresent = trim(line).empty();
-    if (!mRowNamesPresent)
+// read through whole file once, store row/col names and dimensions
+CharacterDelimitedParser::CharacterDelimitedParser(const std::string &path, char delimiter, bool gctFormat)
+    :
+mNumRows(0), mNumCols(0), mCurrentRow(0), mCurrentCol(0), mRowNamesPresent(false),
+mDelimiter(delimiter), mGctFormat(gctFormat)
+{
+    // read first entry
+    mFile.open(path.c_str());
+    std::string line;
+    std::getline(mFile, line, mDelimiter);
+    checkFileState();    
+
+    // if stored in gct format, read the second line with the dimensions
+    if (gctFormat)
     {
-        ++mNumCols;
-        mColNames.push_back(trim(trimNewline(line)));
+        std::getline(mFile, line);
+        std::stringstream ss(line);
+        ss >> mNumRows >> mNumCols;
     }
-
-    // get col size
-    std::size_t pos;
-    do
+    else // other formats need to walk the whole file to get the info
     {
-        std::getline(file_str, line, mDelimiter);
-        if (file_str.eof() || file_str.fail())
+        // check if row names are given, if not count this first read as a column
+        mRowNamesPresent = trim(line).empty();
+        if (!mRowNamesPresent)
         {
-            GAPS_ERROR("Invalid character delimited file");
+            ++mNumCols;
+            mColNames.push_back(trim(trimNewline(line)));
         }
-        mColNames.push_back(trim(trimNewline(line)));
-        ++mNumCols;
-    }
-    while ((pos = line.find('\n')) == std::string::npos);
 
-    // get row size
-    ++mNumRows; // acount for current row
-    while (file_str.peek() != EOF)
-    {
-        // throw away data
+        // find number of columns and record column names
+        std::size_t pos;
         do
         {
-            std::getline(file_str, line, mDelimiter);
+            std::getline(mFile, line, mDelimiter);
+            checkFileState();
+            ++mNumCols;
+            mColNames.push_back(trim(trimNewline(line)));
         }
         while ((pos = line.find('\n')) == std::string::npos);
 
-        if (pos + 1 < line.size())
-        {
-            ++mNumRows; // increment row number, ignore last newline in file
-        }
+        // find number of rows
+        while (std::getline(mFile, line))
+            ++mNumRows;
     }
 
-    // open member file stream and set at first element
-    mFile.open(path.c_str());
+    // reset file stream to beginning
+    mFile.clear();
+    mFile.seekg(0, std::ios::beg);
     std::getline(mFile, line); // get rid of first line (column names)
+    if (mGctFormat)
+        std::getline(mFile, line); // get rid of the file dimensions
+    parseNextLine();
 }
 
 CharacterDelimitedParser::~CharacterDelimitedParser()
@@ -100,40 +110,36 @@ CharacterDelimitedParser::~CharacterDelimitedParser()
 
 bool CharacterDelimitedParser::hasNext()
 {
+    if (mCurrentCol < mCurrentLine.size())
+    {
+        return true;
+    }
     mFile >> std::ws;
     return mFile.peek() != EOF;
 }
 
+void CharacterDelimitedParser::parseNextLine()
+{
+    std::string fullLine;
+    std::getline(mFile, fullLine);
+    mCurrentLine = split(fullLine, ',');
+    if (mRowNamesPresent)
+        mCurrentLine.erase(mCurrentLine.begin());
+    if (mGctFormat)
+        mCurrentLine.erase(mCurrentLine.begin(), mCurrentLine.begin() + 2);
+}
+
 MatrixElement CharacterDelimitedParser::getNext()
 {
-    if (!mBuffer.empty())
+    if (mCurrentCol < mCurrentLine.size())
     {
-        std::string temp = mBuffer;
-        mBuffer = "";
-        return MatrixElement(mCurrentRow, mCurrentCol++, temp);
+        unsigned colIndex = mCurrentCol;
+        ++mCurrentCol;
+        return MatrixElement(mCurrentRow, colIndex, mCurrentLine[colIndex]);
     }
-
-    std::string line;
-    std::size_t pos;
-    std::getline(mFile, line, mDelimiter);
-    if ((pos = line.find('\n')) != std::string::npos) // end of line
-    {
-        unsigned col = mCurrentCol;
-        mCurrentCol = 0;
-        if (mRowNamesPresent)
-        {
-            return MatrixElement(mCurrentRow++, col, line.substr(0, pos));
-        }
-        else
-        {
-            mBuffer = line.substr(pos + 1);
-            return MatrixElement(mCurrentRow++, col, line.substr(0, pos));
-        }
-    }
-    else
-    {
-        return MatrixElement(mCurrentRow, mCurrentCol++, line);
-    }
+    parseNextLine();
+    ++mCurrentRow;
+    mCurrentCol = 0;
     return getNext();
 }
 

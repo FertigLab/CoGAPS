@@ -2,7 +2,6 @@
 #include "CharacterDelimitedParser.h"
 #include "FileParser.h"
 #include "MtxParser.h"
-#include "GctParser.h"
 
 #include <string>
 
@@ -13,7 +12,7 @@ AbstractFileParser* AbstractFileParser::create(const std::string &path)
         case GAPS_MTX: return new MtxParser(path);
         case GAPS_CSV: return new CharacterDelimitedParser(path, ',');
         case GAPS_TSV: return new CharacterDelimitedParser(path, '\t');
-        case GAPS_GCT: return new GctParser(path);
+        case GAPS_GCT: return new CharacterDelimitedParser(path, '\t', true);
         default: GAPS_ERROR("Invalid file type\n");
     }
 }
