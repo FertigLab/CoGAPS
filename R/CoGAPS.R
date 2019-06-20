@@ -71,11 +71,15 @@ checkpointsEnabled <- function()
 #' resultC <- CoGAPS(GIST.data_frame, params, nIterations=25)
 #' @importFrom methods new is
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
-outputFrequency=2500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
+outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, ...)
 {
     # pre-process inputs
+    if (is(data, "character"))
+        dataName <- data
+    else
+        dataName <- deparse(substitute(data))
     data <- getValueOrRds(data)
     data <- convertDataToMatrix(data)
     params <- getValueOrRds(params)
@@ -95,7 +99,8 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, ...)
         "BPPARAM"=BPPARAM,
         "outputToFile"=NULL,
         "workerID"=workerID,
-        "asynchronousUpdates"=asynchronousUpdates
+        "asynchronousUpdates"=asynchronousUpdates,
+        "dataName"=dataName
     )
     allParams <- parseExtraParams(allParams, list(...))
     allParams <- getDimNames(data, allParams)
