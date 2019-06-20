@@ -12,7 +12,7 @@ TEST_CASE("Reading/Writing to an Archive")
     {
         Archive ar1("test_ar.temp", ARCHIVE_WRITE);
         ar1 << 3;
-    }
+    } // in it's own scope so the file resources gets released
 
     {
         Archive ar2("test_ar.temp", ARCHIVE_READ);
