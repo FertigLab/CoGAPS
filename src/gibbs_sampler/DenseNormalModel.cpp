@@ -101,7 +101,6 @@ void DenseNormalModel::changeMatrix(unsigned row, unsigned col, float delta)
 {
     mMatrix(row, col) += delta;
     updateAPMatrix(row, col, delta);
-
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
@@ -110,7 +109,6 @@ void DenseNormalModel::safelyChangeMatrix(unsigned row, unsigned col, float delt
     float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
     updateAPMatrix(row, col, newVal - mMatrix(row, col));
     mMatrix(row, col) = newVal;
-
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
@@ -150,7 +148,7 @@ unsigned r2, unsigned c2, float m2, GapsRng *rng)
     return gibbsMass(alpha, -m1, m2, rng);
 }
 
-// PERFORMANCE_CRITICAL
+// PERFORMANCE CRITICAL
 AlphaParameters DenseNormalModel::alphaParameters(unsigned row, unsigned col)
 {
     unsigned size = mDMatrix.nRow();
@@ -174,7 +172,7 @@ AlphaParameters DenseNormalModel::alphaParameters(unsigned row, unsigned col)
     return AlphaParameters(partialS.scalar(), partialS_mu.scalar());
 }
 
-// PERFORMANCE_CRITICAL
+// PERFORMANCE CRITICAL
 AlphaParameters DenseNormalModel::alphaParameters(unsigned r1, unsigned c1,
 unsigned r2, unsigned c2)
 {
@@ -205,7 +203,7 @@ unsigned r2, unsigned c2)
     return alphaParameters(r1, c1) + alphaParameters(r2, c2);
 }
 
-// PERFORMANCE_CRITICAL
+// PERFORMANCE CRITICAL
 AlphaParameters DenseNormalModel::alphaParametersWithChange(unsigned row,
 unsigned col, float ch)
 {
@@ -231,7 +229,7 @@ unsigned col, float ch)
     return AlphaParameters(packedS.scalar(), packedS_mu.scalar());
 }
 
-// PERFORMANCE_CRITICAL
+// PERFORMANCE CRITICAL
 void DenseNormalModel::updateAPMatrix(unsigned row, unsigned col, float delta)
 {
     const float *other = mOtherMatrix->getCol(col).ptr();
