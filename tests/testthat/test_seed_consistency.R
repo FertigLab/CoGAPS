@@ -35,5 +35,5 @@ test_that("same seed == same result",
         messages=FALSE, nThreads=6)
     expect_true(resultsEqual(res1, res2))
     expect_true(resultsEqual(res1, res3))
-    expect_true(resultsEqual(res2, res2))
+    expect_true(resultsEqual(res2, res3))
 })
