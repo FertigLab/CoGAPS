@@ -92,7 +92,7 @@ setMethod("initialize", "CogapsParams",
         .Object@distributed <- distributed
         
         .Object@nPatterns <- 7
-        .Object@nIterations <- 5000
+        .Object@nIterations <- 2000
         .Object@alphaA <- 0.01
         .Object@alphaP <- 0.01
         .Object@maxGibbsMassA <- 100
