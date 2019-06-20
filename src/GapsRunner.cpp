@@ -63,11 +63,11 @@ const DataType &uncertainty, GapsRandomState *randState)
 {
     if (params.asynchronousUpdates)
     {
-        gaps_printf("Sampler Type: Asynchronous\n");
+        GAPS_MESSAGE(params.printMessages, "Sampler Type: Asynchronous\n");
         return runCoGAPSAlgorithm< AsynchronousGibbsSampler<DataModel> >(data,
             params, uncertainty, randState);
     }
-    gaps_printf("Sampler Type: Sequential\n");
+    GAPS_MESSAGE(params.printMessages, "Sampler Type: Sequential\n");
     return runCoGAPSAlgorithm< SingleThreadedGibbsSampler<DataModel> >(data,
         params, uncertainty, randState);
 }
@@ -78,10 +78,10 @@ const DataType &uncertainty, GapsRandomState *randState)
 {
     if (params.useSparseOptimization)
     {
-        gaps_printf("Data Model: Sparse, Normal\n");
+        GAPS_MESSAGE(params.printMessages, "Data Model: Sparse, Normal\n");
         return chooseSampler<SparseNormalModel>(data, params, uncertainty, randState);
     }
-    gaps_printf("Data Model: Dense, Normal\n");        
+    GAPS_MESSAGE(params.printMessages, "Data Model: Dense, Normal\n");        
     return chooseSampler<DenseNormalModel>(data, params, uncertainty, randState);
 }
 
