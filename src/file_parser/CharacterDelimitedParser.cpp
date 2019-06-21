@@ -37,7 +37,7 @@ static std::vector<std::string> split(const std::string &s, char delimiter)
     std::vector<std::string> tokens;
     std::string temp;
     std::stringstream ss(s);
-    while (std::getline(ss, temp, ','))
+    while (std::getline(ss, temp, delimiter))
         tokens.push_back(trim(temp));
     return tokens;    
 }
@@ -59,18 +59,21 @@ mDelimiter(delimiter), mGctFormat(gctFormat)
     // read first entry
     mFile.open(path.c_str());
     std::string line;
-    std::getline(mFile, line, mDelimiter);
-    checkFileState();    
 
     // if stored in gct format, read the second line with the dimensions
-    if (gctFormat)
+    if (mGctFormat)
     {
         std::getline(mFile, line);
+        std::getline(mFile, line);
+        checkFileState();
         std::stringstream ss(line);
         ss >> mNumRows >> mNumCols;
     }
     else // other formats need to walk the whole file to get the info
     {
+        std::getline(mFile, line, mDelimiter);
+        checkFileState();    
+
         // check if row names are given, if not count this first read as a column
         mRowNamesPresent = trim(line).empty();
         if (!mRowNamesPresent)
@@ -98,9 +101,12 @@ mDelimiter(delimiter), mGctFormat(gctFormat)
     // reset file stream to beginning
     mFile.clear();
     mFile.seekg(0, std::ios::beg);
-    std::getline(mFile, line); // get rid of first line (column names)
+    std::getline(mFile, line); // get rid of first line (column names for csv/tsv)
     if (mGctFormat)
+    {
         std::getline(mFile, line); // get rid of the file dimensions
+        std:getline(mFile, line); // get rid of the column names
+    }
     parseNextLine();
 }
 
@@ -123,7 +129,7 @@ void CharacterDelimitedParser::parseNextLine()
 {
     std::string fullLine;
     std::getline(mFile, fullLine);
-    mCurrentLine = split(fullLine, ',');
+    mCurrentLine = split(fullLine, mDelimiter);
     if (mRowNamesPresent)
         mCurrentLine.erase(mCurrentLine.begin());
     if (mGctFormat)
