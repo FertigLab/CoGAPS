@@ -7,6 +7,8 @@
 #include "../data_structures/SparseMatrix.h"
 #include "../math/MatrixMath.h"
 
+#include <cmath>
+
 class GapsStatistics;
 class Archive;
 

@@ -6,6 +6,8 @@
 #include "../data_structures/Matrix.h"
 #include "../math/MatrixMath.h"
 
+#include <cmath>
+
 class GapsStatistics;
 class Archive;
 

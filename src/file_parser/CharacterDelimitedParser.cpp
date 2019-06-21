@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 
 static const std::string trimChars = " \r\n\"";
 

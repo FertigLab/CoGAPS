@@ -1,6 +1,8 @@
 #include "AlphaParameters.h"
 #include "../math/Math.h"
 
+#include <cmath>
+
 AlphaParameters::AlphaParameters(float t_s, float t_smu)
     : s(t_s), s_mu(t_smu)
 {}

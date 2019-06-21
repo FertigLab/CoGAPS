@@ -5,6 +5,7 @@
 #include "MatrixElement.h"
 
 #include <fstream>
+#include <vector>
 
 enum GapsFileType
 {
