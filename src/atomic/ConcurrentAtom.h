@@ -38,7 +38,7 @@ public:
     friend Archive& operator<<(Archive& ar, const ConcurrentAtom &a);
     friend Archive& operator>>(Archive& ar, ConcurrentAtom &a);
 
-private:
+//private:
 
     // only the atomic domain can change the position of an atom, since it is
     // responsible for keeping them ordered

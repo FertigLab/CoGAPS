@@ -11,6 +11,10 @@ mNumPatterns(nPatterns), mPumpUpdates(0)
 
 Matrix GapsStatistics::Amean() const
 {
+#ifdef GAPS_DEBUG
+    gaps_printf("max value of Amean: %f\n", gaps::max(mAMeanMatrix));
+    gaps_printf("min value of Amean: %f\n", gaps::min(mAMeanMatrix));
+#endif
     GAPS_ASSERT(gaps::min(mAMeanMatrix / static_cast<float>(mStatUpdates)) >= 0.f);
     return mAMeanMatrix / static_cast<float>(mStatUpdates);
 }
@@ -32,6 +36,10 @@ Matrix GapsStatistics::Asd() const
 
 Matrix GapsStatistics::Pmean() const
 {
+#ifdef GAPS_DEBUG
+    gaps_printf("max value of Pmean: %f\n", gaps::max(mPMeanMatrix));
+    gaps_printf("min value of Pmean: %f\n", gaps::min(mPMeanMatrix));
+#endif
     GAPS_ASSERT(gaps::min(mPMeanMatrix / static_cast<float>(mStatUpdates)) >= 0.f);
     return mPMeanMatrix / static_cast<float>(mStatUpdates);
 }

@@ -58,6 +58,10 @@ private:
     void death(const AtomicProposal &prop);
     void move(const AtomicProposal &prop);
     void exchange(const AtomicProposal &prop);
+
+#ifdef GAPS_DEBUG
+    float maximumDrift() const;
+#endif
 };
 
 //////////////////// AsynchronousGibbsSampler - templated functions ////////////////////////
@@ -99,14 +103,13 @@ void AsynchronousGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThre
         // create the largest queue possible, without hitting any conflicts
         mQueue.populate(mDomain, nSteps - n);
         n += mQueue.nProcessed();
-    
         if (n < nSteps) // don't count last one since it might be truncated
         {
-            mNumQueueSamples += 1.f;
+            mNumQueueSamples += 1.f; // record the size of the queue for diagnostics
             mAvgQueueLength *= (mNumQueueSamples - 1.f) / mNumQueueSamples;
             mAvgQueueLength += static_cast<float>(mQueue.size()) / mNumQueueSamples;
         }
-        
+
         // process all proposed updates in parallel - the way the queue is 
         // populated ensures no race conditions will happen
         #pragma omp parallel for num_threads(nThreads)
@@ -121,7 +124,11 @@ void AsynchronousGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThre
             }
         }
         mQueue.clear();
+        mDomain.flushEraseCache();
     }
+    GAPS_ASSERT(n == nSteps);
+    GAPS_ASSERT(mDomain.isSorted());
+    GAPS_ASSERT_MSG(maximumDrift() < 0.01f, "maximum drift: " << maximumDrift());
 }
 
 // add an atom at a random position, calculate mass either with an
@@ -145,7 +152,7 @@ void AsynchronousGibbsSampler<DataModel>::birth(const AtomicProposal &prop)
 
     // otherwise reject birth
     mQueue.rejectBirth();
-    mDomain.erase(prop.atom1);
+    mDomain.cacheErase(prop.atom1);
 }
 
 // attempt to rebirth an atom in place of the killed atom
@@ -169,7 +176,7 @@ void AsynchronousGibbsSampler<DataModel>::death(const AtomicProposal &prop)
     // if rebirth fails, then kill off atom
     mQueue.acceptDeath();
     DataModel::safelyChangeMatrix(prop.r1, prop.c1, -1.f * prop.atom1->mass());
-    mDomain.erase(prop.atom1);
+    mDomain.cacheErase(prop.atom1);
 }
 
 // move mass from src to dest in the atomic domain
@@ -225,5 +232,39 @@ Archive& operator>>(Archive &ar, AsynchronousGibbsSampler<DataModel> &s)
     operator>>(ar, static_cast<DataModel&>(s)) >> s.mDomain >> s.mQueue;
     return ar;
 }
+
+#ifdef GAPS_DEBUG
+template <class DataModel>
+float AsynchronousGibbsSampler<DataModel>::maximumDrift() const
+{
+    const ConcurrentAtom *atom = mDomain.front();
+    uint64_t binLength = std::numeric_limits<uint64_t>::max() / DataModel::nElements();
+    unsigned row = (atom->pos() / binLength) / DataModel::nPatterns();
+    unsigned col = (atom->pos() / binLength) % DataModel::nPatterns();
+    float mass = atom->mass();
+    float maxDrift = 0.f;
+    while (atom->hasRight())
+    {
+        atom = atom->right();
+        unsigned newRow = (atom->pos() / binLength) / DataModel::nPatterns();
+        unsigned newCol = (atom->pos() / binLength) % DataModel::nPatterns();
+        if (row == newRow && col == newCol)
+        {
+            mass += atom->mass();
+        }
+        else
+        {
+            float actual = DataModel::mMatrix(row, col);
+            //float drift = (actual > 1.f) ? std::abs(actual - mass) / actual : actual;
+            float drift = std::abs(actual - mass);
+            maxDrift = (drift > maxDrift) ? drift : maxDrift;
+            mass = atom->mass();
+            row = newRow;
+            col = newCol;
+        }
+    }
+    return maxDrift;
+}
+#endif // GAPS_DEBUG
 
 #endif // __COGAPS_ASYNCHRONOUS_GIBBS_SAMPLER_H__

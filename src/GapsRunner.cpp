@@ -154,28 +154,28 @@ static void displayStatus(const GapsParameters &params,
 const Sampler &ASampler, const Sampler &PSampler, bpt::ptime startTime,
 char phase, unsigned iter, GapsStatistics &stats)
 {
-    if (params.printMessages && params.outputFrequency > 0
-    && ((iter + 1) % params.outputFrequency) == 0)
+    if (params.outputFrequency > 0 && ((iter + 1) % params.outputFrequency) == 0)
     {
-        bpt::time_duration diff = bpt_now() - startTime;
-        double perComplete = estimatedPercentComplete(params, ASampler,
-            PSampler, phase, iter);
-
-        GapsTime elapsedTime(static_cast<unsigned>(diff.total_seconds()));
-        GapsTime totalTime(static_cast<unsigned>(diff.total_seconds() / perComplete));
-
         float cs = PSampler.chiSq();
         unsigned nA = ASampler.nAtoms();
         unsigned nP = PSampler.nAtoms();
-
         stats.addChiSq(cs);
         stats.addAtomCount(nA, nP);
+        if (params.printMessages)
+        {
+            bpt::time_duration diff = bpt_now() - startTime;
+            double perComplete = estimatedPercentComplete(params, ASampler,
+                PSampler, phase, iter);
 
-        gaps_printf("%d of %d, Atoms: %d(A), %d(P), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
-            iter + 1, params.nIterations, nA, nP, cs, elapsedTime.hours,
-            elapsedTime.minutes, elapsedTime.seconds, totalTime.hours,
-            totalTime.minutes, totalTime.seconds);
-        gaps_flush();
+            GapsTime elapsedTime(static_cast<unsigned>(diff.total_seconds()));
+            GapsTime totalTime(static_cast<unsigned>(diff.total_seconds() / perComplete));
+
+            gaps_printf("%d of %d, Atoms: %d(A), %d(P), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
+                iter + 1, params.nIterations, nA, nP, cs, elapsedTime.hours,
+                elapsedTime.minutes, elapsedTime.seconds, totalTime.hours,
+                totalTime.minutes, totalTime.seconds);
+            gaps_flush();
+        }
     }
 }
 

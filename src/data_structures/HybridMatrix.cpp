@@ -22,9 +22,16 @@ void HybridMatrix::add(unsigned i, unsigned j, float v)
 {
     GAPS_ASSERT(i < mNumRows);
     GAPS_ASSERT(j < mNumCols);
-
     mRows[i][j] += v;
     mCols[j].add(i, v);
+}
+
+void HybridMatrix::set(unsigned i, unsigned j, float v)
+{
+    GAPS_ASSERT(i < mNumRows);
+    GAPS_ASSERT(j < mNumCols);
+    mRows[i][j] = v;
+    mCols[j].set(i, v);
 }
 
 float HybridMatrix::operator()(unsigned i, unsigned j) const

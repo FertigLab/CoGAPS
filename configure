@@ -3795,8 +3795,8 @@ fi
     ax_cv_cxx_compiler_version="5xe:4" ;; #(
   *) :
 
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: [_AX_COMPILER_VERSION_BORLAND] Unknown borlandc compiler version $_ax_cxx_compiler_version_borlandc_raw please report bug" >&5
-$as_echo "$as_me: WARNING: [_AX_COMPILER_VERSION_BORLAND] Unknown borlandc compiler version $_ax_cxx_compiler_version_borlandc_raw please report bug" >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: [_AX_COMPILER_VERSION_BORLAND] Unknow borlanc compiler version $_ax_cxx_compiler_version_borlandc_raw please report bug" >&5
+$as_echo "$as_me: WARNING: [_AX_COMPILER_VERSION_BORLAND] Unknow borlanc compiler version $_ax_cxx_compiler_version_borlandc_raw please report bug" >&2;}
        ;;
 esac
 
@@ -4089,12 +4089,9 @@ if ${ax_cv_cxx_openmp+:} false; then :
 else
   saveCXXFLAGS=$CXXFLAGS
 ax_cv_cxx_openmp=unknown
-# Flags to try:  -fopenmp (gcc), -mp (SGI & PGI),
-#                -qopenmp (icc>=15), -openmp (icc),
-#                -xopenmp (Sun), -omp (Tru64),
-#                -qsmp=omp (AIX),
-#                none
-ax_openmp_flags="-fopenmp -openmp -qopenmp -mp -xopenmp -omp -qsmp=omp none"
+# Flags to try:  -fopenmp (gcc), -openmp (icc), -mp (SGI & PGI),
+#                -xopenmp (Sun), -omp (Tru64), -qsmp=omp (AIX), none
+ax_openmp_flags="-fopenmp -openmp -mp -xopenmp -omp -qsmp=omp none"
 if test "x$OPENMP_CXXFLAGS" != x; then
   ax_openmp_flags="$OPENMP_CXXFLAGS $ax_openmp_flags"
 fi
@@ -4225,22 +4222,7 @@ GAPS_SOURCE_FILES+=" math/VectorMath.o"
 if test "x$cpp_tests" = "xyes" ; then
     echo "Enabling C++ Unit Tests"
     GAPS_CPP_FLAGS+=" -DGAPS_CPP_UNIT_TESTS "
-
-    GAPS_SOURCE_FILES+=" cpp_tests/testSamplerHighLevel.cpp"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testAtomicDomain.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testDenseGibbsSampler.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testFileParsers.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testHashSets.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testHybridMatrix.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testHybridVector.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testMatrix.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testRandom.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testSerialization.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testSparseGibbsSampler.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testSparseIterator.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testSparseMatrix.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testSparseVector.o"
-    # GAPS_SOURCE_FILES+=" cpp_tests/testVector.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testVector.o"
 fi
 
 # export variables containing flags

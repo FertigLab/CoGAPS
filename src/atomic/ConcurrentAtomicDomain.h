@@ -23,35 +23,39 @@ public:
 
     // access atoms
     ConcurrentAtom* front();
+    const ConcurrentAtom* front() const;
     ConcurrentAtom* randomAtom(GapsRng *rng);
     ConcurrentAtomNeighborhood randomAtomWithNeighbors(GapsRng *rng);
 
     uint64_t randomFreePosition(GapsRng *rng) const;
     uint64_t size() const;
 
+    void cacheErase(ConcurrentAtom *atom); // OpenMP thread safe
+    void move(ConcurrentAtom *atom, uint64_t newPos); // OpenMP thread safe
+    void flushEraseCache();
+
     // serialization
     friend Archive& operator<<(Archive &ar, const ConcurrentAtomicDomain &domain);
     friend Archive& operator>>(Archive &ar, ConcurrentAtomicDomain &domain);
+
+#ifdef GAPS_DEBUG
+    bool isSorted() const;
+#endif
    
 private:
 
-    template <class StoragePolicy>
-    friend class AsynchronousGibbsSampler;
+    // only these classes can call the non-thread safe insert and erase functions
     template <class StoragePolicy>
     friend class SingleThreadedGibbsSampler;
     friend class ProposalQueue;
 
-    // both insert and erase will keep pointers to atoms valid, and both insert
-    // and erase can be called concurrently using OpenMP threads. Neither call
-    // will preserve iterators however. These protections can incur a performance
-    // overhead and should only be used when needed. Friend classes are declared
-    // here as a way to enforce this contract between classes.
+    // these functions are not thread safe
     ConcurrentAtom* insert(uint64_t pos, float mass);
     void erase(ConcurrentAtom *atom);
-    void move(ConcurrentAtom *atom, uint64_t newPos);
 
     ConcurrentAtomMapType mAtomMap; // sorted, used when inserting atoms to find neighbors
     std::vector<ConcurrentAtom*> mAtoms; // unsorted, used for reads
+    std::vector<ConcurrentAtom*> mEraseCache;
 
     // size of atomic domain to ensure all bins are equal length
     uint64_t mDomainLength;

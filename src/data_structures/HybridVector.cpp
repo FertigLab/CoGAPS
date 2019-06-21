@@ -51,6 +51,7 @@ unsigned HybridVector::size() const
 
 bool HybridVector::add(unsigned i, float v)
 {
+    GAPS_ASSERT(i < mSize);
     if (mData[i] + v < gaps::epsilon)
     {
         mIndexBitFlags[i / 64] &= ~(1ull << (i % 64));
@@ -59,6 +60,20 @@ bool HybridVector::add(unsigned i, float v)
     }
     mIndexBitFlags[i / 64] |= (1ull << (i % 64));
     mData[i] += v;
+    return false;
+}
+
+bool HybridVector::set(unsigned i, float v)
+{
+    GAPS_ASSERT(i < mSize);
+    if (v < gaps::epsilon)
+    {
+        mIndexBitFlags[i / 64] &= ~(1ull << (i % 64));
+        mData[i] = 0.f;
+        return true;
+    }
+    mIndexBitFlags[i / 64] |= (1ull << (i % 64));
+    mData[i] = v;
     return false;
 }
 

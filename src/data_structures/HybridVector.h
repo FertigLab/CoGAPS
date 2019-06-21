@@ -32,6 +32,7 @@ public:
     unsigned size() const;
 
     bool add(unsigned i, float v); // true if zeros out data
+    bool set(unsigned i, float v); // true if zeros out data
     float operator[](unsigned i) const;
 
     const float* ptr() const;
