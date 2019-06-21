@@ -88,21 +88,15 @@ bool SparseNormalModel::canUseGibbs(unsigned c1, unsigned c2) const
 
 void SparseNormalModel::changeMatrix(unsigned row, unsigned col, float delta)
 {
-    #pragma omp critical(MatrixChange)
-    {
-        mMatrix.add(row, col, delta);
-        GAPS_ASSERT(mMatrix(row, col) >= 0.f);
-    }
+    mMatrix.add(row, col, delta);
+    GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
 void SparseNormalModel::safelyChangeMatrix(unsigned row, unsigned col, float delta)
 {
-    #pragma omp critical(MatrixChange)
-    {
-        float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
-        mMatrix.set(row, col, newVal);
-        GAPS_ASSERT(mMatrix(row, col) >= 0.f);
-    }
+    float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
+    mMatrix.set(row, col, newVal);
+    GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
 float SparseNormalModel::deltaLogLikelihood(unsigned r1, unsigned c1, unsigned r2,

@@ -54,10 +54,12 @@ bool HybridVector::add(unsigned i, float v)
     GAPS_ASSERT(i < mSize);
     if (mData[i] + v < gaps::epsilon)
     {
+        #pragma omp atomic
         mIndexBitFlags[i / 64] &= ~(1ull << (i % 64));
         mData[i] = 0.f;
         return true;
     }
+    #pragma omp atomic
     mIndexBitFlags[i / 64] |= (1ull << (i % 64));
     mData[i] += v;
     return false;
@@ -68,10 +70,12 @@ bool HybridVector::set(unsigned i, float v)
     GAPS_ASSERT(i < mSize);
     if (v < gaps::epsilon)
     {
+        #pragma omp atomic
         mIndexBitFlags[i / 64] &= ~(1ull << (i % 64));
         mData[i] = 0.f;
         return true;
     }
+    #pragma omp atomic
     mIndexBitFlags[i / 64] |= (1ull << (i % 64));
     mData[i] = v;
     return false;
