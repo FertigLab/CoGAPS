@@ -54,7 +54,7 @@ float gaps::max(const MatrixType &mat)
     for (unsigned i = 0; i < mat.nCol(); ++i)
     {
         float cmax = gaps::max(mat.getCol(i));
-        mx = (cmax < mx) ? cmax : mx;
+        mx = (cmax > mx) ? cmax : mx;
     }
     return mx;
 }

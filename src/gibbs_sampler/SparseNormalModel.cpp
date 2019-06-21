@@ -89,15 +89,13 @@ bool SparseNormalModel::canUseGibbs(unsigned c1, unsigned c2) const
 void SparseNormalModel::changeMatrix(unsigned row, unsigned col, float delta)
 {
     mMatrix.add(row, col, delta);
-
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
 void SparseNormalModel::safelyChangeMatrix(unsigned row, unsigned col, float delta)
 {
     float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
-    mMatrix.add(row, col, newVal - mMatrix(row, col));
-
+    mMatrix.set(row, col, newVal);
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 

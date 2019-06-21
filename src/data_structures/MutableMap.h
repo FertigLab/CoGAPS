@@ -126,6 +126,28 @@ public:
         typename std::map<K, V>::iterator mIt;
     };
 
+    class const_iterator
+    {
+    public:
+    
+        const_iterator() : mIt() {}
+        const_iterator(const const_iterator& it) : mIt(it.mIt) {}
+        ~const_iterator() {}
+        const_iterator& operator=(const const_iterator &it) { mIt = it.mIt; return *this; }
+        const_iterator& operator++() { ++mIt; return *this; }
+        const_iterator& operator--() { --mIt; return *this; }
+        const std::pair<const K, V>& operator*() { return *mIt; }
+        const std::pair<const K, V>* operator->() { return &(operator *()); }
+        bool operator==(const const_iterator &it) { return mIt == it.mIt; }
+        bool operator!=(const const_iterator &it) { return !(*this == it); }
+
+    private:
+
+        friend class MutableMap;
+        const_iterator(typename std::map<K, V>::const_iterator it) : mIt(it) {}
+        typename std::map<K, V>::const_iterator mIt;
+    };
+
     unsigned count(const K &key) const
     {
         return mMap.count(key);
@@ -161,6 +183,16 @@ public:
     iterator end()
     {
         return iterator(mMap.end());
+    }
+
+    const_iterator begin() const
+    {
+        return const_iterator(mMap.begin());
+    }
+
+    const_iterator end() const
+    {
+        return const_iterator(mMap.end());
     }
     
 private:

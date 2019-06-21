@@ -76,7 +76,6 @@ void ProposalQueue::populate(ConcurrentAtomicDomain &domain, unsigned limit)
 void ProposalQueue::clear()
 {
     GAPS_ASSERT(mMinAtoms == mMaxAtoms);
-
     mQueue.clear();
     mUsedMatrixIndices.clear();
     mUsedAtoms.clear();
@@ -92,7 +91,6 @@ AtomicProposal& ProposalQueue::operator[](int n)
 {
     GAPS_ASSERT(mQueue.size() > 0);
     GAPS_ASSERT(static_cast<unsigned>(n) < mQueue.size());
-
     return mQueue[n];
 }
 
@@ -139,12 +137,11 @@ bool ProposalQueue::makeProposal(ConcurrentAtomicDomain &domain)
 
     if (mMaxAtoms < 2)
     {
-        return birth(domain); // always birth when no atoms exist
+        return birth(domain); // always birth when 0 or 1 atoms exist
     }
 
     float lowerBound = deathProb(static_cast<double>(mMinAtoms));
     float upperBound = deathProb(static_cast<double>(mMaxAtoms));
-
     if (mU1 < 0.5f)
     {
         if (mU2 < lowerBound)

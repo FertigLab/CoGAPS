@@ -136,12 +136,11 @@ void GapsStatistics::updatePump(const DataModel &AModel)
 template <class DataModel>
 void GapsStatistics::update(const DataModel &AModel, const DataModel &PModel)
 {
-    ++mStatUpdates;
-
     GAPS_ASSERT(mNumPatterns == AModel.mMatrix.nCol());
     GAPS_ASSERT(mNumPatterns == PModel.mMatrix.nCol());
 
     // precision loss? use double?
+    ++mStatUpdates;
     for (unsigned j = 0; j < mNumPatterns; ++j)
     {
         float norm = gaps::max(PModel.mMatrix.getCol(j));

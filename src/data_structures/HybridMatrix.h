@@ -25,6 +25,7 @@ public:
     unsigned nCol() const;
 
     void add(unsigned i, unsigned j, float v);
+    void set(unsigned i, unsigned j, float v);
     float operator()(unsigned i, unsigned j) const;
     
     const Vector& getRow(unsigned n) const;
