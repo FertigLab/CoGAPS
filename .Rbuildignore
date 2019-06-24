@@ -56,5 +56,12 @@
 ^src/math/MatrixMath.o
 ^src/math/Random.o
 ^src/math/VectorMath.o
+^src/atomic/Atom.o
+^src/atomic/ConcurrentAtom.o
+^src/atomic/ConcurrentAtomicDomain.o
+^src/file_parser/CharacterDelimitedParser.o
+^src/file_parser/MatrixElement.o
+^src/gibbs_sampler/DenseNormalModel.o
+^src/gibbs_sampler/SparseNormalModel.o
 
 ^src/math/VectorMath\.o$
