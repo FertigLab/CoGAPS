@@ -1,7 +1,5 @@
-# necessary yml
 language: r
-#cache: packages
-#sudo: required
+cache: packages
 
 matrix:
   include:
@@ -10,8 +8,11 @@ matrix:
     - stage: Bioconductor Devel Testing
       r: bioc-devel
     - stage: Test Running in Debug Mode
-      r: release
+      install: R -e 'devtools::install_deps(dep = T, configure.args = c(debugMode = " --enable-debug " ))'
       script: R -f inst/scripts/debugRuns.R
+
+notifications:
+  slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts
 
 #cache:
 #  - packages: true
@@ -24,14 +25,3 @@ matrix:
 
 #before_install:
 #  - mkdir -p $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
-
-
-
-# use bioconductor
-#bioc_required: true
-#bioc_use_devel: false
-
-
-# notification setup
-notifications:
-  slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts
