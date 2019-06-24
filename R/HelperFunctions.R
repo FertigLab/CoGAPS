@@ -272,6 +272,10 @@ checkInputs <- function(data, uncertainty, allParams)
 
     if (!is(data, "character"))
         checkDataMatrix(data, uncertainty, allParams$gaps)
+    if (is.null(allParams$geneNames))
+        stop("no gene names in parameters")
+    if (is.null(allParams$samplenames))
+        stop("no sample names in parameters")
 }
 
 #' extracts gene/sample names from the data

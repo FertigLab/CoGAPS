@@ -5,7 +5,7 @@
 \title{CoGAPS Matrix Factorization Algorithm}
 \usage{
 CoGAPS(data, params = new("CogapsParams"), nThreads = 1,
-  messages = TRUE, outputFrequency = 2500, uncertainty = NULL,
+  messages = TRUE, outputFrequency = 500, uncertainty = NULL,
   checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 0,
   checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
   workerID = 1, asynchronousUpdates = TRUE, ...)
@@ -43,6 +43,8 @@ genes x samples}
 only worker 1 prints output and each worker outputs when it finishes, this
 is not neccesary when using the default parallel methods (i.e. distributed
 CoGAPS) but only when the user is manually calling CoGAPS in parallel}
+
+\item{asynchronousUpdates}{enable asynchronous updating which allows for multi-threaded runs}
 
 \item{...}{allows for overwriting parameters in params}
 }
