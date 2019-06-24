@@ -193,6 +193,16 @@ bool checkpointsEnabled_cpp()
 }
 
 // [[Rcpp::export]]
+bool compiledWithOpenMPSupport_cpp()
+{
+#ifdef __GAPS_OPENMP__
+    return true;
+#else
+    return false;
+#endif
+}
+
+// [[Rcpp::export]]
 Rcpp::List getFileInfo_cpp(const std::string &path)
 {
     FileParser fp(path);

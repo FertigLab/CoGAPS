@@ -17,12 +17,23 @@ buildReport <- function()
 #' Check if package was built with checkpoints enabled
 #' @export
 #'
-#' @return true/false if check are enabled
+#' @return true/false if checkpoints are enabled
 #' @examples
 #' CoGAPS::checkpointsEnabled()
 checkpointsEnabled <- function()
 {
     checkpointsEnabled_cpp()
+}
+
+#' Check if compiler supported OpenMP
+#' @export
+#'
+#' @return true/false if OpenMP was supported
+#' @examples
+#' CoGAPS::compiledWithOpenMPSupport()
+compiledWithOpenMPSupport <- function()
+{
+    compiledWithOpenMPSupport_cpp()
 }
 
 #' CoGAPS Matrix Factorization Algorithm
@@ -85,6 +96,15 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, ...)
     data <- convertDataToMatrix(data)
     params <- getValueOrRds(params)
     validObject(params)
+
+    # check OpenMP support
+    if (!compiledWithOpenMPSupport())
+    {
+        if (asynchronousUpdates & nThreads > 1)
+            warning("requesting multi-threaded version of CoGAPS but compiler did not support OpenMP")
+        asynchronousUpdates = FALSE
+        nThreads = 1
+    }
 
     # store all parameters in a list and parse parameters from ...
     allParams <- list("gaps"=params,

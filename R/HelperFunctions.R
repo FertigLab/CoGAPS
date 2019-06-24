@@ -128,38 +128,6 @@ ncolHelper <- function(data)
     return(ncol(data))
 }
 
-#' extract gene names from data
-#' @keywords internal
-#' @return vector of gene names
-getGeneNames <- function(data, transpose)
-{
-    if (transpose)
-        return(getSampleNames(data, FALSE))
-    if (is(data, "character"))
-        names <- getFileInfo_cpp(data)[["rowNames"]]
-    else
-        names <- rownames(data)
-    if (is.null(names) | length(names) == 0)
-        return(paste("Gene", 1:nrowHelper(data), sep="_"))
-    return(names)
-}
-
-#' extract sample names from data
-#' @keywords internal
-#' @return vector of sample names
-getSampleNames <- function(data, transpose)
-{
-    if (transpose)
-        return(getGeneNames(data, FALSE))
-    if (is(data, "character"))
-        names <- getFileInfo_cpp(data)[["colNames"]]
-    else
-        names <- colnames(data)
-    if (is.null(names) | length(names) == 0)
-        return(paste("Sample", 1:ncolHelper(data), sep="_"))
-    return(names)
-}
-
 #' write start up message
 #' @keywords internal
 #'
@@ -274,8 +242,40 @@ checkInputs <- function(data, uncertainty, allParams)
         checkDataMatrix(data, uncertainty, allParams$gaps)
     if (is.null(allParams$geneNames))
         stop("no gene names in parameters")
-    if (is.null(allParams$samplenames))
+    if (is.null(allParams$sampleNames))
         stop("no sample names in parameters")
+}
+
+#' extract gene names from data
+#' @keywords internal
+#' @return vector of gene names
+getGeneNames <- function(data, transpose)
+{
+    if (transpose)
+        return(getSampleNames(data, FALSE))
+    if (is(data, "character"))
+        names <- getFileInfo_cpp(data)[["rowNames"]]
+    else
+        names <- rownames(data)
+    if (is.null(names) | length(names) == 0)
+        return(paste("Gene", 1:nrowHelper(data), sep="_"))
+    return(names)
+}
+
+#' extract sample names from data
+#' @keywords internal
+#' @return vector of sample names
+getSampleNames <- function(data, transpose)
+{
+    if (transpose)
+        return(getGeneNames(data, FALSE))
+    if (is(data, "character"))
+        names <- getFileInfo_cpp(data)[["colNames"]]
+    else
+        names <- colnames(data)
+    if (is.null(names) | length(names) == 0)
+        return(paste("Sample", 1:ncolHelper(data), sep="_"))
+    return(names)
 }
 
 #' extracts gene/sample names from the data
