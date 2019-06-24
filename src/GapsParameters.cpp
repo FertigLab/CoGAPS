@@ -1,22 +1,6 @@
 #include "GapsParameters.h"
 #include "utils/GapsPrint.h"
 
-Archive& operator<<(Archive &ar, const GapsParameters &p)
-{
-    ar << p.seed << p.nGenes << p.nSamples << p.nPatterns << p.nIterations
-        << p.alphaA << p.alphaP << p.maxGibbsMassA << p.maxGibbsMassP
-        << p.singleCell << p.useSparseOptimization << p.checkpointInterval;
-    return ar;
-}
-
-Archive& operator>>(Archive &ar, GapsParameters &p)
-{
-    ar >> p.seed >> p.nGenes >> p.nSamples >> p.nPatterns >> p.nIterations
-        >> p.alphaA >> p.alphaP >> p.maxGibbsMassA >> p.maxGibbsMassP
-        >> p.singleCell >> p.useSparseOptimization >> p.checkpointInterval;
-    return ar;
-}
-
 void GapsParameters::print() const
 {
     gaps_printf("\n---- C++ Parameters ----\n\n");
@@ -88,4 +72,20 @@ void GapsParameters::calculateDataDimensions(const Matrix &mat)
     {
         nSamples = dataIndicesSubset.size();
     }
+}
+
+Archive& operator<<(Archive &ar, const GapsParameters &p)
+{
+    ar << p.seed << p.nGenes << p.nSamples << p.nPatterns << p.nIterations
+        << p.alphaA << p.alphaP << p.maxGibbsMassA << p.maxGibbsMassP
+        << p.singleCell << p.useSparseOptimization << p.checkpointInterval;
+    return ar;
+}
+
+Archive& operator>>(Archive &ar, GapsParameters &p)
+{
+    ar >> p.seed >> p.nGenes >> p.nSamples >> p.nPatterns >> p.nIterations
+        >> p.alphaA >> p.alphaP >> p.maxGibbsMassA >> p.maxGibbsMassP
+        >> p.singleCell >> p.useSparseOptimization >> p.checkpointInterval;
+    return ar;
 }

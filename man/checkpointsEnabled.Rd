@@ -7,7 +7,7 @@
 checkpointsEnabled()
 }
 \value{
-true/false if check are enabled
+true/false if checkpoints are enabled
 }
 \description{
 Check if package was built with checkpoints enabled
