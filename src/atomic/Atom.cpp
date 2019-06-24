@@ -1,4 +1,25 @@
 #include "Atom.h"
+#include "../utils/Archive.h"
+
+#include <cstddef>
+
+AtomNeighborhood::AtomNeighborhood()
+    : center(NULL), left(NULL), right(NULL)
+{}
+
+AtomNeighborhood::AtomNeighborhood(Atom *l, Atom *c, Atom *r)
+    : center(c), left(l), right(r)
+{}
+
+bool AtomNeighborhood::hasLeft() const
+{
+    return left != NULL;
+}
+
+bool AtomNeighborhood::hasRight() const
+{
+    return right != NULL;
+}
 
 Atom::Atom(uint64_t p, float m)
     : mPos(p), mIterator(), mLeftIndex(-1), mRightIndex(-1), mIndex(-1), mMass(m)

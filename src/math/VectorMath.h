@@ -4,6 +4,7 @@
 #include "../data_structures/Vector.h"
 #include "../data_structures/HybridVector.h"
 #include "../data_structures/SparseVector.h"
+#include "../utils/GapsAssert.h"
 #include "SIMD.h"
 
 namespace gaps
@@ -11,47 +12,39 @@ namespace gaps
     float min(const Vector &v);
     float min(const HybridVector &v);
     float min(const SparseVector &v);
-
     float max(const Vector &v);
     float max(const HybridVector &v);
     float max(const SparseVector &v);
-
     unsigned whichMax(const Vector &v);
-
     float sum(const Vector &v);
     float sum(const HybridVector &v);
     float sum(const SparseVector &v);
-
     bool isVectorZero(const Vector &v);
     bool isVectorZero(const HybridVector &v);
-
-    template <class VectorType>
-    float dot(const VectorType &a, const VectorType &b);
-
-    template <class VectorType>
-    float dot_diff(const VectorType &a, const VectorType &b, const VectorType &c);
-
     Vector elementSq(Vector v);
     Vector pmax(Vector v, float p);
+    template <class VectorType>
+    float dot(const VectorType &a, const VectorType &b);
+    template <class VectorType>
+    float dot_diff(const VectorType &a, const VectorType &b, const VectorType &c);
 } // namespace gaps
 
 Vector operator*(Vector v, float f);
 Vector operator/(Vector v, float f);
-
 Vector operator*(const HybridVector &hv, float f);
 Vector operator/(const HybridVector &hv, float f);
 
-// this function is frequently called on vectors with size less than 100
+// this function is frequently called small vectors and represents a significant bottleneck,
+// this code falls through the switch statement to avoid the overhead of branching
 // supported vectors have to be padded with 0 so that the length is a multiple of SIMD_INC
 template <class VectorType>
 float gaps::dot(const VectorType &a, const VectorType &b)
 {
     GAPS_ASSERT(a.size() == b.size());
-
+    GAPS_ASSERT((a.size() % SIMD_INC) == 0);
     const float *v1 = a.ptr();
     const float *v2 = b.ptr();
     const unsigned size = a.size();
-
     unsigned nChunks = 1 + (size - 1) / SIMD_INC;
     gaps_packed_t pDot(SET_SCALAR(0.f));
     switch (nChunks)
@@ -122,12 +115,10 @@ float gaps::dot_diff(const VectorType &a, const VectorType &b, const VectorType 
 {
     GAPS_ASSERT(a.size() == b.size());
     GAPS_ASSERT(a.size() == c.size());
-
     const float *v1 = a.ptr();
     const float *v2 = b.ptr();
     const float *v3 = c.ptr();
     const unsigned size = a.size();
-
     gaps::simd::PackedFloat packedDot(0.f), p1, p2, p3;
     for (unsigned i = 0; i < size; i += SIMD_INC)
     {
@@ -139,4 +130,4 @@ float gaps::dot_diff(const VectorType &a, const VectorType &b, const VectorType 
     return packedDot.scalar();
 }
 
-#endif
+#endif // __COGAPS_VECTOR_MATH_H__

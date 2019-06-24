@@ -1,5 +1,7 @@
 #include "AtomicDomain.h"
 #include "../utils/GapsAssert.h"
+#include "../utils/Archive.h"
+#include "../math/Random.h"
 
 #include <algorithm>
 #include <limits>
@@ -39,7 +41,7 @@ AtomNeighborhood AtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
 uint64_t AtomicDomain::randomFreePosition(GapsRng *rng) const
 {
     uint64_t pos = rng->uniform64(1, mDomainLength);
-    while (mAtomMap.count(pos))
+    while (mAtomMap.count(pos) != 0u)
     {
         pos = rng->uniform64(1, mDomainLength);
     }
@@ -97,9 +99,13 @@ void AtomicDomain::erase(Atom *atom)
         mAtoms[index].setIndex(index);
         mAtoms[index].iterator()->second = index;
         if (leftIndex >= 0)
+        {
             mAtoms[leftIndex].setRightIndex(index);
+        }
         if (rightIndex >= 0)
+        {
             mAtoms[rightIndex].setLeftIndex(index);
+        }
     }
     mAtoms.pop_back();
 }

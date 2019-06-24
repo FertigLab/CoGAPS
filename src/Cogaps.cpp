@@ -1,4 +1,9 @@
+#include "GapsParameters.h"
+#include "GapsResult.h"
 #include "GapsRunner.h"
+#include "data_structures/Matrix.h"
+#include "file_parser/FileParser.h"
+#include "math/Random.h"
 #include "utils/GlobalConfig.h"
 
 #include <Rcpp.h>

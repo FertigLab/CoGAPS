@@ -1,11 +1,12 @@
 #include "Random.h"
 #include "Math.h"
+#include "../utils/Archive.h"
 #include "../utils/GapsAssert.h"
 
 #include <algorithm>
 #include <stdint.h>
-#include <limits>
 #include <cmath>
+#include <limits>
 
 const float maxU32AsFloat = static_cast<float>(std::numeric_limits<uint32_t>::max());
 const double maxU32AsDouble = static_cast<double>(std::numeric_limits<uint32_t>::max());
@@ -180,7 +181,6 @@ OptionalFloat GapsRng::truncNormal(float a, float b, float mean, float sd)
     {
         GAPS_ASSERT(pLower > 0.f);
         GAPS_ASSERT(pUpper < 1.f);
-
         float z = mRandState->q_norm_fast(uniform(pLower, pUpper), mean, sd); 
         z = gaps::max(a, gaps::min(z, b));
         return z;
@@ -192,7 +192,8 @@ OptionalFloat GapsRng::truncNormal(float a, float b, float mean, float sd)
 float GapsRng::truncGammaUpper(float b, float scale)
 {
     float upper = 1.f - std::exp(-b / scale) * (1.f + b / scale);
-    unsigned ndx = static_cast<unsigned>(uniform(0.f, upper * 5000.f));
+    const unsigned ndx = static_cast<unsigned>(uniform(0.f, upper * 5000.f));
+    GAPS_ASSERT(ndx < Q_GAMMA_LOOKUP_TABLE_SIZE);
     return mRandState->mQgammaLookupTable[ndx] * scale;
 }
 
@@ -219,9 +220,7 @@ Xoroshiro128plus::Xoroshiro128plus(uint64_t seed)
 {
     mState[0] = seed|1;
     mState[1] = seed|1;
-
-    // warmup
-    for (unsigned i = 0; i < 5000; ++i)
+    for (unsigned i = 0; i < 5000; ++i) // warmup
     {
         next();
     }
@@ -231,7 +230,6 @@ uint64_t Xoroshiro128plus::next()
 {
     mPreviousState[0] = mState[0];
     mPreviousState[1] = mState[1];
-
     const uint64_t s0 = mState[0];
     uint64_t s1 = mState[1];
     uint64_t result = s0 + s1;
@@ -269,29 +267,29 @@ GapsRandomState::GapsRandomState(unsigned seed) : mSeeder(seed)
 void GapsRandomState::initLookupTables()
 {
     // erf
-    for (unsigned i = 0; i < 3001; ++i)
+    for (unsigned i = 0; i < ERF_LOOKUP_TABLE_SIZE; ++i)
     {
         float x = static_cast<float>(i) / 1000.f;
         mErfLookupTable[i] = 2.f * gaps::p_norm(x * gaps::sqrt2, 0.f, 1.f) - 1.f;
     }
-    GAPS_ASSERT(mErfLookupTable[3000] < 1.f);
+    GAPS_ASSERT(mErfLookupTable[ERF_LOOKUP_TABLE_SIZE - 1] < 1.f);
 
     // erfinv
-    for (unsigned i = 0; i < 5000; ++i)
+    for (unsigned i = 0; i < ERF_INV_LOOKUP_TABLE_SIZE - 1; ++i)
     {
-        float x = static_cast<float>(i) / 5000.f;
+        float x = static_cast<float>(i) / static_cast<float>(ERF_INV_LOOKUP_TABLE_SIZE - 1);
         mErfinvLookupTable[i] = gaps::q_norm((1.f + x) / 2.f, 0.f, 1.f) / gaps::sqrt2;
     }
-    mErfinvLookupTable[5000] = gaps::q_norm(1.9998f / 2.f, 0.f, 1.f) / gaps::sqrt2;
+    mErfinvLookupTable[ERF_INV_LOOKUP_TABLE_SIZE - 1] = gaps::q_norm(1.9998f / 2.f, 0.f, 1.f) / gaps::sqrt2;
 
     // qgamma
     mQgammaLookupTable[0] = 0.f;
-    for (unsigned i = 1; i < 5000; ++i)
+    for (unsigned i = 1; i < Q_GAMMA_LOOKUP_TABLE_SIZE - 1; ++i)
     {
-        float x = static_cast<float>(i) / 5000.f;
+        float x = static_cast<float>(i) / static_cast<float>(Q_GAMMA_LOOKUP_TABLE_SIZE - 1);
         mQgammaLookupTable[i] = gaps::q_gamma(x, 2.f, 1.f);
     }
-    mQgammaLookupTable[5000] = gaps::q_gamma(0.9998f, 2.f, 1.f);
+    mQgammaLookupTable[Q_GAMMA_LOOKUP_TABLE_SIZE - 1] = gaps::q_gamma(0.9998f, 2.f, 1.f);
 }
 
 uint64_t GapsRandomState::nextSeed()
@@ -311,12 +309,16 @@ float GapsRandomState::p_norm_fast(float p, float mean, float sd) const
     if (term < 0.f)
     {
         term = gaps::max(term, -3.f);
-        erf = -mErfLookupTable[static_cast<unsigned>(-term * 1000.f)];
+        const unsigned ndx = static_cast<unsigned>(-term * 1000.f);
+        GAPS_ASSERT(ndx < ERF_LOOKUP_TABLE_SIZE);
+        erf = -mErfLookupTable[ndx];
     }
     else
     {
         term = gaps::min(term, 3.f);
-        erf = mErfLookupTable[static_cast<unsigned>(term * 1000.f)];
+        const unsigned ndx = static_cast<unsigned>(term * 1000.f);
+        GAPS_ASSERT(ndx < ERF_LOOKUP_TABLE_SIZE);
+        erf = mErfLookupTable[ndx];
     }
     return 0.5f * (1.f + erf);
 }
@@ -327,11 +329,15 @@ float GapsRandomState::q_norm_fast(float q, float mean, float sd) const
     float erfinv = 0.f;
     if (term < 0.f)
     {
-        erfinv = -mErfinvLookupTable[static_cast<unsigned>(-term * 5000.f)];
+        const unsigned ndx = static_cast<unsigned>(-term * (ERF_INV_LOOKUP_TABLE_SIZE - 1));
+        GAPS_ASSERT(ndx < ERF_INV_LOOKUP_TABLE_SIZE);
+        erfinv = -mErfinvLookupTable[ndx];
     }
     else
     {
-        erfinv = mErfinvLookupTable[static_cast<unsigned>(term * 5000.f)];
+        const unsigned ndx = static_cast<unsigned>(term * (ERF_INV_LOOKUP_TABLE_SIZE - 1));
+        GAPS_ASSERT(ndx < ERF_INV_LOOKUP_TABLE_SIZE);
+        erfinv = mErfinvLookupTable[ndx];
     }
     return mean + sd * gaps::sqrt2 * erfinv;
 }

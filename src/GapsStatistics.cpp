@@ -1,4 +1,5 @@
 #include "GapsStatistics.h"
+#include "utils/Archive.h"
 #include "math/Math.h"
 
 GapsStatistics::GapsStatistics(unsigned nGenes, unsigned nSamples, unsigned nPatterns)

@@ -20,7 +20,8 @@ class Archive
 public:
 
     Archive(const std::string &path, std::ios_base::openmode flags)
-        : mStream(path.c_str(), std::ios::binary | flags)
+        :
+    mStream(path.c_str(), std::ios::binary | flags)
     {
         if (flags == ARCHIVE_WRITE)
         {
@@ -64,8 +65,8 @@ public:
     friend Archive& operator<<(Archive &ar, bool val)     { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, int val)      { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, unsigned val) { return writeToArchive(ar, val); }
-    friend Archive& operator<<(Archive &ar, unsigned long val) { return writeToArchive(ar, val); }
-    friend Archive& operator<<(Archive &ar, unsigned long long val) { return writeToArchive(ar, val); }
+    friend Archive& operator<<(Archive &ar, unsigned long val) { return writeToArchive(ar, val); } //NOLINT
+    friend Archive& operator<<(Archive &ar, unsigned long long val) { return writeToArchive(ar, val); } //NOLINT
     friend Archive& operator<<(Archive &ar, int64_t val)  { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, float val)    { return writeToArchive(ar, val); }
     friend Archive& operator<<(Archive &ar, double val)   { return writeToArchive(ar, val); }
@@ -74,8 +75,8 @@ public:
     friend Archive& operator>>(Archive &ar, bool &val)     { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, int &val)      { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, unsigned &val) { return readFromArchive(ar, val); }
-    friend Archive& operator>>(Archive &ar, unsigned long &val) { return readFromArchive(ar, val); }
-    friend Archive& operator>>(Archive &ar, unsigned long long &val) { return readFromArchive(ar, val); }
+    friend Archive& operator>>(Archive &ar, unsigned long &val) { return readFromArchive(ar, val); } //NOLINT
+    friend Archive& operator>>(Archive &ar, unsigned long long &val) { return readFromArchive(ar, val); } //NOLINT
     friend Archive& operator>>(Archive &ar, int64_t &val)  { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, float &val)    { return readFromArchive(ar, val); }
     friend Archive& operator>>(Archive &ar, double &val)   { return readFromArchive(ar, val); }

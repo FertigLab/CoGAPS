@@ -82,5 +82,5 @@ float gaps::p_norm(float p, float mean, float sd)
 
 double gaps::lgamma(double x)
 {
-    return boost::math::lgamma(x);
+    return boost::math::lgamma(x); // NOLINT
 }

@@ -1,4 +1,5 @@
 #include "SparseIterator.h"
+#include "../utils/GapsAssert.h"
 
 // counts number of bits set below position
 // internal expression clears all bits as high as pos or higher
@@ -111,7 +112,7 @@ bool SparseIterator<1>::atEnd() const
 void SparseIterator<1>::next()
 {
     ++mSparseIndex;
-    while (!mSparseFlags)
+    while (mSparseFlags == 0u)
     {
         // advance to next chunk
         if (++mBigIndex == mTotalIndices)

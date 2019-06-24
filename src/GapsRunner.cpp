@@ -1,6 +1,10 @@
 #include "GapsRunner.h"
-
+#include "GapsResult.h"
+#include "GapsParameters.h"
+#include "GapsStatistics.h"
+#include "math/Random.h"
 #include "utils/Archive.h"
+#include "utils/GlobalConfig.h"
 #include "gibbs_sampler/AsynchronousGibbsSampler.h"
 #include "gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "gibbs_sampler/DenseNormalModel.h"
@@ -39,7 +43,7 @@ struct GapsTime
     unsigned hours;
     unsigned minutes;
     unsigned seconds;
-    GapsTime(unsigned totalSeconds)
+    explicit GapsTime(unsigned totalSeconds)
     {
         hours = totalSeconds / 3600;
         totalSeconds -= hours * 3600;

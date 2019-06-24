@@ -1,6 +1,8 @@
 #include "ProposalQueue.h"
+#include "../atomic/ConcurrentAtomicDomain.h"
 #include "../math/Math.h"
 #include "../math/Random.h"
+#include "../utils/Archive.h"
 #include "../utils/GapsAssert.h"
 
 #include <limits>

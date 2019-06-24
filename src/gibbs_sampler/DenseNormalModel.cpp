@@ -1,5 +1,8 @@
 #include "DenseNormalModel.h"
 #include "../math/Math.h"
+#include "../math/Random.h"
+#include "../utils/Archive.h"
+#include "../utils/GapsAssert.h"
 
 #define GAPS_SQ(x) ((x) * (x))
 
@@ -18,10 +21,8 @@ void DenseNormalModel::sync(const DenseNormalModel &model, unsigned nThreads)
 {
     GAPS_ASSERT(model.mAPMatrix.nRow() == mAPMatrix.nCol());
     GAPS_ASSERT(model.mAPMatrix.nCol() == mAPMatrix.nRow());
-
     unsigned nc = model.mAPMatrix.nCol();
     unsigned nr = model.mAPMatrix.nRow();
-
     #pragma omp parallel for num_threads(nThreads)
     for (unsigned j = 0; j < nc; ++j)
     {
@@ -247,15 +248,15 @@ void DenseNormalModel::updateAPMatrix(unsigned row, unsigned col, float delta)
     }
 }
 
-Archive& operator<<(Archive &ar, const DenseNormalModel &mod)
+Archive& operator<<(Archive &ar, const DenseNormalModel &m)
 {
-    ar << mod.mMatrix;
+    ar << m.mMatrix;
     return ar;
 }
 
-Archive& operator>>(Archive &ar, DenseNormalModel &mod)
+Archive& operator>>(Archive &ar, DenseNormalModel &m)
 {
-    ar >> mod.mMatrix;
+    ar >> m.mMatrix;
     return ar;
 }
 

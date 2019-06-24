@@ -9,7 +9,7 @@
 
     //#define gaps_printf Rprintf
     //#define gaps_cout Rcpp::Rcout
-    //#define gaps_flush(x) R_FlushConsole()
+    //#define gaps_flush(dummy) R_FlushConsole()
 
 //#else
 
