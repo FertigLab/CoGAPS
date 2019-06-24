@@ -87,7 +87,7 @@ float HybridVector::operator[](unsigned i) const
     GAPS_ASSERT(mData[i] == 0.f
         ? !mIndexBitFlags[i / 64] & (1ull << (i % 64))
         : mIndexBitFlags[i / 64] & (1ull << (i % 64))
-    )
+    );
     return mData[i];
 }
 
@@ -103,7 +103,6 @@ Archive& operator<<(Archive &ar, const HybridVector &vec)
     {
         ar << vec.mIndexBitFlags[i];
     }
-
     for (unsigned i = 0; i < vec.mSize; ++i)
     {
         ar << vec.mData[i];
@@ -116,12 +115,10 @@ Archive& operator>>(Archive &ar, HybridVector &vec)
     unsigned sz = 0;
     ar >> sz;
     GAPS_ASSERT(sz == vec.size());
-
     for (unsigned i = 0; i < vec.mIndexBitFlags.size(); ++i)
     {
         ar >> vec.mIndexBitFlags[i];
     }
-
     for (unsigned i = 0; i < vec.mSize; ++i)
     {
         ar >> vec.mData[i];
