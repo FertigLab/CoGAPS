@@ -8,7 +8,7 @@ scCoGAPS(data, params = new("CogapsParams"), nThreads = 1,
   messages = TRUE, outputFrequency = 500, uncertainty = NULL,
   checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 1000,
   checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
-  workerID = 1, ...)
+  workerID = 1, asynchronousUpdates = FALSE, ...)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
@@ -43,6 +43,8 @@ genes x samples}
 only worker 1 prints output and each worker outputs when it finishes, this
 is not neccesary when using the default parallel methods (i.e. distributed
 CoGAPS) but only when the user is manually calling CoGAPS in parallel}
+
+\item{asynchronousUpdates}{enable asynchronous updating which allows for multi-threaded runs}
 
 \item{...}{allows for overwriting parameters in params}
 }

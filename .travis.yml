@@ -15,6 +15,7 @@ matrix:
       install: R -e 'devtools::install_deps(dep = T, configure.args = c(debugMode = " --enable-debug " ))'
       script: R -f inst/scripts/debugRuns.R
     - stage: Valgrind Analysis
+      install: R -e 'devtools::install_deps(dep = T)'
       script: R -d valgrind -e 'library(CoGAPS); data(GIST); CoGAPS(GIST.matrix, nIterations=1000, outputFrequency=250)'
     - stage: Linting
       script: echo "linting not implemented"
