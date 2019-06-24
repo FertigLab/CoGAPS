@@ -641,7 +641,6 @@ ac_user_opts='
 enable_option_checking
 enable_debug
 enable_cpp_tests
-enable_internal_tests
 enable_warnings
 enable_simd
 enable_openmp
@@ -1278,7 +1277,6 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-debug          build debug version of CoGAPS
   --enable-cpp-tests      turn on C++ unit tests
-  --enable-internal-tests allow for testing private data
   --enable-warnings       compile CoGAPS with warning messages
   --enable-simd           compile with SIMD support if available
   --enable-openmp         compile with openMP support if available
@@ -3000,15 +2998,6 @@ else
 fi
 
 
-# Check if running internal tests
-# Check whether --enable-internal-tests was given.
-if test "${enable_internal_tests+set}" = set; then :
-  enableval=$enable_internal_tests; internal_tests=yes
-else
-  internal_tests=no
-fi
-
-
 # Check if compiler warnings should be turned on
 # Check whether --enable-warnings was given.
 if test "${enable_warnings+set}" = set; then :
@@ -4157,12 +4146,6 @@ echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compile
 if test "x$build_debug" = "xyes" ; then
     echo "Building Debug Version of CoGAPS"
     GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
-fi
-
-# set compile flags for internal tests
-if test "x$internal_tests" = "xyes" ; then
-    echo "Enabling Internal Tests"
-    GAPS_CPP_FLAGS+=" -DGAPS_INTERNAL_TESTS "
 fi
 
 # set compile flags if warnings enabled
