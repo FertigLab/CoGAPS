@@ -54,6 +54,7 @@ checkpointsEnabled <- function()
 #' only worker 1 prints output and each worker outputs when it finishes, this
 #' is not neccesary when using the default parallel methods (i.e. distributed
 #' CoGAPS) but only when the user is manually calling CoGAPS in parallel
+#' @param asynchronousUpdates enable asynchronous updating which allows for multi-threaded runs
 #' @param ... allows for overwriting parameters in params
 #' @return CogapsResult object
 #' @examples
