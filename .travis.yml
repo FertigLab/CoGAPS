@@ -5,8 +5,13 @@ language: r
 
 matrix:
   include:
-    - r: bioc-release
-    - r: bioc-devel
+    - stage: Bioconductor Release Testing
+      r: bioc-release
+    - stage: Bioconductor Devel Testing
+      r: bioc-devel
+    - stage: Test Running in Debug Mode
+      r: release
+      script: R -f inst/scripts/debugRuns.R
 
 #cache:
 #  - packages: true
@@ -28,5 +33,5 @@ matrix:
 
 
 # notification setup
-#notifications:
-#  slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts
+notifications:
+  slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts
