@@ -37,7 +37,7 @@ TEST_CASE("Test SparseGibbsSampler")
     #endif
     }
 
-#ifdef GAPS_INTERNAL_TESTS
+#if 0
     SECTION("Test consistency between alpha parameters calculations")
     {
         // create the "data"

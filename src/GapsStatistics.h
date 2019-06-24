@@ -44,9 +44,7 @@ public:
     friend Archive& operator<<(Archive &ar, const GapsStatistics &stat);
     friend Archive& operator>>(Archive &ar, GapsStatistics &stat);
 
-#ifndef GAPS_INTERNAL_TESTS
 private:
-#endif
 
     Matrix mAMeanMatrix;
     Matrix mAStdMatrix;

@@ -29,9 +29,7 @@ public:
     friend Archive& operator<<(Archive &ar, const SparseMatrix &vec);
     friend Archive& operator>>(Archive &ar, SparseMatrix &vec);
 
-#ifndef GAPS_INTERNAL_TESTS
 private:
-#endif
 
     std::vector<SparseVector> mCols;
     unsigned mNumRows;

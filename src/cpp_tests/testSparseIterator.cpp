@@ -11,7 +11,7 @@
 
 TEST_CASE("Test SparseIterator.h - One Dimensional")
 {
-#ifdef GAPS_INTERNAL_TESTS
+#if 0
     SECTION("Simple Case")
     {
         SparseVector v(10);
@@ -64,7 +64,7 @@ TEST_CASE("Test SparseIterator.h - One Dimensional")
 
 TEST_CASE("Test SparseIterator.h - Two Dimensional")
 {
-#ifdef GAPS_INTERNAL_TESTS
+#if 0
    SECTION("Simple Case")
     {
         SparseVector sv(10);
@@ -242,7 +242,7 @@ static float tripleProduct(const Vector &v1, const Vector &v2, const Vector &v3)
 
 TEST_CASE("Test SparseIterator.h - Three Dimensional")
 {
-#ifdef GAPS_INTERNAL_TESTS
+#if 0
    SECTION("Simple Case")
     {
         SparseVector sv(10);

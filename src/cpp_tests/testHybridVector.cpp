@@ -55,21 +55,5 @@ TEST_CASE("Test HybridVector.h")
                 REQUIRE(v[ndx] == old + diff);
             }
         }
-
-    #ifdef GAPS_INTERNAL_TESTS
-        for (unsigned i = 0; i < v.size(); ++i)
-        {
-            if (v[i] == 0.f)
-            {
-                uint64_t mask = v.mIndexBitFlags[i / 64] & (1ull << (i % 64));
-                REQUIRE(!mask);
-            }
-            else
-            {
-                uint64_t mask = v.mIndexBitFlags[i / 64] & (1ull << (i % 64));
-                REQUIRE(mask);
-            }
-        }
-    #endif
     }
 }
