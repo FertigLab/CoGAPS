@@ -1,4 +1,25 @@
 #include "ConcurrentAtom.h"
+#include "../utils/Archive.h"
+
+#include <cstddef>
+
+ConcurrentAtomNeighborhood::ConcurrentAtomNeighborhood()
+    : center(NULL), left(NULL), right(NULL)
+{}
+
+ConcurrentAtomNeighborhood::ConcurrentAtomNeighborhood(ConcurrentAtom *l, ConcurrentAtom *c, ConcurrentAtom *r)
+    : center(c), left(l), right(r)
+{}
+    
+bool ConcurrentAtomNeighborhood::hasLeft() const
+{
+    return left != NULL;
+}
+
+bool ConcurrentAtomNeighborhood::hasRight() const
+{
+    return right != NULL;
+}
 
 ConcurrentAtom::ConcurrentAtom(uint64_t p, float m)
     : mPos(p), mLeft(NULL), mRight(NULL), mIterator(), mIndex(0), mMass(m)
@@ -44,14 +65,14 @@ void ConcurrentAtom::updatePos(uint64_t newPos)
     mPos = newPos;
 }
 
-void ConcurrentAtom::setLeft(ConcurrentAtom* ConcurrentAtom)
+void ConcurrentAtom::setLeft(ConcurrentAtom* atom)
 {
-    mLeft = ConcurrentAtom;
+    mLeft = atom;
 }
 
-void ConcurrentAtom::setRight(ConcurrentAtom* ConcurrentAtom)
+void ConcurrentAtom::setRight(ConcurrentAtom* atom)
 {
-    mRight = ConcurrentAtom;
+    mRight = atom;
 }
 
 void ConcurrentAtom::setIndex(unsigned index)

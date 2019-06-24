@@ -5,12 +5,12 @@
 
 struct MatrixElement
 {
+    MatrixElement(unsigned r, unsigned c, float v);
+    MatrixElement(unsigned r, unsigned c, const std::string &s);
+
     unsigned row;
     unsigned col;
     float value;
-
-    MatrixElement(unsigned r, unsigned c, float v);
-    MatrixElement(unsigned r, unsigned c, const std::string &s);
 };
 
 #endif // __COGAPS_MATRIX_ELEMENT_H__

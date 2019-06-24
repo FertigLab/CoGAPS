@@ -1,4 +1,6 @@
 #include "ConcurrentAtomicDomain.h"
+#include "../math/Random.h"
+#include "../utils/Archive.h"
 #include "../utils/GapsAssert.h"
 
 #include <algorithm>

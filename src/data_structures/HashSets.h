@@ -1,14 +1,8 @@
 #ifndef __COGAPS_HASH_SETS_H__
 #define __COGAPS_HASH_SETS_H__
 
-#include "../utils/GlobalConfig.h"
-
 #include <stdint.h>
 #include <vector>
-
-#ifdef __GAPS_OPENMP__ // defined in global config
-#include <omp.h>
-#endif
 
 class FixedHashSetU32
 {
@@ -37,9 +31,9 @@ private:
 
 struct PositionPair
 {
+    PositionPair(uint64_t inA, uint64_t inB) : a(inA), b(inB) {}
     uint64_t a;
     uint64_t b;
-    PositionPair(uint64_t inA, uint64_t inB) : a(inA), b(inB) {}
 };
 
 class SmallPairedHashSetU64

@@ -1,6 +1,8 @@
 #include "HybridVector.h"
 #include "../math/Math.h"
 #include "../math/SIMD.h"
+#include "../utils/Archive.h"
+#include "../utils/GapsAssert.h"
 
 #define SIMD_PAD(x) (gaps::simd::Index::increment() + \
     gaps::simd::Index::increment() * ((x) / gaps::simd::Index::increment())) 
@@ -49,6 +51,7 @@ unsigned HybridVector::size() const
     return mSize;
 }
 
+// can be called from multiple concurrent OpenMP threads
 bool HybridVector::add(unsigned i, float v)
 {
     GAPS_ASSERT(i < mSize);
@@ -65,6 +68,7 @@ bool HybridVector::add(unsigned i, float v)
     return false;
 }
 
+// can be called from multiple concurrent OpenMP threads
 bool HybridVector::set(unsigned i, float v)
 {
     GAPS_ASSERT(i < mSize);

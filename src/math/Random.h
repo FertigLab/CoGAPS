@@ -1,15 +1,18 @@
 #ifndef __COGAPS_RANDOM_H__
 #define __COGAPS_RANDOM_H__
 
-#include "../utils/Archive.h"
-
 #include <fstream>
 #include <stdint.h>
 #include <vector>
 
+class Archive;
 class GapsRng;
 class Xoroshiro128plus;
 class GapsRandomState;
+
+#define ERF_LOOKUP_TABLE_SIZE 3001
+#define ERF_INV_LOOKUP_TABLE_SIZE 5001
+#define Q_GAMMA_LOOKUP_TABLE_SIZE 5001
 
 struct OptionalFloat
 {
@@ -85,9 +88,9 @@ public:
 private:
     friend class GapsRng;
     Xoroshiro128plus mSeeder;
-    float mErfLookupTable[3001];
-    float mErfinvLookupTable[5001];
-    float mQgammaLookupTable[5001];
+    float mErfLookupTable[ERF_LOOKUP_TABLE_SIZE];
+    float mErfinvLookupTable[ERF_INV_LOOKUP_TABLE_SIZE];
+    float mQgammaLookupTable[Q_GAMMA_LOOKUP_TABLE_SIZE];
     void initLookupTables();
     GapsRandomState(const GapsRandomState&); // = delete (no c++11)
     GapsRandomState& operator=(const GapsRandomState&); // = delete (no c++11)

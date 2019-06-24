@@ -1,5 +1,6 @@
 #include "AlphaParameters.h"
 #include "../math/Math.h"
+#include "../math/Random.h"
 
 #include <cmath>
 
@@ -9,7 +10,7 @@ AlphaParameters::AlphaParameters(float t_s, float t_smu)
 
 AlphaParameters AlphaParameters::operator+(const AlphaParameters &other) const
 {
-    return AlphaParameters(s + other.s, s_mu - other.s_mu); // not a typo
+    return AlphaParameters(s + other.s, s_mu - other.s_mu); // minus sign not a typo
 }
 
 AlphaParameters AlphaParameters::operator*(float v) const
@@ -19,7 +20,8 @@ AlphaParameters AlphaParameters::operator*(float v) const
 
 void AlphaParameters::operator*=(float v)
 {
-    s *= v; s_mu *= v;
+    s *= v;
+    s_mu *= v;
 }
 
 OptionalFloat gibbsMass(AlphaParameters alpha, float a, float b, GapsRng *rng)

@@ -28,7 +28,9 @@ static std::string trimNewline(const std::string &s)
 {
     std::size_t pos;
     if ((pos = s.find('\n')) == std::string::npos)
+    {
         return s;
+    }
     return s.substr(0, pos);
 }
 
@@ -37,8 +39,10 @@ static std::vector<std::string> split(const std::string &s, char delimiter)
     std::vector<std::string> tokens;
     std::string temp;
     std::stringstream ss(s);
-    while (std::getline(ss, temp, delimiter))
+    while (std::getline(ss, temp, delimiter) != 0)
+    {
         tokens.push_back(trim(temp));
+    }
     return tokens;    
 }
 
@@ -94,8 +98,10 @@ mDelimiter(delimiter), mGctFormat(gctFormat)
         while ((pos = line.find('\n')) == std::string::npos);
 
         // find number of rows
-        while (std::getline(mFile, line))
+        while (std::getline(mFile, line) != 0)
+        {
             ++mNumRows;
+        }
     }
 
     // reset file stream to beginning
@@ -131,9 +137,13 @@ void CharacterDelimitedParser::parseNextLine()
     std::getline(mFile, fullLine);
     mCurrentLine = split(fullLine, mDelimiter);
     if (mRowNamesPresent)
+    {
         mCurrentLine.erase(mCurrentLine.begin());
+    }
     if (mGctFormat)
+    {
         mCurrentLine.erase(mCurrentLine.begin(), mCurrentLine.begin() + 2);
+    }
 }
 
 MatrixElement CharacterDelimitedParser::getNext()

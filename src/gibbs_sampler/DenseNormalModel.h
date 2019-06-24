@@ -5,6 +5,7 @@
 #include "../GapsParameters.h"
 #include "../data_structures/Matrix.h"
 #include "../math/MatrixMath.h"
+#include "../utils/GapsPrint.h"
 
 #include <cmath>
 
@@ -14,65 +15,47 @@ class Archive;
 class DenseNormalModel
 {
 public:
-
-    friend class GapsStatistics;
-
     template <class DataType>
     DenseNormalModel(const DataType &data, bool transpose, bool subsetRows,
-        const GapsParameters &params, float alpha);
-
+        const GapsParameters &params, float alpha, float maxGibbsMass);
     template <class DataType>
-    void setUncertainty(const DataType &data, bool transpose, bool subsetRows,
+    void setUncertainty(const DataType &unc, bool transpose, bool subsetRows,
         const GapsParameters &params);
-
     void setMatrix(const Matrix &mat);
     void setAnnealingTemp(float temp);
-
     void sync(const DenseNormalModel &model, unsigned nThreads=1);
     void extraInitialization();
-
     float chiSq() const;
     float dataSparsity() const;
-
-    friend Archive& operator<<(Archive &ar, const DenseNormalModel &s);
-    friend Archive& operator>>(Archive &ar, DenseNormalModel &s);
-
+    friend Archive& operator<<(Archive &ar, const DenseNormalModel &m);
+    friend Archive& operator>>(Archive &ar, DenseNormalModel &m);
 protected:
-
+    friend class GapsStatistics;
     uint64_t nElements() const;
     uint64_t nPatterns() const;
-
     float lambda() const;
-
     bool canUseGibbs(unsigned col) const;
     bool canUseGibbs(unsigned c1, unsigned c2) const;
-
     void changeMatrix(unsigned row, unsigned col, float delta);
     void safelyChangeMatrix(unsigned row, unsigned col, float delta);
-
     float deltaLogLikelihood(unsigned r1, unsigned c1, unsigned r2, unsigned c2, float mass);
     OptionalFloat sampleBirth(unsigned row, unsigned col, GapsRng *rng);
     OptionalFloat sampleDeathAndRebirth(unsigned row, unsigned col, float delta, GapsRng *rng);
     OptionalFloat sampleExchange(unsigned r1, unsigned c1, float m1, unsigned r2,
         unsigned c2, float m2, GapsRng *rng);
-
-//private:
-
+//private: // TODO
+    DenseNormalModel(const DenseNormalModel&); // = delete (no c++11)
+    DenseNormalModel& operator=(const DenseNormalModel&); // = delete (no c++11)
     AlphaParameters alphaParameters(unsigned row, unsigned col);
     AlphaParameters alphaParameters(unsigned r1, unsigned c1, unsigned r2, unsigned c2);
     AlphaParameters alphaParametersWithChange(unsigned row, unsigned col, float ch);
     void updateAPMatrix(unsigned row, unsigned col, float delta);
 
-    DenseNormalModel(const DenseNormalModel&); // = delete (no c++11)
-    DenseNormalModel& operator=(const DenseNormalModel&); // = delete (no c++11)
-
     Matrix mDMatrix; // samples by genes for A, genes by samples for P
     Matrix mMatrix; // genes by patterns for A, samples by patterns for P
     const Matrix *mOtherMatrix; // pointer to P if this is A, and vice versa
-
     Matrix mSMatrix; // uncertainty values for each data point
     Matrix mAPMatrix; // cached product of A and P
-
     float mMaxGibbsMass;
     float mAnnealingTemp;
     float mLambda;
@@ -80,14 +63,14 @@ protected:
 
 template <class DataType>
 DenseNormalModel::DenseNormalModel(const DataType &data, bool transpose,
-bool subsetRows, const GapsParameters &params, float alpha)
+bool subsetRows, const GapsParameters &params, float alpha, float maxGibbsMass)
     :
 mDMatrix(data, transpose, subsetRows, params.dataIndicesSubset),
 mMatrix(mDMatrix.nCol(), params.nPatterns),
 mOtherMatrix(NULL),
 mSMatrix(gaps::pmax(mDMatrix, 0.1f)),
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
-mMaxGibbsMass(100.f),
+mMaxGibbsMass(maxGibbsMass),
 mAnnealingTemp(1.f),
 mLambda(0.f)
 {

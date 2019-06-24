@@ -9,10 +9,10 @@
 #include "../math/Random.h"
 #include "../GapsParameters.h"
 
-#include <vector>
-#include <limits>
 #include <cmath>
+#include <limits>
 #include <stdint.h>
+#include <vector>
 
 #include "../atomic/AtomicDomain.h"
 typedef Atom AtomType;
@@ -27,47 +27,38 @@ template <class DataModel>
 class SingleThreadedGibbsSampler;
 
 template <class DataModel>
-Archive& operator<<(Archive &ar, const SingleThreadedGibbsSampler<DataModel> &sampler);
+Archive& operator<<(Archive &ar, const SingleThreadedGibbsSampler<DataModel> &s);
 
 template <class DataModel>
-Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<DataModel> &sampler);
+Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<DataModel> &s);
 
 template <class DataModel>
 class SingleThreadedGibbsSampler : public DataModel
 {
 public:
-
     template <class DataType>
     SingleThreadedGibbsSampler(const DataType &data, bool transpose, bool subsetRows,
         float alpha, float maxGibbsMass, const GapsParameters &params,
         GapsRandomState *randState);
-
     unsigned nAtoms() const;
     float getAverageQueueLength() const;
-
     void update(unsigned nSteps, unsigned nThreads);
-
     friend Archive& operator<< <DataModel> (Archive &ar, const SingleThreadedGibbsSampler &s);
     friend Archive& operator>> <DataModel> (Archive &ar, SingleThreadedGibbsSampler &s);
-
 private:
-
-    AtomicDomainType mDomain; // data structure providing access to atoms
-
-    mutable GapsRng mRng;
-
-    uint64_t mNumBins;
-    uint64_t mBinLength;
-    uint64_t mNumPatterns;
-
-    double mDomainLength; // length of entire atomic domain
-    double mAlpha;
-
     char getUpdateType() const;
     void birth();
     void death();
     void move();
     void exchange();
+
+    AtomicDomainType mDomain; // data structure providing access to atoms
+    mutable GapsRng mRng;
+    uint64_t mNumBins;
+    uint64_t mBinLength;
+    uint64_t mNumPatterns;
+    double mDomainLength; // length of entire atomic domain
+    double mAlpha;
 };
 
 /////////////////////// SingleThreadedGibbsSampler Implementation ////////////////////////
@@ -78,7 +69,7 @@ SingleThreadedGibbsSampler<DataModel>::SingleThreadedGibbsSampler(const DataType
 bool transpose, bool subsetRows, float alpha, float maxGibbsMass,
 const GapsParameters &params, GapsRandomState *randState)
     :
-DataModel(data, transpose, subsetRows, params, alpha),
+DataModel(data, transpose, subsetRows, params, alpha, maxGibbsMass),
 mDomain(DataModel::nElements()),
 mRng(randState),
 mNumBins(DataModel::nElements()),
@@ -120,7 +111,7 @@ char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
 }
 
 template <class DataModel>
-void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThreads)
+void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThreads) // NOLINT
 {
     for (unsigned i = 0; i < nSteps; ++i)
     {

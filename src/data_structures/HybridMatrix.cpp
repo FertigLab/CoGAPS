@@ -1,4 +1,8 @@
 #include "HybridMatrix.h"
+#include "HybridVector.h"
+#include "Matrix.h"
+#include "../utils/Archive.h"
+#include "Vector.h"
 
 HybridMatrix::HybridMatrix(unsigned nrow, unsigned ncol)
     :

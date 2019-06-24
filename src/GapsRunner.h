@@ -1,10 +1,12 @@
 #ifndef __COGAPS_GAPS_RUNNER_H__
 #define __COGAPS_GAPS_RUNNER_H__
 
-#include "GapsResult.h"
-#include "GapsParameters.h"
-#include "data_structures/Matrix.h"
-#include "math/Random.h"
+class GapsResult;
+class Matrix;
+class GapsParameters;
+class GapsRandomState;
+
+#include <string>
 
 // these two functions are the top-level functions exposed to the C++
 // code that is being wrapped by any given language

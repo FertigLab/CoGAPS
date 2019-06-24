@@ -1,5 +1,7 @@
 #include "Vector.h"
 #include "../math/SIMD.h"
+#include "../utils/Archive.h"
+#include "../utils/GapsAssert.h"
 
 #define SIMD_PAD(x) (gaps::simd::Index::increment() + \
     gaps::simd::Index::increment() * ((x) / gaps::simd::Index::increment())) 
@@ -9,7 +11,7 @@ Vector::Vector(unsigned sz)
 mData(SIMD_PAD(sz), 0.f),
 mSize(sz)
 {
-    GAPS_ASSERT(mData.size() % gaps::simd::Index::increment() == 0);
+    GAPS_ASSERT((mData.size() % gaps::simd::Index::increment()) == 0);
 }
 
 Vector::Vector(const std::vector<float> &v)
@@ -17,7 +19,7 @@ Vector::Vector(const std::vector<float> &v)
 mData(SIMD_PAD(v.size()), 0.f),
 mSize(v.size())
 {
-    GAPS_ASSERT(mData.size() % gaps::simd::Index::increment() == 0);
+    GAPS_ASSERT((mData.size() % gaps::simd::Index::increment()) == 0);
     for (unsigned i = 0; i < mSize; ++i)
     {
         mData[i] = v[i];

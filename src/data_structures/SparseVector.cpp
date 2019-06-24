@@ -1,5 +1,7 @@
 #include "SparseVector.h"
 #include "Vector.h"
+#include "../utils/Archive.h"
+#include "../utils/GapsAssert.h"
 
 // counts number of bits set below position
 // internal expression clears all bits as high as pos or higher
@@ -53,17 +55,13 @@ unsigned SparseVector::size() const
 void SparseVector::insert(unsigned i, float v)
 {
     GAPS_ASSERT(v > 0.f);
-
-    // this data should not exist
-    GAPS_ASSERT(!(mIndexBitFlags[i / 64] & (1ull << (i % 64))));
-
+    GAPS_ASSERT(!(mIndexBitFlags[i / 64] & (1ull << (i % 64)))); // this data should not exist
     unsigned dataIndex = 0;
     for (unsigned j = 0; j < i / 64; ++j)
     {
         dataIndex += __builtin_popcountll(mIndexBitFlags[j]);
     }
     dataIndex += countLowerBits(mIndexBitFlags[i / 64], i % 64);
-
     mData.insert(mData.begin() + dataIndex, v);
     mIndexBitFlags[i / 64] |= (1ull << (i % 64));
 }
@@ -88,11 +86,10 @@ Vector SparseVector::getDense() const
 
 float SparseVector::at(unsigned n) const
 {
-    if (!(mIndexBitFlags[n / 64] & (1ull << (n % 64))))
+    if ((mIndexBitFlags[n / 64] & (1ull << (n % 64))) == 0u)
     {
         return 0.f;
     }
-
     unsigned sparseNdx = 0;
     for (unsigned i = 0; i < n / 64; ++i)
     {

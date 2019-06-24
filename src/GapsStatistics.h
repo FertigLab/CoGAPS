@@ -1,63 +1,50 @@
 #ifndef __COGAPS_GAPS_STATISTICS_H__
 #define __COGAPS_GAPS_STATISTICS_H__
 
-#include "GapsParameters.h"
 #include "gibbs_sampler/DenseNormalModel.h"
 #include "gibbs_sampler/SparseNormalModel.h"
 #include "math/Math.h"
 #include "math/MatrixMath.h"
 #include "math/VectorMath.h"
 #include "data_structures/Matrix.h"
+#include "utils/GapsAssert.h"
+
+class Archive;
 
 #define GAPS_SQ(x) ((x) * (x))
 
 class GapsStatistics
 {
 public:
-
     GapsStatistics(unsigned nGenes, unsigned nSamples, unsigned nPatterns);
-
     template <class DataModel>
     void update(const DataModel &AModel, const DataModel &PModel);
-
     template <class DataModel>
     void updatePump(const DataModel &AModel);
-
     Matrix Amean() const;
     Matrix Pmean() const;
     Matrix Asd() const;
     Matrix Psd() const;
-
     Matrix pumpMatrix() const;
     Matrix meanPattern() const;
-
     void addChiSq(float chisq);
     void addAtomCount(unsigned atomA, unsigned atomP);
-
     std::vector<float> chisqHistory() const;
     std::vector<unsigned> atomHistory(char m) const;
-    
     float meanChiSq(const DenseNormalModel &model) const;
     float meanChiSq(const SparseNormalModel &model) const;
-
-    // serialization
     friend Archive& operator<<(Archive &ar, const GapsStatistics &stat);
     friend Archive& operator>>(Archive &ar, GapsStatistics &stat);
-
 private:
-
     Matrix mAMeanMatrix;
     Matrix mAStdMatrix;
     Matrix mPMeanMatrix;
     Matrix mPStdMatrix;
     Matrix mPumpMatrix;
-   
     std::vector<float> mChisqHistory;
     std::vector<unsigned> mAtomHistoryA;
     std::vector<unsigned> mAtomHistoryP;
-
     PumpThreshold mPumpThreshold;
-
     unsigned mStatUpdates;
     unsigned mNumPatterns;
     unsigned mPumpUpdates;
@@ -68,7 +55,6 @@ inline void pumpMatrixUniqueThreshold(const FactorMatrix &AMatrix, Matrix *statM
 {
     GAPS_ASSERT(statMatrix->nRow() == AMatrix.nRow());
     GAPS_ASSERT(statMatrix->nCol() == AMatrix.nCol());
-
     std::vector<float> maxValues(AMatrix.nRow(), 0.f);
     std::vector<unsigned> maxIndices(AMatrix.nRow(), 0);
     for (unsigned j = 0; j < AMatrix.nCol(); ++j)
@@ -82,10 +68,9 @@ inline void pumpMatrixUniqueThreshold(const FactorMatrix &AMatrix, Matrix *statM
             }
         }
     }
-
     for (unsigned i = 0; i < AMatrix.nRow(); ++i)
     {
-        statMatrix->operator()(i,maxIndices[i])++;
+        statMatrix->operator()(i, maxIndices[i])++;
     }
 }
 
@@ -95,11 +80,9 @@ inline void pumpMatrixCutThreshold(const FactorMatrix &AMatrix, Matrix *statMatr
 {
     GAPS_ASSERT(statMatrix->nRow() == AMatrix.nRow());
     GAPS_ASSERT(statMatrix->nCol() == AMatrix.nCol());
-
-    // we need to access data in columns due to matrix data layout
     std::vector<float> maxValues(AMatrix.nRow(), 0.f);
     std::vector<unsigned> maxIndices(AMatrix.nRow(), 0);
-    for (unsigned j = 0; j < AMatrix.nCol(); ++j)
+    for (unsigned j = 0; j < AMatrix.nCol(); ++j) // col-major ordering
     {
         for (unsigned i = 0; i < AMatrix.nRow(); ++i)
         {
@@ -110,7 +93,6 @@ inline void pumpMatrixCutThreshold(const FactorMatrix &AMatrix, Matrix *statMatr
             }
         }
     }
-
     for (unsigned i = 0; i < AMatrix.nRow(); ++i)
     {
         statMatrix->operator()(i,maxIndices[i])++;
@@ -131,29 +113,26 @@ void GapsStatistics::updatePump(const DataModel &AModel)
     }
 }
 
+// TODO is there precision loss? use double?
 template <class DataModel>
 void GapsStatistics::update(const DataModel &AModel, const DataModel &PModel)
 {
     GAPS_ASSERT(mNumPatterns == AModel.mMatrix.nCol());
     GAPS_ASSERT(mNumPatterns == PModel.mMatrix.nCol());
-
-    // precision loss? use double?
     ++mStatUpdates;
     for (unsigned j = 0; j < mNumPatterns; ++j)
     {
         float norm = gaps::max(PModel.mMatrix.getCol(j));
-        norm = norm == 0.f ? 1.f : norm;
-        GAPS_ASSERT(norm > 0.f);
-
+        norm = (norm == 0.f) ? 1.f : norm;
         Vector quot(PModel.mMatrix.getCol(j) / norm);
-        GAPS_ASSERT(gaps::min(quot) >= 0.f);
         mPMeanMatrix.getCol(j) += quot;
         mPStdMatrix.getCol(j) += gaps::elementSq(quot);
-
         Vector prod(AModel.mMatrix.getCol(j) * norm);
-        GAPS_ASSERT(gaps::min(prod) >= 0.f);
         mAMeanMatrix.getCol(j) += prod;
         mAStdMatrix.getCol(j) += gaps::elementSq(prod);
+        GAPS_ASSERT(norm > 0.f);
+        GAPS_ASSERT(gaps::min(quot) >= 0.f);
+        GAPS_ASSERT(gaps::min(prod) >= 0.f);
     }
 }
 

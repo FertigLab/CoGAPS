@@ -2,10 +2,12 @@
 #define __COGAPS_GAPS_PARAMETERS_H__
 
 #include "data_structures/Matrix.h"
-#include "file_parser/FileParser.h"
 
+#include <stdint.h>
 #include <string>
 #include <vector>
+
+class Archive;
 
 enum PumpThreshold
 {
@@ -16,23 +18,17 @@ enum PumpThreshold
 struct GapsParameters
 {
 public:
-
     template <class DataType>
     explicit GapsParameters(const DataType &data, bool t_transposeData=false,
         bool t_subsetData=false, bool t_subsetGenes=false,
         const std::vector<unsigned> &t_dataIndicesSubset=std::vector<unsigned>());
-
     void print() const;
 
     Matrix fixedPatterns;
-
     std::vector<unsigned> dataIndicesSubset;
-    
     std::string checkpointFile;
     std::string checkpointOutFile;
-
     uint32_t seed;
-
     unsigned nGenes;
     unsigned nSamples;
     unsigned nPatterns;
@@ -40,14 +36,11 @@ public:
     unsigned maxThreads;
     unsigned outputFrequency;
     unsigned checkpointInterval;
-
     float alphaA;
     float alphaP;
     float maxGibbsMassA;
     float maxGibbsMassP;
-
     PumpThreshold pumpThreshold;
-
     bool useFixedPatterns;
     bool subsetData;
     bool useCheckPoint;
@@ -59,13 +52,10 @@ public:
     bool useSparseOptimization;
     bool takePumpSamples;
     bool asynchronousUpdates;
-
     char whichMatrixFixed;
     unsigned workerID;
     bool runningDistributed;
-
 private:
-
     void calculateDataDimensions(const std::string &file);
     void calculateDataDimensions(const Matrix &mat);
 };
@@ -113,4 +103,4 @@ asynchronousUpdates(true)
     calculateDataDimensions(data);
 }
 
-#endif
+#endif // __COGAPS_GAPS_PARAMETERS_H__

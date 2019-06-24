@@ -7,13 +7,13 @@
 #include "../math/Math.h"
 #include "../math/VectorMath.h"
 #include "../math/MatrixMath.h"
-#include "../math/Random.h"
 #include "../GapsParameters.h"
+#include "../math/Random.h"
 
-#include <vector>
-#include <limits>
 #include <cmath>
+#include <limits>
 #include <stdint.h>
+#include <vector>
 
 //////////////////////////// AsynchronousGibbsSampler Interface ////////////////////////////
 
@@ -23,10 +23,10 @@ template <class DataModel>
 class AsynchronousGibbsSampler;
 
 template <class DataModel>
-Archive& operator<<(Archive &ar, const AsynchronousGibbsSampler<DataModel> &sampler);
+Archive& operator<<(Archive &ar, const AsynchronousGibbsSampler<DataModel> &s);
 
 template <class DataModel>
-Archive& operator>>(Archive &ar, AsynchronousGibbsSampler<DataModel> &sampler);
+Archive& operator>>(Archive &ar, AsynchronousGibbsSampler<DataModel> &s);
 
 template <class DataModel>
 class AsynchronousGibbsSampler : public DataModel
@@ -37,31 +37,24 @@ public:
     AsynchronousGibbsSampler(const DataType &data, bool transpose, bool subsetRows,
         float alpha, float maxGibbsMass, const GapsParameters &params,
         GapsRandomState *randState);
-
     unsigned nAtoms() const;
     float getAverageQueueLength() const;
-
     void update(unsigned nSteps, unsigned nThreads);
-
     friend Archive& operator<< <DataModel> (Archive &ar, const AsynchronousGibbsSampler &s);
     friend Archive& operator>> <DataModel> (Archive &ar, AsynchronousGibbsSampler &s);
-
 private:
-
-    ConcurrentAtomicDomain mDomain; // data structure providing access to atoms
-    ProposalQueue mQueue; // creates queue of proposals that get evaluated by sampler
-
-    float mAvgQueueLength;
-    float mNumQueueSamples;
-
     void birth(const AtomicProposal &prop);
     void death(const AtomicProposal &prop);
     void move(const AtomicProposal &prop);
     void exchange(const AtomicProposal &prop);
-
 #ifdef GAPS_DEBUG
     float maximumDrift() const;
 #endif
+
+    ConcurrentAtomicDomain mDomain; // data structure providing access to atoms
+    ProposalQueue mQueue; // creates queue of proposals that get evaluated by sampler
+    float mAvgQueueLength;
+    float mNumQueueSamples;
 };
 
 //////////////////// AsynchronousGibbsSampler - templated functions ////////////////////////
@@ -72,7 +65,7 @@ AsynchronousGibbsSampler<DataModel>::AsynchronousGibbsSampler(const DataType &da
 bool transpose, bool subsetRows, float alpha, float maxGibbsMass,
 const GapsParameters &params, GapsRandomState *randState)
     :
-DataModel(data, transpose, subsetRows, params, alpha),
+DataModel(data, transpose, subsetRows, params, alpha, maxGibbsMass),
 mDomain(DataModel::nElements()),
 mQueue(DataModel::nElements(), DataModel::nPatterns(), randState),
 mAvgQueueLength(0),
@@ -201,7 +194,6 @@ template <class DataModel>
 void AsynchronousGibbsSampler<DataModel>::exchange(const AtomicProposal &prop)
 {
     GAPS_ASSERT(prop.r1 != prop.r2 || prop.c1 != prop.c2);
-
     if (DataModel::canUseGibbs(prop.c1, prop.c2))
     {
         OptionalFloat mass = DataModel::sampleExchange(prop.r1, prop.c1, prop.atom1->mass(),

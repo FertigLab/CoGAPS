@@ -1,6 +1,7 @@
 #ifndef __COGAPS_SPARSE_VECTOR_H__
 #define __COGAPS_SPARSE_VECTOR_H__
 
+#include <stdint.h>
 #include <vector>
 
 class Archive;
@@ -22,7 +23,6 @@ public:
     unsigned nElements() const;
     friend Archive& operator<<(Archive &ar, const SparseVector &vec);
     friend Archive& operator>>(Archive &ar, SparseVector &vec);
-
 private:
     template <unsigned N>
     friend class SparseIterator;

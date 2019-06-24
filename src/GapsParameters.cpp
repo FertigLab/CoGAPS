@@ -1,5 +1,7 @@
 #include "GapsParameters.h"
+#include "utils/Archive.h"
 #include "utils/GapsPrint.h"
+#include "file_parser/FileParser.h"
 
 void GapsParameters::print() const
 {

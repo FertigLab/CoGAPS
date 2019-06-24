@@ -1,8 +1,11 @@
 #include "SparseNormalModel.h"
 #include "../data_structures/SparseIterator.h"
 #include "../math/Math.h"
+#include "../math/Random.h"
 #include "../math/MatrixMath.h"
 #include "../math/VectorMath.h"
+#include "../utils/Archive.h"
+#include "../utils/GapsAssert.h"
 
 #define GAPS_SQ(x) ((x) * (x))
 
@@ -21,7 +24,7 @@ void SparseNormalModel::setAnnealingTemp(float temp)
     mAnnealingTemp = temp;
 }
 
-void SparseNormalModel::sync(const SparseNormalModel &model, unsigned nThreads)
+void SparseNormalModel::sync(const SparseNormalModel &model, unsigned nThreads) // NOLINT
 {
     mOtherMatrix = &(model.mMatrix);
     generateLookupTables();
@@ -154,7 +157,7 @@ AlphaParameters SparseNormalModel::alphaParameters(unsigned row, unsigned col)
     {
         uint64_t d_flags = bitflags_D[i];
         uint64_t common = d_flags & bitflags_V[i];
-        while (common)
+        while (common != 0u)
         {
             // find common non-zero index, clear out skipped indices of data
             unsigned index = GET_FIRST_SET_BIT(common);
@@ -199,7 +202,7 @@ unsigned col, float ch)
     {
         uint64_t d_flags = bitflags_D[i];
         uint64_t common = d_flags & bitflags_V[i];
-        while (common)
+        while (common != 0u)
         {
             // find common non-zero index, clear out skipped indices of data
             unsigned index = GET_FIRST_SET_BIT(common);
@@ -249,7 +252,7 @@ unsigned r2, unsigned c2)
         {
             uint64_t d_flags = bitflags_D[i];
             uint64_t common = d_flags & (bitflags_V1[i] | bitflags_V2[i]);
-            while (common)
+            while (common != 0u)
             {
                 // find common non-zero index, clear out skipped indices of data
                 unsigned index = GET_FIRST_SET_BIT(common);
@@ -297,15 +300,15 @@ void SparseNormalModel::generateLookupTables()
     }
 }
 
-Archive& operator<<(Archive &ar, const SparseNormalModel &mod)
+Archive& operator<<(Archive &ar, const SparseNormalModel &m)
 {
-    ar << mod.mMatrix << mod.mBeta;
+    ar << m.mMatrix << m.mBeta;
     return ar;
 }
 
-Archive& operator>>(Archive &ar, SparseNormalModel &mod)
+Archive& operator>>(Archive &ar, SparseNormalModel &m)
 {
-    ar >> mod.mMatrix >> mod.mBeta;
+    ar >> m.mMatrix >> m.mBeta;
     return ar;
 }
 

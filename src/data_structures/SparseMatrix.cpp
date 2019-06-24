@@ -1,8 +1,11 @@
 #include "SparseMatrix.h"
+#include "Matrix.h"
 #include "../file_parser/FileParser.h"
+#include "../utils/Archive.h"
+#include "../utils/GapsAssert.h"
 
-#include <iterator>
 #include <algorithm>
+#include <iterator>
 
 // constructor from data set read in as a matrix
 SparseMatrix::SparseMatrix(const Matrix &mat, bool genesInCols,
