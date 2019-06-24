@@ -271,17 +271,20 @@ setting the `distributed` parameter or by using the provided wrapper functions.
 The following calls are equivalent:
 
 ```{r}
-# genome-wide CoGAPS
-GWCoGAPS(GIST.matrix, params, messages=FALSE)
+# need to use a file with distributed cogaps
+GISTCsvPath <- system.file("extdata/GIST.csv", package="CoGAPS")
 
 # genome-wide CoGAPS
-CoGAPS(GIST.matrix, params, distributed="genome-wide", messages=FALSE)
+GWCoGAPS(GISTCsvPath, params, messages=FALSE)
+
+# genome-wide CoGAPS
+CoGAPS(GISTCsvPath, params, distributed="genome-wide", messages=FALSE)
 
 # single-cell CoGAPS
-scCoGAPS(GIST.matrix, params, messages=FALSE)
+scCoGAPS(GISTCsvPath, params, messages=FALSE, transposeData=TRUE)
 
 # single-cell CoGAPS
-CoGAPS(GIST.matrix, params, distributed="single-cell", singleCell=TRUE, messages=FALSE)
+CoGAPS(GISTCsvPath, params, distributed="single-cell", singleCell=TRUE, messages=FALSE, transposeData=TRUE)
 ```
 
 Notice that we also set the parameter `singleCell=TRUE`. This makes some 
