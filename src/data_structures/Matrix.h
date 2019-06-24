@@ -33,9 +33,7 @@ public:
     friend Archive& operator<<(Archive &ar, const Matrix &mat);
     friend Archive& operator>>(Archive &ar, Matrix &mat);
 
-#ifndef GAPS_INTERNAL_TESTS
 private:
-#endif
 
     std::vector<Vector> mCols;
     unsigned mNumRows;

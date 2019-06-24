@@ -55,9 +55,7 @@ public:
     friend Archive& operator<<(Archive &ar, const ProposalQueue &queue);
     friend Archive& operator>>(Archive &ar, ProposalQueue &queue);
 
-#ifndef GAPS_INTERNAL_TESTS
 private:
-#endif
 
     std::vector<AtomicProposal> mQueue; // not really a queue for now
     

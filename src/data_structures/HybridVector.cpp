@@ -84,6 +84,10 @@ bool HybridVector::set(unsigned i, float v)
 float HybridVector::operator[](unsigned i) const
 {
     GAPS_ASSERT(i < mSize);
+    GAPS_ASSERT(mData[i] == 0.f
+        ? !mIndexBitFlags[i / 64] & (1ull << (i % 64))
+        : mIndexBitFlags[i / 64] & (1ull << (i % 64))
+    )
     return mData[i];
 }
 

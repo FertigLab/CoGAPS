@@ -85,7 +85,6 @@ TEST_CASE("Test error of p_norm lookup table")
 }
 
 #if 0
-#ifdef GAPS_INTERNAL_TESTS
 TEST_CASE("write random file to use in diehard tests")
 {
     Archive ar("random_stream.out", ARCHIVE_WRITE);
@@ -97,10 +96,8 @@ TEST_CASE("write random file to use in diehard tests")
     }
 }
 #endif
-#endif
 
 #if 0
-
 TEST_CASE("Test Random.h - Random Number Generation")
 {
     gaps::random::setSeed(0);
@@ -188,5 +185,4 @@ TEST_CASE("Test Random.h - Distribution Calculations")
     REQUIRE(gaps::q_norm(0.5f, 0.f, 1.f) == TEST_APPROX(0.000f));
     REQUIRE(gaps::p_norm(0.5f, 0.f, 1.f) == TEST_APPROX(0.692f));
 }
-
 #endif

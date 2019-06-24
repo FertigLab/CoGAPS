@@ -244,7 +244,7 @@ TEST_CASE("GapsStatistics Serialization")
 
 }
 
-#ifdef GAPS_INTERNAL_TESTS
+#if 0
 TEST_CASE("AtomicDomain Serialization")
 {
     GapsRandomState randState(123);
@@ -350,7 +350,7 @@ TEST_CASE("ProposalQueue Serialization")
     REQUIRE(queueWrite.size() == 0);
     REQUIRE(queueRead.size() == 0);
 
-#ifdef GAPS_INTERNAL_TESTS
+#if 0
     REQUIRE(queueWrite.mRng.uniform() == queueRead.mRng.uniform());
     REQUIRE(queueWrite.mRng.uniform() == queueRead.mRng.uniform());
     REQUIRE(queueWrite.mRng.uniform() == queueRead.mRng.uniform());

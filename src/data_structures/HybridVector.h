@@ -42,9 +42,7 @@ public:
     friend Archive& operator<<(Archive &ar, const HybridVector &vec);
     friend Archive& operator>>(Archive &ar, HybridVector &vec);
 
-#ifndef GAPS_INTERNAL_TESTS
 private:
-#endif
 
     std::vector<uint64_t> mIndexBitFlags;
     aligned_vector mData;

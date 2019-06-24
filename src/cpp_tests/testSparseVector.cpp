@@ -59,7 +59,7 @@ TEST_CASE("Test SparseVector.h")
         }
     }
 
-#ifdef GAPS_INTERNAL_TESTS
+#if 0
     SECTION("bit flags set correctly")
     {
         SparseVector v(10);
