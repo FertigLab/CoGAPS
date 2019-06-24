@@ -7,17 +7,6 @@ GISTPathTsv <- system.file("extdata/GIST.csv", package="CoGAPS")
 GISTPathGct <- system.file("extdata/GIST.csv", package="CoGAPS")
 GISTPathMtx <- system.file("extdata/GIST.csv", package="CoGAPS")
 
-# failing tests
-CoGAPS(GISTPathMtx, nIterations=1000, outputFrequency=1000, seed=42,
-    messages=TRUE, nThreads=4, sparseOptimization=FALSE)
-CoGAPS(GISTPathMtx, nIterations=1000, outputFrequency=1000, seed=42,
-    messages=TRUE, nThreads=4, sparseOptimization=FALSE)
-CoGAPS(GISTPathMtx, nIterations=1000, outputFrequency=1000, seed=42,
-    messages=TRUE, nThreads=1, sparseOptimization=TRUE)
-CoGAPS(GISTPathMtx, nIterations=1000, outputFrequency=1000, seed=42,
-    messages=TRUE, nThreads=1, sparseOptimization=TRUE)
-stop()
-
 # default parameters for all data types
 CoGAPS(GIST.matrix)
 CoGAPS(GIST.data_frame)
@@ -42,5 +31,8 @@ CoGAPS(GISTPathMtx, sparseOptimization=TRUE)
 CoGAPS(GISTPathCsv, sparseOptimization=FALSE, nThreads=2)
 CoGAPS(GISTPathCsv, sparseOptimization=TRUE, nThreads=2)
 
-
-
+# distributed version
+params <- CogapsParams()
+params <- setDistributedParams(params, nSets=4)
+CoGAPS(GISTPathCsv, params, distributed="genome-wide")
+CoGAPS(GISTPathCsv, params, distributed="single-cell", transposeData=TRUE, singleCell=TRUE)

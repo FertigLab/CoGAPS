@@ -165,7 +165,7 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, ...)
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
 outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
-BPPARAM=NULL, workerID=1, ...)
+BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
 {
     warning(paste("scCoGAPS is deprecated, use the main function CoGAPS",
         "with the argument: distributed=\"single-cell\""))
@@ -207,7 +207,7 @@ BPPARAM=NULL, workerID=1, ...)
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
 outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
-BPPARAM=NULL, workerID=1, ...)
+BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
 {
     warning(paste("GWCoGAPS is deprecated, use the main function CoGAPS",
         "with the argument: distributed=\"genome-wide\""))

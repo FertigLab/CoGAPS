@@ -39,7 +39,6 @@ struct GapsTime
     unsigned hours;
     unsigned minutes;
     unsigned seconds;
-
     GapsTime(unsigned totalSeconds)
     {
         hours = totalSeconds / 3600;
