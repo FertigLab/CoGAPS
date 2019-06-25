@@ -18,8 +18,8 @@ matrix:
       install:
         - R -e 'install.packages(c("BiocManager", "remotes"))'
         - R -e 'BiocManager::install("FertigLab/CoGAPS")'
-        - R CMD build .
-        - R CMD INSTALL *tar.gz
+        - R CMD build --no-build-vignettes .
+        - R CMD INSTALL --configure-args="" *tar.gz
       script: R -f inst/scripts/debugRuns.R
     #- stage: Valgrind Analysis
     #  install: R -e 'install.packages("devtools"); devtools::install_deps(dep = T)'
