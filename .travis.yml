@@ -1,5 +1,6 @@
 language: r
 cache: packages
+sudo: required
 
 matrix:
   fast_finish: true
@@ -19,6 +20,9 @@ matrix:
     #    - R CMD INSTALL --configure-args=" --enable-debug " *tar.gz
     #  script: R -f inst/scripts/debugRuns.R
     - stage: Valgrind Analysis
+      before_install:
+        - sudo apt-get update -qq
+        - sudo apt-get install -qq valgrind
       install:
         - R -e 'install.packages(c("BiocManager", "remotes"))'
         - R -e 'BiocManager::install("FertigLab/CoGAPS")'
