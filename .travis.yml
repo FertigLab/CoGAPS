@@ -7,12 +7,12 @@ matrix:
     - stage: Linting
     - stage: Code Formatting
   include:
-    - stage: Bioconductor Release Testing
-      r: bioc-release
-    - stage: Bioconductor Devel Testing
-      r: bioc-devel
+    #- stage: Bioconductor Release Testing
+    #  r: bioc-release
+    #- stage: Bioconductor Devel Testing
+    #  r: bioc-devel
     - stage: Test Running in Debug Mode
-      install: R -e 'devtools::install_deps(dep = T, configure.args = c(debugMode = " --enable-debug " ))'
+      install: R -e 'install.packages("devtools"); devtools::install_deps(dep = T, configure.args = c(debugMode = " --enable-debug " ))'
       script: R -f inst/scripts/debugRuns.R
     - stage: Valgrind Analysis
       install: R -e 'install.packages("devtools"); devtools::install_deps(dep = T)'
