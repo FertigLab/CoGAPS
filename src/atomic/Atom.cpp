@@ -22,7 +22,7 @@ bool AtomNeighborhood::hasRight() const
 }
 
 Atom::Atom(uint64_t p, float m)
-    : mPos(p), mIterator(), mLeftIndex(-1), mRightIndex(-1), mIndex(-1), mMass(m)
+    : mIterator(), mPos(p), mLeftIndex(-1), mRightIndex(-1), mIndex(-1), mMass(m)
 {}
 
 uint64_t Atom::pos() const

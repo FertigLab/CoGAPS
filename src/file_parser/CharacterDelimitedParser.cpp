@@ -39,7 +39,7 @@ static std::vector<std::string> split(const std::string &s, char delimiter)
     std::vector<std::string> tokens;
     std::string temp;
     std::stringstream ss(s);
-    while (std::getline(ss, temp, delimiter) != 0)
+    while (std::getline(ss, temp, delimiter))
     {
         tokens.push_back(trim(temp));
     }
@@ -98,7 +98,7 @@ mDelimiter(delimiter), mGctFormat(gctFormat)
         while ((pos = line.find('\n')) == std::string::npos);
 
         // find number of rows
-        while (std::getline(mFile, line) != 0)
+        while (std::getline(mFile, line))
         {
             ++mNumRows;
         }
@@ -111,7 +111,7 @@ mDelimiter(delimiter), mGctFormat(gctFormat)
     if (mGctFormat)
     {
         std::getline(mFile, line); // get rid of the file dimensions
-        std:getline(mFile, line); // get rid of the column names
+        std::getline(mFile, line); // get rid of the column names
     }
     parseNextLine();
 }

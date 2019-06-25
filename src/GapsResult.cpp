@@ -14,8 +14,9 @@ static std::string to_string(T a)
 GapsResult::GapsResult(const GapsStatistics &stat)
     :
 Amean(stat.Amean()), Asd(stat.Asd()), Pmean(stat.Pmean()),
-Psd(stat.Psd()), meanChiSq(0.f), seed(0), chisqHistory(stat.chisqHistory()),
-atomHistoryA(stat.atomHistory('A')), atomHistoryP(stat.atomHistory('P'))
+Psd(stat.Psd()), chisqHistory(stat.chisqHistory()),
+atomHistoryA(stat.atomHistory('A')), atomHistoryP(stat.atomHistory('P')),
+seed(0), meanChiSq(0.f)
 {}
 
 void GapsResult::writeToFile(const std::string &path)
