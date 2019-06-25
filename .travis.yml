@@ -12,9 +12,9 @@ matrix:
     #- stage: Bioconductor Devel Testing
     #  r: bioc-devel
     - stage: Test Running in Debug Mode
-      before_install: R -e 'install.packages("devtools")'
+      before_install: mkdir -p $HOME/Rpackages
       #install: R -e 'devtools::install_deps(dep = T, configure.args = c(debugMode = " --enable-debug " ))'
-      install: R -e 'print(list.files()); devtools::install_deps(dep = T)'
+      install: R -e 'pkgLib=paste(Sys.getenv("HOME"), "/Rpackages", sep=""); install.packages("devtools", lib=pkgLib); devtools::install_deps(dep=TRUE, lib=pkgLib)'
       script: R -f inst/scripts/debugRuns.R
     - stage: Valgrind Analysis
       install: R -e 'install.packages("devtools"); devtools::install_deps(dep = T)'
