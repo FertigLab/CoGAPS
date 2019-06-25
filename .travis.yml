@@ -12,13 +12,18 @@ matrix:
     #- stage: Bioconductor Devel Testing
     #  r: bioc-devel
     - stage: Test Running in Debug Mode
-      before_install: mkdir -p $HOME/Rpackages
+      #before_install: mkdir -p $HOME/Rpackages
       #install: R -e 'devtools::install_deps(dep = T, configure.args = c(debugMode = " --enable-debug " ))'
-      install: R -e 'pkgLib=paste(Sys.getenv("HOME"), "/Rpackages", sep=""); install.packages("devtools", lib=pkgLib); devtools::install_deps(dep=TRUE, lib=pkgLib)'
+      #install: R -e 'pkgLib=paste(Sys.getenv("HOME"), "/Rpackages", sep=""); install.packages("devtools", lib=pkgLib); devtools::install_deps(dep=TRUE, lib=pkgLib)'
+      install:
+        - R -e 'install.packages(c("BiocManager", "remotes"))'
+        - R -e 'BiocManager::install("FertigLab/CoGAPS")'
+        - R CMD build .
+        - R CMD INSTALL *tar.gz
       script: R -f inst/scripts/debugRuns.R
-    - stage: Valgrind Analysis
-      install: R -e 'install.packages("devtools"); devtools::install_deps(dep = T)'
-      script: R -d valgrind -e 'library(CoGAPS); data(GIST); CoGAPS(GIST.matrix, nIterations=1000, outputFrequency=250)'
+    #- stage: Valgrind Analysis
+    #  install: R -e 'install.packages("devtools"); devtools::install_deps(dep = T)'
+    #  script: R -d valgrind -e 'library(CoGAPS); data(GIST); CoGAPS(GIST.matrix, nIterations=1000, outputFrequency=250)'
     - stage: Linting
       script: echo "linting not implemented"
     - stage: Code Formatting
