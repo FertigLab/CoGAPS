@@ -359,7 +359,7 @@ different choices for the backend.
 
 ```{r}
 # run CoGAPS with serial backend
-scCoGAPS(GIST.matrix, params, BPPARAM=BiocParallel::SerialParam(), messages=FALSE)
+scCoGAPS(GISTCsvPath, params, BPPARAM=BiocParallel::SerialParam(), messages=FALSE, transposeData=TRUE)
 ```
 
 ### Methods of Subsetting Data
@@ -377,7 +377,7 @@ w <- c(1,1,2,2,1)
 names(w) <- letters[1:5]
 params <- new("CogapsParams")
 params <- setAnnotationWeights(params, annotation=anno, weights=w)
-result <- GWCoGAPS(GIST.matrix, params, messages=FALSE)
+result <- GWCoGAPS(GISTCsvPath, params, messages=FALSE)
 ```
 
 Finally, the user can set `explicitSets` which is a list of character or 
@@ -389,7 +389,7 @@ into each set. Make sure to set `nSets` to the correct value before passing `exp
 sets <- list(1:225, 226:450, 451:675, 676:900)
 params <- new("CogapsParams")
 params <- setDistributedParams(params, nSets=length(sets))
-result <- GWCoGAPS(GIST.matrix, params, explicitSets=sets, messages=FALSE)
+result <- GWCoGAPS(GISTCsvPath, params, explicitSets=sets, messages=FALSE)
 ```
 
 ### Additional Return Information
@@ -400,11 +400,10 @@ stitches the results from each subset back together.
 
 ```{r}
 # run GWCoGAPS (subset data so the displayed output is small)
-data <- GIST.matrix[,1:8]
 params <- new("CogapsParams")
 params <- setParam(params, "nPatterns", 3)
 params <- setDistributedParams(params, nSets=2)
-result <- GWCoGAPS(data, params, messages=FALSE)
+result <- GWCoGAPS(GISTCsvPath, params, messages=FALSE)
 
 # get the unmatched patterns from each subset
 getUnmatchedPatterns(result)
@@ -431,7 +430,7 @@ along with the original parameters for the GWCoGAPS/scCoGAPS run.
 
 ```{r}
 # initial run
-result <- GWCoGAPS(GIST.matrix, messages=FALSE)
+result <- GWCoGAPS(GISTCsvPath, messages=FALSE)
 
 # custom matching process (just take matrix from first subset as a dummy)
 consensusMatrix <- getUnmatchedPatterns(result)[[1]]
@@ -439,7 +438,7 @@ consensusMatrix <- getUnmatchedPatterns(result)[[1]]
 # run with our custom matched patterns matrix
 params <- CogapsParams()
 params <- setFixedPatterns(params, consensusMatrix, 'P')
-GWCoGAPS(GIST.matrix, params, explicitSets=getSubsets(result))
+GWCoGAPS(GISTCsvPath, params, explicitSets=getSubsets(result))
 ```
 
 # sessionInfo()
