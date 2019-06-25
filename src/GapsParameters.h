@@ -95,10 +95,10 @@ subsetGenes(t_subsetGenes),
 printThreadUsage(true),
 useSparseOptimization(false),
 takePumpSamples(false),
+asynchronousUpdates(true),
 whichMatrixFixed('N'),
 workerID(1),
-runningDistributed(false),
-asynchronousUpdates(true)
+runningDistributed(false)
 {
     calculateDataDimensions(data);
 }

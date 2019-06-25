@@ -1,7 +1,7 @@
 #ifndef __COGAPS_ALPHA_PARAMETERS_H__
 #define __COGAPS_ALPHA_PARAMETERS_H__
 
-class OptionalFloat;
+struct OptionalFloat;
 class GapsRng;
 
 struct AlphaParameters

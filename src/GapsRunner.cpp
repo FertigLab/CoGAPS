@@ -426,7 +426,7 @@ const DataType &uncertainty, GapsRandomState *randState)
                 rng, startTime, phase, currentIter);
             phase = 'S';
             currentIter = 0;
-
+        // fall through
         case 'S':
             GAPS_MESSAGE(params.printMessages, "-- Sampling Phase --\n");
             totalUpdates += runOnePhase(params, ASampler, PSampler, stats, randState,

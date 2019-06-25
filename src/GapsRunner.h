@@ -1,9 +1,9 @@
 #ifndef __COGAPS_GAPS_RUNNER_H__
 #define __COGAPS_GAPS_RUNNER_H__
 
-class GapsResult;
+struct GapsResult;
+struct GapsParameters;
 class Matrix;
-class GapsParameters;
 class GapsRandomState;
 
 #include <string>
