@@ -13,7 +13,8 @@ matrix:
     #  r: bioc-devel
     - stage: Test Running in Debug Mode
       before_install: R -e 'install.packages("devtools")'
-      install: R -e 'devtools::install_deps(dep = T, configure.args = c(debugMode = " --enable-debug " ))'
+      #install: R -e 'devtools::install_deps(dep = T, configure.args = c(debugMode = " --enable-debug " ))'
+      install: R -e 'devtools::install_deps(dep = T)'
       script: R -f inst/scripts/debugRuns.R
     - stage: Valgrind Analysis
       install: R -e 'install.packages("devtools"); devtools::install_deps(dep = T)'
