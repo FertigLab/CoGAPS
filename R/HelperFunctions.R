@@ -101,7 +101,6 @@ getValueOrRds <- function(input)
 #'
 #' @param data either a file name or a matrix
 #' @return number of rows
-#' @importFrom data.table fread
 #' @importFrom tools file_ext
 nrowHelper <- function(data)
 {
@@ -117,7 +116,6 @@ nrowHelper <- function(data)
 #'
 #' @param data either a file name or a matrix
 #' @return number of columns
-#' @importFrom data.table fread
 #' @importFrom tools file_ext
 ncolHelper <- function(data)
 {

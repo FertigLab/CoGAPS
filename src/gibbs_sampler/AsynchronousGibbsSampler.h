@@ -32,7 +32,6 @@ template <class DataModel>
 class AsynchronousGibbsSampler : public DataModel
 {
 public:
-
     template <class DataType>
     AsynchronousGibbsSampler(const DataType &data, bool transpose, bool subsetRows,
         float alpha, float maxGibbsMass, const GapsParameters &params,
@@ -50,7 +49,6 @@ private:
 #ifdef GAPS_DEBUG
     float maximumDrift() const;
 #endif
-
     ConcurrentAtomicDomain mDomain; // data structure providing access to atoms
     ProposalQueue mQueue; // creates queue of proposals that get evaluated by sampler
     float mAvgQueueLength;
@@ -102,7 +100,6 @@ void AsynchronousGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThre
             mAvgQueueLength *= (mNumQueueSamples - 1.f) / mNumQueueSamples;
             mAvgQueueLength += static_cast<float>(mQueue.size()) / mNumQueueSamples;
         }
-
         // process all proposed updates in parallel - the way the queue is 
         // populated ensures no race conditions will happen
         #pragma omp parallel for num_threads(nThreads)
@@ -133,7 +130,6 @@ void AsynchronousGibbsSampler<DataModel>::birth(const AtomicProposal &prop)
     OptionalFloat mass = DataModel::canUseGibbs(prop.c1)
         ? DataModel::sampleBirth(prop.r1, prop.c1, &(prop.rng))
         : prop.rng.exponential(DataModel::lambda());
-
     // accept mass as long as gibbs succeded and it's non-zero
     if (mass.hasValue() && mass.value() >= gaps::epsilon)
     {
@@ -142,7 +138,6 @@ void AsynchronousGibbsSampler<DataModel>::birth(const AtomicProposal &prop)
         DataModel::changeMatrix(prop.r1, prop.c1, mass.value());
         return;
     }
-
     // otherwise reject birth
     mQueue.rejectBirth();
     mDomain.cacheErase(prop.atom1);
@@ -165,7 +160,6 @@ void AsynchronousGibbsSampler<DataModel>::death(const AtomicProposal &prop)
             return;
         }
     }
-
     // if rebirth fails, then kill off atom
     mQueue.acceptDeath();
     DataModel::safelyChangeMatrix(prop.r1, prop.c1, -1.f * prop.atom1->mass());
@@ -229,6 +223,10 @@ Archive& operator>>(Archive &ar, AsynchronousGibbsSampler<DataModel> &s)
 template <class DataModel>
 float AsynchronousGibbsSampler<DataModel>::maximumDrift() const
 {
+    if (mDomain.size() == 0)
+    {
+        return gaps::sum(DataModel::mMatrix);
+    }
     const ConcurrentAtom *atom = mDomain.front();
     uint64_t binLength = std::numeric_limits<uint64_t>::max() / DataModel::nElements();
     unsigned row = (atom->pos() / binLength) / DataModel::nPatterns();
