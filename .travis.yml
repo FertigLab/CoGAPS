@@ -16,11 +16,15 @@ jobs:
     - name: "Bioconductor Release Testing"
       language: r
       r: bioc-release
+      repos:
+        CRAN: http://cran.rstudio.com/ 
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
     - name: "Bioconductor Devel Testing"
       language: r
       r: bioc-devel
+      repos:
+        CRAN: http://cran.rstudio.com/ 
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
     - name: "Test Running in Debug Mode"
@@ -29,8 +33,8 @@ jobs:
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
       install:
-        - R -e 'install.packages(c("BiocManager", "desc"), repos='http://cran.rstudio.com/')'
-        - R -e 'BiocManager::install(desc::desc_get_deps()$package, repos='http://cran.rstudio.com/')'
+        - R -e 'install.packages(c("BiocManager", "desc"), repos="http://cran.rstudio.com/")'
+        - R -e 'BiocManager::install(desc::desc_get_deps()$package, repos="http://cran.rstudio.com/")'
         - R CMD build --no-build-vignettes .
         - R CMD INSTALL --configure-args=" --enable-debug " *tar.gz
       script: R -f inst/scripts/debugRuns.R
