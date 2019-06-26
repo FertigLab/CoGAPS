@@ -107,7 +107,7 @@ closely the A and P matrices reconstruct the original data. In general, we want
 this value to go down - but it is not a perfect measurment of how well CoGAPS
 is finding the biological processes contained in the data. CoGAPS also prints
 a message indicating which phase is currently happening. There are two phases
-to the algorithm - *Calibration* and *Sampling*.
+to the algorithm - *Equilibration* and *Sampling*.
 
 ## Setting Parameters
 
