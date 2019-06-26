@@ -12,17 +12,23 @@ matrix:
     - stage: Linting
     - stage: Code Formatting
   include:
-    #- stage: Bioconductor Release Testing
-    #  r: bioc-release
-    #- stage: Bioconductor Devel Testing
-    #  r: bioc-devel
-    #- stage: Test Running in Debug Mode
-    #  install:
-    #    - R -e 'install.packages(c("BiocManager", "remotes"))'
-    #    - R -e 'BiocManager::install("FertigLab/CoGAPS")'
-    #    - R CMD build --no-build-vignettes .
-    #    - R CMD INSTALL --configure-args=" --enable-debug " *tar.gz
-    #  script: R -f inst/scripts/debugRuns.R
+    - stage: Bioconductor Release Testing
+      r: bioc-release
+      before_install:
+        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+    - stage: Bioconductor Devel Testing
+      r: bioc-devel
+      before_install:
+        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+    - stage: Test Running in Debug Mode
+      before_install:
+        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+      install:
+        - R -e 'install.packages(c("BiocManager", "desc"))'
+        - R -e 'BiocManager::install(desc::desc_get_deps()$package)'
+        - R CMD build --no-build-vignettes .
+        - R CMD INSTALL --configure-args=" --enable-debug " *tar.gz
+      script: R -f inst/scripts/debugRuns.R
     - stage: Valgrind Analysis
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
