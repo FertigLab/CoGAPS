@@ -12,28 +12,38 @@ notifications:
 jobs:
   fast_finish: true
   allow_failures:
-    - stage: Linting
-    - stage: Code Formatting
+    - name: Linting
+    - name: Code Formatting
   include:
-    - stage: Bioconductor Release Testing
-      r: bioc-release
-      before_install:
-        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+    - stage: "Testing"
 
-    - stage: Bioconductor Devel Testing
-      r: bioc-devel
-      before_install:
-        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+      - name: "Bioconductor Release Testing"
+        r: bioc-release
+        before_install:
+          - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
 
-    - stage: Test Running in Debug Mode
-      before_install:
-        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
-      install:
-        - R -e 'install.packages(c("BiocManager", "desc"))'
-        - R -e 'BiocManager::install(desc::desc_get_deps()$package)'
-        - R CMD build --no-build-vignettes .
-        - R CMD INSTALL --configure-args=" --enable-debug " *tar.gz
-      script: R -f inst/scripts/debugRuns.R
+      - name: "Bioconductor Devel Testing"
+        r: bioc-devel
+        before_install:
+          - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+    
+      - name: "Test Running in Debug Mode"
+        before_install:
+          - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+        install:
+          - R -e 'install.packages(c("BiocManager", "desc"))'
+          - R -e 'BiocManager::install(desc::desc_get_deps()$package)'
+          - R CMD build --no-build-vignettes .
+          - R CMD INSTALL --configure-args=" --enable-debug " *tar.gz
+        script: R -f inst/scripts/debugRuns.R
+
+      - name: "Linting"
+        script: echo "linting not implemented"
+
+      - name: "Code Formatting"
+        script: echo "formatting not implemented"
+
+
 
     #- stage: Valgrind Analysis
     #  before_install:
@@ -46,10 +56,4 @@ jobs:
     #    - R CMD build --no-build-vignettes .
     #    - R CMD INSTALL --configure-args=" --disable-openmp " *tar.gz
     #  script: R -d "valgrind --tool=memcheck --leak-check=yes" -e 'library(CoGAPS); data(GIST); CoGAPS(GIST.matrix, nIterations=1000, outputFrequency=250)'
-
-    - stage: Linting
-      script: echo "linting not implemented"
-
-    - stage: Code Formatting
-      script: echo "formatting not implemented"
 
