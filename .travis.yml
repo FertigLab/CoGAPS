@@ -1,6 +1,10 @@
 language: r
-cache: packages
+cache: ccache
 sudo: required
+
+addons:
+  apt:
+    packages: ccache
 
 matrix:
   fast_finish: true
@@ -21,11 +25,12 @@ matrix:
     #  script: R -f inst/scripts/debugRuns.R
     - stage: Valgrind Analysis
       before_install:
+        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
         - sudo apt-get update -qq
         - sudo apt-get install -qq valgrind
       install:
-        - R -e 'install.packages(c("BiocManager", "remotes", "desc"))'
-        - R -e 'library(desc); BiocManager::install(desc_get_deps()$package)'
+        - R -e 'install.packages(c("BiocManager", "desc"))'
+        - R -e 'BiocManager::install(desc::desc_get_deps()$package)'
         - R CMD build --no-build-vignettes .
         - R CMD INSTALL --configure-args=" --disable-openmp " *tar.gz
       script: R -d "valgrind --tool=memcheck --leak-check=yes" -e 'library(CoGAPS); data(GIST); CoGAPS(GIST.matrix, nIterations=1000, outputFrequency=250)'
