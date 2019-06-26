@@ -1,13 +1,11 @@
-language: r
-cache: ccache
-#sudo: required
+notifications:
+  slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts
 
 addons:
   apt:
     packages: ccache
 
-notifications:
-  slack: fertiglab:LZeNoaS7BnLfqP6XuHiDYdts
+cache: ccache
 
 jobs:
   fast_finish: true
@@ -16,14 +14,18 @@ jobs:
     - name: Code Formatting
   include:
     - name: "Bioconductor Release Testing"
+      language: r
       r: bioc-release
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
     - name: "Bioconductor Devel Testing"
+      language: r
       r: bioc-devel
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
     - name: "Test Running in Debug Mode"
+      language: r
+      r: release
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
       install:
