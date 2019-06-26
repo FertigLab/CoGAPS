@@ -82,7 +82,6 @@ uint32_t GapsRng::uniform32(uint32_t a, uint32_t b)
     {
         return a;
     }
-
     uint32_t range = b + 1 - a;
     uint32_t x = uniform32();
     uint32_t iPart = std::numeric_limits<uint32_t>::max() / range;
@@ -90,7 +89,10 @@ uint32_t GapsRng::uniform32(uint32_t a, uint32_t b)
     {
         x = uniform32();
     }
-    return x / iPart + a;
+    uint32_t unif = x / iPart + a;
+    GAPS_ASSERT(unif >= a);
+    GAPS_ASSERT(unif <= b);
+    return unif;
 }
 
 uint64_t GapsRng::uniform64()
@@ -107,7 +109,6 @@ uint64_t GapsRng::uniform64(uint64_t a, uint64_t b)
     {
         return a;
     }
-
     uint64_t range = b + 1 - a;
     uint64_t x = uniform64();
     uint64_t iPart = std::numeric_limits<uint64_t>::max() / range;
@@ -115,7 +116,10 @@ uint64_t GapsRng::uniform64(uint64_t a, uint64_t b)
     {
         x = uniform64();
     }
-    return x / iPart + a;
+    uint64_t unif = x / iPart + a;
+    GAPS_ASSERT(unif >= a);
+    GAPS_ASSERT(unif <= b);
+    return unif;
 }
 
 int GapsRng::poisson(double lambda)
@@ -144,7 +148,6 @@ int GapsRng::poissonLarge(double lambda)
     double beta = gaps::pi_double / sqrt(3.0 * lambda);
     double alpha = beta * lambda;
     double k = std::log(c) - lambda - std::log(beta);
-
     while(true)
     {
         double u = uniformd();
@@ -154,7 +157,6 @@ int GapsRng::poissonLarge(double lambda)
         {
             continue;
         }
-
         double v = uniformd();
         double y = alpha - beta * x;
         double w = 1.0 + std::exp(y);

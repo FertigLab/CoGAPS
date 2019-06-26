@@ -41,7 +41,6 @@ template <class VectorType>
 float gaps::dot(const VectorType &a, const VectorType &b)
 {
     GAPS_ASSERT(a.size() == b.size());
-    GAPS_ASSERT((a.size() % SIMD_INC) == 0);
     const float *v1 = a.ptr();
     const float *v2 = b.ptr();
     const unsigned size = a.size();
