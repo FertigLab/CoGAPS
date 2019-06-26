@@ -1,3 +1,20 @@
+version: 3.5.3
+date: 2019-6-26
+author: Tom Sherman <tomsherman159@gmai.com>
+
+    - refactored several portions of the backend
+    - added an option for running a sequential gibbs sampler so the overhead of
+        multi-threading is not paid unless requested, this mode is enabled when running
+        distributed cogaps since it can't be run on more than one thread anyways
+    - fixed the atomic domain bottleneck when reaching millions of atoms
+    - add warning if multiple threads requested and OpenMP was not supported by compiler
+    - fixed issues with reading csv/tsv/gct files
+    - added amplitude markers function
+    - log transformed sample GIST data
+    - track number of updates and total running time
+    - added more robust assert statements for debugging
+    - added debugRuns script for an extra step of testing
+
 version: 3.5.2
 date: 2019-6-26
 author: Tom Sherman <tomsherman159@gmail.com>
