@@ -27,8 +27,8 @@ matrix:
         - R -e 'install.packages(c("BiocManager", "remotes"))'
         - R -e 'BiocManager::install("FertigLab/CoGAPS")'
         - R CMD build --no-build-vignettes .
-        - R CMD INSTALL *tar.gz
-      script: R -d valgrind -e 'library(CoGAPS); data(GIST); CoGAPS(GIST.matrix, nIterations=1000, outputFrequency=250)'
+        - R CMD INSTALL --configure-args=" --disable-openmp " *tar.gz
+      script: R -d "valgrind --tool=memcheck --leak-check=yes" -e 'library(CoGAPS); data(GIST); CoGAPS(GIST.matrix, nIterations=1000, outputFrequency=250)'
     - stage: Linting
       script: echo "linting not implemented"
     - stage: Code Formatting
