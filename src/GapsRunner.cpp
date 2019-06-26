@@ -229,7 +229,7 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
         createCheckpoint(params, ASampler, PSampler, randState, stats,
             rng, phase, currentIter);
         
-        // set annealing temperature in calibration phase
+        // set annealing temperature in Equilibration phase
         if (phase == 'C')
         {        
             float temp = static_cast<float>(2 * currentIter)
@@ -386,7 +386,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     switch (phase)
     {
         case 'C':
-            GAPS_MESSAGE(params.printMessages, "-- Calibration Phase --\n");
+            GAPS_MESSAGE(params.printMessages, "-- Equilibration Phase --\n");
             runOnePhase(params, ASampler, PSampler, stats, randState, rng,
                 startTime, phase, currentIter);
             phase = 'S';
