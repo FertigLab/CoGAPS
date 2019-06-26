@@ -25,7 +25,7 @@ matrix:
         - sudo apt-get install -qq valgrind
       install:
         - R -e 'install.packages(c("BiocManager", "remotes", "desc"))'
-        - R -e 'BiocManager::install(desc_get_deps()$package)
+        - R -e 'library(desc); BiocManager::install(desc_get_deps()$package)'
         - R CMD build --no-build-vignettes .
         - R CMD INSTALL --configure-args=" --disable-openmp " *tar.gz
       script: R -d "valgrind --tool=memcheck --leak-check=yes" -e 'library(CoGAPS); data(GIST); CoGAPS(GIST.matrix, nIterations=1000, outputFrequency=250)'
