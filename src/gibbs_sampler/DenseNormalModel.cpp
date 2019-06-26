@@ -40,7 +40,6 @@ void DenseNormalModel::extraInitialization()
     GAPS_ASSERT(mOtherMatrix->nRow() == mAPMatrix.nRow());
     GAPS_ASSERT(mOtherMatrix->nCol() == mMatrix.nCol());
     GAPS_ASSERT(mMatrix.nRow() == mAPMatrix.nCol());
-
     for (unsigned j = 0; j < mAPMatrix.nCol(); ++j)
     {
         for (unsigned i = 0; i < mAPMatrix.nRow(); ++i)
