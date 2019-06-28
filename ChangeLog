@@ -1,6 +1,12 @@
+version: 3.5.4
+date: 2019-6-28
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fixed bug where workers wouldn't print status during distributed runs
+
 version: 3.5.3
 date: 2019-6-26
-author: Tom Sherman <tomsherman159@gmai.com>
+author: Tom Sherman <tomsherman159@gmail.com>
 
     - refactored several portions of the backend
     - added an option for running a sequential gibbs sampler so the overhead of
