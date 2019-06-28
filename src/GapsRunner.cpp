@@ -392,7 +392,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     }
 
     // if we are running distributed, each worker needs to print when it's started
-    if (params.runningDistributed && params.printMessages)
+    if (params.runningDistributed)
     {
         gaps_printf("    worker %d is starting!\n", params.workerID);
         gaps_flush();
@@ -449,7 +449,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     }
 
     // if we are running distributed, each worker needs to print when it's done
-    if (params.runningDistributed && params.printMessages)
+    if (params.runningDistributed)
     {
         GapsTime elapsed(static_cast<unsigned>((bpt_now() - startTime).total_seconds()));
         gaps_printf("    worker %d is finished! Time: %02d:%02d:%02d\n",
