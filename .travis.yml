@@ -14,6 +14,7 @@ jobs:
     - name: Code Formatting
   include:
     - name: "Bioconductor Release Testing"
+      if: tag IS NOT present
       language: r
       r: bioc-release
       repos:
@@ -21,6 +22,7 @@ jobs:
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
     - name: "Bioconductor Devel Testing"
+      if: tag IS NOT present
       language: r
       r: bioc-devel
       repos:
@@ -28,6 +30,7 @@ jobs:
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
     - name: "Test Running in Debug Mode"
+      if: tag IS NOT present
       language: r
       r: release
       before_install:
@@ -39,8 +42,10 @@ jobs:
         - R CMD INSTALL --configure-args=" --enable-debug " *tar.gz
       script: R -f inst/scripts/debugRuns.R
     - name: "Linting"
+      if: tag IS NOT present
       script: echo "linting not implemented"
     - name: "Code Formatting"
+      if: tag IS NOT present
       script: echo "formatting not implemented"
 
 #- stage: Valgrind Analysis
