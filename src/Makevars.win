@@ -5,34 +5,34 @@ PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__ -Iinclude
 PKG_CXXFLAGS = -march=native
 PKG_LIBS =
 
-OBJECTS =   Cogaps.o
-            GapsParameters.o
-            GapsResult.o
-            GapsRunner.o
-            GapsStatistics.o
-            RcppExports.o
-            test-runner.o
-            atomic/Atom.o
-            atomic/ConcurrentAtom.o
-            atomic/AtomicDomain.o
-            atomic/ConcurrentAtomicDomain.o
-            atomic/ProposalQueue.o
-            data_structures/HashSets.o
-            data_structures/HybridMatrix.o
-            data_structures/HybridVector.o
-            data_structures/Matrix.o
-            data_structures/SparseIterator.o
-            data_structures/SparseMatrix.o
-            data_structures/SparseVector.o
-            data_structures/Vector.o
-            file_parser/CharacterDelimitedParser.o
-            file_parser/FileParser.o
-            file_parser/MatrixElement.o
-            file_parser/MtxParser.o
-            gibbs_sampler/AlphaParameters.o
-            gibbs_sampler/DenseNormalModel.o
-            gibbs_sampler/SparseNormalModel.o
-            math/Math.o
-            math/MatrixMath.o
-            math/Random.o
-            math/VectorMath.o
+OBJECTS =	Cogaps.o \
+		GapsParameters.o \
+		GapsResult.o \
+		GapsRunner.o \
+		GapsStatistics.o \
+		RcppExports.o \
+		test-runner.o \
+		atomic/Atom.o \
+		atomic/ConcurrentAtom.o \
+		atomic/AtomicDomain.o \
+		atomic/ConcurrentAtomicDomain.o \
+		atomic/ProposalQueue.o \
+		data_structures/HashSets.o \
+		data_structures/HybridMatrix.o \
+		data_structures/HybridVector.o \
+		data_structures/Matrix.o \
+		data_structures/SparseIterator.o \
+		data_structures/SparseMatrix.o \
+		data_structures/SparseVector.o \
+		data_structures/Vector.o \
+		file_parser/CharacterDelimitedParser.o \
+		file_parser/FileParser.o \
+		file_parser/MatrixElement.o \
+		file_parser/MtxParser.o \
+		gibbs_sampler/AlphaParameters.o \
+		gibbs_sampler/DenseNormalModel.o \
+		gibbs_sampler/SparseNormalModel.o \
+		math/Math.o \
+		math/MatrixMath.o \
+		math/Random.o \
+		math/VectorMath.o
