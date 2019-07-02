@@ -1,3 +1,9 @@
+version: 3.5.6
+date: 2019-7-2
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - disable checkpoint system until repairs are made for the new version
+
 version: 3.5.5
 date: 2019-7-2
 author: Tom Sherman <tomsherman159@gmail.com>
