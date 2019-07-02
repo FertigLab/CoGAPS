@@ -7,18 +7,14 @@ addons:
 
 cache: ccache
 
-os:
-  - linux
-  - osx
-
 jobs:
   fast_finish: true
   allow_failures:
     - name: Linting
     - name: Code Formatting
   include:
-    - name: "Bioconductor Release Testing"
-      
+    - name: "Bioconductor Release Testing - Linux"
+      os: linux
       if: tag IS NOT present
       language: r
       r: bioc-release
@@ -26,7 +22,9 @@ jobs:
         CRAN: http://cran.rstudio.com/ 
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
-    - name: "Bioconductor Devel Testing"
+
+    - name: "Bioconductor Devel Testing - Linux"
+      os: linux
       if: tag IS NOT present
       language: r
       r: bioc-devel
@@ -34,6 +32,27 @@ jobs:
         CRAN: http://cran.rstudio.com/ 
       before_install:
         - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+
+    - name: "Bioconductor Release Testing - OSX"
+      os: osx
+      if: tag IS NOT present
+      language: r
+      r: bioc-release
+      repos:
+        CRAN: http://cran.rstudio.com/ 
+      before_install:
+        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+
+    - name: "Bioconductor Devel Testing - OSX"
+      os: osx
+      if: tag IS NOT present
+      language: r
+      r: bioc-devel
+      repos:
+        CRAN: http://cran.rstudio.com/ 
+      before_install:
+        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+
     - name: "Test Running in Debug Mode"
       if: tag IS NOT present
       language: r
@@ -46,9 +65,11 @@ jobs:
         - R CMD build --no-build-vignettes .
         - R CMD INSTALL --configure-args=" --enable-debug " *tar.gz
       script: R -f inst/scripts/debugRuns.R
+
     - name: "Linting"
       if: tag IS NOT present
       script: echo "linting not implemented"
+
     - name: "Code Formatting"
       if: tag IS NOT present
       script: echo "formatting not implemented"
