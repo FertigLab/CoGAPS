@@ -7,6 +7,10 @@ addons:
 
 cache: ccache
 
+os:
+  - linux
+  - osx
+
 jobs:
   fast_finish: true
   allow_failures:
@@ -14,6 +18,7 @@ jobs:
     - name: Code Formatting
   include:
     - name: "Bioconductor Release Testing"
+      
       if: tag IS NOT present
       language: r
       r: bioc-release
