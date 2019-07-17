@@ -41,7 +41,7 @@ jobs:
       repos:
         CRAN: http://cran.rstudio.com/ 
       before_install:
-        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) clang$(VER) -std=gnu99\nCXX=$(CCACHE) clang++$(VER)\nC11=$(CCACHE) clang++$(VER)\nC14=$(CCACHE) clang++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
 
     - name: "Bioconductor Devel Testing - OSX"
       os: osx
@@ -51,7 +51,7 @@ jobs:
       repos:
         CRAN: http://cran.rstudio.com/ 
       before_install:
-        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) gcc$(VER) -std=gnu99\nCXX=$(CCACHE) g++$(VER)\nC11=$(CCACHE) g++$(VER)\nC14=$(CCACHE) g++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
+        - mkdir $HOME/.R && echo -e 'VER=\nCCACHE=ccache\nCC=$(CCACHE) clang$(VER) -std=gnu99\nCXX=$(CCACHE) clang++$(VER)\nC11=$(CCACHE) clang++$(VER)\nC14=$(CCACHE) clang++$(VER)\nFC=$(CCACHE) gfortran$(VER)\nF77=$(CCACHE) gfortran$(VER)' > $HOME/.R/Makevars
 
     - name: "Test Running in Debug Mode"
       if: tag IS NOT present
