@@ -54,7 +54,7 @@ MatrixElement MtxParser::getNext()
 {
     unsigned row = 0;
     unsigned col = 0;
-    float val = 0.f;
+    std::string val;
     mFile >> row;
     mFile >> col;
     mFile >> val;

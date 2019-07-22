@@ -11,11 +11,6 @@ static bool containsNumber(const std::string &s)
     return !s.empty() && s.find_first_not_of("0123456789.-") == std::string::npos;
 }
 
-MatrixElement::MatrixElement(unsigned r, unsigned c, float v) // NOLINT
-    :
-row(r), col(c), value(v)
-{}
-
 MatrixElement::MatrixElement(unsigned r, unsigned c, const std::string &s) // NOLINT
     :
 row(r), col(c), value(0.f)
