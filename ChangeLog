@@ -1,3 +1,9 @@
+version: 3.5.7
+date: 2019-7-22
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fixed error in mtx parsing
+
 version: 3.5.6
 date: 2019-7-2
 author: Tom Sherman <tomsherman159@gmail.com>
