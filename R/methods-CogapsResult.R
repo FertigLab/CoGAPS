@@ -149,20 +149,14 @@ function(object)
 #' @rdname calcZ-methods
 #' @aliases calcZ
 setMethod("calcZ", signature(object="CogapsResult"),
-function(object, which)
+function(object, whichMatrix)
 {
-    if (which == "feature")
-    {
-        object@featureLoadings / object@featureStdDev
-    }
-    else if (which == "sample")
-    {
-        object@sampleFactors / object@sampleStdDev
-    }
+    if (whichMatrix=="featureLoadings")
+        return(object@featureLoadings / object@featureStdDev)
+    else if (whichMatrix=="sampleFactors")
+        return(object@sampleFactors / object@sampleStdDev)
     else
-    {
-        stop("\"which\" must be either \"feature\" or \"sample\"")
-    }
+        stop("whichMatrix must be either 'featureLoadings' or 'sampleFactors'")
 })
 
 #' @rdname reconstructGene-methods
@@ -348,118 +342,43 @@ samplePalette=NULL, heatmapCol=bluered, colDenogram=TRUE, scale="row", ...)
 
 #' @rdname calcCoGAPSStat-methods
 #' @aliases calcCoGAPSStat
-#' @importFrom stats runif
 #' @importFrom methods is
 setMethod("calcCoGAPSStat", signature(object="CogapsResult"),
-function(object, GStoGenes, numPerm)
+function(object, sets, whichMatrix, numPerm, ...)
 {
-    # test for std dev of zero, possible mostly in simple simulations
+    ## do this for backwards compatibility
+    if (!is.null(list(...)$GStoGenes))
+        sets <- GStoGenes
+    ## check input arguments
+    if (!is(sets, "list"))
+        stop("sets must be a list of either measurements or samples")
     if (sum(object@featureStdDev==0) > 0)
-    {
-        object@featureStdDev[object@featureStdDev==0] <- 1e-6
-    }
-
-    # calculate Z scores
-    zMatrix <- calcZ(object)
-
-    # check input arguments
-    if (!is(GStoGenes, "data.frame") && !is(GStoGenes, "list") && !is(GStoGenes,"GSA.genesets"))
-    {
-        stop("GStoGenes must be a data.frame,GSA.genesets, or list with format specified in the users manual.")
-    }
-
-    if (is(GStoGenes, "GSA.genesets"))
-    {
-        names(GStoGenes$genesets) <- GStoGenes$geneset.names
-        GStoGenes <- GStoGenes$genesets
-    }
-
-    if (is(GStoGenes, "list"))
-    {
-        GStoGenesList <- GStoGenes
-    }
-    else
-    {
-        GStoGenesList <- list()
-        for (i in 1:dim(GStoGenes)[2])
+        stop("zeros detected in the standard deviation matrix")
+    ## do a permutation test
+    zMatrix <- calcZ(object, whichMatrix)
+    pvalUpReg <- sapply(sets,
+        function(thisSet)
         {
-            GStoGenesList[[as.character(colnames(GStoGenes)[i])]] <- as.character(unique(GStoGenes[,i]))
-        }
-    }
-
-    # get dimensions
-    numGS   <- length(names(GStoGenesList))
-    numPatt <- dim(zMatrix)[2]
-    numG    <- dim(zMatrix)[1]+0.9999
-
-    # initialize matrices
-    statsUp   <- matrix(ncol = numGS, nrow = numPatt)
-    statsDown <- matrix(ncol = numGS, nrow = numPatt)
-    actEst    <- matrix(ncol = numGS, nrow = numPatt)
-    results   <- list()
-    zPerm     <- matrix(ncol=numPerm,nrow=numPatt)
-
-    # do permutation test
-    for (gs in 1:numGS)
-    {
-        genes <- GStoGenesList[[names(GStoGenesList)[gs]]]
-        index <- rownames(zMatrix) %in% genes
-        zValues <- zMatrix[index,1]
-        numGenes <- length(zValues)
-        label <- as.character(numGenes)
-
-        if (!any(names(results)==label))
-        {
-            for (p in 1:numPatt)
+            numValues <- length(thisSet)
+            lessThanCount <- rep(0, ncol(zMatrix))
+            actualZScore <- colMeans(zMatrix[rownames(zMatrix) %in% thisSet,])
+            for (n in 1:numPerm)
             {
-                for (j in 1:numPerm)
-                {
-                    temp <- floor(runif(numGenes,1,numG))
-                    temp2 <- zMatrix[temp,p]
-                    zPerm[p,j] <- mean(temp2)
-                }
+                permutedIndices <- sample(1:nrow(zMatrix), size=numValues, replace=FALSE)
+                permutedZScore <- colMeans(zMatrix[permutedIndices,])
+                lessThanCount <- lessThanCount + (actualZScore < permutedZScore)
             }
-            results[[label]] <- zPerm
-        }
-    }
-
-    # get p-value
-    for (p in 1:numPatt)
-    {
-        for (gs in 1:numGS)
-        {
-            genes <- GStoGenesList[[names(GStoGenesList)[gs]]]
-            index <- rownames(zMatrix) %in% genes
-            zValues <- zMatrix[index,p]
-            zScore <- mean(zValues)
-
-            numGenes <- length(zValues)
-            label <- as.character(numGenes)
-
-            permzValues <- results[[label]][p,]
-            ordering <- order(permzValues)
-            permzValues <- permzValues[ordering]
-
-            statUpReg <- 1 - sum(zScore > permzValues) / length(permzValues)
-            statsUp[p,gs] <- max(statUpReg, 1 / numPerm)
-
-            statDownReg <- 1 - sum(zScore < permzValues) / length(permzValues)
-            statsDown[p,gs] <- max(statDownReg, 1 / numPerm)
-
-            activity <- 1 - 2*max(statUpReg, 1/numPerm)
-            actEst[p,gs] <- activity
-        }
-    }
-
-    # format output
-    rownames(statsUp) <- rownames(statsDown) <- rownames(actEst) <- colnames(zMatrix)
-    colnames(statsUp) <- colnames(statsDown) <- colnames(actEst) <- names(GStoGenesList)
-
-    results[['GSUpreg']] <- statsUp
-    results[['GSDownreg']] <- statsDown
-    results[['GSActEst']] <- actEst
-
-    return(results)
+            return(lessThanCount / numPerm)
+        })
+    ## calculate other quantities of interest, return a list
+    pvalDownReg <- 1 - pvalUpReg # this is techinically >=, but == should rarely happen
+    activityEstimate <- 1 - 2 * pvalUpReg
+    return(list(
+        'twoSidedPValue'=pmin(pvalDownReg, pvalUpReg),
+        'GSUpreg'=pvalUpReg,
+        'GSDownreg'=pvalDownReg,
+        'GSActEst'=activityEstimate
+    ))
 })
 
 #' @rdname calcGeneGSStat-methods

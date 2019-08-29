@@ -6,15 +6,15 @@
 \alias{calcZ,CogapsResult-method}
 \title{compute z-score matrix}
 \usage{
-calcZ(object, which = "feature")
+calcZ(object, whichMatrix)
 
-\S4method{calcZ}{CogapsResult}(object, which = "feature")
+\S4method{calcZ}{CogapsResult}(object, whichMatrix)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}
 
-\item{which}{either "feature" or "sample" indicating which matrix to
-calculate the z-score for}
+\item{whichMatrix}{either "featureLoadings" or "sampleFactors" indicating which
+matrix to calculate the z-score for}
 }
 \value{
 matrix of z-scores
