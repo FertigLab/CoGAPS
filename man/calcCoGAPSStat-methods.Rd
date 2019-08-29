@@ -4,24 +4,30 @@
 \name{calcCoGAPSStat}
 \alias{calcCoGAPSStat}
 \alias{calcCoGAPSStat,CogapsResult-method}
-\title{calculate gene set statistics}
+\title{calculate statistic on sets of measurements (genes) or samples}
 \usage{
-calcCoGAPSStat(object, GStoGenes, numPerm = 500)
+calcCoGAPSStat(object, sets = NULL, whichMatrix = "featureLoadings",
+  numPerm = 1000, ...)
 
-\S4method{calcCoGAPSStat}{CogapsResult}(object, GStoGenes, numPerm = 500)
+\S4method{calcCoGAPSStat}{CogapsResult}(object, sets = NULL,
+  whichMatrix = "featureLoadings", numPerm = 1000, ...)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}
 
-\item{GStoGenes}{data.frame or list with gene sets}
+\item{sets}{list of sets of measurements/samples}
 
-\item{numPerm}{number of permutations for null}
+\item{whichMatrix}{either "featureLoadings" or "sampleFactors" indicating which matrix
+to calculate the statistics for}
+
+\item{numPerm}{number of permutations to use when calculatin p-value}
+
+\item{...}{handles old arguments for backwards compatibility}
 }
 \value{
 gene set statistics for each column of A
 }
 \description{
-calculates the gene set statistics for each
-column of A using a Z-score from the elements of the A matrix,
-the input gene set, and permutation tests
+calculates a statistic to determine if a pattern is enriched in a
+a particular set of measurements or samples.
 }

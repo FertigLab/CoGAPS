@@ -208,13 +208,13 @@ setGeneric("getSubsets", function(object)
 #' @description calculates the Z-score for each element based on input mean
 #' and standard deviation matrices
 #' @param object an object of type CogapsResult
-#' @param which either "feature" or "sample" indicating which matrix to
-#' calculate the z-score for
+#' @param whichMatrix either "featureLoadings" or "sampleFactors" indicating which
+#' matrix to calculate the z-score for
 #' @return matrix of z-scores
 #' @examples
 #' data(GIST)
 #' featureZScore <- calcZ(GIST.result)
-setGeneric("calcZ", function(object, which="feature")
+setGeneric("calcZ", function(object, whichMatrix)
     {standardGeneric("calcZ")})
 
 #' reconstruct gene
@@ -267,19 +267,22 @@ setGeneric("binaryA", function(object, threshold=3)
 setGeneric("plotResiduals", function(object, data, uncertainty=NULL)
     {standardGeneric("plotResiduals")})
 
-#' calculate gene set statistics
+#' calculate statistic on sets of measurements (genes) or samples
 #' @export
 #' @docType methods
 #' @rdname calcCoGAPSStat-methods
 #'
-#' @description calculates the gene set statistics for each
-#' column of A using a Z-score from the elements of the A matrix,
-#' the input gene set, and permutation tests
+#' @description calculates a statistic to determine if a pattern is enriched in a
+#' a particular set of measurements or samples.
 #' @param object an object of type CogapsResult
-#' @param GStoGenes data.frame or list with gene sets
-#' @param numPerm number of permutations for null
+#' @param sets list of sets of measurements/samples
+#' @param whichMatrix either "featureLoadings" or "sampleFactors" indicating which matrix
+#' to calculate the statistics for
+#' @param numPerm number of permutations to use when calculatin p-value
+#' @param ... handles old arguments for backwards compatibility
 #' @return gene set statistics for each column of A
-setGeneric("calcCoGAPSStat", function(object, GStoGenes, numPerm=500)
+setGeneric("calcCoGAPSStat", function(object, sets=NULL, whichMatrix='featureLoadings',
+numPerm=1000, ...)
     {standardGeneric("calcCoGAPSStat")})
 
 #' probability gene belongs in gene set
