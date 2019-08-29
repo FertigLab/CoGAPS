@@ -1,3 +1,9 @@
+version: 3.5.9
+date: 2019-8-29
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - added option to use P matrix for calcCoGAPSStat
+
 version: 3.5.8
 date: 2019-7-22
 author: Tom Sherman <tomsherman159@gmail.com>
