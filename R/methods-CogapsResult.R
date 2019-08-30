@@ -151,17 +151,22 @@ function(object)
 setMethod("calcZ", signature(object="CogapsResult"),
 function(object, whichMatrix)
 {
-
     if (whichMatrix=="featureLoadings")
     {
         if (sum(object@featureStdDev==0) > 0)
-            stop("zeros detected in the standard deviation matrix")
+        {
+            warning("zeros detected in the standard deviation matrix")
+            object@featureStdDev[object@featureStdDev==0] <- 1e-6
+        }
         return(object@featureLoadings / object@featureStdDev)
     }
     else if (whichMatrix=="sampleFactors")
     {
         if (sum(object@sampleStdDev==0) > 0)
-            stop("zeros detected in the standard deviation matrix")
+        {
+            warning("zeros detected in the standard deviation matrix")
+            object@sampleStdDev[object@sampleStdDev==0] <- 1e-6
+        }
         return(object@sampleFactors / object@sampleStdDev)
     }
     else
