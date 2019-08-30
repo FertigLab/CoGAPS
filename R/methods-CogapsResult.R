@@ -151,12 +151,23 @@ function(object)
 setMethod("calcZ", signature(object="CogapsResult"),
 function(object, whichMatrix)
 {
+
     if (whichMatrix=="featureLoadings")
+    {
+        if (sum(object@featureStdDev==0) > 0)
+            stop("zeros detected in the standard deviation matrix")
         return(object@featureLoadings / object@featureStdDev)
+    }
     else if (whichMatrix=="sampleFactors")
+    {
+        if (sum(object@sampleStdDev==0) > 0)
+            stop("zeros detected in the standard deviation matrix")
         return(object@sampleFactors / object@sampleStdDev)
+    }
     else
+    {
         stop("whichMatrix must be either 'featureLoadings' or 'sampleFactors'")
+    }
 })
 
 #' @rdname reconstructGene-methods
@@ -352,8 +363,6 @@ function(object, sets, whichMatrix, numPerm, ...)
     ## check input arguments
     if (!is(sets, "list"))
         stop("sets must be a list of either measurements or samples")
-    if (sum(object@featureStdDev==0) > 0)
-        stop("zeros detected in the standard deviation matrix")
     ## do a permutation test
     zMatrix <- calcZ(object, whichMatrix)
     pvalUpReg <- sapply(sets,
