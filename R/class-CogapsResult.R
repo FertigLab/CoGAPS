@@ -213,7 +213,7 @@ setGeneric("getSubsets", function(object)
 #' @return matrix of z-scores
 #' @examples
 #' data(GIST)
-#' featureZScore <- calcZ(GIST.result)
+#' featureZScore <- calcZ(GIST.result, "featureLoadings")
 setGeneric("calcZ", function(object, whichMatrix)
     {standardGeneric("calcZ")})
 
