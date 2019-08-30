@@ -1,3 +1,10 @@
+version: 3.5.11
+date: 2019-8-30
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - Change zereos in standard deviation matrix to a warning when calculating Z-Scores, in this case 1e-6 will be used instead
+    - set the minimum p-value to 1/numPerm in calcCoGAPSStat
+
 version: 3.5.10
 date: 2019-8-30
 author: Tom Sherman <tomsherman159@gmail.com>
