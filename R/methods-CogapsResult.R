@@ -383,7 +383,7 @@ function(object, sets, whichMatrix, numPerm, ...)
     pvalDownReg <- 1 - pvalUpReg # this is techinically >=, but == should rarely happen
     activityEstimate <- 1 - 2 * pvalUpReg
     return(list(
-        'twoSidedPValue'=pmin(pvalDownReg, pvalUpReg),
+        'twoSidedPValue'=pmax(pmin(pvalDownReg, pvalUpReg), 1 / numPerm),
         'GSUpreg'=pvalUpReg,
         'GSDownreg'=pvalDownReg,
         'GSActEst'=activityEstimate
