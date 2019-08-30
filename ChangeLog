@@ -1,3 +1,9 @@
+version: 3.5.12
+date: 2019-8-30
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fixed failing error with calcZ
+
 version: 3.5.11
 date: 2019-8-30
 author: Tom Sherman <tomsherman159@gmail.com>
