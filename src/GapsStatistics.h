@@ -33,6 +33,8 @@ public:
     std::vector<unsigned> atomHistory(char m) const;
     float meanChiSq(const DenseNormalModel &model) const;
     float meanChiSq(const SparseNormalModel &model) const;
+    void takeSnapshot();
+    const std::vector<Matrix>& getSnapshots(char whichMatrix) const;
     friend Archive& operator<<(Archive &ar, const GapsStatistics &stat);
     friend Archive& operator>>(Archive &ar, GapsStatistics &stat);
 private:
@@ -41,6 +43,8 @@ private:
     Matrix mPMeanMatrix;
     Matrix mPStdMatrix;
     Matrix mPumpMatrix;
+    std::vector<Matrix> mSnapshotsA;
+    std::vector<Matrix> mSnapshotsP;
     std::vector<float> mChisqHistory;
     std::vector<unsigned> mAtomHistoryA;
     std::vector<unsigned> mAtomHistoryP;

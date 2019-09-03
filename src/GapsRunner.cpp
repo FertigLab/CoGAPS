@@ -285,6 +285,10 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
             {
                 stats.updatePump(ASampler);
             }
+            if (params.snapshotFrequency > 0 && ((currentIter + 1) % params.snapshotFrequency) == 0)
+            {
+                stats.takeSnapshot();
+            }
         }
         displayStatus(params, ASampler, PSampler, startTime, phase,
             currentIter, stats);

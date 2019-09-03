@@ -151,6 +151,17 @@ std::vector<unsigned> GapsStatistics::atomHistory(char m) const
     return m == 'A' ? mAtomHistoryA : mAtomHistoryP;
 }
 
+void GapsStatistics::takeSnapshot()
+{
+    mSnapshotsA.push_back(Amean());
+    mSnapshotsP.push_back(Pmean());
+}
+
+const std::vector<Matrix>& GapsStatistics::getSnapshots(char whichMatrix) const
+{
+    return (whichMatrix == 'A') ? mSnapshotsA : mSnapshotsP;
+}
+
 Archive& operator<<(Archive &ar, const GapsStatistics &stat)
 {
     ar << stat.mAMeanMatrix << stat.mAStdMatrix << stat.mPMeanMatrix
