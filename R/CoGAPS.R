@@ -85,7 +85,7 @@ compiledWithOpenMPSupport <- function()
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
 outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
-BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, ...)
+BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, nSnapshots=0, ...)
 {
     # pre-process inputs
     if (is(data, "character"))
@@ -111,6 +111,7 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, ...)
         "nThreads"=nThreads,
         "messages"=messages,
         "outputFrequency"=outputFrequency,
+        "nSnapshots"=nSnapshots,
         "checkpointOutFile"=checkpointOutFile,
         "checkpointInterval"=checkpointInterval,
         "checkpointInFile"=checkpointInFile,

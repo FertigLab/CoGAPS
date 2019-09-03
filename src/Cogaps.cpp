@@ -46,6 +46,18 @@ static Rcpp::NumericMatrix createRMatrix(const GenericMatrix &mat)
     return rmat;
 }
 
+// convert std::vector of Matrix types to an R list
+template <class GenericMatrix>
+static Rcpp::List createListOfRMatrices(const std::vector<GenericMatrix> &cppMatrices)
+{
+    Rcpp::List rMatrices;
+    for (unsigned i = 0; i < cppMatrices.size(); ++i)
+    {
+        rMatrices.push_back(createRMatrix(cppMatrices[i]));
+    }
+    return rMatrices;
+}
+
 ////////// converts R parameters to single GapsParameters struct ///////////////
 
 template <class DataType>
@@ -89,6 +101,13 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.singleCell = Rcpp::as<bool>(gapsParams.slot("singleCell"));
     params.useSparseOptimization = Rcpp::as<bool>(gapsParams.slot("sparseOptimization"));
     params.asynchronousUpdates = Rcpp::as<bool>(allParams["asynchronousUpdates"]);
+
+    // calculate snapshot frequency
+    int nSnapshots = Rcpp::as<int>(allParams["nSnapshots"]);
+    if (nSnapshots > 0)
+    {
+        params.snapshotFrequency = params.nIterations / nSnapshots;
+    }
 
     // check if using fixed matrix
     params.whichMatrixFixed = Rcpp::as<char>(gapsParams.slot("whichMatrixFixed"));
@@ -148,7 +167,9 @@ const DataType &uncertainty)
             Rcpp::Named("averageQueueLengthA") = result.averageQueueLengthA,
             Rcpp::Named("averageQueueLengthP") = result.averageQueueLengthP,
             Rcpp::Named("totalUpdates") = result.totalUpdates,
-            Rcpp::Named("totalRunningTime") = result.totalRunningTime
+            Rcpp::Named("totalRunningTime") = result.totalRunningTime,
+            Rcpp::Named("snapshotsA") = createListOfRMatrices(result.snapshotsA),
+            Rcpp::Named("snapshotsP") = createListOfRMatrices(result.snapshotsP)
         )
     );
 }

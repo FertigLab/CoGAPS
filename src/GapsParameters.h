@@ -36,6 +36,7 @@ public:
     unsigned maxThreads;
     unsigned outputFrequency;
     unsigned checkpointInterval;
+    unsigned snapshotFrequency;
     float alphaA;
     float alphaP;
     float maxGibbsMassA;
@@ -80,6 +81,7 @@ nIterations(1000),
 maxThreads(1),
 outputFrequency(500),
 checkpointInterval(250),
+snapshotFrequency(0),
 alphaA(0.01f),
 alphaP(0.01f),
 maxGibbsMassA(100.f),
