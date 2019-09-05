@@ -56,7 +56,6 @@ function(object)
     nFeatures <- nrow(object@featureLoadings)
     nSamples <- nrow(object@sampleFactors)
     nPatterns <- ncol(object@featureLoadings)
-
     print(paste("CogapsResult object with", nFeatures, "features and", nSamples,
         "samples"))
     print(paste(nPatterns, "patterns were learned"))
@@ -133,7 +132,6 @@ function(object)
 {
     if (!is.null(object@metadata$unmatchedPatterns))
         return(object@metadata$unmatchedPatterns)
-
     message("this result was not generated with a call to GWCoGAPS or scCoGAPS")
     return(NULL)
 })
@@ -145,7 +143,6 @@ function(object)
 {
     if (!is.null(object@metadata$clusteredPatterns))
         return(object@metadata$clusteredPatterns)
-
     message("this result was not generated with a call to GWCoGAPS or scCoGAPS")
     return(NULL)
 })
@@ -157,7 +154,6 @@ function(object)
 {
     if (!is.null(object@metadata$CorrToMeanPattern))
         return(object@metadata$CorrToMeanPattern)
-
     message("this result was not generated with a call to GWCoGAPS or scCoGAPS")
     return(NULL)
 })
@@ -169,7 +165,6 @@ function(object)
 {
     if (!is.null(object@metadata$subsets))
         return(object@metadata$subsets)
-
     message("this result was not generated with a call to GWCoGAPS or scCoGAPS")
     return(NULL)
 })
@@ -179,28 +174,14 @@ function(object)
 setMethod("calcZ", signature(object="CogapsResult"),
 function(object, whichMatrix)
 {
-    if (whichMatrix=="featureLoadings")
-    {
-        if (sum(object@featureStdDev==0) > 0)
-        {
-            warning("zeros detected in the standard deviation matrix")
-            object@featureStdDev[object@featureStdDev==0] <- 1e-6
-        }
-        return(object@featureLoadings / object@featureStdDev)
-    }
-    else if (whichMatrix=="sampleFactors")
-    {
-        if (sum(object@sampleStdDev==0) > 0)
-        {
-            warning("zeros detected in the standard deviation matrix")
-            object@sampleStdDev[object@sampleStdDev==0] <- 1e-6
-        }
-        return(object@sampleFactors / object@sampleStdDev)
-    }
-    else
-    {
+    if (!(whichMatrix %in% c("featureLoadings", "sampleFactors")))
         stop("whichMatrix must be either 'featureLoadings' or 'sampleFactors'")
-    }
+    mean <- if (whichMatrix == "sampleFactors") object@sampleFactors else object@featureLoadings
+    stddev <- if (whichMatrix == "sampleFactors") object@factorStdDev else object@loadingStdDev
+    if (sum(stddev == 0) > 0)
+        warning("zeros detected in the standard deviation matrix")
+    stddev[stddev == 0] <- 1e-6
+    return(mean / stddev)    
 })
 
 #' @rdname reconstructGene-methods
@@ -384,11 +365,11 @@ function(object, GStoGenes, numPerm, Pw, nullGenes)
     if (nullGenes)
     {
         ZD <- object@featureLoadings[setdiff(row.names(object@featureLoadings), GStoGenes),] /
-            object@featureStdDev[setdiff(row.names(object@featureLoadings), GStoGenes),]
+            object@loadingStdDev[setdiff(row.names(object@featureLoadings), GStoGenes),]
     }
     else
     {
-        ZD <- object@featureLoadings[GStoGenes,]/object@featureStdDev[GStoGenes,]
+        ZD <- object@featureLoadings[GStoGenes,]/object@loadingStdDev[GStoGenes,]
     }
     outStats <- apply(sweep(ZD,2,gsStat,FUN="*"),1,sum) / (sum(gsStat))
     outStats <- outStats / apply(ZD,1,sum)

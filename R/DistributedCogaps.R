@@ -234,7 +234,7 @@ stitchTogether <- function(result, allParams, sets)
     {
         # combine A matrices, re-order so it matches original data
         Amean <- do.call(rbind, lapply(result, function(x) x@featureLoadings))
-        Asd <- do.call(rbind, lapply(result, function(x) x@featureStdDev))
+        Asd <- do.call(rbind, lapply(result, function(x) x@loadingStdDev))
 
         # copy P matrix - same for all sets
         Pmean <- result[[1]]@sampleFactors
@@ -256,7 +256,7 @@ stitchTogether <- function(result, allParams, sets)
     {
         # combine P matrices, re-order so it matches original data
         Pmean <- do.call(rbind, lapply(result, function(x) x@sampleFactors))
-        Psd <- do.call(rbind, lapply(result, function(x) x@sampleStdDev))
+        Psd <- do.call(rbind, lapply(result, function(x) x@factorStdDev))
 
         # copy A matrix - same for all sets
         Amean <- result[[1]]@featureLoadings

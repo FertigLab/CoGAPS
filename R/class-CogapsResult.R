@@ -1,14 +1,14 @@
 #' CogapsResult
 #' @export
 #'
-#' @slot sampleStdDev std dev of the sampled P matrices
-#' @slot featureStdDev std dev of the sampled A matrices
+#' @slot factorStdDev std dev of the sampled P matrices
+#' @slot loadingStdDev std dev of the sampled A matrices
 #' @description Contains all output from Cogaps run
 #' @importClassesFrom S4Vectors Annotated
 #' @importClassesFrom SingleCellExperiment LinearEmbeddingMatrix
 setClass("CogapsResult", contains="LinearEmbeddingMatrix", slots=c(
-    sampleStdDev = "ANY",   # Psd
-    featureStdDev = "ANY"   # Asd
+    factorStdDev = "ANY",   # Psd
+    loadingStdDev = "ANY"   # Asd
 ))
 
 #' Constructor for CogapsResult
@@ -35,8 +35,8 @@ sampleNames, diagnostics=NULL, ...)
 
     .Object@featureLoadings <- Amean
     .Object@sampleFactors <- Pmean
-    .Object@featureStdDev <- Asd
-    .Object@sampleStdDev <- Psd
+    .Object@loadingStdDev <- Asd
+    .Object@factorStdDev <- Psd
 
     patternNames <- paste("Pattern", 1:ncol(Amean), sep="_")
 
@@ -49,14 +49,14 @@ sampleNames, diagnostics=NULL, ...)
     rownames(.Object@featureLoadings) <- geneNames
     colnames(.Object@featureLoadings) <- patternNames
 
-    rownames(.Object@featureStdDev) <- geneNames
-    colnames(.Object@featureStdDev) <- patternNames
+    rownames(.Object@loadingStdDev) <- geneNames
+    colnames(.Object@loadingStdDev) <- patternNames
 
     rownames(.Object@sampleFactors) <- sampleNames
     colnames(.Object@sampleFactors) <- patternNames
 
-    rownames(.Object@sampleStdDev) <- sampleNames
-    colnames(.Object@sampleStdDev) <- patternNames
+    rownames(.Object@factorStdDev) <- sampleNames
+    colnames(.Object@factorStdDev) <- patternNames
 
     .Object@metadata[["meanChiSq"]] <- meanChiSq
     .Object@metadata <- append(.Object@metadata, diagnostics)
@@ -74,9 +74,9 @@ setValidity("CogapsResult",
             "NA/Inf values in feature matrix"
         if (any(is.na(object@sampleFactors)) | any(object@sampleFactors == Inf) | any(object@sampleFactors == -Inf))
             "NA/Inf values in sample matrix"
-        if (sum(object@featureLoadings < 0) > 0 | sum(object@featureStdDev < 0) > 0)
+        if (sum(object@featureLoadings < 0) > 0 | sum(object@loadingStdDev < 0) > 0)
             "negative values in feature Matrix"
-        if (sum(object@sampleFactors < 0) > 0 | sum(object@sampleStdDev < 0) > 0)
+        if (sum(object@sampleFactors < 0) > 0 | sum(object@factorStdDev < 0) > 0)
             "negative values in sample Matrix"
     }
 )    

@@ -3,9 +3,9 @@ context("CoGAPS")
 no_na_in_result <- function(gapsResult)
 {
     sum(is.na(gapsResult@featureLoadings)) +
-        sum(is.na(gapsResult@featureStdDev)) +
+        sum(is.na(gapsResult@loadingStdDev)) +
         sum(is.na(gapsResult@sampleFactors)) +
-        sum(is.na(gapsResult@sampleStdDev)) == 0
+        sum(is.na(gapsResult@factorStdDev)) == 0
 }
 
 test_that("Valid Top-Level CoGAPS Calls",
@@ -166,8 +166,8 @@ test_that("Valid Top-Level CoGAPS Calls",
     file.remove("temp_params.rds")
     
     expect_true(all(res1@featureLoadings == res2@featureLoadings))
-    expect_true(all(res1@featureStdDev == res2@featureStdDev))
+    expect_true(all(res1@loadingStdDev == res2@loadingStdDev))
     expect_true(all(res1@sampleFactors == res2@sampleFactors))
-    expect_true(all(res1@sampleStdDev== res2@sampleStdDev))
+    expect_true(all(res1@factorStdDev== res2@factorStdDev))
 })
 
