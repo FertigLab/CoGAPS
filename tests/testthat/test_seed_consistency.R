@@ -13,9 +13,9 @@ checkCompare <- function(comp)
 resultsEqual <- function(res1, res2)
 {
     checkCompare(all.equal(res1@featureLoadings, res2@featureLoadings, tolerance=0.1)) &
-    checkCompare(all.equal(res1@featureStdDev, res2@featureStdDev, tolerance=0.1)) &
+    checkCompare(all.equal(res1@loadingStdDev, res2@loadingStdDev, tolerance=0.1)) &
     checkCompare(all.equal(res1@sampleFactors, res2@sampleFactors, tolerance=0.1)) &
-    checkCompare(all.equal(res1@sampleStdDev, res2@sampleStdDev, tolerance=0.1))
+    checkCompare(all.equal(res1@factorStdDev, res2@factorStdDev, tolerance=0.1))
     checkCompare(all.equal(res1@metadata$atomsA, res2@metadata$atomsA)) &
     checkCompare(all.equal(res1@metadata$atomsP, res2@metadata$atomsP))
 }

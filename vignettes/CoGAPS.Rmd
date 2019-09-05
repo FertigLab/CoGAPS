@@ -161,7 +161,7 @@ CoGAPS returns a object of the class `CogapsResult` which inherits from `LinearE
 package). CoGAPS stores the lower dimensional representation of the samples 
 (P matrix) in the `sampleFactors` slot and the weight of the features (A matrix)
 in the `featureLoadings` slot. `CogapsResult` also adds two of its own slots -
-`sampleStdDev` and `featureStdDev` which contain the standard deviation across
+`factorStdDev` and `loadingStdDev` which contain the standard deviation across
 sample points for each matrix.
 
 There is also some information in the `metadata` slot such as the original
