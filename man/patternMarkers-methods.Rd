@@ -6,10 +6,10 @@
 \alias{patternMarkers,CogapsResult-method}
 \title{compute pattern markers statistic}
 \usage{
-patternMarkers(object, threshold = "all", lp = NA)
+patternMarkers(object, threshold = "all", lp = NA, axis = 1)
 
 \S4method{patternMarkers}{CogapsResult}(object, threshold = "all",
-  lp = NA)
+  lp = NA, axis = 1)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}
@@ -20,6 +20,9 @@ by the first gene to have a lower ranking, i.e. better fit to, a pattern.}
 
 \item{lp}{a vector of weights for each pattern to be used for finding
 markers. If NA markers for each pattern of the A matrix will be used.}
+
+\item{axis}{either 1 or 2, specifying if pattern markers should be calculated using
+the rows of the data (1) or the columns of the data (2)}
 }
 \value{
 By default a non-overlapping list of genes associated with each
