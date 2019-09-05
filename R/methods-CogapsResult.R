@@ -18,6 +18,34 @@ createCogapsResult <- function(returnList, allParams)
         diagnostics = append(returnList$diagnostics,
             list("params"=allParams$gaps, "version"=utils::packageVersion("CoGAPS")))
     )
+
+    # label snapshots
+    if (allParams$nSnapshots > 0)
+    {
+        freq <- floor(allParams$gaps@nIterations / allParams$nSnapshots)
+        labels <- seq(freq, allParams$gaps@nIterations, freq)
+        if (allParams$snapshotPhase == 'equilibration' | allParams$snapshotPhase == 'all')
+        {
+            for (n in 1:allParams$nSnapshots)
+            {
+                dimnames(res@metadata$equilibrationSnapshotsA[[n]]) <- dimnames(res@featureLoadings)
+                dimnames(res@metadata$equilibrationSnapshotsP[[n]]) <- dimnames(res@sampleFactors)
+            }
+            names(res@metadata$equilibrationSnapshotsA) <- labels
+            names(res@metadata$equilibrationSnapshotsP) <- labels
+        }
+        if (allParams$snapshotPhase == 'sampling' | allParams$snapshotPhase == 'all')
+        {
+            for (n in 1:allParams$nSnapshots)
+            {
+                dimnames(res@metadata$samplingSnapshotsA[[n]]) <- dimnames(res@featureLoadings)
+                dimnames(res@metadata$samplingSnapshotsP[[n]]) <- dimnames(res@sampleFactors)
+            }
+            names(res@metadata$samplingSnapshotsA) <- labels
+            names(res@metadata$samplingSnapshotsP) <- labels
+        }
+    }        
+    
     validObject(res)
     return(res)
 }
@@ -232,16 +260,16 @@ function(object, data, uncertainty)
 
 patternMarkersCalculation <- function(mat, threshold, lp)
 {
+    if (!(threshold %in% c("cut", "all")))
+        stop("invalid thresold argument")
+    if (!is.na(lp) & length(lp) != ncol(mat))
+        stop("lp length must equal the number of patterns")
+    
     nMeasurements <- nrow(mat)
     nPatterns <- ncol(mat)
     rowMax <- t(apply(mat, 1, function(x) x / max(x)))
-    
     if (!is.na(lp))
     {
-        if (length(lp) != nPatterns)
-        {
-            warning("lp length must equal the number of columns of the Amatrix")
-        }
         sstat <- apply(rowMax, 1, function(x) sqrt(t(x-lp) %*% (x-lp)))
         ssranks <- rank(sstat)
         ssgenes.th <- names(sort(sstat,decreasing=FALSE,na.last=TRUE))
@@ -275,10 +303,6 @@ patternMarkersCalculation <- function(mat, threshold, lp)
             }
             ssgenes.th <- lapply(1:max(sort(unique(pIndx))), function(x)
                 ssgenes[which(ssgenes[,x] %in% gBYp[[x]]),x])
-        }
-        else
-        {
-            stop("invalid thresold argument")
         }
     }
     return(list("PatternMarkers"=ssgenes.th, "PatternRanks"=ssranks,

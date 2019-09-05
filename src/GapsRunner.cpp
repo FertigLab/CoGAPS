@@ -221,7 +221,7 @@ const GapsStatistics &stats, const GapsRng &rng, char phase, unsigned iter)
         Archive ar(params.checkpointOutFile, ARCHIVE_WRITE);
         ar << params;
         ar << *randState;
-        ar << ASampler << PSampler << stats << phase << iter << rng;
+        ar << ASampler << PSampler << stats << static_cast<int>(phase) << iter << rng;
         
         // delete backup file
         std::remove((params.checkpointOutFile + ".backup").c_str());
@@ -239,22 +239,24 @@ const GapsStatistics &stats, const GapsRng &rng, char phase, unsigned iter)
 template <class Sampler>
 static void processCheckpoint(GapsParameters &params, Sampler &ASampler,
 Sampler &PSampler, GapsRandomState *randState, GapsStatistics &stats,
-GapsRng &rng, char &phase, unsigned &currentIter)
+GapsRng &rng, GapsAlgorithmPhase &phase, unsigned &currentIter)
 {    
     // check if running from checkpoint, get all saved data
     if (params.useCheckPoint)
     {
+        int iPhase;
         Archive ar(params.checkpointFile, ARCHIVE_READ);
         ar >> params;
         ar >> *randState;
-        ar >> ASampler >> PSampler >> stats >> phase >> currentIter >> rng;
+        ar >> ASampler >> PSampler >> stats >> iPhase >> currentIter >> rng;
+        phase = static_cast<GapsAlgorithmPhase>(iPhase);
     }
 }
 
 template <class Sampler>
 static uint64_t runOnePhase(const GapsParameters &params, Sampler &ASampler,
 Sampler &PSampler, GapsStatistics &stats, const GapsRandomState *randState,
-GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
+GapsRng &rng, bpt::ptime startTime, GapsAlgorithmPhase phase, unsigned &currentIter)
 {
     uint64_t totalUpdates = 0;
     for (; currentIter < params.nIterations; ++currentIter)
@@ -264,7 +266,7 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
             rng, phase, currentIter);
         
         // set annealing temperature in Equilibration phase
-        if (phase == 'C')
+        if (phase == GAPS_EQUILIBRATION_PHASE)
         {        
             float temp = static_cast<float>(2 * currentIter)
                 / static_cast<float>(params.nIterations);
@@ -278,16 +280,19 @@ GapsRng &rng, bpt::ptime startTime, char phase, unsigned &currentIter)
         updateSampler(params, ASampler, PSampler, nA, nP);
         totalUpdates += nA + nP;
 
-        if (phase == 'S')
+        if (phase == GAPS_SAMPLING_PHASE)
         {
             stats.update(ASampler, PSampler);
             if (params.takePumpSamples)
             {
                 stats.updatePump(ASampler);
             }
+        }
+        if (params.snapshotPhase == phase || params.snapshotPhase == GAPS_ALL_PHASES)
+        {
             if (params.snapshotFrequency > 0 && ((currentIter + 1) % params.snapshotFrequency) == 0)
             {
-                stats.takeSnapshot();
+                stats.takeSnapshot(phase, ASampler, PSampler);
             }
         }
         displayStatus(params, ASampler, PSampler, startTime, phase,
@@ -405,7 +410,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     // these variables will get overwritten by checkpoint if provided
     GapsStatistics stats(params.nGenes, params.nSamples, params.nPatterns);
     GapsRng rng(randState);
-    char phase = 'C';
+    GapsAlgorithmPhase phase(GAPS_EQUILIBRATION_PHASE);
     unsigned currentIter = 0;
     processCheckpoint(params, ASampler, PSampler, randState, stats, rng, phase, currentIter);
     calculateNumberOfThreads(params);
@@ -420,18 +425,18 @@ const DataType &uncertainty, GapsRandomState *randState)
     bpt::ptime startTime = bpt_now();
 
     // fallthrough through phases, allows algorithm to be resumed in either phase
-    GAPS_ASSERT(phase == 'C' || phase == 'S');
+    GAPS_ASSERT(phase == GAPS_EQUILIBRATION_PHASE || phase == GAPS_SAMPLING_PHASE);
     uint64_t totalUpdates = 0;
     switch (phase)
     {
-        case 'C':
+        case GAPS_EQUILIBRATION_PHASE:
             GAPS_MESSAGE(params.printMessages, "-- Equilibration Phase --\n");
             totalUpdates += runOnePhase(params, ASampler, PSampler, stats, randState,
                 rng, startTime, phase, currentIter);
-            phase = 'S';
+            phase = GAPS_SAMPLING_PHASE;
             currentIter = 0;
         // fall through
-        case 'S':
+        case GAPS_SAMPLING_PHASE:
             GAPS_MESSAGE(params.printMessages, "-- Sampling Phase --\n");
             totalUpdates += runOnePhase(params, ASampler, PSampler, stats, randState,
                 rng, startTime, phase, currentIter);
