@@ -133,13 +133,13 @@ static double estimatedNumUpdates(double current, double total, float nAtoms)
 
 template <class Sampler>
 static double estimatedPercentComplete(const GapsParameters &params,
-const Sampler &ASampler, const Sampler &PSampler, char phase, unsigned iter)
+const Sampler &ASampler, const Sampler &PSampler, GapsAlgorithmPhase phase, unsigned iter)
 {
     double nIter = static_cast<double>(iter);
     double nAtomsA = static_cast<double>(ASampler.nAtoms());
     double nAtomsP = static_cast<double>(PSampler.nAtoms());
     
-    if (phase == 'S')
+    if (phase == GAPS_SAMPLING_PHASE)
     {
         nIter += params.nIterations;
     }
@@ -155,7 +155,7 @@ const Sampler &ASampler, const Sampler &PSampler, char phase, unsigned iter)
 template <class Sampler>
 static void displayStatus(const GapsParameters &params,
 const Sampler &ASampler, const Sampler &PSampler, bpt::ptime startTime,
-char phase, unsigned iter, GapsStatistics &stats)
+GapsAlgorithmPhase phase, unsigned iter, GapsStatistics &stats)
 {
     if (params.outputFrequency > 0 && ((iter + 1) % params.outputFrequency) == 0)
     {
@@ -208,7 +208,7 @@ Sampler &PSampler, unsigned nA, unsigned nP)
 template <class Sampler>
 static void createCheckpoint(const GapsParameters &params,
 Sampler &ASampler, Sampler &PSampler, const GapsRandomState *randState,
-const GapsStatistics &stats, const GapsRng &rng, char phase, unsigned iter)
+const GapsStatistics &stats, const GapsRng &rng, GapsAlgorithmPhase phase, unsigned iter)
 {
     if (params.checkpointInterval > 0 && ((iter + 1) % params.checkpointInterval) == 0
     && !params.subsetData)

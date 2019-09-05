@@ -258,127 +258,73 @@ function(object, data, uncertainty)
         lwid=c(1,10), lhei=c(1, 4, 1.2 ), main="Heatmap of Residuals")
 })
 
-patternMarkersCalculation <- function(mat, threshold, lp)
+unitVector <- function(n, length)
 {
-    if (!(threshold %in% c("cut", "all")))
-        stop("invalid thresold argument")
-    if (!is.na(lp) & length(lp) != ncol(mat))
-        stop("lp length must equal the number of patterns")
-    
-    nMeasurements <- nrow(mat)
-    nPatterns <- ncol(mat)
-    rowMax <- t(apply(mat, 1, function(x) x / max(x)))
-    if (!is.na(lp))
-    {
-        sstat <- apply(rowMax, 1, function(x) sqrt(t(x-lp) %*% (x-lp)))
-        ssranks <- rank(sstat)
-        ssgenes.th <- names(sort(sstat,decreasing=FALSE,na.last=TRUE))
-    }
-    else
-    {
-        # determine which measurements are most associated with each pattern
-        sstat <- matrix(NA, nrow=nMeasurements, ncol=nPatterns, dimnames=dimnames(mat))
-        ssranks <- matrix(NA, nrow=nMeasurements, ncol=nPatterns, dimnames=dimnames(mat))
-        ssgenes <- matrix(NA, nrow=nMeasurements, ncol=nPatterns, dimnames=NULL)
-        for (i in 1:nPatterns)
-        {
-            lp <- rep(0,nPatterns)
-            lp[i] <- 1
-            sstat[,i] <- unlist(apply(rowMax, 1, function(x) sqrt(t(x-lp) %*% (x-lp))))
-            ssranks[,i] <- rank(sstat[,i])
-            ssgenes[,i] <- names(sort(sstat[,i], decreasing=FALSE, na.last=TRUE))
-        }
-        if (threshold=="cut")
-        {
-            geneThresh <- sapply(1:nPatterns, function(x) min(which(ssranks[ssgenes[,x],x] > apply(ssranks[ssgenes[,x],],1,min))))
-            ssgenes.th <- sapply(1:nPatterns, function(x) ssgenes[1:geneThresh[x],x])
-        }
-        else if (threshold=="all")
-        {
-            pIndx <- unlist(apply(sstat, 1, which.min))
-            gBYp <- list()
-            for (i in sort(unique(pIndx)))
-            {
-                gBYp[[i]] <- sapply(strsplit(names(pIndx[pIndx==i]),"[.]"),function(x) x[[1]][1])
-            }
-            ssgenes.th <- lapply(1:max(sort(unique(pIndx))), function(x)
-                ssgenes[which(ssgenes[,x] %in% gBYp[[x]]),x])
-        }
-    }
-    return(list("PatternMarkers"=ssgenes.th, "PatternRanks"=ssranks,
-        "PatternMarkerScores"=sstat))       
+    vec <- rep(0, length)
+    vec[n] <- 1
+    return(vec)
 }
 
 #' @rdname patternMarkers-methods
 #' @aliases patternMarkers
 setMethod("patternMarkers", signature(object="CogapsResult"),
-function(object, threshold, lp)
+function(object, threshold, lp, axis)
 {
-    patternMarkersCalculation(object@featureLoadings, threshold, lp)
-})
-
-#' @rdname amplitudeMarkers-methods
-#' @aliases amplitudeMarkers
-setMethod("amplitudeMarkers", signature(object="CogapsResult"),
-function(object, threshold, lp)
-{
-    patternMarkersCalculation(object@sampleFactors, threshold, lp)
-})
-
-#' heatmap of original data clustered by pattern markers statistic
-#' @export
-#' @docType methods
-#' @rdname plotPatternMarkers-methods
-#'
-#' @param object an object of type CogapsResult
-#' @param data the original data as a matrix
-#' @param patternPalette a vector indicating what color should be used
-#' for each pattern
-#' @param sampleNames names of the samples to use for labeling 
-#' @param samplePalette  a vector indicating what color should be used
-#' for each sample
-#' @param colDenogram logical indicating whether to display sample denogram
-#' @param heatmapCol pallelet giving color scheme for heatmap
-#' @param scale character indicating if the values should be centered and scaled
-#' in either the row direction or the column direction, or none. The
-#' default is "row". 
-#' @param ... additional graphical parameters to be passed to \code{heatmap.2}
-#' @return heatmap of the \code{data} values for the \code{patternMarkers}
-#' @seealso  \code{\link{heatmap.2}}
-#' @importFrom gplots bluered
-#' @importFrom gplots heatmap.2
-#' @importFrom stats hclust as.dist cor
-plotPatternMarkers <- function(object, data, patternPalette, sampleNames,
-samplePalette=NULL, heatmapCol=bluered, colDenogram=TRUE, scale="row", ...)
-{
-    if (is.null(samplePalette))
-        samplePalette <- rep("black", ncol(data))
-
-    ### coloring of genes
-    patternCols <- rep(NA, length(unlist(patternMarkers)))
-    names(patternCols) <- unlist(patternMarkers)
-    for (i in 1:length(patternMarkers))
+    ## check inputs to the function
+    if (!(threshold %in% c("cut", "all")))
+        stop("threshold must be either 'cut' or 'all'")
+    if (!is.na(lp) & length(lp) != ncol(object@featureLoadings))
+        stop("lp length must equal the number of patterns")
+    if (!(axis %in% 1:2))
+        stop("axis must be either 1 or 2")
+    ## need to scale each row of the matrix of interest so that the maximum is 1
+    resultMatrix <- if (axis == 1) object@featureLoadings else object@sampleFactors
+    normedMatrix <- t(apply(resultMatrix, 1, function(row) row / max(row)))
+    ## handle the case where a custom linear combination of patterns was passed in
+    if (!is.na(lp))
     {
-        patternCols[patternMarkers[[i]]] <- patternPalette[i]
+        markerScores <- apply(normedMatrix, 1, function(row) sqrt(sum((row-lp)^2)))
+        markersByPattern <- names(sort(markerScores, decreasing=FALSE, na.last=TRUE))
+        return(list(
+            "PatternMarkers"=markersByPattern,
+            "PatternMarkerRanks"=rank(markerScores),
+            "PatternMarkerScores"=markerScores
+        ))
     }
-
-    gplots::heatmap.2(as.matrix(data[unlist(patternMarkers),],...),
-        symkey=FALSE,
-        symm=FALSE, 
-        scale=scale,
-        col=heatmapCol,
-        distfun=function(x) as.dist((1-cor(t(x)))/2),
-        hclustfun=function(x) stats::hclust(x,method="average"),
-        Rowv=FALSE,
-        Colv=colDenogram,
-        trace='none',
-        RowSideColors = as.character(patternCols[unlist(patternMarkers)]),
-        labCol= sampleNames,
-        cexCol=0.8,
-        ColSideColors=as.character(samplePalette),
-        rowsep=cumsum(sapply(patternMarkers,length))
+    ## default pattern marker calculation, each pattern has unit weight
+    markerScores <- sapply(1:ncol(normedMatrix), function(patternIndex)
+        apply(normedMatrix, 1, function(row)
+        {
+            lp <- unitVector(patternIndex, ncol(normedMatrix))
+            return(sqrt(sum((row-lp)^2)))
+        })
     )
-}
+    markerRanks <- apply(markerScores, 2, rank)
+    colnames(markerScores) <- colnames(markerRanks) <- colnames(normedMatrix)
+    ## keep only a subset of markers for each pattern depending on the type of threshold
+    if (threshold == "cut") # all markers which achieve minimum rank
+    {
+        rankCutoff <- sapply(1:ncol(markerRanks), function(patternIndex)
+        {
+            patternRank <- markerRanks[,patternIndex]
+            return(max(patternRank[patternRank == apply(markerRanks, 1, min)]))
+        })
+        markersByPattern <- lapply(1:ncol(markerRanks), function(patternIndex)
+            rownames(markerRanks)[markerRanks[,patternIndex] <= rankCutoff[patternIndex]])
+        names(markersByPattern) <- colnames(markerRanks)
+    }
+    else if (threshold == "all") # only the markers with the lowest scores
+    {
+        patternsByMarker <- colnames(markerScores)[apply(markerScores, 1, which.min)]
+        markersByPattern <- sapply(colnames(markerScores), USE.NAMES=TRUE, simplify=FALSE,
+            function(pattern) rownames(markerScores)[which(patternsByMarker==pattern)])
+    }
+    return(list(
+        "PatternMarkers"=markersByPattern,
+        "PatternMarkerRanks"=markerRanks,
+        "PatternMarkerScores"=markerScores
+    ))
+})
 
 #' @rdname calcCoGAPSStat-methods
 #' @aliases calcCoGAPSStat
@@ -394,20 +340,18 @@ function(object, sets, whichMatrix, numPerm, ...)
         stop("sets must be a list of either measurements or samples")
     ## do a permutation test
     zMatrix <- calcZ(object, whichMatrix)
-    pvalUpReg <- sapply(sets,
-        function(thisSet)
+    pvalUpReg <- sapply(sets, function(thisSet)
+    {
+        lessThanCount <- rep(0, ncol(zMatrix))
+        actualZScore <- colMeans(zMatrix[rownames(zMatrix) %in% thisSet,])
+        for (n in 1:numPerm)
         {
-            numValues <- length(thisSet)
-            lessThanCount <- rep(0, ncol(zMatrix))
-            actualZScore <- colMeans(zMatrix[rownames(zMatrix) %in% thisSet,])
-            for (n in 1:numPerm)
-            {
-                permutedIndices <- sample(1:nrow(zMatrix), size=numValues, replace=FALSE)
-                permutedZScore <- colMeans(zMatrix[permutedIndices,])
-                lessThanCount <- lessThanCount + (actualZScore < permutedZScore)
-            }
-            return(lessThanCount / numPerm)
-        })
+            permutedIndices <- sample(1:nrow(zMatrix), size=length(thisSet), replace=FALSE)
+            permutedZScore <- colMeans(zMatrix[permutedIndices,])
+            lessThanCount <- lessThanCount + (actualZScore < permutedZScore)
+        }
+        return(lessThanCount / numPerm)
+    })
     ## calculate other quantities of interest, return a list
     pvalDownReg <- 1 - pvalUpReg # this is techinically >=, but == should rarely happen
     activityEstimate <- 1 - 2 * pvalUpReg
@@ -482,4 +426,57 @@ function(object, GStoGenes, numPerm, Pw, PwNull)
     return(finalStats)
 })
 
+#' heatmap of original data clustered by pattern markers statistic
+#' @export
+#' @docType methods
+#' @rdname plotPatternMarkers-methods
+#'
+#' @param object an object of type CogapsResult
+#' @param data the original data as a matrix
+#' @param patternPalette a vector indicating what color should be used
+#' for each pattern
+#' @param sampleNames names of the samples to use for labeling 
+#' @param samplePalette  a vector indicating what color should be used
+#' for each sample
+#' @param colDenogram logical indicating whether to display sample denogram
+#' @param heatmapCol pallelet giving color scheme for heatmap
+#' @param scale character indicating if the values should be centered and scaled
+#' in either the row direction or the column direction, or none. The
+#' default is "row". 
+#' @param ... additional graphical parameters to be passed to \code{heatmap.2}
+#' @return heatmap of the \code{data} values for the \code{patternMarkers}
+#' @seealso  \code{\link{heatmap.2}}
+#' @importFrom gplots bluered
+#' @importFrom gplots heatmap.2
+#' @importFrom stats hclust as.dist cor
+plotPatternMarkers <- function(object, data, patternPalette, sampleNames,
+samplePalette=NULL, heatmapCol=bluered, colDenogram=TRUE, scale="row", ...)
+{
+    if (is.null(samplePalette))
+        samplePalette <- rep("black", ncol(data))
 
+    ### coloring of genes
+    patternCols <- rep(NA, length(unlist(patternMarkers)))
+    names(patternCols) <- unlist(patternMarkers)
+    for (i in 1:length(patternMarkers))
+    {
+        patternCols[patternMarkers[[i]]] <- patternPalette[i]
+    }
+
+    gplots::heatmap.2(as.matrix(data[unlist(patternMarkers),],...),
+        symkey=FALSE,
+        symm=FALSE, 
+        scale=scale,
+        col=heatmapCol,
+        distfun=function(x) as.dist((1-cor(t(x)))/2),
+        hclustfun=function(x) stats::hclust(x,method="average"),
+        Rowv=FALSE,
+        Colv=colDenogram,
+        trace='none',
+        RowSideColors = as.character(patternCols[unlist(patternMarkers)]),
+        labCol= sampleNames,
+        cexCol=0.8,
+        ColSideColors=as.character(samplePalette),
+        rowsep=cumsum(sapply(patternMarkers,length))
+    )
+}
