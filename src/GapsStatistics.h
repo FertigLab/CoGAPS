@@ -9,9 +9,9 @@
 #include "data_structures/Matrix.h"
 #include "utils/GapsAssert.h"
 
-class Archive;
-
 #define GAPS_SQ(x) ((x) * (x))
+
+class Archive;
 
 class GapsStatistics
 {
@@ -21,6 +21,8 @@ public:
     void update(const DataModel &AModel, const DataModel &PModel);
     template <class DataModel>
     void updatePump(const DataModel &AModel);
+    template <class DataModel>
+    void takeSnapshot(GapsAlgorithmPhase whichPhase, const DataModel &AModel, const DataModel &PModel);
     Matrix Amean() const;
     Matrix Pmean() const;
     Matrix Asd() const;
@@ -33,8 +35,8 @@ public:
     std::vector<unsigned> atomHistory(char m) const;
     float meanChiSq(const DenseNormalModel &model) const;
     float meanChiSq(const SparseNormalModel &model) const;
-    void takeSnapshot();
-    const std::vector<Matrix>& getSnapshots(char whichMatrix) const;
+    const std::vector<Matrix>& getEquilibrationSnapshots(char whichMatrix) const;
+    const std::vector<Matrix>& getSamplingSnapshots(char whichMatrix) const;
     friend Archive& operator<<(Archive &ar, const GapsStatistics &stat);
     friend Archive& operator>>(Archive &ar, GapsStatistics &stat);
 private:
@@ -43,8 +45,10 @@ private:
     Matrix mPMeanMatrix;
     Matrix mPStdMatrix;
     Matrix mPumpMatrix;
-    std::vector<Matrix> mSnapshotsA;
-    std::vector<Matrix> mSnapshotsP;
+    std::vector<Matrix> mEquilibrationSnapshotsA;
+    std::vector<Matrix> mEquilibrationSnapshotsP;
+    std::vector<Matrix> mSamplingSnapshotsA;
+    std::vector<Matrix> mSamplingSnapshotsP;
     std::vector<float> mChisqHistory;
     std::vector<unsigned> mAtomHistoryA;
     std::vector<unsigned> mAtomHistoryP;
@@ -140,4 +144,20 @@ void GapsStatistics::update(const DataModel &AModel, const DataModel &PModel)
     }
 }
 
-#endif
+template <class DataModel>
+void GapsStatistics::takeSnapshot(GapsAlgorithmPhase whichPhase, const DataModel &AModel,
+const DataModel &PModel)
+{
+    if (whichPhase == GAPS_EQUILIBRATION_PHASE)
+    {
+        mEquilibrationSnapshotsA.push_back(AModel.mMatrix.getMatrix());
+        mEquilibrationSnapshotsP.push_back(PModel.mMatrix.getMatrix());
+    }
+    else if (whichPhase == GAPS_SAMPLING_PHASE)
+    {
+        mSamplingSnapshotsA.push_back(AModel.mMatrix.getMatrix());
+        mSamplingSnapshotsP.push_back(PModel.mMatrix.getMatrix());
+    }
+}
+
+#endif // __COGAPS_GAPS_STATISTICS_H__

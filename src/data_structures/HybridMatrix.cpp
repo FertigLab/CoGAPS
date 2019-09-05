@@ -53,6 +53,19 @@ const HybridVector& HybridMatrix::getCol(unsigned n) const
     return mCols[n];
 }
 
+Matrix HybridMatrix::getMatrix() const
+{
+    Matrix mat(mNumRows, mNumCols);
+    for (unsigned i = 0; i < mat.nRow(); ++i)
+    {
+        for (unsigned j = 0; j < mat.nCol(); ++j)
+        {
+            mat(i,j) = this->operator()(i,j);
+        }
+    }
+    return mat;
+}
+
 void HybridMatrix::operator=(const Matrix &mat)
 {
     GAPS_ASSERT(mNumRows == mat.nRow());

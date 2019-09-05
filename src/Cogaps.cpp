@@ -109,6 +109,17 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
         params.snapshotFrequency = params.nIterations / nSnapshots;
     }
 
+    // determine which phase to take snapshots in
+    std::string phase = Rcpp::as<std::string>(allParams["snapshotPhase"]);
+    if (phase == "equilibration")
+    {
+        params.snapshotPhase = GAPS_EQUILIBRATION_PHASE;
+    }
+    else if (phase == "sampling")
+    {
+        params.snapshotPhase = GAPS_SAMPLING_PHASE;
+    }
+
     // check if using fixed matrix
     params.whichMatrixFixed = Rcpp::as<char>(gapsParams.slot("whichMatrixFixed"));
     if (params.whichMatrixFixed != 'N')
@@ -168,8 +179,10 @@ const DataType &uncertainty)
             Rcpp::Named("averageQueueLengthP") = result.averageQueueLengthP,
             Rcpp::Named("totalUpdates") = result.totalUpdates,
             Rcpp::Named("totalRunningTime") = result.totalRunningTime,
-            Rcpp::Named("snapshotsA") = createListOfRMatrices(result.snapshotsA),
-            Rcpp::Named("snapshotsP") = createListOfRMatrices(result.snapshotsP)
+            Rcpp::Named("equilibrationSnapshotsA") = createListOfRMatrices(result.equilibrationSnapshotsA),
+            Rcpp::Named("equilibrationSnapshotsP") = createListOfRMatrices(result.equilibrationSnapshotsP),
+            Rcpp::Named("samplingSnapshotsA") = createListOfRMatrices(result.samplingSnapshotsA),
+            Rcpp::Named("samplingSnapshotsP") = createListOfRMatrices(result.samplingSnapshotsP)
         )
     );
 }

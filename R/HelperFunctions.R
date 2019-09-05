@@ -223,6 +223,8 @@ checkInputs <- function(data, uncertainty, allParams)
         stop("must use default uncertainty when enabling sparseOptimization")
     if (!is.null(allParams$checkpointInFile) & !CoGAPS::checkpointsEnabled())
         stop("CoGAPS was built with checkpoints disabled")
+    if (!(allParams$snapshotPhase %in% c('equilibration', 'sampling', 'all')))
+        stop("snapshotPhase must be either equilibration, sampling, or all")
     if (allParams$nSnapshots > 0)
         warning("Snapshots slow down computation and should only be used for testing")
 

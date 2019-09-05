@@ -26,6 +26,7 @@ public:
     float operator()(unsigned i, unsigned j) const;
     const Vector& getRow(unsigned n) const;
     const HybridVector& getCol(unsigned n) const;
+    Matrix getMatrix() const;
     void operator=(const Matrix &mat);
     friend Archive& operator<<(Archive &ar, const HybridMatrix &vec);
     friend Archive& operator>>(Archive &ar, HybridMatrix &vec);

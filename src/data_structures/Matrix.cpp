@@ -174,6 +174,11 @@ bool Matrix::empty() const
     return mNumRows == 0;
 }
 
+Matrix Matrix::getMatrix() const
+{
+    return *this;
+}
+
 Archive& operator<<(Archive &ar, const Matrix &mat)
 {
     ar << mat.mNumRows << mat.mNumCols;

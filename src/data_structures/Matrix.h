@@ -26,6 +26,7 @@ public:
     Vector& getCol(unsigned col);
     const Vector& getCol(unsigned col) const;
     bool empty() const;
+    Matrix getMatrix() const;
     friend Archive& operator<<(Archive &ar, const Matrix &mat);
     friend Archive& operator>>(Archive &ar, Matrix &mat);
 private:

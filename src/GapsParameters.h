@@ -15,6 +15,13 @@ enum PumpThreshold
     PUMP_CUT=2
 };
 
+enum GapsAlgorithmPhase
+{
+    GAPS_EQUILIBRATION_PHASE=1,
+    GAPS_SAMPLING_PHASE=2,
+    GAPS_ALL_PHASES=3,
+};
+
 struct GapsParameters
 {
 public:
@@ -42,6 +49,7 @@ public:
     float maxGibbsMassA;
     float maxGibbsMassP;
     PumpThreshold pumpThreshold;
+    GapsAlgorithmPhase snapshotPhase;
     bool useFixedPatterns;
     bool subsetData;
     bool useCheckPoint;
@@ -99,6 +107,7 @@ useSparseOptimization(false),
 takePumpSamples(false),
 asynchronousUpdates(true),
 whichMatrixFixed('N'),
+snapshotPhase(GAPS_ALL_PHASES),
 workerID(1),
 runningDistributed(false)
 {

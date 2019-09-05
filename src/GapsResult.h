@@ -20,8 +20,10 @@ struct GapsResult
     Matrix Psd;
     Matrix pumpMatrix;
     Matrix meanPatternAssignment;
-    std::vector<Matrix> snapshotsA;
-    std::vector<Matrix> snapshotsP;
+    std::vector<Matrix> equilibrationSnapshotsA;
+    std::vector<Matrix> equilibrationSnapshotsP;
+    std::vector<Matrix> samplingSnapshotsA;
+    std::vector<Matrix> samplingSnapshotsP;
     std::vector<float> chisqHistory;
     std::vector<unsigned> atomHistoryA;
     std::vector<unsigned> atomHistoryP;

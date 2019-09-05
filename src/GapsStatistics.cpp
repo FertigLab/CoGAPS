@@ -151,15 +151,14 @@ std::vector<unsigned> GapsStatistics::atomHistory(char m) const
     return m == 'A' ? mAtomHistoryA : mAtomHistoryP;
 }
 
-void GapsStatistics::takeSnapshot()
+const std::vector<Matrix>& GapsStatistics::getEquilibrationSnapshots(char whichMatrix) const
 {
-    mSnapshotsA.push_back(Amean());
-    mSnapshotsP.push_back(Pmean());
+    return (whichMatrix == 'A') ? mEquilibrationSnapshotsA : mEquilibrationSnapshotsP;
 }
 
-const std::vector<Matrix>& GapsStatistics::getSnapshots(char whichMatrix) const
+const std::vector<Matrix>& GapsStatistics::getSamplingSnapshots(char whichMatrix) const
 {
-    return (whichMatrix == 'A') ? mSnapshotsA : mSnapshotsP;
+    return (whichMatrix == 'A') ? mSamplingSnapshotsA : mSamplingSnapshotsP;
 }
 
 Archive& operator<<(Archive &ar, const GapsStatistics &stat)

@@ -14,7 +14,11 @@ static std::string to_string(T a)
 GapsResult::GapsResult(const GapsStatistics &stat)
     :
 Amean(stat.Amean()), Asd(stat.Asd()), Pmean(stat.Pmean()),
-Psd(stat.Psd()), snapshotsA(stat.getSnapshots('A')), snapshotsP(stat.getSnapshots('P')),
+Psd(stat.Psd()),
+equilibrationSnapshotsA(stat.getEquilibrationSnapshots('A')),
+equilibrationSnapshotsP(stat.getEquilibrationSnapshots('P')),
+samplingSnapshotsA(stat.getSamplingSnapshots('A')),
+samplingSnapshotsP(stat.getSamplingSnapshots('P')),
 chisqHistory(stat.chisqHistory()), atomHistoryA(stat.atomHistory('A')),
 atomHistoryP(stat.atomHistory('P')), seed(0), meanChiSq(0.f)
 {}
