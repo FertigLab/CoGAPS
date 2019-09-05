@@ -93,8 +93,8 @@ file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
 # load data
 data(GIST)
 
-# run CoGAPS
-CoGAPS(GIST.matrix)
+# run CoGAPS (low number of iterations since this is just an example)
+CoGAPS(GIST.matrix, nIterations=1000)
 ```
 
 While CoGAPS is running it periodically prints status messages. For example,
@@ -138,7 +138,7 @@ Once we've created the parameters object we can pass it along with our data to
 
 ```{r}
 # run CoGAPS with specified model parameters
-CoGAPS(GIST.matrix, params)
+CoGAPS(GIST.matrix, params, nIterations=1000)
 ```
 
 ### Run Configuration Options
@@ -149,7 +149,7 @@ directly to `CoGAPS` that control things like displaying the status of the run.
 
 ```{r}
 # run CoGAPS with specified output frequency
-CoGAPS(GIST.matrix, params, outputFrequency=250)
+CoGAPS(GIST.matrix, params, nIterations=1000, outputFrequency=250)
 ```
 
 There are several other arguments that are passed directly to `CoGAPS` which
@@ -171,7 +171,7 @@ provides these functions for querying the metadata in a safe manner:
 
 ```{r}
 # run CoGAPS
-result <- CoGAPS(GIST.matrix, params, messages=FALSE)
+result <- CoGAPS(GIST.matrix, params, messages=FALSE, nIterations=1000)
 
 # get the mean ChiSq statistic over all samples
 getMeanChiSq(result)
@@ -275,16 +275,16 @@ The following calls are equivalent:
 GISTCsvPath <- system.file("extdata/GIST.csv", package="CoGAPS")
 
 # genome-wide CoGAPS
-GWCoGAPS(GISTCsvPath, params, messages=FALSE)
+GWCoGAPS(GISTCsvPath, params, messages=FALSE, nIterations=1000)
 
 # genome-wide CoGAPS
-CoGAPS(GISTCsvPath, params, distributed="genome-wide", messages=FALSE)
+CoGAPS(GISTCsvPath, params, distributed="genome-wide", messages=FALSE, nIterations=1000)
 
 # single-cell CoGAPS
-scCoGAPS(GISTCsvPath, params, messages=FALSE, transposeData=TRUE)
+scCoGAPS(GISTCsvPath, params, messages=FALSE, transposeData=TRUE, nIterations=1000)
 
 # single-cell CoGAPS
-CoGAPS(GISTCsvPath, params, distributed="single-cell", singleCell=TRUE, messages=FALSE, transposeData=TRUE)
+CoGAPS(GISTCsvPath, params, distributed="single-cell", singleCell=TRUE, messages=FALSE, transposeData=TRUE, nIterations=1000)
 ```
 
 Notice that we also set the parameter `singleCell=TRUE`. This makes some 
@@ -343,7 +343,7 @@ of data you may be able to provide better information.
 ```{r}
 # run CoGAPS with custom uncertainty
 data(GIST)
-result <- CoGAPS(GIST.matrix, params, uncertainty=GIST.uncertainty, messages=FALSE)
+result <- CoGAPS(GIST.matrix, params, uncertainty=GIST.uncertainty, messages=FALSE, nIterations=1000)
 ```
 
 ## GWCoGAPS/scCoGAPS
@@ -359,7 +359,7 @@ different choices for the backend.
 
 ```{r}
 # run CoGAPS with serial backend
-scCoGAPS(GISTCsvPath, params, BPPARAM=BiocParallel::SerialParam(), messages=FALSE, transposeData=TRUE)
+scCoGAPS(GISTCsvPath, params, BPPARAM=BiocParallel::SerialParam(), messages=FALSE, transposeData=TRUE, nIterations=1000)
 ```
 
 ### Methods of Subsetting Data
@@ -377,7 +377,7 @@ w <- c(1,1,2,2,1)
 names(w) <- letters[1:5]
 params <- new("CogapsParams")
 params <- setAnnotationWeights(params, annotation=anno, weights=w)
-result <- GWCoGAPS(GISTCsvPath, params, messages=FALSE)
+result <- GWCoGAPS(GISTCsvPath, params, messages=FALSE, nIterations=1000)
 ```
 
 Finally, the user can set `explicitSets` which is a list of character or 
@@ -389,7 +389,7 @@ into each set. Make sure to set `nSets` to the correct value before passing `exp
 sets <- list(1:225, 226:450, 451:675, 676:900)
 params <- new("CogapsParams")
 params <- setDistributedParams(params, nSets=length(sets))
-result <- GWCoGAPS(GISTCsvPath, params, explicitSets=sets, messages=FALSE)
+result <- GWCoGAPS(GISTCsvPath, params, explicitSets=sets, messages=FALSE, nIterations=1000)
 ```
 
 ### Additional Return Information
@@ -403,7 +403,7 @@ stitches the results from each subset back together.
 params <- new("CogapsParams")
 params <- setParam(params, "nPatterns", 3)
 params <- setDistributedParams(params, nSets=2)
-result <- GWCoGAPS(GISTCsvPath, params, messages=FALSE)
+result <- GWCoGAPS(GISTCsvPath, params, messages=FALSE, nIterations=1000)
 
 # get the unmatched patterns from each subset
 getUnmatchedPatterns(result)
@@ -430,7 +430,7 @@ along with the original parameters for the GWCoGAPS/scCoGAPS run.
 
 ```{r}
 # initial run
-result <- GWCoGAPS(GISTCsvPath, messages=FALSE)
+result <- GWCoGAPS(GISTCsvPath, messages=FALSE, nIterations=1000)
 
 # custom matching process (just take matrix from first subset as a dummy)
 consensusMatrix <- getUnmatchedPatterns(result)[[1]]
@@ -438,7 +438,7 @@ consensusMatrix <- getUnmatchedPatterns(result)[[1]]
 # run with our custom matched patterns matrix
 params <- CogapsParams()
 params <- setFixedPatterns(params, consensusMatrix, 'P')
-GWCoGAPS(GISTCsvPath, params, explicitSets=getSubsets(result))
+GWCoGAPS(GISTCsvPath, params, explicitSets=getSubsets(result), nIterations=1000)
 ```
 
 # sessionInfo()
