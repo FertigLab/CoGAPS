@@ -66,6 +66,10 @@ compiledWithOpenMPSupport <- function()
 #' is not neccesary when using the default parallel methods (i.e. distributed
 #' CoGAPS) but only when the user is manually calling CoGAPS in parallel
 #' @param asynchronousUpdates enable asynchronous updating which allows for multi-threaded runs
+#' @param nSnapshots how many snapshots to take in each phase, setting this to 0 disables
+#' snapshots
+#' @param snapshotPhase which phase to take snapsjots in e.g. "equilibration", "sampling",
+#' "all"
 #' @param ... allows for overwriting parameters in params
 #' @return CogapsResult object
 #' @examples

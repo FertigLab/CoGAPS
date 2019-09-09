@@ -315,7 +315,7 @@ function(object, sets, whichMatrix, numPerm, ...)
 {
     ## do this for backwards compatibility
     if (!is.null(list(...)$GStoGenes))
-        sets <- GStoGenes
+        sets <- list(...)$GStoGenes
     ## check input arguments
     if (!is(sets, "list"))
         stop("sets must be a list of either measurements or samples")

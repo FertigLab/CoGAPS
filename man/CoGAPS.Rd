@@ -47,6 +47,12 @@ CoGAPS) but only when the user is manually calling CoGAPS in parallel}
 
 \item{asynchronousUpdates}{enable asynchronous updating which allows for multi-threaded runs}
 
+\item{nSnapshots}{how many snapshots to take in each phase, setting this to 0 disables
+snapshots}
+
+\item{snapshotPhase}{which phase to take snapsjots in e.g. "equilibration", "sampling",
+"all"}
+
 \item{...}{allows for overwriting parameters in params}
 }
 \value{
