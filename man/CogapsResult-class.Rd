@@ -10,8 +10,8 @@ Contains all output from Cogaps run
 \section{Slots}{
 
 \describe{
-\item{\code{sampleStdDev}}{std dev of the sampled P matrices}
+\item{\code{factorStdDev}}{std dev of the sampled P matrices}
 
-\item{\code{featureStdDev}}{std dev of the sampled A matrices}
+\item{\code{loadingStdDev}}{std dev of the sampled A matrices}
 }}
 
