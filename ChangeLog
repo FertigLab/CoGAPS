@@ -1,3 +1,10 @@
+version: 3.5.13
+date: 2019-9-9
+author: Tom Sherman <tomsherman159@gmail.com>
+
+    - fixed patternMarkers function, allow axis to be specified
+    - added snapshots functionality
+
 version: 3.5.12
 date: 2019-8-30
 author: Tom Sherman <tomsherman159@gmail.com>
