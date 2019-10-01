@@ -1,0 +1,87 @@
+---
+title: "CoGAPS - Data Input"
+author: "Thomas Sherman"
+date: "`r BiocStyle::doc_date()`"
+bibliography: References.bib
+vignette: >
+    %\VignetteIndexEntry{DataInput}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+output: 
+    BiocStyle::html_document
+---
+
+```{r include=FALSE, cache=FALSE}
+library(CoGAPS)
+```
+
+# Data Input
+
+Whether you are running on a server or your laptop, *CoGAPS* aims to make it easy to run matrix factorization on most types of data. There is support for most default file formats, as well as support for some specific analysis pipelines. If support for a common use case is not built in to the package, we try to document a work around in this vignette.
+
+# Data Formats with Built-In Support
+
+*CoGAPS* comes with support for several file types and R objects. Each is listed below, along with a short description of how *CoGAPS* behaves with the respective data type.
+
+## Comma-Separated Values (csv), Tab-Separated Values (tsv)
+
+Both of these file types are fine for smaller data sets, especially because it allows the gene and sample names to be saved within the data. Row and column names can be provided and data points can be written in scientific notation.
+
+```{r}
+csvDataFile <- system.file("extdata/GIST.csv", package="CoGAPS")
+tsvDataFile <- system.file("extdata/GIST.tsv", package="CoGAPS")
+
+CoGAPS(csvDataFile, nIterations=1000)
+CoGAPS(tsvDataFile, nIterations=1000)
+```
+
+## Matrix Market File Format (mtx)
+
+This file type is great for sparse, single-cell data. It only stores the non-zero elements
+of the data which can significantly reduce file size. One caveat is that row and column names cannot be specified, so the gene and sample names must be passed through the `CogapsParams` object instead. Note that it is always recommended to explicitly pass the gene and sample names since sometimes the results with have the order of the rows and columns shifted (this depends on the particular method being used).
+
+```{r}
+mtxDataFile <- system.file("extdata/GIST.mtx", package="CoGAPS")
+data(GIST)
+geneNames <- rownames(GIST.matrix)
+sampleNames <- colnames(GIST.matrix)
+params <- CogapsParams(geneNames=geneNames, sampleNames=sampleNames)
+CoGAPS(mtxDataFile, params, nIterations=1000)
+```
+
+## GCT File Format
+
+For more information about this file format, see https://software.broadinstitute.org/software/igv/GCT. This is commonly used with GenePattern Notebooks and their associated modules.
+
+```{r}
+gctDataFile <- system.file("extdata/GIST.gct", package="CoGAPS")
+CoGAPS(tsvDataFile, nIterations=1000)
+```
+
+## Serialized R Object (rds)
+
+```{r}
+data(GIST)
+testData <- GIST.matrix
+saveRDS(testData, file="testData.rds")
+CoGAPS("testData.rds", nIterations=1000)
+```
+
+## R class: matrix
+
+```{r}
+data(GIST)
+CoGAPS(GIST.matrix, nIterations=1000)
+```
+
+## R class: data.frame
+
+```{r}
+data(GIST)
+CoGAPS(GIST.data_frame, nIterations=1000)
+```
+
+## R class: SummarizedExperiment
+
+## R class: SingleCellExperiment
+
