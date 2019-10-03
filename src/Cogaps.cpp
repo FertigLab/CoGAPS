@@ -98,7 +98,6 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.alphaP = Rcpp::as<float>(gapsParams.slot("alphaP"));
     params.maxGibbsMassA = Rcpp::as<float>(gapsParams.slot("maxGibbsMassA"));
     params.maxGibbsMassP = Rcpp::as<float>(gapsParams.slot("maxGibbsMassP"));
-    params.singleCell = Rcpp::as<bool>(gapsParams.slot("singleCell"));
     params.useSparseOptimization = Rcpp::as<bool>(gapsParams.slot("sparseOptimization"));
     params.asynchronousUpdates = Rcpp::as<bool>(allParams["asynchronousUpdates"]);
 

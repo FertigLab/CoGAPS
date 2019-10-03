@@ -177,7 +177,6 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
     warning(paste("scCoGAPS is deprecated, use the main function CoGAPS",
         "with the argument: distributed=\"single-cell\""))
     params@distributed <- "single-cell"
-    params@singleCell <- TRUE
     CoGAPS(
         data=data,
         params=params,
