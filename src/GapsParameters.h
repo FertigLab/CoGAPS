@@ -54,7 +54,6 @@ public:
     bool subsetData;
     bool useCheckPoint;
     bool transposeData;
-    bool singleCell;
     bool printMessages;
     bool subsetGenes;
     bool printThreadUsage;
@@ -100,7 +99,6 @@ useFixedPatterns(false),
 subsetData(t_subsetData),
 useCheckPoint(false),
 transposeData(t_transposeData),
-singleCell(false),
 printMessages(true),
 subsetGenes(t_subsetGenes),
 printThreadUsage(true),

@@ -18,7 +18,6 @@ void GapsParameters::print() const
     gaps_printf("outputFrequency: %d\n", outputFrequency);
     gaps_printf("snapshotFrequency: %d\n", snapshotFrequency);
     gaps_printf("\n");
-    gaps_printf("singleCell: %s\n", singleCell ? "TRUE" : "FALSE");
     gaps_printf("useSparseOptimization: %s\n", useSparseOptimization ? "TRUE" : "FALSE");
     gaps_printf("asynchronousUpdates: %s\n", asynchronousUpdates ? "TRUE" : "FALSE");
     gaps_printf("takePumpSamples: %s\n", takePumpSamples ? "TRUE" : "FALSE");
@@ -81,7 +80,7 @@ Archive& operator<<(Archive &ar, const GapsParameters &p)
 {
     ar << p.seed << p.nGenes << p.nSamples << p.nPatterns << p.nIterations
         << p.alphaA << p.alphaP << p.maxGibbsMassA << p.maxGibbsMassP
-        << p.singleCell << p.useSparseOptimization << p.checkpointInterval;
+        << p.useSparseOptimization << p.checkpointInterval;
     return ar;
 }
 
@@ -89,6 +88,6 @@ Archive& operator>>(Archive &ar, GapsParameters &p)
 {
     ar >> p.seed >> p.nGenes >> p.nSamples >> p.nPatterns >> p.nIterations
         >> p.alphaA >> p.alphaP >> p.maxGibbsMassA >> p.maxGibbsMassP
-        >> p.singleCell >> p.useSparseOptimization >> p.checkpointInterval;
+        >> p.useSparseOptimization >> p.checkpointInterval;
     return ar;
 }

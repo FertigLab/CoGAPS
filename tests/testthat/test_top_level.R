@@ -101,7 +101,7 @@ test_that("Valid Top-Level CoGAPS Calls",
     # single-cell CoGAPS
     expect_error(res <- CoGAPS(gistCsvPath, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell",
-        singleCell=TRUE, transposeData=TRUE), NA)
+        transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
 
     expect_equal(nrow(res@featureLoadings), 9)
@@ -111,7 +111,7 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     expect_error(res <- CoGAPS(gistMtxPath, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell",
-        singleCell=TRUE, transposeData=TRUE), NA)
+        transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
 
     expect_equal(nrow(res@featureLoadings), 9)
@@ -155,7 +155,7 @@ test_that("Valid Top-Level CoGAPS Calls",
     # test using RDS file for parameters
     matP <- getSampleFactors(GIST.result)
     params <- CogapsParams(nPatterns=ncol(matP), nIterations=175, seed=42,
-        singleCell=TRUE, sparseOptimization=TRUE, distributed="genome-wide",
+        sparseOptimization=TRUE, distributed="genome-wide",
         explicitSets=list(1:200, 201:400, 401:600, 601:800, 801:1000))
     params <- setDistributedParams(params, nSets=5, cut=ncol(matP) + 1)
     params <- setFixedPatterns(params, matP, "P")
