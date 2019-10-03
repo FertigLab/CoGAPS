@@ -17,6 +17,7 @@ void GapsParameters::print() const
     gaps_printf("printMessages: %s\n", printMessages ? "TRUE" : "FALSE");
     gaps_printf("outputFrequency: %d\n", outputFrequency);
     gaps_printf("snapshotFrequency: %d\n", snapshotFrequency);
+    gaps_printf("annealingProportion: %d\n", annealingProportion);
     gaps_printf("\n");
     gaps_printf("singleCell: %s\n", singleCell ? "TRUE" : "FALSE");
     gaps_printf("useSparseOptimization: %s\n", useSparseOptimization ? "TRUE" : "FALSE");

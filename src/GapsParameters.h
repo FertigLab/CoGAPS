@@ -64,6 +64,7 @@ public:
     char whichMatrixFixed;
     unsigned workerID;
     bool runningDistributed;
+    float annealingProportion;
 private:
     void calculateDataDimensions(const std::string &file);
     void calculateDataDimensions(const Matrix &mat);
@@ -109,7 +110,8 @@ takePumpSamples(false),
 asynchronousUpdates(true),
 whichMatrixFixed('N'),
 workerID(1),
-runningDistributed(false)
+runningDistributed(false),
+annealingProportion(0.5f)
 {
     calculateDataDimensions(data);
 }

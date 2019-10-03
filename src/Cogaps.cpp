@@ -101,6 +101,7 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.singleCell = Rcpp::as<bool>(gapsParams.slot("singleCell"));
     params.useSparseOptimization = Rcpp::as<bool>(gapsParams.slot("sparseOptimization"));
     params.asynchronousUpdates = Rcpp::as<bool>(allParams["asynchronousUpdates"]);
+    params.annealingProportion = Rcpp::as<float>(gapsParams.slot("annealingProportion"));
 
     // calculate snapshot frequency
     int nSnapshots = Rcpp::as<int>(allParams["nSnapshots"]);

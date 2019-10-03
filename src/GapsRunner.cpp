@@ -173,9 +173,9 @@ GapsAlgorithmPhase phase, unsigned iter, GapsStatistics &stats)
             GapsTime elapsedTime(static_cast<unsigned>(diff.total_seconds()));
             GapsTime totalTime(static_cast<unsigned>(diff.total_seconds() / perComplete));
 
-            gaps_printf("%d of %d, Atoms: %d(A), %d(P), ChiSq: %.0f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
-                iter + 1, params.nIterations, nA, nP, cs, elapsedTime.hours,
-                elapsedTime.minutes, elapsedTime.seconds, totalTime.hours,
+            gaps_printf("%d of %d, Atoms: %d(A), %d(P), ChiSq: %.0f, Temp: %.2f, Time: %02d:%02d:%02d / %02d:%02d:%02d\n",
+                iter + 1, params.nIterations, nA, nP, cs, ASampler.annealingTemp(),
+                elapsedTime.hours, elapsedTime.minutes, elapsedTime.seconds, totalTime.hours,
                 totalTime.minutes, totalTime.seconds);
             gaps_flush();
         }
@@ -267,9 +267,10 @@ GapsRng &rng, bpt::ptime startTime, GapsAlgorithmPhase phase, unsigned &currentI
         
         // set annealing temperature in Equilibration phase
         if (phase == GAPS_EQUILIBRATION_PHASE)
-        {        
-            float temp = static_cast<float>(2 * currentIter)
-                / static_cast<float>(params.nIterations);
+        {
+            float totalIterations = static_cast<float>(params.nIterations);
+            float cutoff = params.annealingProportion * totalIterations;
+            float temp = static_cast<float>(currentIter) / cutoff;
             ASampler.setAnnealingTemp(gaps::min(1.f, temp));
             PSampler.setAnnealingTemp(gaps::min(1.f, temp));
         }
