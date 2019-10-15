@@ -1,6 +1,3 @@
-RHDF5_LIBS=$(shell echo 'Rhdf5lib::pkgconfig("PKG_CXX_LIBS")'|\
-    "${R_HOME}/bin/R" --vanilla --slave)
-
 PKG_CPPFLAGS = -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__ -Iinclude -DGAPS_DISABLE_CHECKPOINTS
 PKG_CXXFLAGS = -march=native
 PKG_LIBS =
