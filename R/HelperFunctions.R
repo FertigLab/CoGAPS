@@ -165,7 +165,8 @@ startupMessage <- function(data, allParams)
 parseExtraParams <- function(allParams, extraParams)
 {
     # parse direct params
-    for (s in slotNames(allParams$gaps))
+    deprecatedSlots <- c("singleCell")
+    for (s in c(slotNames(allParams$gaps), deprecatedSlots))
     {
         if (!is.null(extraParams[[s]]))
         {

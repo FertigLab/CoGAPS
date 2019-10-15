@@ -9,7 +9,10 @@
 #' params
 CogapsParams <- function(...)
 {
-    new("CogapsParams", ...)
+    if (!is.null(list(...)$singleCell))
+        warning("singleCell has been deprecated, this parameter will be ignored")
+    removeDeprecated <- function(..., singleCell) new("CogapsParams", ...)
+    removeDeprecated(...)
 }
 
 setMethod("show", signature("CogapsParams"),
@@ -109,6 +112,10 @@ function(object, whichParam, value)
             object@distributed <- NULL
         else
             object@distributed <- value
+    }
+    else if (whichParam %in% c("singleCell"))
+    {
+        warning(whichParam, " has been deprecated, this parameter will be ignored")
     }
     else
     {
