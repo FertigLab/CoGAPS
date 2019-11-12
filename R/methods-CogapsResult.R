@@ -93,6 +93,20 @@ function(object)
     object@featureLoadings
 })
 
+
+
+#' @rdname getAmplitudeMatrix-methods
+#' @aliases getAmplitudeMatrix
+#' The method is same as getFeatureLoadings
+#' Alternate name for getFeatureLoadings
+setMethod("getAmplitudeMatrix", signature(object="CogapsResult"),
+function(object)
+{
+    object@featureLoadings
+})
+
+
+
 #' @rdname getSampleFactors-methods
 #' @aliases getSampleFactors
 setMethod("getSampleFactors", signature(object="CogapsResult"),
@@ -100,6 +114,17 @@ function(object)
 {
     object@sampleFactors
 })
+
+#' @rdname getPatternMatrix-methods
+#' @aliases getPatternMatrix
+#' The method is same as getSampleFactors
+#' Alternate name for getSampleFactors
+setMethod("getPatternMatrix", signature(object="CogapsResult"),
+function(object)
+{
+    object@sampleFactors
+})
+
 
 #' @rdname getMeanChiSq-methods
 #' @aliases getMeanChiSq
