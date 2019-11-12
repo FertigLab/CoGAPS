@@ -96,6 +96,19 @@ setValidity("CogapsResult",
 setGeneric("getFeatureLoadings", function(object)
     {standardGeneric("getFeatureLoadings")})
 
+#' return Amplitude  matrix from CogapsResult object
+#' @export
+#' @docType methods
+#' @rdname getAmplitudeMatrix-methods
+#'
+#' @param object an object of type CogapsResult
+#' @return amplitude matrix
+#' @examples
+#' data(GIST)
+#' amplitudeMatrix <- getAmplitudeMatrix(GIST.result)
+setGeneric("getAmplitudeMatrix", function(object)
+    {standardGeneric("getAmplitudeMatrix")})
+
 #' return sampleFactors matrix from CogapsResult object
 #' @export
 #' @docType methods
@@ -108,6 +121,22 @@ setGeneric("getFeatureLoadings", function(object)
 #' sFactors <- getSampleFactors(GIST.result)
 setGeneric("getSampleFactors", function(object)
     {standardGeneric("getSampleFactors")})
+
+
+
+#' return pattern matrix from CogapsResult object
+#' @export
+#' @docType methods
+#' @rdname getPatternMatrix-methods
+#'
+#' @param object an object of type CogapsResult
+#' @return pattern matrix
+#' @examples
+#' data(GIST)
+#' patternMatrix <- getPatternMatrix(GIST.result)
+setGeneric("getPatternMatrix", function(object)
+    {standardGeneric("getPatternMatrix")})
+
 
 #' return chi-sq of final matrices
 #' @export
