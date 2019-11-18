@@ -1,8 +1,6 @@
 citHeader("To cite package 'CoGAPS' in publications use:")
 
-desc <- packageDescription("CoGAPS")
-year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", desc$Date)
-vers <- paste("R package version", desc$Version)
+year <- sub("-.*", "", meta$Date)
 
 citEntry(entry="article",
          title = "{CoGAPS: an integrated R/C++ package to identify overlapping patterns of activation of biological processes from expression data}",
