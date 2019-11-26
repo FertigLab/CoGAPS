@@ -12,6 +12,8 @@ jobs:
   allow_failures:
     - name: Linting
     - name: Code Formatting
+    - name: Bioconductor Devel Testing - Linux
+    - name: Bioconductor Devel Testing - OSX
   include:
     - name: "Bioconductor Release Testing - Linux"
       os: linux
