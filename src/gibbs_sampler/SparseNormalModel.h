@@ -77,7 +77,7 @@ mMaxGibbsMass(maxGibbsMass),
 mAnnealingTemp(1.f),
 mLambda(0.f)
 {
-    float meanD = gaps::nonZeroMean(mDMatrix);
+    float meanD = params.singleCell ? gaps::nonZeroMean(mDMatrix) : gaps::mean(mDMatrix);
     mLambda = alpha * std::sqrt(nPatterns() / meanD);
     mMaxGibbsMass = mMaxGibbsMass / mLambda;
 

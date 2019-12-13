@@ -10,6 +10,7 @@
 #' @slot maxGibbsMassA atomic mass restriction for feature matrix
 #' @slot maxGibbsMassP atomic mass restriction for sample matrix
 #' @slot seed random number generator seed
+#' @slot singleCell is the data single cell?
 #' @slot sparseOptimization speeds up performance with sparse data
 #' (roughly >80% of data is zero), note this can only be used with the
 #' default uncertainty
@@ -46,6 +47,7 @@ setClass("CogapsParams", slots = c(
     maxGibbsMassA = "numeric",
     maxGibbsMassP = "numeric",
     seed = "numeric",
+    singleCell = "logical",
     sparseOptimization = "logical",
     distributed = "character_OR_NULL",
     nSets = "numeric",
@@ -96,6 +98,7 @@ setMethod("initialize", "CogapsParams",
         .Object@maxGibbsMassA <- 100
         .Object@maxGibbsMassP <- 100
         .Object@seed <- getMilliseconds(as.POSIXlt(Sys.time()))
+        .Object@singleCell <- FALSE
         .Object@sparseOptimization <- FALSE
         .Object@cut <- .Object@nPatterns
         .Object@nSets <- 4

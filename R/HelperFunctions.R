@@ -232,6 +232,8 @@ checkInputs <- function(data, uncertainty, allParams)
 
     if (!is.null(allParams$gaps@distributed))
     {
+        if (allParams$gaps@distributed == "single-cell" & !allParams$gaps@singleCell)
+            warning("running single-cell CoGAPS with singleCell=FALSE")
         if (allParams$nThreads > 1)
             warning("can't run multi-threaded and distributed CoGAPS at the same time, ignoring nThreads")
         if (!is.null(allParams$checkpointInFile))

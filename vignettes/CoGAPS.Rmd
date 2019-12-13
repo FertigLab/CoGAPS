@@ -284,8 +284,12 @@ CoGAPS(GISTCsvPath, params, distributed="genome-wide", messages=FALSE, nIteratio
 scCoGAPS(GISTCsvPath, params, messages=FALSE, transposeData=TRUE, nIterations=1000)
 
 # single-cell CoGAPS
-CoGAPS(GISTCsvPath, params, distributed="single-cell", messages=FALSE, transposeData=TRUE, nIterations=1000)
+CoGAPS(GISTCsvPath, params, distributed="single-cell", singleCell=TRUE, messages=FALSE, transposeData=TRUE, nIterations=1000)
 ```
+
+Notice that we also set the parameter `singleCell=TRUE`. This makes some 
+adjustments to the algorithm to account for the sparsity in single-cell data.
+The `scCoGAPS` wrapper automatically sets this parameter for us.
 
 The parallel backend for this computation is managed by the package `BiocParallel`
 and there is an option for the user to specifiy which backend they want. See the

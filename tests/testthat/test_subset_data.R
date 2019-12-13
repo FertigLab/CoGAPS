@@ -25,7 +25,7 @@ test_that("subsetting data with explicit sets",
     in_sets <- list(1:225, 226:450, 451:675, 676:900)
     result <- CoGAPS(gistMtxPath, nPatterns=3, explicitSets=in_sets, seed=42,
         nIterations=200, messages=FALSE, distributed="single-cell",
-        transposeData=TRUE)
+        transposeData=TRUE, singleCell=TRUE)
     sampleNames <- rownames(result@sampleFactors)
     out_sets <- lapply(getSubsets(result), function(set) which(sampleNames %in% set))
     expect_true(all(sapply(1:4, function(i) all.equal(out_sets[[i]], in_sets[[i]]))))
@@ -44,7 +44,7 @@ test_that("subsetting data with uniform sets",
 
     # distributed cogaps across samples
     result <- CoGAPS(gistMtxPath, nPatterns=3, nIterations=200, messages=FALSE,
-        seed=42, distributed="single-cell", transposeData=TRUE)
+        seed=42, distributed="single-cell", transposeData=TRUE, singleCell=TRUE)
     sampleNames <- rownames(result@sampleFactors)
     sets <- lapply(getSubsets(result), function(set) which(sampleNames %in% set))
     expect_equal(sum(sapply(sets, length)), nrow(result@sampleFactors))
@@ -77,7 +77,8 @@ test_that("subsetting data with annotation weights",
 #
     ## distributed cogaps across samples
     #result <- CoGAPS(gistMtxPath, params, nPatterns=3, nIterations=200,
-    #    messages=FALSE, seed=42, distributed="single-cell", transposeData=TRUE)
+    #    messages=FALSE, seed=42, distributed="single-cell", transposeData=TRUE,
+    #    singleCell=TRUE)
     #sampleNames <- rownames(result@sampleFactors)
     #sets <- lapply(getSubsets(result), function(set) which(sampleNames %in% set))
     #expect_equal(nrow(result@sampleFactors), nrow(GIST.matrix))
