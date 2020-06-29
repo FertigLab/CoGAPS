@@ -147,23 +147,36 @@ void AsynchronousGibbsSampler<DataModel>::birth(const AtomicProposal &prop)
 template <class DataModel>
 void AsynchronousGibbsSampler<DataModel>::death(const AtomicProposal &prop)
 {
-    // try to do a rebirth in the place of this atom
+    // determine mass to attempt rebirth with
+    float rebirthMass = prop.atom1->mass(); // default rebirth mass == no change to atom
+    AlphaParameters alpha = DataModel::alphaParametersWithChange(prop.r1, prop.c1,
+        -1.f * prop.atom1->mass()) * DataModel::annealingTemp();
     if (DataModel::canUseGibbs(prop.c1))
     {
-        OptionalFloat mass = DataModel::sampleDeathAndRebirth(prop.r1, prop.c1,
-            -1.f * prop.atom1->mass(), &(prop.rng));
-        if (mass.hasValue() && mass.value() >= gaps::epsilon)
+        OptionalFloat gMass = gibbsMass(alpha, 0.f, DataModel::maxGibbsMass(), &(prop.rng),
+            DataModel::lambda());
+        if (gMass.hasValue())
         {
-            mQueue.rejectDeath();
-            DataModel::safelyChangeMatrix(prop.r1, prop.c1, mass.value() - prop.atom1->mass());
-            prop.atom1->updateMass(mass.value());
-            return;
+            rebirthMass = gMass.value();
         }
     }
-    // if rebirth fails, then kill off atom
-    mQueue.acceptDeath();
-    DataModel::safelyChangeMatrix(prop.r1, prop.c1, -1.f * prop.atom1->mass());
-    mDomain.cacheErase(prop.atom1);
+    // handle accept/reject of the rebirth
+    float deltaLL = rebirthMass * (alpha.s_mu - alpha.s * rebirthMass / 2.f);
+    if (std::log(prop.rng.uniform()) < deltaLL) // accept
+    {
+        mQueue.rejectDeath();
+        if (rebirthMass != prop.atom1->mass())
+        {
+            DataModel::safelyChangeMatrix(prop.r1, prop.c1, rebirthMass - prop.atom1->mass());
+            prop.atom1->updateMass(rebirthMass);
+        }
+    }
+    else // reject
+    {
+        mQueue.acceptDeath();
+        DataModel::safelyChangeMatrix(prop.r1, prop.c1, -1.f * prop.atom1->mass());
+        mDomain.cacheErase(prop.atom1);
+    }
 }
 
 // move mass from src to dest in the atomic domain

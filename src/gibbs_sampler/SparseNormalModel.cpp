@@ -74,9 +74,19 @@ uint64_t SparseNormalModel::nPatterns() const
     return mMatrix.nCol();
 }
 
+float SparseNormalModel::annealingTemp() const
+{
+    return mAnnealingTemp;
+}
+
 float SparseNormalModel::lambda() const
 {
     return mLambda;
+}
+
+float SparseNormalModel::maxGibbsMass() const
+{
+    return mMaxGibbsMass;
 }
 
 bool SparseNormalModel::canUseGibbs(unsigned col) const
