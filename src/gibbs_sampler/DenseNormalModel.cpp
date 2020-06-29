@@ -82,9 +82,19 @@ uint64_t DenseNormalModel::nPatterns() const
     return mMatrix.nCol();
 }
 
+float DenseNormalModel::annealingTemp() const
+{
+    return mAnnealingTemp;
+}
+
 float DenseNormalModel::lambda() const
 {
     return mLambda;
+}
+
+float DenseNormalModel::maxGibbsMass() const
+{
+    return mMaxGibbsMass;
 }
 
 bool DenseNormalModel::canUseGibbs(unsigned col) const

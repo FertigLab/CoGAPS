@@ -157,23 +157,34 @@ void SingleThreadedGibbsSampler<DataModel>::death()
     AtomType *atom = mDomain.randomAtom(&mRng);
     unsigned row = (atom->pos() / mBinLength) / mNumPatterns;
     unsigned col = (atom->pos() / mBinLength) % mNumPatterns;
-
-    // try to do a rebirth in the place of this atom
+    // determine mass to attempt rebirth with
+    float rebirthMass = atom->mass(); // default rebirth mass == no change to atom
+    AlphaParameters alpha = DataModel::alphaParametersWithChange(row, col, -1.f * atom->mass())
+        * DataModel::annealingTemp();
     if (DataModel::canUseGibbs(col))
     {
-        OptionalFloat mass = DataModel::sampleDeathAndRebirth(row, col,
-            -1.f * atom->mass(), &mRng);
-        if (mass.hasValue() && mass.value() >= gaps::epsilon)
+        OptionalFloat gMass = gibbsMass(alpha, 0.f, DataModel::maxGibbsMass(), &mRng,
+            DataModel::lambda());
+        if (gMass.hasValue())
         {
-            DataModel::safelyChangeMatrix(row, col, mass.value() - atom->mass());
-            atom->updateMass(mass.value());
-            return;
+            rebirthMass = gMass.value();
         }
     }
-
-    // if rebirth fails, then kill off atom
-    DataModel::safelyChangeMatrix(row, col, -1.f * atom->mass());
-    mDomain.erase(atom);
+    // handle accept/reject of the rebirth
+    float deltaLL = rebirthMass * (alpha.s_mu - alpha.s * rebirthMass / 2.f);
+    if (std::log(mRng.uniform()) < deltaLL) // accept
+    {
+        if (rebirthMass != atom->mass())
+        {
+            DataModel::safelyChangeMatrix(row, col, rebirthMass - atom->mass());
+            atom->updateMass(rebirthMass);
+        }
+    }
+    else // reject
+    {
+        DataModel::safelyChangeMatrix(row, col, -1.f * atom->mass());
+        mDomain.erase(atom);
+    }
 }
 
 // move mass from src to dest in the atomic domain

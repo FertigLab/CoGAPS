@@ -33,7 +33,9 @@ protected:
     friend class GapsStatistics;
     uint64_t nElements() const;
     uint64_t nPatterns() const;
+    float annealingTemp() const;
     float lambda() const;
+    float maxGibbsMass() const;
     bool canUseGibbs(unsigned col) const;
     bool canUseGibbs(unsigned c1, unsigned c2) const;
     void changeMatrix(unsigned row, unsigned col, float delta);
