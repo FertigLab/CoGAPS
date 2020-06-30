@@ -4,9 +4,6 @@
 \name{GIST.data_frame}
 \alias{GIST.data_frame}
 \title{GIST gene expression data from Ochs et al. (2009)}
-\usage{
-GIST.data_frame
-}
 \description{
 GIST gene expression data from Ochs et al. (2009)
 }

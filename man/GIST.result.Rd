@@ -4,9 +4,6 @@
 \name{GIST.result}
 \alias{GIST.result}
 \title{CoGAPS result from running on GIST dataset}
-\usage{
-GIST.result
-}
 \description{
 CoGAPS result from running on GIST dataset
 }

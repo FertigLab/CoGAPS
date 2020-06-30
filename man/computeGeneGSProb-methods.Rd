@@ -6,12 +6,21 @@
 \alias{computeGeneGSProb,CogapsResult-method}
 \title{compute gene probability}
 \usage{
-computeGeneGSProb(object, GStoGenes, numPerm = 500, Pw = rep(1,
-  ncol(object@featureLoadings)), PwNull = FALSE)
+computeGeneGSProb(
+  object,
+  GStoGenes,
+  numPerm = 500,
+  Pw = rep(1, ncol(object@featureLoadings)),
+  PwNull = FALSE
+)
 
-\S4method{computeGeneGSProb}{CogapsResult}(object, GStoGenes,
-  numPerm = 500, Pw = rep(1, ncol(object@featureLoadings)),
-  PwNull = FALSE)
+\S4method{computeGeneGSProb}{CogapsResult}(
+  object,
+  GStoGenes,
+  numPerm = 500,
+  Pw = rep(1, ncol(object@featureLoadings)),
+  PwNull = FALSE
+)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}

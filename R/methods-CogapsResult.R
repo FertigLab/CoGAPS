@@ -97,8 +97,6 @@ function(object)
 
 #' @rdname getAmplitudeMatrix-methods
 #' @aliases getAmplitudeMatrix
-#' The method is same as getFeatureLoadings
-#' Alternate name for getFeatureLoadings
 setMethod("getAmplitudeMatrix", signature(object="CogapsResult"),
 function(object)
 {
@@ -117,8 +115,6 @@ function(object)
 
 #' @rdname getPatternMatrix-methods
 #' @aliases getPatternMatrix
-#' The method is same as getSampleFactors
-#' Alternate name for getSampleFactors
 setMethod("getPatternMatrix", signature(object="CogapsResult"),
 function(object)
 {

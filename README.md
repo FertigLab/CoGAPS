@@ -1,4 +1,4 @@
-# CoGAPS Version: 3.5.13
+# CoGAPS (Version: 3.7.0)
 
 [![Bioc](https://bioconductor.org/images/logo_bioconductor.gif)](https://bioconductor.org/packages/CoGAPS)
 [![downloads](https://bioconductor.org/shields/downloads/release/CoGAPS.svg)](http://bioconductor.org/packages/stats/bioc/CoGAPS/)

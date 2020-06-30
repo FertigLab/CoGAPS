@@ -28,23 +28,19 @@ NULL
 #' GIST gene expression data from Ochs et al. (2009)
 #' @docType data
 #' @name GIST.data_frame
-#' @usage GIST.data_frame
 NULL
 
 #' GIST gene expression data from Ochs et al. (2009)
 #' @docType data
 #' @name GIST.matrix
-#' @usage GIST.matrix
 NULL
 
 #' GIST gene expression uncertainty matrix from Ochs et al. (2009)
 #' @docType data
 #' @name GIST.uncertainty
-#' @usage GIST.uncertainty
 NULL
 
 #' CoGAPS result from running on GIST dataset
 #' @docType data
 #' @name GIST.result
-#' @usage GIST.result
 NULL

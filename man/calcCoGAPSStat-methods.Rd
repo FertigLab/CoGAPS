@@ -6,11 +6,21 @@
 \alias{calcCoGAPSStat,CogapsResult-method}
 \title{calculate statistic on sets of measurements (genes) or samples}
 \usage{
-calcCoGAPSStat(object, sets = NULL, whichMatrix = "featureLoadings",
-  numPerm = 1000, ...)
+calcCoGAPSStat(
+  object,
+  sets = NULL,
+  whichMatrix = "featureLoadings",
+  numPerm = 1000,
+  ...
+)
 
-\S4method{calcCoGAPSStat}{CogapsResult}(object, sets = NULL,
-  whichMatrix = "featureLoadings", numPerm = 1000, ...)
+\S4method{calcCoGAPSStat}{CogapsResult}(
+  object,
+  sets = NULL,
+  whichMatrix = "featureLoadings",
+  numPerm = 1000,
+  ...
+)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}

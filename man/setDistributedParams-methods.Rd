@@ -6,11 +6,21 @@
 \alias{setDistributedParams,CogapsParams-method}
 \title{set the value of parameters for distributed CoGAPS}
 \usage{
-setDistributedParams(object, nSets = NULL, cut = NULL, minNS = NULL,
-  maxNS = NULL)
+setDistributedParams(
+  object,
+  nSets = NULL,
+  cut = NULL,
+  minNS = NULL,
+  maxNS = NULL
+)
 
-\S4method{setDistributedParams}{CogapsParams}(object, nSets = NULL,
-  cut = NULL, minNS = NULL, maxNS = NULL)
+\S4method{setDistributedParams}{CogapsParams}(
+  object,
+  nSets = NULL,
+  cut = NULL,
+  minNS = NULL,
+  maxNS = NULL
+)
 }
 \arguments{
 \item{object}{an object of type CogapsParams}
