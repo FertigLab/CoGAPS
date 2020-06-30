@@ -4,9 +4,6 @@
 \name{GIST.matrix}
 \alias{GIST.matrix}
 \title{GIST gene expression data from Ochs et al. (2009)}
-\usage{
-GIST.matrix
-}
 \description{
 GIST gene expression data from Ochs et al. (2009)
 }

@@ -4,9 +4,6 @@
 \name{GIST.uncertainty}
 \alias{GIST.uncertainty}
 \title{GIST gene expression uncertainty matrix from Ochs et al. (2009)}
-\usage{
-GIST.uncertainty
-}
 \description{
 GIST gene expression uncertainty matrix from Ochs et al. (2009)
 }

@@ -8,8 +8,7 @@
 \usage{
 patternMarkers(object, threshold = "all", lp = NA, axis = 1)
 
-\S4method{patternMarkers}{CogapsResult}(object, threshold = "all",
-  lp = NA, axis = 1)
+\S4method{patternMarkers}{CogapsResult}(object, threshold = "all", lp = NA, axis = 1)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}

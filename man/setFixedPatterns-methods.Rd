@@ -8,8 +8,7 @@
 \usage{
 setFixedPatterns(object, fixedPatterns, whichMatrixFixed)
 
-\S4method{setFixedPatterns}{CogapsParams}(object, fixedPatterns,
-  whichMatrixFixed)
+\S4method{setFixedPatterns}{CogapsParams}(object, fixedPatterns, whichMatrixFixed)
 }
 \arguments{
 \item{object}{an object of type CogapsParams}

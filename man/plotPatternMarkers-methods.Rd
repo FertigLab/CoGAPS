@@ -5,9 +5,17 @@
 \alias{plotPatternMarkers}
 \title{heatmap of original data clustered by pattern markers statistic}
 \usage{
-plotPatternMarkers(object, data, patternPalette, sampleNames,
-  samplePalette = NULL, heatmapCol = bluered, colDenogram = TRUE,
-  scale = "row", ...)
+plotPatternMarkers(
+  object,
+  data,
+  patternPalette,
+  sampleNames,
+  samplePalette = NULL,
+  heatmapCol = bluered,
+  colDenogram = TRUE,
+  scale = "row",
+  ...
+)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}

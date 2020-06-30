@@ -4,11 +4,22 @@
 \alias{GWCoGAPS}
 \title{Genome Wide CoGAPS}
 \usage{
-GWCoGAPS(data, params = new("CogapsParams"), nThreads = 1,
-  messages = TRUE, outputFrequency = 500, uncertainty = NULL,
-  checkpointOutFile = "gaps_checkpoint.out", checkpointInterval = 1000,
-  checkpointInFile = NULL, transposeData = FALSE, BPPARAM = NULL,
-  workerID = 1, asynchronousUpdates = FALSE, ...)
+GWCoGAPS(
+  data,
+  params = new("CogapsParams"),
+  nThreads = 1,
+  messages = TRUE,
+  outputFrequency = 500,
+  uncertainty = NULL,
+  checkpointOutFile = "gaps_checkpoint.out",
+  checkpointInterval = 1000,
+  checkpointInFile = NULL,
+  transposeData = FALSE,
+  BPPARAM = NULL,
+  workerID = 1,
+  asynchronousUpdates = FALSE,
+  ...
+)
 }
 \arguments{
 \item{data}{File name or R object (see details for supported types)}
