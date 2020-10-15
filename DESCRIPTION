@@ -40,7 +40,7 @@ Suggests:
 LinkingTo: Rcpp
 VignetteBuilder: knitr
 LazyLoad: true
-License: GPL (==2)
+License: BSD 3
 biocViews: GeneExpression, Transcription, GeneSetEnrichment,
     DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray,
     MultipleComparison, DimensionReduction, ImmunoOncology
