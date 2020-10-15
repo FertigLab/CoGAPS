@@ -12,7 +12,8 @@ Description: Coordinated Gene Activity in Pattern Sets (CoGAPS)
     any data, and when this data represents biomolecules, to do gene set
     analysis.
 Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>,
-    Thomas D. Sherman <tomsherman159@gmail.com>
+    Thomas D. Sherman <tomsherman159@gmail.com>,
+    Melanie L. Loth <mloth1@jhmi.edu>
 Depends:
     R (>= 3.5.0)
 Imports:
