@@ -1,3 +1,10 @@
+version: 3.9.2
+date: 2020-10-15
+author: Melanie Loth <mloth1@jhmi.edu>
+
+    - Updated license to BSD 3
+    - Added Melanie (self) as maintainer
+    
 version: 3.5.13
 date: 2019-9-9
 author: Tom Sherman <tomsherman159@gmail.com>
