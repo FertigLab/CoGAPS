@@ -16,7 +16,7 @@ install.packages("BiocManager")
 BiocManager::install("CoGAPS")
 ```
 
-The most up-to-date version of *CoGAPS* can be installed directly from the 
+The most up-to-date version of *CoGAPS* can be installed directly from the
 *FertigLab* Github Repository:
 
 ```
