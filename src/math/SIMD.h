@@ -1,7 +1,11 @@
 #ifndef __COGAPS_SIMD_H__
 #define __COGAPS_SIMD_H__
 
-#if (defined ( __AVX2__ ) || defined ( __AVX__ )) && (!defined(_WIN32) || !defined(WIN32))
+#if defined(_WIN32) || defined(WIN32) || defined(__MINGW32__)
+    #define COGAPS_SIMD_H_DISABLE_SIMD
+#endif
+
+#if (defined ( __AVX2__ ) || defined ( __AVX__ )) && !defined(COGAPS_SIMD_H_DISABLE_SIMD)
 
     #define SIMD_INC 8
     #define __GAPS_AVX__
@@ -15,7 +19,7 @@
     #define MUL_PACKED(a,b) _mm256_mul_ps(a,b)
     #define DIV_PACKED(a,b) _mm256_div_ps(a,b)
 
-#elif (defined ( __SSE4_2__ ) || defined ( __SSE4_1__ )) && (!defined(_WIN32) || !defined(WIN32))
+#elif (defined ( __SSE4_2__ ) || defined ( __SSE4_1__ )) && !defined(COGAPS_SIMD_H_DISABLE_SIMD)
 
     #define SIMD_INC 4
     #define __GAPS_SSE__
@@ -132,5 +136,8 @@ inline float getScalar(gaps_packed_t pf)
 } // namespace simd
 } // namespace gaps
 
-#endif // __COGAPS_SIMD_H__
+#ifdef COGAPS_SIMD_H_DISABLE_SIMD
+    #undef COGAPS_SIMD_H_DISABLE_SIMD
+#endif
 
+#endif // __COGAPS_SIMD_H__
