@@ -1,7 +1,7 @@
 #ifndef __COGAPS_SIMD_H__
 #define __COGAPS_SIMD_H__
 
-#if defined ( __AVX2__ ) || defined ( __AVX__ )
+#if (defined ( __AVX2__ ) || defined ( __AVX__ )) && (!defined(_WIN32) || !defined(WIN32))
 
     #define SIMD_INC 8
     #define __GAPS_AVX__
@@ -15,7 +15,7 @@
     #define MUL_PACKED(a,b) _mm256_mul_ps(a,b)
     #define DIV_PACKED(a,b) _mm256_div_ps(a,b)
 
-#elif defined ( __SSE4_2__ ) || defined ( __SSE4_1__ )
+#elif (defined ( __SSE4_2__ ) || defined ( __SSE4_1__ )) && (!defined(_WIN32) || !defined(WIN32))
 
     #define SIMD_INC 4
     #define __GAPS_SSE__
