@@ -37,7 +37,7 @@ Suggests:
     knitr,
     rmarkdown,
     BiocStyle
-LinkingTo: Rcpp
+LinkingTo: Rcpp, BH
 VignetteBuilder: knitr
 LazyLoad: true
 License: BSD_3_clause + file LICENSE
