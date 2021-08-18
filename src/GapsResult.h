@@ -12,6 +12,7 @@ class GapsStatistics;
 struct GapsResult
 {
     explicit GapsResult(const GapsStatistics &stat);
+    explicit GapsResult();
     void writeToFile(const std::string &path);
 
     Matrix Amean;
