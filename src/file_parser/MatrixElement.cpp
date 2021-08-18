@@ -5,6 +5,7 @@
 
 #include <sstream>
 #include <string>
+#include <cmath>
 
 static bool isNumber(const std::string &s)
 {
