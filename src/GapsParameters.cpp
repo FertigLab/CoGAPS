@@ -46,7 +46,7 @@ void GapsParameters::print() const
     gaps_printf("fixedPatterns.nCol(): %d\n", fixedPatterns.nCol());
     gaps_printf("\n------------------------\n\n");
 }
-    
+
 void GapsParameters::calculateDataDimensions(const std::string &file)
 {
     FileParser fp(file);
