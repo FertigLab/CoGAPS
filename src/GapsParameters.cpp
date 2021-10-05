@@ -47,6 +47,8 @@ void GapsParameters::print() const
     gaps_printf("\n------------------------\n\n");
 }
 
+GapsParameters::GapsParameters(){}
+
 void GapsParameters::calculateDataDimensions(const std::string &file)
 {
     FileParser fp(file);
