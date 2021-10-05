@@ -1,5 +1,4 @@
 #include "GapsResult.h"
-
 #include "GapsStatistics.h"
 #include "file_parser/FileParser.h"
 
