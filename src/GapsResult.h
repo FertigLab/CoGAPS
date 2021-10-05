@@ -2,7 +2,6 @@
 #define __COGAPS_GAPS_RESULT__
 
 #include "data_structures/Matrix.h"
-
 #include <stdint.h>
 #include <string>
 #include <vector>
