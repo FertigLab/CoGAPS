@@ -72,6 +72,7 @@ private:
 Archive& operator<<(Archive &ar, const GapsParameters &p);
 Archive& operator>>(Archive &ar, GapsParameters &p);
 
+GapsParameters::GapsParameters(){}
 template <class DataType>
 GapsParameters::GapsParameters(const DataType &data, bool t_transposeData,
 bool t_subsetData, bool t_subsetGenes,
