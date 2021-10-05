@@ -11,6 +11,8 @@ static std::string to_string(T a)
     return ss.str();
 }
 
+GapsResult::GapsResult(){}
+
 GapsResult::GapsResult(const GapsStatistics &stat)
     :
 Amean(stat.Amean()), Asd(stat.Asd()), Pmean(stat.Pmean()),

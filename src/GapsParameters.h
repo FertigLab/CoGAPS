@@ -25,6 +25,7 @@ enum GapsAlgorithmPhase
 struct GapsParameters
 {
 public:
+    explicit GapsParameters();
     template <class DataType>
     explicit GapsParameters(const DataType &data, bool t_transposeData=false,
         bool t_subsetData=false, bool t_subsetGenes=false,

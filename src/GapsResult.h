@@ -11,6 +11,7 @@ class GapsStatistics;
 
 struct GapsResult
 {
+    explicit GapsResult();
     explicit GapsResult(const GapsStatistics &stat);
     void writeToFile(const std::string &path);
 
