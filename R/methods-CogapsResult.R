@@ -77,7 +77,7 @@ plot.CogapsResult <- function(x, groups=NULL, ...)
     ylimits <- c(0, max(x@sampleFactors) * 1.1)
     plot(NULL, xlim=xlimits, ylim=ylimits, ylab="Relative Amplitude", xlab="", axes=FALSE) 
     axis(1, labels=FALSE, at=1:length(grpset))
-    text(x = seq(1, 12, by=1), par("usr")[3]-0.15, labels = grpset, srt = 60, pos = 1, xpd = TRUE)
+    text(x = seq(1, length(grpset), by=1), par("usr")[3]-0.15, labels = grpset, srt = 60, pos = 1, xpd = TRUE)
     axis(2)
     
     for (i in 1:nFactors)
