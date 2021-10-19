@@ -64,25 +64,50 @@ function(object)
 #' @export
 #' @importFrom graphics plot legend lines points
 #' @importFrom grDevices rainbow
-plot.CogapsResult <- function(x, ...)
+plot.CogapsResult <- function(x, groups=NULL, ...)
 {
+  
+  if(!is.null(groups)) {
+    grpset <- unique(groups)
+    groups <- table(groups)
+    ngroups <- length(grpset)
+    nFactors <- ncol(x@sampleFactors)
+    colors <- rainbow(nFactors)
+    xlimits <- c(0, ngroups + 1)
+    ylimits <- c(0, max(x@sampleFactors) * 1.1)
+    plot(NULL, xlim=xlimits, ylim=ylimits, ylab="Relative Amplitude", xlab="", axes=FALSE) 
+    axis(1, labels=FALSE, at=1:length(grpset))
+    text(x = seq(1, length(grpset), by=1), par("usr")[3]-0.15, labels = grpset, srt = 60, pos = 1, xpd = TRUE)
+    axis(2)
+    
+    for (i in 1:nFactors)
+    {
+      lines(x=1:length(groups), y=x@sampleFactors[groups,i], col=colors[i])
+      points(x=1:length(groups), y=x@sampleFactors[groups,i], col=colors[i], pch=i)
+    }
+    
+    legend("top", paste("Pattern", 1:nFactors, sep = ""), pch = 1:nFactors,
+           lty=1, cex=0.8, col=colors, bty="y", ncol=5)
+  }
+  else{
     nSamples <- nrow(x@sampleFactors)
     nFactors <- ncol(x@sampleFactors)
     colors <- rainbow(nFactors)
     xlimits <- c(0, nSamples + 1)
     ylimits <- c(0, max(x@sampleFactors) * 1.1)
-
+    
     plot(NULL, xlim=xlimits, ylim=ylimits, ylab="Relative Amplitude",
-        xlab="Samples")
-
+         xlab="Samples")
+    
     for (i in 1:nFactors)
     {
-        lines(x=1:nSamples, y=x@sampleFactors[,i], col=colors[i])
-        points(x=1:nSamples, y=x@sampleFactors[,i], col=colors[i], pch=i)
+      lines(x=1:nSamples, y=x@sampleFactors[,i], col=colors[i])
+      points(x=1:nSamples, y=x@sampleFactors[,i], col=colors[i], pch=i)
     }
-
+    
     legend("top", paste("Pattern", 1:nFactors, sep = ""), pch = 1:nFactors,
-        lty=1, cex=0.8, col=colors, bty="y", ncol=5)
+           lty=1, cex=0.8, col=colors, bty="y", ncol=5)
+  }
 }
 
 #' @rdname getFeatureLoadings-methods
