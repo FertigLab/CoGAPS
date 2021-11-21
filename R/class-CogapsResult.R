@@ -24,6 +24,7 @@ setClass("CogapsResult", contains="LinearEmbeddingMatrix", slots=c(
 #' @param ... initial values for slots
 #' @return initialized CogapsResult object
 #' @importFrom methods callNextMethod
+#' @importFrom S4Vectors make_zero_col_DFrame
 setMethod("initialize", "CogapsResult",
 function(.Object, Amean, Pmean, Asd, Psd, meanChiSq, geneNames,
 sampleNames, diagnostics=NULL, ...)
@@ -61,7 +62,7 @@ sampleNames, diagnostics=NULL, ...)
     .Object@metadata[["meanChiSq"]] <- meanChiSq
     .Object@metadata <- append(.Object@metadata, diagnostics)
 
-    .Object@factorData <- new("DataFrame", nrows=ncol(.Object@sampleFactors))
+    .Object@factorData <- make_zero_col_DFrame(ncol(.Object@sampleFactors))
 
     .Object <- callNextMethod(.Object, ...)
     .Object
