@@ -331,20 +331,60 @@ function(object, threshold, lp, axis)
     ## keep only a subset of markers for each pattern depending on the type of threshold
     if (threshold == "cut") # all markers which achieve minimum rank
     {
-        rankCutoff <- sapply(1:ncol(markerRanks), function(patternIndex)
-        {
-            patternRank <- markerRanks[,patternIndex]
-            return(max(patternRank[patternRank == apply(markerRanks, 1, min)]))
-        })
-        markersByPattern <- lapply(1:ncol(markerRanks), function(patternIndex)
-            rownames(markerRanks)[markerRanks[,patternIndex] <= rankCutoff[patternIndex]])
-        names(markersByPattern) <- colnames(markerRanks)
+      simplicityGENES <- function(As, Ps) {
+        # rescale p's to have max 1
+        pscale <- apply(Ps,1,max)
+        
+        # rescale A in accordance with p's having max 1
+        As <- sweep(As, 2, pscale, FUN="*")
+        
+        # find the A with the highest magnitude
+        Arowmax <- t(apply(As, 1, function(x) x/max(x)))
+        pmax <- apply(As, 1, max)
+        
+        # determine which genes are most associated with each pattern
+        ssl <- matrix(NA, nrow=nrow(As), ncol=ncol(As),
+                      dimnames=dimnames(As))
+        for (i in 1:ncol(As)) {
+          lp <- rep(0, ncol(As))
+          lp[i] <- 1
+          ssl.stat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
+          ssl[order(ssl.stat),i] <- 1:length(ssl.stat)
+        }
+        
+        return(ssl)
+        
+      }
+      simGenes <- simplicityGENES(As=object@featureLoadings,
+                                  Ps=object@sampleFactors)
+      
+      patternMarkers <- list()
+      
+      nP <- ncol(simGenes)
+      
+      for (i in 1:nP) {
+        
+        sortSim <- names(sort(simGenes[,i],decreasing=F))
+        
+        geneThresh <- min(which(simGenes[sortSim,i] > 
+                                  apply(simGenes[sortSim,],1,min)))
+        
+        markerGenes <- sortSim[1:geneThresh]
+        
+        markerGenes <- unique(markerGenes)
+        
+        patternMarkers[[i]] <- markerGenes
+        
+        markersByPattern <- patternMarkers
+        
+      }
     }
     else if (threshold == "all") # only the markers with the lowest scores
     {
         patternsByMarker <- colnames(markerScores)[apply(markerScores, 1, which.min)]
         markersByPattern <- sapply(colnames(markerScores), USE.NAMES=TRUE, simplify=FALSE,
             function(pattern) rownames(markerScores)[which(patternsByMarker==pattern)])
+        
     }
     return(list(
         "PatternMarkers"=markersByPattern,
