@@ -74,10 +74,11 @@ setValidity("CogapsResult",
             "NA/Inf values in feature matrix"
         if (any(is.na(object@sampleFactors)) | any(object@sampleFactors == Inf) | any(object@sampleFactors == -Inf))
             "NA/Inf values in sample matrix"
-        if (sum(object@featureLoadings < 0) > 0 | sum(object@loadingStdDev < 0) > 0)
-            "negative values in feature Matrix"
-        if (sum(object@sampleFactors < 0) > 0 | sum(object@factorStdDev < 0) > 0)
-            "negative values in sample Matrix"
+        # TODO: fix this check for semisupervised case
+    #  if (sum(object@featureLoadings < 0) > 0 | sum(object@loadingStdDev < 0) > 0)
+     #       "negative values in feature Matrix"
+      #  if (sum(object@sampleFactors < 0) > 0 | sum(object@factorStdDev < 0) > 0)
+       #     "negative values in sample Matrix"
     }
 )    
 
