@@ -115,6 +115,25 @@ function(object, whichParam, value)
         object@nPatterns <- value
         object@cut <- min(object@cut, object@nPatterns)
     }
+    else if (whichParam == "useCheckPoint")
+    {
+      object@useCheckPoint <- value
+    }
+    else if (whichParam == "checkpointFile")
+    {
+      object@checkpointFile <- value
+    }
+    else if (whichParam == "checkpointOutFile")
+    {
+      object@checkpointOutFile <- value
+    }
+    else if (whichParam == "checkpointInterval")
+    {
+      if (whichParam == 0) {
+        object@useCheckPoint <- FALSE
+      }
+      object@checkpointInterval <- value
+    }
     else if (whichParam == "distributed")
     {
         if (value == "none")
