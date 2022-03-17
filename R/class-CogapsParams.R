@@ -37,6 +37,10 @@
 #' matching, as well as fixed runs of standard CoGAPS
 #' @slot whichMatrixFixed either 'A' or 'P', indicating which matrix is fixed
 #' @slot takePumpSamples whether or not to take PUMP samples
+#' @slot useCheckPoint true/false, whether to use the checkpoints system
+#' @slot checkpointInterval how many iterations between each checkpoint (set to 0 to disable)
+#' @slot checkpointFile file path to load checkpoint from
+#' @slot checkpointOutFile file path where checkpoint should be written to
 #' @importClassesFrom S4Vectors character_OR_NULL
 setClass("CogapsParams", slots = c(
     nPatterns = "numeric",
@@ -61,7 +65,11 @@ setClass("CogapsParams", slots = c(
     sampleNames="character_OR_NULL",
     fixedPatterns="ANY",
     whichMatrixFixed="character",
-    takePumpSamples="logical"
+    takePumpSamples="logical",
+    useCheckPoint="logical",
+    checkpointInterval="numeric",
+    checkpointFile="character_OR_NULL",
+    checkpointOutFile="character_OR_NULL"
 ))
 
 #' constructor for CogapsParams
@@ -111,6 +119,10 @@ setMethod("initialize", "CogapsParams",
         .Object@fixedPatterns <- NULL
         .Object@whichMatrixFixed <- 'N'
         .Object@takePumpSamples <- FALSE
+        .Object@useCheckPoint <- FALSE
+        .Object@checkpointInterval <- 0
+        .Object@checkpointFile <- NULL
+        .Object@checkpointOutFile <- NULL
 
         .Object <- callNextMethod(.Object, ...)
         .Object
