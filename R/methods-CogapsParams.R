@@ -71,6 +71,15 @@ function(object)
         cat(length(object@sampleNames), "sample names provided\n")
         cat("first sample name:", object@sampleNames[1], "\n")
     }
+    if (object@useCheckPoint)
+    {
+      cat("\n")
+      cat("-- Checkpoint parameters (1set useCheckPoint=FALSE to disable) --", "\n")
+      cat("useCheckPoint         ", object@useCheckPoint, "\n")
+      cat("checkpointInterval          ", object@checkpointInterval, "\n")
+      cat("checkpointFile          ", checkpointFile, "\n")
+      cat("checkpointOutFile          ", object@checkpointOutFile, "\n")
+    }
 })
 
 #' @rdname setParam-methods
