@@ -87,7 +87,7 @@ compiledWithOpenMPSupport <- function()
 #' resultC <- CoGAPS(GIST.data_frame, params, nIterations=25)
 #' @importFrom methods new is
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
-outputFrequency=1000, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
+outputFrequency=1000, uncertainty=NULL, useCheckPoint=FALSE, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=0, checkpointFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, nSnapshots=0,
 snapshotPhase='sampling', ...)
@@ -118,6 +118,7 @@ snapshotPhase='sampling', ...)
         "outputFrequency"=outputFrequency,
         "nSnapshots"=nSnapshots,
         "snapshotPhase"=snapshotPhase,
+        "useCheckPoint"=useCheckPoint,
         "checkpointOutFile"=checkpointOutFile,
         "checkpointInterval"=checkpointInterval,
         "checkpointInFile"=checkpointFile,
