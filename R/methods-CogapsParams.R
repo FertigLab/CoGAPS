@@ -71,13 +71,20 @@ function(object)
         cat(length(object@sampleNames), "sample names provided\n")
         cat("first sample name:", object@sampleNames[1], "\n")
     }
-    if (length(object@checkpointFile || length(object@checkpointOutFile))
+    if (!is.null(object@checkpointFile) || !is.null(object@checkpointOutFile))
     {
       cat("\n")
-      cat("-- Checkpoint parameters (set checkpointInterval=0 to disable) --", "\n")
+      cat("-- Checkpoint parameters--", "\n")
       cat("checkpointInterval          ", object@checkpointInterval, "\n")
-      cat("checkpointFile          ", checkpointFile, "\n")
-      cat("checkpointOutFile          ", object@checkpointOutFile, "\n")
+      if(object@checkpointInterval == 0){
+        cat("Warning!! Setting checkpointInterval=0 disables checkpoint logging.", "\n")
+      }
+      if(!is.null(object@checkpointFile)){
+        cat("checkpointFile          ", checkpointFile, "\n")
+      }
+      if (!is.null(object@checkpointOutFile)){
+        cat("checkpointOutFile          ", object@checkpointOutFile, "\n")
+      }
     }
 })
 
