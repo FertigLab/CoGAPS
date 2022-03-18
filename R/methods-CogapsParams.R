@@ -71,11 +71,10 @@ function(object)
         cat(length(object@sampleNames), "sample names provided\n")
         cat("first sample name:", object@sampleNames[1], "\n")
     }
-    if (object@useCheckPoint)
+    if (length(object@checkpointFile) || length(object@checkpointOutFile))
     {
       cat("\n")
-      cat("-- Checkpoint parameters (1set useCheckPoint=FALSE to disable) --", "\n")
-      cat("useCheckPoint         ", object@useCheckPoint, "\n")
+      cat("-- Checkpoint parameters (set checkpointInterval=0 to disable) --", "\n")
       cat("checkpointInterval          ", object@checkpointInterval, "\n")
       cat("checkpointFile          ", checkpointFile, "\n")
       cat("checkpointOutFile          ", object@checkpointOutFile, "\n")
@@ -115,10 +114,6 @@ function(object, whichParam, value)
         object@nPatterns <- value
         object@cut <- min(object@cut, object@nPatterns)
     }
-    else if (whichParam == "useCheckPoint")
-    {
-      object@useCheckPoint <- value
-    }
     else if (whichParam == "checkpointFile")
     {
       object@checkpointFile <- value
@@ -129,10 +124,11 @@ function(object, whichParam, value)
     }
     else if (whichParam == "checkpointInterval")
     {
-      if (whichParam == 0) {
-        object@useCheckPoint <- FALSE
-      }
       object@checkpointInterval <- value
+      if(value==0){
+        object@checkpointFile <- NULL
+        object@checkpointOutFile <- NULL
+      }
     }
     else if (whichParam == "distributed")
     {
