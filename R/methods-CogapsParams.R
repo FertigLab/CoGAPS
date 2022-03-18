@@ -126,8 +126,8 @@ function(object, whichParam, value)
     {
       object@checkpointInterval <- value
       if(value==0){
-        object@checkpointFile <- NULL
-        object@checkpointOutFile <- NULL
+        object@checkpointOutFile <- NULL 
+        stop("setting checkpointInterval=0 disables checkpoint writing")
       }
     }
     else if (whichParam == "distributed")
