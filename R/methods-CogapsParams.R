@@ -71,7 +71,7 @@ function(object)
         cat(length(object@sampleNames), "sample names provided\n")
         cat("first sample name:", object@sampleNames[1], "\n")
     }
-    if (length(object@checkpointFile) || length(object@checkpointOutFile))
+    if (length(object@checkpointFile || length(object@checkpointOutFile))
     {
       cat("\n")
       cat("-- Checkpoint parameters (set checkpointInterval=0 to disable) --", "\n")

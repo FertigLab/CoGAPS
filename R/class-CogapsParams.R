@@ -117,6 +117,7 @@ setMethod("initialize", "CogapsParams",
         .Object@fixedPatterns <- NULL
         .Object@whichMatrixFixed <- 'N'
         .Object@takePumpSamples <- FALSE
+        .Object@useCheckPoint <- FALSE
         .Object@checkpointInterval <- 0
         .Object@checkpointFile <- NULL
         .Object@checkpointOutFile <- NULL
