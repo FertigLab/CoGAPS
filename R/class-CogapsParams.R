@@ -62,12 +62,12 @@ setClass("CogapsParams", slots = c(
     subsetDim="numeric",
     geneNames="character_OR_NULL",
     sampleNames="character_OR_NULL",
-    fixedPatterns="ANY",
-    whichMatrixFixed="character",
-    takePumpSamples="logical",
     checkpointInterval="numeric",
     checkpointFile="character_OR_NULL",
     checkpointOutFile="character_OR_NULL"
+    fixedPatterns="ANY",
+    whichMatrixFixed="character",
+    takePumpSamples="logical"
 ))
 
 #' constructor for CogapsParams
@@ -117,7 +117,6 @@ setMethod("initialize", "CogapsParams",
         .Object@fixedPatterns <- NULL
         .Object@whichMatrixFixed <- 'N'
         .Object@takePumpSamples <- FALSE
-        .Object@useCheckPoint <- FALSE
         .Object@checkpointInterval <- 0
         .Object@checkpointFile <- NULL
         .Object@checkpointOutFile <- NULL
