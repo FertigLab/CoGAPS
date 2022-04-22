@@ -1,6 +1,6 @@
 ---
 title: "CoGAPS - Coordinated Gene Association in Pattern Sets"
-author: "Thomas Sherman, Genevieve Stein-O'Brien, Hyejune Limb, Elana Fertig"
+author: "Thomas Sherman, Genevieve Stein-O'Brien, Jeanette Johnson, Ashley Tsang, Hyejune Limb, Elana Fertig"
 date: "`r BiocStyle::doc_date()`"
 bibliography: References.bib
 vignette: >
@@ -26,28 +26,13 @@ packageVersion("CoGAPS")
 
 # Introduction
 
-Coordinated Gene Association in Pattern Sets (CoGAPS) is a technique for latent
-space learning in gene expression data. CoGAPS is a member of the
-Nonnegative Matrix Factorization (NMF) class of algorithms. NMFs factorize a
-data matrix into two related matrices containing gene weights, the
-Amplitude (A) matrix, and sample weights, the Pattern (P) Matrix. Each column
-of A or row of P defines a feature and together this set of features defines
-the latent space among genes and samples, respectively. In NMF, the values of
-the elements in the A and P matrices are constrained to be greater than or
-equal to zero. This constraint simultaneously reflects the non-negative nature
-of gene expression data and enforces the additive nature of the resulting
-feature dimensions, generating solutions that are biologically intuitive to
-interpret (@SEUNG_1999).
+Coordinated Gene Association in Pattern Sets (CoGAPS) is a technique for latent space learning in bulk gene expression or single cell RNA sequencing data. CoGAPS is a member of the Nonnegative Matrix Factorization (NMF) class of algorithms, which factorize a data matrix into two related matrices: the Amplitude (A) matrix which contains gene weights, and Pattern (P) Matrix which contains sample weights. Each column of A or row of P defines a feature and together this set of features defines the latent space among genes and samples, respectively. In NMF, the values of the elements in the A and P matrices are constrained to be greater than or equal to zero. This constraint simultaneously reflects the non-negative nature of gene expression data and enforces the additive nature of the resulting feature dimensions, generating solutions that are biologically intuitive to interpret (@SEUNG_1999).
 
-CoGAPS has two extensions that allow it to scale up to large data sets,
-Genome-Wide CoGAPS (GWCoGAPS) and Single-Cell CoGAPS (scCOGAPS). This package
-presents a unified R interface for all three methods, with a parallel,
-efficient underlying implementation in C++.
+This package presents a R interface for CoGAPS along with the underlying implementation in C++. A python package for CoGAPS, PyCoGAPS, is now available here: https://github.com/FertigLab/pycogaps
 
 # Installing CoGAPS
 
-*CoGAPS* is a bioconductor package and so the release version can be installed
-as follows:
+*CoGAPS* is a bioconductor package. The current, stable release can be installed as follows:
 
 ```{r eval=FALSE}
 source("https://bioconductor.org/biocLite.R")
@@ -65,9 +50,7 @@ biocLite("FertigLab/CoGAPS", dependencies = TRUE, build_vignettes = TRUE)
 devtools::install_github("FertigLab/CoGAPS")
 ```
 
-There is also an option to install the development version of *CoGAPS*, 
-while this version has the latest experimental features, it is not guaranteed
-to be stable.
+There is also an option to install the development version of *CoGAPS*, while this version has the latest experimental features, it is not guaranteed to be stable.
 
 ```{r eval=FALSE}
 ## Method 1 using biocLite
@@ -79,9 +62,7 @@ devtools::install_github("FertigLab/CoGAPS", ref="develop")
 
 # Package Overview
 
-We first give a walkthrough of the package features using a simple, simulated
-data set. In later sections we provide two example workflows on real data
-sets.
+We first give a walkthrough of the package features using a simple, simulated data set. In later sections we provide two example workflows on real data sets.
 
 ## Running CoGAPS with Default Parameters
 
