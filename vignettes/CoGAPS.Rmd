@@ -127,6 +127,14 @@ place. The package provides these functions for querying the metadata in
 a safe manner:
 
 ```{r single cell}
+options(timeout=1000) # adjust this if you're getting timeout downloading the file
+url = "https://zenodo.org/record/7709664/files/inputdata.Rds?download=1"
+download.file(url,"inputdata_download.Rds")
+b <- readRDS("inputdata_download.Rds")
+
+https://github.com/FertigLab/CoGAPS/blob/master/data/inputdata.Rds
+
+
 pdac_data <- readRDS("../data/inputdata.Rds") # load R data object 
 
 pdac_epi_counts <- counts(pdac_data)
