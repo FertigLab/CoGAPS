@@ -66,7 +66,7 @@ function(object)
 
 
 
-PatternGSEA <- function(object)
+PatternHallmarks <- function(object)
 {
   library("fgsea", quietly = TRUE)
   library("msigdbr", quietly = TRUE)
@@ -89,7 +89,7 @@ PatternGSEA <- function(object)
   # List of each gene as a pattern marker
   PMlist <- patternMarkerResults$PatternMarkers
   
-  results <- list()
+  d <- list()
   for (pattern in names(PMlist)) 
     {
       # Over-representation analysis of pattern markers ###########################
@@ -112,44 +112,10 @@ PatternGSEA <- function(object)
       # Reorder dataframe by ascending adjusted p value
       result <- mutate(result, MsigDB_Hallmark=fct_reorder(MsigDB_Hallmark, - padj))
       
-      # rearrange columns to move overlap genes to the end and convert to vector for
-      # compatibility with saving as csv
-      result <- relocate(result, "overlapGenes", .after = "MsigDB_Hallmark")
-      result <- relocate(result, "neg.log.q", .after = "padj")
-      result <- result %>% mutate(overlapGenes = sapply(overlapGenes, toString))
-      
-      # limit the results to significant over-representation
-      result <- result[result$padj < 0.05,]
-      
-      results <- append(results, result)
-      
-      #plot and save the waterfall plot of ORA p-values
-      plot <- ggplot(result, aes_string(y = "neg.log.q", x = "MsigDB_Hallmark", fill = "MsigDB_Hallmark")) +
-        ## Specifies barplot
-        geom_col() +
-        ## Rename y axis
-        ylab("-10*log10(FDR q-value)") + 
-        ## Flips the coordinates
-        coord_flip() +
-        ## Makes the background white
-        theme_minimal() +
-        ## Add title
-        ggtitle(paste0(pattern, ": Overrepresented MsigDB Hallmarks")) +
-        ## This creates the dotted line at .05 value 
-        geom_hline(yintercept=c(13.0103), linetype="dotted") + # Add veritcle line to show significances
-        ## Adds the q values
-        geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
-        ## Removes legend
-        theme(legend.position = "none") +
-        ## specifies limits 
-        ylim(0, ceiling(max(result$"neg.log.q")) + (max(result$"neg.log.q")/4))
-      ggsave(paste0("results/figures/Pattern_MsigDB_ORA/", pattern, "_ORA.pdf"),
-             plot = plot,
-             width = unit(10, "in"),
-             height = unit(6, "in"),
-             device = "pdf")
+      d[[length(d)+1]] <- result
+
   }
-  return(results)
+  return(d)
 }
 
 plotPatternUMAP <- function(object){
