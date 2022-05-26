@@ -154,23 +154,25 @@ plotPatternHallmarks <- function(patternhallmarks, whichpattern=1, ...) {
   return(plot)  
 }
 
-plotPatternUMAP <- function(object){
-  patternMarkerResults <- patternMarkers(object, threshold = "cut", lp = NA, axis = 1)
-  names(patternMarkerResults$PatternMarkers) <- colnames(patternMarkerResults$PatternMarkerRanks)
-  
-  # List of each gene as a pattern marker
-  PMlist <- patternMarkerResults$PatternMarkers
-  
-  results <- list()
-  for (pattern in names(PMlist)) 
+plotPatternUMAP <- function(object, cds){
+  patMat <- cogaps@sampleFactors
+  # Create temporary CDS object
+  tempCds <- cds
+  # Merge with the column data in the cds
+  tempCds@colData <- cbind(colData(tempCds), patMat[colnames(tempCds), ])
+  patterns <- colnames(patMat)
+  umaplist <- list()
+  for (pattern in patterns) 
     # UMAP Embedding of CoGAPS Pattern Weight ###################################
-    umap <- plot_cells(tempCds, color_cells_by = pattern,
-                       label_cell_groups = FALSE, show_trajectory_graph = FALSE)
-    ggsave(paste0("results/figures/UMAP/", pattern, "_UMAP.pdf"),
-           plot = umap,
-           width = unit(8, "in"),
-           height = unit(5, "in"))
+    umaplist[[length(umaplist)+1]] <- plot_cells(tempCds, color_cells_by = pattern,
+                        label_cell_groups = FALSE, show_trajectory_graph = FALSE) + 
+                        ggtitle(paste0(pattern)) +
+                        theme(legend.position="none")
   
+  library(ggplot2)
+  library(gridExtra)
+  plot <- grid.arrange(grobs = umaplist)
+  return(plot)
 }
 
 #' @export
