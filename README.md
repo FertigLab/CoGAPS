@@ -1,3 +1,5 @@
+<img src="https://user-images.githubusercontent.com/25310425/169565420-56958b50-29a2-4032-afb3-08447577d074.png" width="300">
+
 # CoGAPS (Version: 3.11.1)
 
 [![Bioc](https://bioconductor.org/images/logo_bioconductor.gif)](https://bioconductor.org/packages/CoGAPS)
