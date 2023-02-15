@@ -1,6 +1,6 @@
 ---
 title: "CoGAPS - Coordinated Gene Association in Pattern Sets"
-author: "Thomas Sherman, Genevieve Stein-O'Brien, Hyejune Limb, Elana Fertig"
+author: "Jeanette Johnson, Ashley Tsang, Thomas Sherman, Genevieve Stein-O'Brien, Hyejune Limb, Elana Fertig"
 date: "`r BiocStyle::doc_date()`"
 bibliography: References.bib
 vignette: >
@@ -50,31 +50,13 @@ efficient underlying implementation in C++.
 as follows:
 
 ```{r eval=FALSE}
-source("https://bioconductor.org/biocLite.R")
-biocLite("CoGAPS")
-```
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
 
-The most up-to-date version of *CoGAPS* can be installed directly from the 
-*FertigLab* Github Repository:
-
-```{r eval=FALSE}
-## Method 1 using biocLite
-biocLite("FertigLab/CoGAPS", dependencies = TRUE, build_vignettes = TRUE)
+BiocManager::install("CoGAPS")
 
 ## Method 2 using devtools package
 devtools::install_github("FertigLab/CoGAPS")
-```
-
-There is also an option to install the development version of *CoGAPS*, 
-while this version has the latest experimental features, it is not guaranteed
-to be stable.
-
-```{r eval=FALSE}
-## Method 1 using biocLite
-biocLite("FertigLab/CoGAPS", ref="develop", dependencies = TRUE, build_vignettes = TRUE)
-
-## Method 2 using devtools package
-devtools::install_github("FertigLab/CoGAPS", ref="develop")
 ```
 
 # Package Overview
@@ -90,35 +72,14 @@ The only required argument to `CoGAPS` is the data set. This can be a `matrix`,
 file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
 
 ```{r}
-# load data
-data(GIST)
-
-# run CoGAPS (low number of iterations since this is just an example)
-CoGAPS(GIST.matrix, nIterations=1000)
+library(CoGAPS)
 ```
 
-While CoGAPS is running it periodically prints status messages. For example,
-`20000 of 25000, Atoms: 2932(80), ChiSq: 9728, time: 00:00:29 / 00:01:19`. This
-message tells us that CoGAPS is at iteration 20000 out of 25000 for this phase,
-and that 29 seconds out of an estimated 1 minute 19 seconds have passed. It 
-also tells us the size of the atomic domain which is a core component of the 
-algorithm but can be ignored for now. Finally, the ChiSq value tells us how
-closely the A and P matrices reconstruct the original data. In general, we want
-this value to go down - but it is not a perfect measurment of how well CoGAPS
-is finding the biological processes contained in the data. CoGAPS also prints
-a message indicating which phase is currently happening. There are two phases
-to the algorithm - *Equilibration* and *Sampling*.
+```{r modsim}
+modsimdata <- read.table("../data/ModSimData.txt")
+# input to CoGAPS
+modsimdata
 
-## Setting Parameters
-
-### Model Parameters
-
-Most of the time we'll want to set some parameters before running CoGAPS.
-Parameters are managed with a `CogapsParams` object. This object will
-store all parameters needed to run CoGAPS and provides a simple interface for
-viewing and setting the parameter values.
-
-```{r}
 # create new parameters object
 params <- new("CogapsParams")
 
@@ -131,25 +92,14 @@ getParam(params, "nPatterns")
 # set the value for a specific parameter
 params <- setParam(params, "nPatterns", 3)
 getParam(params, "nPatterns")
-``` 
-
+```
 Once we've created the parameters object we can pass it along with our data to
 `CoGAPS`.
 
 ```{r}
-# run CoGAPS with specified model parameters
-CoGAPS(GIST.matrix, params, nIterations=1000)
-```
-
-### Run Configuration Options
-
-The `CogapsParams` class manages the model parameters - i.e. the parameters
-that affect the result. There are also a few parameters that are passed
-directly to `CoGAPS` that control things like displaying the status of the run.
-
-```{r}
-# run CoGAPS with specified output frequency
-CoGAPS(GIST.matrix, params, nIterations=1000, outputFrequency=250)
+# run CoGAPS with specified parameters
+cogapsresult <- CoGAPS(modsimdata, params, outputFrequency = 10000)
+cogapsresult
 ```
 
 There are several other arguments that are passed directly to `CoGAPS` which
@@ -183,258 +133,14 @@ getVersion(result)
 getOriginalParameters(result)
 ```
 
-To convert a `CogapsResult` object to a `LinearEmbeddingMatrix` use
+```{r single cell}
+library(anndata)
 
-```{r}
-as(result, "LinearEmbeddingMatrix")
-```
+pdac_epithelial <- read_h5ad("../data/PDAC_Peng_Epi.h5ad")
+pdac_epithelial
 
-## Visualizing Output
+pdac_epithelial_result <- read_csv("../data/pdacresult.h5ad")
 
-The `CogapsResult` object can be passed on to the analysis
-and plotting functions provided in the package. By default, the `plot` function
-displays how the patterns vary across the samples. (Note that we pass the 
-`nIterations` parameter here directly, this is allowed for any parameters in 
-the `CogapsParams` class and will always take precedent over the values given
-in `params`).
-
-```{r}
-# store result
-result <- CoGAPS(GIST.matrix, params, nIterations=5000, messages=FALSE)
-
-# plot CogapsResult object returned from CoGAPS
-plot(result)
-```
-
-In the example workflows we'll explore some more analysis functions provided in
-the package.
-
-## Running CoGAPS in Parallel
-
-Non-Negative Matrix Factorization algorithms typically require long computation
-times and CoGAPS is no exception. In order to scale CoGAPS up to the size of
-data sets seen in practice we need to take advantage of modern hardware
-and parallelize the algorithm.
-
-### Multi-Threaded Parallelization
-
-The simplest way to run CoGAPS in parallel is to provide the `nThreads`
-argument to `CoGAPS`. This allows the underlying algorithm to run on multiple
-threads and has no effect on the mathematics of the algorithm i.e. this is
-still standard CoGAPS. The precise number of threads to use depends on many
-things like hardware and data size. The best approach is to play around with
-different values and see how it effects the estimated time.
-
-```{r}
-CoGAPS(GIST.matrix, nIterations=10000, outputFrequency=5000, nThreads=1, seed=5)
-CoGAPS(GIST.matrix, nIterations=10000, outputFrequency=5000, nThreads=4, seed=5)
-```
-
-Note this method relies on CoGAPS being compiled with OpenMP support, use
-`buildReport` to check.
-
-```{r}
-cat(CoGAPS::buildReport())
-```
-
-### Distributed CoGAPS (GWCoGAPS/scCoGAPS)
-
-For large datasets (greater than a few thousand genes or samples) the
-multi-threaded parallelization isn't enough. It is more efficient to break up
-the data into subsets and perform CoGAPS on each subset in parallel, stitching 
-the results back together at the end. The CoGAPS extensions, GWCOGAPS and 
-scCoGAPS, each implement a version of this method (@OBRIEN_2017).
-
-In order to use these extensions, some additional parameters are required.
-`nSets` specifies the number of subsets to break the data set into. `cut`,
-`minNS`, and `maxNS` control the process of matching patterns across subsets
-and in general should not be changed from defaults. More information about
-these parameters can be found in the original papers. These parameters
-need to be set with a different function than `setParam` since they depend
-on each other. Here we only set `nSets` (always required), but we have the
-option to pass the other parameters as well.
-
-```{r}
-params <- setDistributedParams(params, nSets=3)
-```
-
-Setting `nSets` requires balancing available hardware and run time against the
-size of your data. In general, `nSets` should be less than or equal to the
-number of nodes/cores that are available. If that is true, then the more subsets
-you create, the faster CoGAPS will run - however, some robustness can be lost
-when the subsets get too small. The general rule of thumb is to set `nSets`
-so that each subset has between 1000 and 5000 genes or cells. We will see an
-example of this on real data in the next two sections.
-
-Once the distributed parameters have been set we can call CoGAPS either by
-setting the `distributed` parameter or by using the provided wrapper functions.
-The following calls are equivalent:
-
-```{r}
-# need to use a file with distributed cogaps
-GISTCsvPath <- system.file("extdata/GIST.csv", package="CoGAPS")
-
-# genome-wide CoGAPS
-GWCoGAPS(GISTCsvPath, params, messages=FALSE, nIterations=1000)
-
-# genome-wide CoGAPS
-CoGAPS(GISTCsvPath, params, distributed="genome-wide", messages=FALSE, nIterations=1000)
-
-# single-cell CoGAPS
-scCoGAPS(GISTCsvPath, params, messages=FALSE, transposeData=TRUE, nIterations=1000)
-
-# single-cell CoGAPS
-CoGAPS(GISTCsvPath, params, distributed="single-cell", messages=FALSE, transposeData=TRUE, nIterations=1000)
-```
-
-The parallel backend for this computation is managed by the package `BiocParallel`
-and there is an option for the user to specifiy which backend they want. See the
-[Additional Features](#setting-parallel-backend)
-section for more information.
-
-In general it is preferred to pass a file name to `GWCoGAPS`/`scCoGAPS` since
-otherwise the entire data set must be copied across multiple processes which
-will slow things down and potentially cause an out-of-memory error. We will
-see examples of this in the next two sections.
-
-# Additional Features of CoGAPS
-
-## Checkpoint System - Saving/Loading CoGAPS Runs
-
-CoGAPS allows the user to save their progress throughout the run, and restart
-from the latest saved "checkpoint". This is intended so that if the server
-crashes in the middle of a long run it doesn't need to be restarted from the
-beginning. Set the `checkpointInterval` parameter to save checkpoints and
-pass a file name as `checkpointInFile` to load from a checkpoint. 
-
-```{r}
-if (CoGAPS::checkpointsEnabled())
-{
-    # our initial run
-    res1 <- CoGAPS(GIST.matrix, params, checkpointInterval=100, checkpointOutFile="vignette_example.out", messages=FALSE)
-
-    # assume the previous run crashes
-    res2 <- CoGAPS(GIST.matrix, checkpointInFile="vignette_example.out", messages=FALSE)
-
-    # check that they're equal
-    all(res1@featureLoadings == res2@featureLoadings)
-    all(res1@sampleFactors == res2@sampleFactors)
-}
-```
-
-## Transposing Data
-
-If your data is stored as samples x genes, `CoGAPS` allows you to pass
-`transposeData=TRUE` and will automatically read the transpose of your data
-to get the required genes x samples configuration.
-
-## Passing Uncertainty Matrix
-
-In addition to providing the data, the user can also specify an uncertainty
-measurement - the standard deviation of each entry in the data matrix. By
-default, `CoGAPS` assumes that the standard deviation matrix is 10% of the
-data matrix. This is a reasonable heuristic to use, but for specific types
-of data you may be able to provide better information.
-
-```{r}
-# run CoGAPS with custom uncertainty
-data(GIST)
-result <- CoGAPS(GIST.matrix, params, uncertainty=GIST.uncertainty, messages=FALSE, nIterations=1000)
-```
-
-## GWCoGAPS/scCoGAPS
-
-### Setting Parallel Backend
-
-The distributed computation for CoGAPS uses `BiocParallel` underneath the hood
-to manage the parallelization. The user has the option to specify what the
-backend should be. By default, it is `MulticoreParam` with the same number
-of workers as `nSets`. Use the `BPPARAM` parameter in `CoGAPS` to set the
-backend. See the vignette for `BiocParallel` for more information about the
-different choices for the backend.
-
-```{r}
-# run CoGAPS with serial backend
-scCoGAPS(GISTCsvPath, params, BPPARAM=BiocParallel::SerialParam(), messages=FALSE, transposeData=TRUE, nIterations=1000)
-```
-
-### Methods of Subsetting Data
-
-The default method for subsetting the data is to uniformly break up the rows
-(cols) of the data. There is an alternative option where the user provides an
-annotation vector for the rownames (colnames) of the data and gives a weight to
-each category in the annotation vector. Equal sized subsets are then drawn by 
-sampling all rows (cols) according to the weight of each category.
-
-```{r}
-# sampling with weights
-anno <- sample(letters[1:5], size=nrow(GIST.matrix), replace=TRUE)
-w <- c(1,1,2,2,1)
-names(w) <- letters[1:5]
-params <- new("CogapsParams")
-params <- setAnnotationWeights(params, annotation=anno, weights=w)
-result <- GWCoGAPS(GISTCsvPath, params, messages=FALSE, nIterations=1000)
-```
-
-Finally, the user can set `explicitSets` which is a list of character or 
-numeric vectors indicating which names or indices of the data should be put
-into each set. Make sure to set `nSets` to the correct value before passing `explicitSets`.
-
-```{r}
-# running cogaps with given subsets
-sets <- list(1:225, 226:450, 451:675, 676:900)
-params <- new("CogapsParams")
-params <- setDistributedParams(params, nSets=length(sets))
-result <- GWCoGAPS(GISTCsvPath, params, explicitSets=sets, messages=FALSE, nIterations=1000)
-```
-
-### Additional Return Information
-
-When running GWCoGAPS or scCoGAPS, some additional metadata is returned that 
-relates to the pattern matching process. This process is how CoGAPS
-stitches the results from each subset back together.
-
-```{r}
-# run GWCoGAPS (subset data so the displayed output is small)
-params <- new("CogapsParams")
-params <- setParam(params, "nPatterns", 3)
-params <- setDistributedParams(params, nSets=2)
-result <- GWCoGAPS(GISTCsvPath, params, messages=FALSE, nIterations=1000)
-
-# get the unmatched patterns from each subset
-getUnmatchedPatterns(result)
-
-# get the clustered patterns from the set of all patterns
-getClusteredPatterns(result)
-
-# get the correlation of each pattern to the cluster mean
-getCorrelationToMeanPattern(result)
-
-# get the size of the subsets used
-sapply(getSubsets(result), length)
-```
-
-### Manual Pipeline
-
-CoGAPS allows for a custom process for matching the patterns together. If you 
-have a result object from a previous run of GWCoGAPS/scCoGAPS, the unmatched
-patterns for each subset are found by calling `getUnmatchedPatterns`. Apply
-any method you like as long as the result is a matrix with the number of rows
-equal to the number of samples (genes) and the number of columns is equal to 
-the number of patterns. Then pass the matrix to the  `fixedPatterns` argument
-along with the original parameters for the GWCoGAPS/scCoGAPS run.
-
-```{r}
-# initial run
-result <- GWCoGAPS(GISTCsvPath, messages=FALSE, nIterations=1000)
-
-# custom matching process (just take matrix from first subset as a dummy)
-consensusMatrix <- getUnmatchedPatterns(result)[[1]]
-
-# run with our custom matched patterns matrix
-params <- CogapsParams()
-params <- setFixedPatterns(params, consensusMatrix, 'P')
-GWCoGAPS(GISTCsvPath, params, explicitSets=getSubsets(result), nIterations=1000)
 ```
 
 # sessionInfo()
