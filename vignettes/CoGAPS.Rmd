@@ -5,10 +5,13 @@ date: "`r BiocStyle::doc_date()`"
 bibliography: References.bib
 vignette: >
     %\VignetteIndexEntry{CoGAPS}
-    %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
+    %\VignetteEngine{knitr::rmarkdown}
 output: 
     BiocStyle::html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r include=FALSE, cache=FALSE}
@@ -26,28 +29,29 @@ packageVersion("CoGAPS")
 
 # Introduction
 
-Coordinated Gene Association in Pattern Sets (CoGAPS) is a technique for latent
-space learning in gene expression data. CoGAPS is a member of the
-Nonnegative Matrix Factorization (NMF) class of algorithms. NMFs factorize a
-data matrix into two related matrices containing gene weights, the
-Amplitude (A) matrix, and sample weights, the Pattern (P) Matrix. Each column
-of A or row of P defines a feature and together this set of features defines
-the latent space among genes and samples, respectively. In NMF, the values of
-the elements in the A and P matrices are constrained to be greater than or
-equal to zero. This constraint simultaneously reflects the non-negative nature
-of gene expression data and enforces the additive nature of the resulting
-feature dimensions, generating solutions that are biologically intuitive to
-interpret (@SEUNG_1999).
+Coordinated Gene Association in Pattern Sets (CoGAPS) is a technique for
+latent space learning in gene expression data. CoGAPS is a member of the
+Nonnegative Matrix Factorization (NMF) class of algorithms. NMFs
+factorize a data matrix into two related matrices containing gene
+weights, the Amplitude (A) matrix, and sample weights, the Pattern (P)
+Matrix. Each column of A or row of P defines a feature and together this
+set of features defines the latent space among genes and samples,
+respectively. In NMF, the values of the elements in the A and P matrices
+are constrained to be greater than or equal to zero. This constraint
+simultaneously reflects the non-negative nature of gene expression data
+and enforces the additive nature of the resulting feature dimensions,
+generating solutions that are biologically intuitive to interpret
+(@SEUNG_1999).
 
 CoGAPS has two extensions that allow it to scale up to large data sets,
-Genome-Wide CoGAPS (GWCoGAPS) and Single-Cell CoGAPS (scCOGAPS). This package
-presents a unified R interface for all three methods, with a parallel,
-efficient underlying implementation in C++.
+Genome-Wide CoGAPS (GWCoGAPS) and Single-Cell CoGAPS (scCOGAPS). This
+package presents a unified R interface for all three methods, with a
+parallel, efficient underlying implementation in C++.
 
 # Installing CoGAPS
 
-*CoGAPS* is a bioconductor package and so the release version can be installed
-as follows:
+*CoGAPS* is a bioconductor package and so the release version can be
+installed as follows:
 
 ```{r eval=FALSE}
 if (!require("BiocManager", quietly = TRUE))
@@ -61,15 +65,15 @@ devtools::install_github("FertigLab/CoGAPS")
 
 # Package Overview
 
-We first give a walkthrough of the package features using a simple, simulated
-data set. In later sections we provide two example workflows on real data
-sets.
+We first give a walkthrough of the package features using a simple,
+simulated data set. In later sections we provide two example workflows
+on real data sets.
 
 ## Running CoGAPS with Default Parameters
 
-The only required argument to `CoGAPS` is the data set. This can be a `matrix`,
-`data.frame`, `SummarizedExperiment`, `SingleCellExperiment` or the path of a
-file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
+The only required argument to `CoGAPS` is the data set. This can be a
+`matrix`, `data.frame`, `SummarizedExperiment`, `SingleCellExperiment`
+or the path of a file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
 
 ```{r}
 library(CoGAPS)
@@ -93,8 +97,9 @@ getParam(params, "nPatterns")
 params <- setParam(params, "nPatterns", 3)
 getParam(params, "nPatterns")
 ```
-Once we've created the parameters object we can pass it along with our data to
-`CoGAPS`.
+
+Once we've created the parameters object we can pass it along with our
+data to `CoGAPS`.
 
 ```{r}
 # run CoGAPS with specified parameters
@@ -102,22 +107,24 @@ cogapsresult <- CoGAPS(modsimdata, params, outputFrequency = 10000)
 cogapsresult
 ```
 
-There are several other arguments that are passed directly to `CoGAPS` which
-are covered in later sections.
+There are several other arguments that are passed directly to `CoGAPS`
+which are covered in later sections.
 
 ## Breaking Down the Return Object from CoGAPS
 
-CoGAPS returns a object of the class `CogapsResult` which inherits from `LinearEmbeddingMatrix` (defined in the `SingleCellExperiment`
-package). CoGAPS stores the lower dimensional representation of the samples 
-(P matrix) in the `sampleFactors` slot and the weight of the features (A matrix)
-in the `featureLoadings` slot. `CogapsResult` also adds two of its own slots -
-`factorStdDev` and `loadingStdDev` which contain the standard deviation across
-sample points for each matrix.
+CoGAPS returns a object of the class `CogapsResult` which inherits from
+`LinearEmbeddingMatrix` (defined in the `SingleCellExperiment` package).
+CoGAPS stores the lower dimensional representation of the samples (P
+matrix) in the `sampleFactors` slot and the weight of the features (A
+matrix) in the `featureLoadings` slot. `CogapsResult` also adds two of
+its own slots - `factorStdDev` and `loadingStdDev` which contain the
+standard deviation across sample points for each matrix.
 
-There is also some information in the `metadata` slot such as the original
-parameters and value for the Chi-Sq statistic. In general, the metadata will
-vary depending on how `CoGAPS` was called in the first place. The package 
-provides these functions for querying the metadata in a safe manner:
+There is also some information in the `metadata` slot such as the
+original parameters and value for the Chi-Sq statistic. In general, the
+metadata will vary depending on how `CoGAPS` was called in the first
+place. The package provides these functions for querying the metadata in
+a safe manner:
 
 ```{r}
 # run CoGAPS
@@ -134,13 +141,24 @@ getOriginalParameters(result)
 ```
 
 ```{r single cell}
-library(anndata)
-
-pdac_epithelial <- read_h5ad("../data/PDAC_Peng_Epi.h5ad")
-pdac_epithelial
-
-pdac_epithelial_result <- read_csv("../data/pdacresult.h5ad")
-
+# library(readr)
+# pdac_peng_epi <- read.table("../data/pdac_peng_epi.csv", header=TRUE)
+# pdac_path = "../data/pdac_peng_epi.csv"
+# pdac_epithelial_result <- read_csv("../data/pdacresult.h5ad")
+data <- readRDS("data/pdac_peng_epi.Rds")
+library(CoGAPS)
+# pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE, distributed="genome-wide")
+# pdac_params
+# pdac_params <- setDistributedParams(pdac_params, nSets=15, minNS=8, maxNS = 23, cut=8)
+# pdac_params
+pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE)
+startTime <- Sys.time()
+  
+text_result <- CoGAPS("../data/pdac_peng_epi.csv", pdac_params)
+endTime <- Sys.time()
+  
+# prints recorded time
+print(endTime - startTime)
 ```
 
 # sessionInfo()
@@ -151,7 +169,8 @@ sessionInfo()
 
 # Citing CoGAPS
 
-If you use the CoGAPS package for your analysis, please cite @FERTIG_2010
+If you use the CoGAPS package for your analysis, please cite
+@FERTIG_2010
 
 If you use the gene set statistic, please cite @OCHS_2009
 
