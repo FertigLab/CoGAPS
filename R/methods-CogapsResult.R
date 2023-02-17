@@ -159,8 +159,12 @@ plotPatternHallmarks <- function(patternhallmarks, whichpattern=1,...) {
   return(plot)  
 })
 
+# NEW VIS FROM PDAC VIGNETTE
+#' @rdname plotPatternUMAP-methods
+#' @aliases plotPatternUMAP
+setMethod("plotPatternUMAP", signature(object="CogapsResult"),
 plotPatternUMAP <- function(object, cds){
-  patMat <- cogaps@sampleFactors
+  patMat <- object@sampleFactors
   # Create temporary CDS object
   tempCds <- cds
   # Merge with the column data in the cds
@@ -178,7 +182,7 @@ plotPatternUMAP <- function(object, cds){
   library(gridExtra)
   plot <- grid.arrange(grobs = umaplist)
   return(plot)
-}
+})
 
 #' @export
 #' @importFrom graphics plot legend lines points
