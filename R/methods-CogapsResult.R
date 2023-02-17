@@ -63,6 +63,9 @@ function(object)
 
 
 # NEW VIS FROM PDAC VIGNETTE
+#' @rdname patternhallmarks-methods
+#' @aliases patternhallmarks
+setMethod("PatternHallmarks", signature(object="CogapsResult"),
 PatternHallmarks <- function(object)
 {
   library("fgsea", quietly = TRUE)
@@ -113,10 +116,12 @@ PatternHallmarks <- function(object)
 
   }
   return(d)
-}
+})
 
-
-plotPatternHallmarks <- function(patternhallmarks, whichpattern=1, ...) {
+#' @rdname plotPatternHallmarks-methods
+#' @aliases plotPatternHallmarks
+setMethod("plotPatternHallmarks", signature(patternhallmarks="list", whichpattern="numeric"),
+plotPatternHallmarks <- function(patternhallmarks, whichpattern=1,...) {
   # should be able to pass in info about just one pattern, or to pass all info and specify which pattern
   if (length(patternhallmarks) > 1){
     patternhallmarks <- patternhallmarks[[whichpattern]]
@@ -128,7 +133,7 @@ plotPatternHallmarks <- function(patternhallmarks, whichpattern=1, ...) {
   patternhallmarks <- patternhallmarks %>% mutate(overlapGenes = sapply(overlapGenes, toString))
   
   # for plotting, limit the results to significant over-representation
-  patternhallmarks <- patternhallmarks[patternhallmarks$padj < 0.05,]
+  patternhallmarks <- patternhallmarks[patternhallmarks$pval < 0.05,]
   
   #plot and save the waterfall plot of ORA p-values
   plot <- ggplot(patternhallmarks, aes_string(y = "neg.log.q", x = "MsigDB_Hallmark", fill = "MsigDB_Hallmark")) +
@@ -141,7 +146,7 @@ plotPatternHallmarks <- function(patternhallmarks, whichpattern=1, ...) {
     ## Makes the background white
     theme_minimal() +
     ## Add title
-    ggtitle(paste0("Overrepresented MsigDB Hallmarks")) +
+    ggtitle(paste0("Overrepresented MsigDB Hallmarks in Pattern", whichpattern)) +
     ## This creates the dotted line at .05 value 
     geom_hline(yintercept=c(13.0103), linetype="dotted") + # Add veritcle line to show significances
     ## Adds the q values
@@ -152,7 +157,7 @@ plotPatternHallmarks <- function(patternhallmarks, whichpattern=1, ...) {
     ylim(0, ceiling(max(patternhallmarks$"neg.log.q")) + (max(patternhallmarks$"neg.log.q")/4))
 
   return(plot)  
-}
+})
 
 plotPatternUMAP <- function(object, cds){
   patMat <- cogaps@sampleFactors
@@ -419,7 +424,7 @@ function(object, threshold, lp, axis)
     if (!(axis %in% 1:2))
         stop("axis must be either 1 or 2")
     ## need to scale each row of the matrix of interest so that the maximum is 1
-    resultMatrix <- if (axis == 1) object@featureLoadings else object@sampleFactors
+    resultMatrix <- if (axis == 1) object@featureLoadings[1:4] else object@sampleFactors
     normedMatrix <- t(apply(resultMatrix, 1, function(row) row / max(row)))
     ## handle the case where a custom linear combination of patterns was passed in
     if (!is.na(lp))
@@ -469,7 +474,7 @@ function(object, threshold, lp, axis)
         return(ssl)
         
       }
-      simGenes <- simplicityGENES(As=object@featureLoadings,
+      simGenes <- simplicityGENES(As=object@featureLoadings[1:4],
                                   Ps=object@sampleFactors)
       
       patternMarkers <- list()
