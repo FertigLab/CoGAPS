@@ -141,11 +141,7 @@ getOriginalParameters(result)
 ```
 
 ```{r single cell}
-# library(readr)
-# pdac_peng_epi <- read.table("../data/pdac_peng_epi.csv", header=TRUE)
-# pdac_path = "../data/pdac_peng_epi.csv"
-# pdac_epithelial_result <- read_csv("../data/pdacresult.h5ad")
-data <- readRDS("data/pdac_peng_epi.Rds")
+load("pdac_peng_epi.Rds") # may need to run this line in R console
 library(CoGAPS)
 # pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE, distributed="genome-wide")
 # pdac_params
@@ -154,7 +150,7 @@ library(CoGAPS)
 pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE)
 startTime <- Sys.time()
   
-text_result <- CoGAPS("../data/pdac_peng_epi.csv", pdac_params)
+text_result <- CoGAPS(pdac_peng_epi, pdac_params)
 endTime <- Sys.time()
   
 # prints recorded time
@@ -164,7 +160,15 @@ print(endTime - startTime)
 # sessionInfo()
 
 ```{r}
-sessionInfo()
+library(monocle3)
+library(Matrix)
+pdac_mtx <- as.matrix(pdac_peng_epi)
+
+cds <- new_cell_data_set(pdac_mtx)
+cds <- preprocess_cds(cds)
+cds <- reduce_dimension(cds)
+
+plotPatternUMAP(text_result, cds)
 ```
 
 # Citing CoGAPS
