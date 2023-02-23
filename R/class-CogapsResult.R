@@ -374,3 +374,13 @@ Pw=rep(1,ncol(object@featureLoadings)), PwNull=FALSE)
 #' pm <- patternMarkers(GIST.result)
 setGeneric("patternMarkers", function(object, threshold="all", lp=NA, axis=1)
     {standardGeneric("patternMarkers")})
+
+setGeneric("plotPatternUMAP", function(object, cds)
+{standardGeneric("plotPatternUMAP")})
+
+setGeneric("plotPatternHallmarks", function(patternhallmarks, whichpattern=1,...)
+{standardGeneric("plotPatternHallmarks")})
+
+setGeneric("PatternHallmarks", function(object)
+{standardGeneric("PatternHallmarks")})
+
