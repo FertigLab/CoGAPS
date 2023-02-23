@@ -375,12 +375,24 @@ Pw=rep(1,ncol(object@featureLoadings)), PwNull=FALSE)
 setGeneric("patternMarkers", function(object, threshold="all", lp=NA, axis=1)
     {standardGeneric("patternMarkers")})
 
+#' compute pattern markers statistic
+#' @export
+#' @docType methods
+#' @rdname plotPatternUMAPs-methods
 setGeneric("plotPatternUMAP", function(object, cds)
 {standardGeneric("plotPatternUMAP")})
 
+#' compute pattern markers statistic
+#' @export
+#' @docType methods
+#' @rdname plotPatternHallmarks-methods
 setGeneric("plotPatternHallmarks", function(patternhallmarks, whichpattern=1,...)
 {standardGeneric("plotPatternHallmarks")})
 
+#' compute pattern markers statistic
+#' @export
+#' @docType methods
+#' @rdname PatternHallmarks-methods
 setGeneric("PatternHallmarks", function(object)
 {standardGeneric("PatternHallmarks")})
 
