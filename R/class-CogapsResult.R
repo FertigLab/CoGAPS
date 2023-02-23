@@ -389,10 +389,10 @@ setGeneric("plotPatternHallmarks", function(patternhallmarks, whichpattern=1,...
 setGeneric("PatternHallmarks", function(object)
 {standardGeneric("PatternHallmarks")})
 
-#' #' compute pattern markers statistic
-#' #' @export
-#' #' @docType methods
-#' #' @rdname plotPatternUMAPs-methods
-#' setGeneric("plotPatternUMAP", function(object, cds)
-#' {standardGeneric("plotPatternUMAP")})
+#' compute pattern markers statistic
+#' @export
+#' @docType methods
+#' @rdname plotPatternUMAPs-methods
+setGeneric("plotPatternUMAP", function(object, cds)
+{standardGeneric("plotPatternUMAP")})
 
