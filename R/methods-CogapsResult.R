@@ -162,7 +162,7 @@ plotPatternHallmarks <- function(patternhallmarks, whichpattern=1,...) {
 # NEW VIS FROM PDAC VIGNETTE
 #' @rdname plotPatternUMAP-methods
 #' @aliases plotPatternUMAP
-setMethod("plotPatternUMAP", signature(object="CogapsResult", cds="monocle3"),
+setMethod("plotPatternUMAP", signature(object="CogapsResult", cds),
 plotPatternUMAP <- function(object, cds){
   patMat <- object@sampleFactors
   # Create temporary CDS object
