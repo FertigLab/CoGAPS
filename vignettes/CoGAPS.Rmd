@@ -143,11 +143,11 @@ getOriginalParameters(result)
 ```{r single cell}
 load("pdac_peng_epi.Rds") # may need to run this line in R console
 library(CoGAPS)
-# pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE, distributed="genome-wide")
-# pdac_params
-# pdac_params <- setDistributedParams(pdac_params, nSets=15, minNS=8, maxNS = 23, cut=8)
-# pdac_params
-pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE)
+pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE, distributed="genome-wide")
+pdac_params
+pdac_params <- setDistributedParams(pdac_params, nSets=15, minNS=8, maxNS = 23, cut=8)
+pdac_params
+# pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE)
 startTime <- Sys.time()
   
 text_result <- CoGAPS(pdac_peng_epi, pdac_params)
@@ -162,13 +162,14 @@ print(endTime - startTime)
 ```{r}
 library(monocle3)
 library(Matrix)
-pdac_mtx <- as.matrix(pdac_peng_epi)
 
-cds <- new_cell_data_set(pdac_mtx)
-cds <- preprocess_cds(cds)
-cds <- reduce_dimension(cds)
 
-plotPatternUMAP(text_result, cds)
+library(CoGAPS)
+plotPatternUMAP(pdac, cds)
+
+cds2 <- subset(cds, gene_short_name %in% rownames(output@featureLoadings))
+countsdf=as.data.frame(as.matrix(cds2@assays@data$counts))
+write.csv(countsdf, "/Users/jeanette/databarn/pdac_atlas_cogaps/aws_result/counts.csv")
 ```
 
 # Citing CoGAPS
