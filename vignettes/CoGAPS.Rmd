@@ -149,7 +149,7 @@ pdac_params <- setDistributedParams(pdac_params, nSets=15, minNS=8, maxNS = 23, 
 pdac_params
 # pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE)
 startTime <- Sys.time()
-  
+
 text_result <- CoGAPS(pdac_peng_epi, pdac_params)
 endTime <- Sys.time()
   
@@ -165,6 +165,9 @@ library(Matrix)
 
 
 library(CoGAPS)
+cogapsresult <- readRDS("~/fertiglab/manuscript_messing_around/CoGAPS/data/cogapsresult.Rds")
+inputdata <- readRDS("~/fertiglab/manuscript_messing_around/CoGAPS/data/inputdata.Rds")
+
 plotPatternUMAP(pdac, cds)
 
 cds2 <- subset(cds, gene_short_name %in% rownames(output@featureLoadings))
