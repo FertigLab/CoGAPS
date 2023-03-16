@@ -141,16 +141,24 @@ getOriginalParameters(result)
 ```
 
 ```{r single cell}
-load("pdac_peng_epi.Rds") # may need to run this line in R console
+pdac_data <- readRDS("../data/inputdata.Rds") # load R data object 
+
+pdac_epi_counts <- counts(pdac_data)
+pdac_epi_counts <- as.matrix(pdac_data@assays$originalexp@counts)
+head(pdac_epi_counts, n=c(5L, 2L))
+
 library(CoGAPS)
-pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE, distributed="genome-wide")
+pdac_params <- CogapsParams(nIterations=100, # run for 100 iterations 
+                            seed=42, # set random seed for consistent results across stochastic runs
+                            nPatterns=8, # each thread will learn 8 patterns
+                            sparseOptimization=TRUE, # optimize for sparse input data
+                            distributed="genome-wide") # paralellize across sets "genome-wise
 pdac_params
-pdac_params <- setDistributedParams(pdac_params, nSets=15, minNS=8, maxNS = 23, cut=8)
+pdac_params <- setDistributedParams(pdac_params, nSets=7)
 pdac_params
-# pdac_params <- CogapsParams(nIterations=100, seed=42, nPatterns=8, sparseOptimization=TRUE)
 startTime <- Sys.time()
 
-text_result <- CoGAPS(pdac_peng_epi, pdac_params)
+text_result <- CoGAPS(pdac_epi_counts, pdac_params)
 endTime <- Sys.time()
   
 # prints recorded time
@@ -160,21 +168,67 @@ print(endTime - startTime)
 # sessionInfo()
 
 ```{r}
-library(monocle3)
 library(Matrix)
 
 
 library(CoGAPS)
-cogapsresult <- readRDS("~/fertiglab/manuscript_messing_around/CoGAPS/data/cogapsresult.Rds")
-inputdata <- readRDS("~/fertiglab/manuscript_messing_around/CoGAPS/data/inputdata.Rds")
+cogapsresult <- readRDS("../data/cogapsresult.Rds")
+# inputdata <- readRDS("~/fertiglab/manuscript_messing_around/CoGAPS/data/inputdata.Rds")
 
-plotPatternUMAP(pdac, cds)
+plotPatternUMAP(text_result, inputdata)
+
+library(gridExtra)
+library(ggplot2)
+# Merge with the column data in the cds
+factor_columns <- colnames(cogapsresult@sampleFactors)
+pattern_names <- factor_columns[grep("Pattern", factor_columns)]
+inputdata@colData <- cbind(inputdata@colData, cogapsresult@sampleFactors[,pattern_names ])
+
+plot_cells(inputdata, 
+           color_cells_by = "TN_assigned_cell_type_immune_broad",
+           label_cell_groups = FALSE, show_trajectory_graph = FALSE) +
+           ggtitle(paste0(pattern)) +
+           theme(legend.position="none")
+
+
+umaplist <- list()
+for (pattern in pattern_names)
+  # UMAP Embedding of CoGAPS Pattern Weight ###################################
+  umaplist[[length(umaplist)+1]] <- plot_cells(inputdata, color_cells_by = pattern,
+                      label_cell_groups = FALSE, show_trajectory_graph = FALSE) +
+                      ggtitle(paste0(pattern)) +
+                      theme(legend.position="none")
+
+plot <- grid.arrange(grobs = umaplist)
+plot
 
 cds2 <- subset(cds, gene_short_name %in% rownames(output@featureLoadings))
 countsdf=as.data.frame(as.matrix(cds2@assays@data$counts))
 write.csv(countsdf, "/Users/jeanette/databarn/pdac_atlas_cogaps/aws_result/counts.csv")
 ```
+```{r trying seurat input object and analysis}
+library(Seurat)
+inputdata <- readRDS("../data/inputdata.Rds")
+pdac_data <- readRDS("../data/inputdata.Rds")
+inputdata
+inputdata <- NormalizeData(inputdata)
+inputdata <- FindVariableFeatures(inputdata)
+inputdata <- ScaleData(inputdata)
+inputdata <- RunPCA(inputdata)
+inputdata <- RunUMAP(inputdata, dims=1:15)
 
+UMAPPlot(inputdata)
+patterns_in_order <- t(cogapsresult@sampleFactors[colnames(inputdata),])
+# add CoGAPS patterns as an assay
+inputdata[["CoGAPS"]] <- CreateAssayObject(counts = patterns_in_order)
+DefaultAssay(inputdata) <- "CoGAPS"
+pattern_names = rownames(inputdata@assays$CoGAPS)
+library(viridis)
+color_palette <- viridis(n=10)
+FeaturePlot(inputdata, pattern_names, cols=color_palette, reduction = "umap") & NoLegend() 
+
+saveRDS(inputdata, "../data/inputdata_seurat.Rds")
+```
 # Citing CoGAPS
 
 If you use the CoGAPS package for your analysis, please cite
@@ -183,3 +237,4 @@ If you use the CoGAPS package for your analysis, please cite
 If you use the gene set statistic, please cite @OCHS_2009
 
 # References
+
