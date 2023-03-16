@@ -61,129 +61,6 @@ function(object)
     print(paste(nPatterns, "patterns were learned"))
 })
 
-
-# NEW VIS FROM PDAC VIGNETTE
-#' @rdname patternhallmarks-methods
-#' @aliases patternhallmarks
-setMethod("PatternHallmarks", signature(object="CogapsResult"),
-PatternHallmarks <- function(object)
-{
-  library("fgsea", quietly = TRUE)
-  library("msigdbr", quietly = TRUE)
-  library(biomaRt, quietly = TRUE)
-  library(dplyr, quietly = TRUE)
-  library(forcats)
-  library(ggplot2)
-  # List of MsigDB hallmarks and the genes in each set
-  hallmark_df <- msigdbr(species = "Homo sapiens", category = "H")
-  hallmark_list <- hallmark_df %>% split(x = .$gene_symbol, f = .$gs_name)
-  
-  # obtain universe of all human hgnc gene symbols from ensembl
-  mart <- useEnsembl('genes', dataset = "hsapiens_gene_ensembl") #GRCh38
-  Hs_genes <- getBM("hgnc_symbol", mart = mart)
-  
-  
-  patternMarkerResults <- patternMarkers(object, threshold = "cut", lp = NA, axis = 1)
-  names(patternMarkerResults$PatternMarkers) <- colnames(patternMarkerResults$PatternMarkerRanks)
-  
-  # List of each gene as a pattern marker
-  PMlist <- patternMarkerResults$PatternMarkers
-  
-  d <- list()
-  for (pattern in names(PMlist)) 
-    {
-      # Over-representation analysis of pattern markers ###########################
-      suppressWarnings(
-        result <- fora(pathways = hallmark_list,
-                       genes = PMlist[[pattern]],
-                       universe = Hs_genes$hgnc_symbol,
-                       maxSize=2038)
-      )
-      
-      # Append ratio of overlap/# of genes in hallmark (k/K)
-      result$"k/K" <- result$overlap/result$size
-      
-      # Append log-transformed HB-adjusted q value (-10 * log(adjusted p value))
-      result$"neg.log.q" <- (-10) * log10(result$padj)
-      
-      # Append shortened version of hallmark's name without "HALLMARK_"
-      result$MsigDB_Hallmark <- substr(result$pathway, 10, nchar(result$pathway))
-      
-      # Reorder dataframe by ascending adjusted p value
-      result <- mutate(result, MsigDB_Hallmark=fct_reorder(MsigDB_Hallmark, - padj))
-      
-      d[[length(d)+1]] <- result
-
-  }
-  return(d)
-})
-
-#' @rdname plotPatternHallmarks-methods
-#' @aliases plotPatternHallmarks
-setMethod("plotPatternHallmarks", signature(patternhallmarks="list", whichpattern="numeric"),
-plotPatternHallmarks <- function(patternhallmarks, whichpattern=1,...) {
-  # should be able to pass in info about just one pattern, or to pass all info and specify which pattern
-  if (length(patternhallmarks) > 1){
-    patternhallmarks <- patternhallmarks[[whichpattern]]
-  }
-  # rearrange columns to move overlap genes to the end and convert to vector for
-  # compatibility with saving as csv
-  patternhallmarks <- relocate(patternhallmarks, "overlapGenes", .after = "MsigDB_Hallmark")
-  patternhallmarks <- relocate(patternhallmarks, "neg.log.q", .after = "padj")
-  patternhallmarks <- patternhallmarks %>% mutate(overlapGenes = sapply(overlapGenes, toString))
-  
-  # for plotting, limit the results to significant over-representation
-  patternhallmarks <- patternhallmarks[patternhallmarks$pval < 0.05,]
-  
-  #plot and save the waterfall plot of ORA p-values
-  plot <- ggplot(patternhallmarks, aes_string(y = "neg.log.q", x = "MsigDB_Hallmark", fill = "MsigDB_Hallmark")) +
-    ## Specifies barplot
-    geom_col() +
-    ## Rename y axis
-    ylab("-10*log10(FDR q-value)") + 
-    ## Flips the coordinates
-    coord_flip() +
-    ## Makes the background white
-    theme_minimal() +
-    ## Add title
-    ggtitle(paste0("Overrepresented MsigDB Hallmarks in Pattern", whichpattern)) +
-    ## This creates the dotted line at .05 value 
-    geom_hline(yintercept=c(13.0103), linetype="dotted") + # Add veritcle line to show significances
-    ## Adds the q values
-    geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
-    ## Removes legend
-    theme(legend.position = "none") +
-    ## specifies limits 
-    ylim(0, ceiling(max(patternhallmarks$"neg.log.q")) + (max(patternhallmarks$"neg.log.q")/4))
-
-  return(plot)  
-})
-
-# NEW VIS FROM PDAC VIGNETTE
-#' @rdname plotPatternUMAP-methods
-#' @aliases plotPatternUMAP
-setMethod("plotPatternUMAP", signature(object="CogapsResult", cds="monocle3"),
-plotPatternUMAP <- function(object, cds){
-  patMat <- object@sampleFactors
-  # Create temporary CDS object
-  tempCds <- cds
-  # Merge with the column data in the cds
-  tempCds@colData <- cbind(colData(tempCds), patMat[colnames(tempCds), ])
-  patterns <- colnames(patMat)
-  umaplist <- list()
-  for (pattern in patterns) 
-    # UMAP Embedding of CoGAPS Pattern Weight ###################################
-    umaplist[[length(umaplist)+1]] <- plot_cells(tempCds, color_cells_by = pattern,
-                        label_cell_groups = FALSE, show_trajectory_graph = FALSE) + 
-                        ggtitle(paste0(pattern)) +
-                        theme(legend.position="none")
-  
-  library(ggplot2)
-  library(gridExtra)
-  plot <- grid.arrange(grobs = umaplist)
-  return(plot)
-})
-
 #' @export
 #' @importFrom graphics plot legend lines points
 #' @importFrom grDevices rainbow
@@ -414,6 +291,23 @@ unitVector <- function(n, length)
     vec[n] <- 1
     return(vec)
 }
+
+#' @rdname getPatternHallmarks-methods
+#' @aliases getPatternHallmarks
+setMethod("getPatternHallmarks", signature(object="CogapsResult"),
+function(object)
+{
+  return(1)           
+})
+
+#' @rdname plotPatternHallmarks-methods
+#' @aliases plotPatternHallmarks
+setMethod("plotPatternHallmarks", signature(object="CogapsResult", patternhallmarks = "list", whichpattern="numeric"),
+function(object, patternhallmarks, whichpattern=1)
+{
+  return(1)           
+})
+
 
 #' @rdname patternMarkers-methods
 #' @aliases patternMarkers
