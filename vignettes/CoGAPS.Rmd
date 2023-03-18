@@ -54,10 +54,10 @@ parallel, efficient underlying implementation in C++.
 installed as follows:
 
 ```{r eval=FALSE}
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("CoGAPS")
+# if (!require("BiocManager", quietly = TRUE))
+#     install.packages("BiocManager")
+# 
+# BiocManager::install("CoGAPS")
 
 ## Method 2 using devtools package
 devtools::install_github("FertigLab/CoGAPS")
@@ -125,20 +125,6 @@ original parameters and value for the Chi-Sq statistic. In general, the
 metadata will vary depending on how `CoGAPS` was called in the first
 place. The package provides these functions for querying the metadata in
 a safe manner:
-
-```{r}
-# run CoGAPS
-result <- CoGAPS(GIST.matrix, params, messages=FALSE, nIterations=1000)
-
-# get the mean ChiSq statistic over all samples
-getMeanChiSq(result)
-
-# get the version number used to create this result
-getVersion(result)
-
-# get the original parameters used to create this result
-getOriginalParameters(result)
-```
 
 ```{r single cell}
 pdac_data <- readRDS("../data/inputdata.Rds") # load R data object 
