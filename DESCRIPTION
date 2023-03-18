@@ -1,5 +1,9 @@
 Package: CoGAPS
+<<<<<<< HEAD
 Version: 3.19.1
+=======
+Version: 3.15.3
+>>>>>>> d5916d9d (bioc version bump?)
 Date: 2023-03-18
 Title: Coordinated Gene Activity in Pattern Sets
 Author: Jeanette Johnson, Ashley Tsang, Jacob Mitchell, Thomas Sherman, Wai-shing Lee, Conor Kelton, Ondrej Maxian, Jacob Carey,
