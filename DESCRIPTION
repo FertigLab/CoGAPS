@@ -1,8 +1,8 @@
 Package: CoGAPS
-Version: 3.15.2
-Date: 2022-03-15
+Version: 3.15.3
+Date: 2023-03-18
 Title: Coordinated Gene Activity in Pattern Sets
-Author: Thomas Sherman, Wai-shing Lee, Conor Kelton, Ondrej Maxian, Jacob Carey,
+Author: Jeanette Johnson, Ashley Tsang, Jacob Mitchell, Thomas Sherman, Wai-shing Lee, Conor Kelton, Ondrej Maxian, Jacob Carey,
     Genevieve Stein-O'Brien, Michael Considine, Maggie Wodicka, John Stansfield,
     Shawn Sivy, Carlo Colantuoni, Alexander Favorov, Mike Ochs, Elana Fertig
 Description: Coordinated Gene Activity in Pattern Sets (CoGAPS)
@@ -45,7 +45,7 @@ biocViews: GeneExpression, Transcription, GeneSetEnrichment,
     DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray,
     MultipleComparison, DimensionReduction, ImmunoOncology
 NeedsCompilation: yes
-RoxygenNote: 7.1.0
+RoxygenNote: 7.2.3
 Encoding: UTF-8
 Collate:
     'class-CogapsParams.R'
