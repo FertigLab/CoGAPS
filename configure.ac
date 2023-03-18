@@ -70,11 +70,6 @@ if test "x$use_simd" = "xsse" ; then
     GAPS_CXX_FLAGS+=" -mno-avx "
 fi
 
-# if test "x$use_simd" != "xno" ; then
-#     echo "Using AVX instructions if available"
-#     GAPS_CXX_FLAGS+=" -march=native "
-# fi
-
 GAPS_SOURCE_FILES+=" Cogaps.o"
 GAPS_SOURCE_FILES+=" GapsParameters.o"
 GAPS_SOURCE_FILES+=" GapsResult.o"
