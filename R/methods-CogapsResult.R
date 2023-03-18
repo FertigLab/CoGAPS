@@ -346,11 +346,48 @@ function(object)
 })
 
 #' @rdname plotPatternHallmarks-methods
+#' @import dplyr
+#' @importFrom ggplot2 ggplot
 #' @aliases plotPatternHallmarks
 setMethod("plotPatternHallmarks", signature(object="CogapsResult", patternhallmarks = "list", whichpattern="numeric"),
 function(object, patternhallmarks, whichpattern=1)
 {
-  return(1)           
+  # should be able to pass in info about just one pattern, or to pass all info and specify which pattern
+  if (length(patternhallmarks) > 1){
+    patternhallmarks <- patternhallmarks[[whichpattern]]
+  }
+  
+  # rearrange columns to move overlap genes to the end and convert to vector for
+  # compatibility with saving as csv
+  patternhallmarks <- relocate(patternhallmarks, "overlapGenes", .after = "MsigDB_Hallmark")
+  patternhallmarks <- relocate(patternhallmarks, "neg.log.q", .after = "padj")
+  patternhallmarks <- patternhallmarks %>% mutate(overlapGenes = sapply(overlapGenes, toString))
+  
+  # for plotting, limit the results to significant over-representation
+  patternhallmarks <- patternhallmarks[patternhallmarks$pval < 0.05,]
+  
+  #plot and save the waterfall plot of ORA p-values
+  plot <- ggplot(patternhallmarks, aes_string(y = "neg.log.q", x = "MsigDB_Hallmark", fill = "MsigDB_Hallmark")) +
+    ## Specifies barplot
+    geom_col() +
+    ## Rename y axis
+    ylab("-10*log10(FDR q-value)") + 
+    ## Flips the coordinates
+    coord_flip() +
+    ## Makes the background white
+    theme_minimal() +
+    ## Add title
+    ggtitle(paste0("Overrepresented MsigDB Hallmarks in Pattern", whichpattern)) +
+    ## This creates the dotted line at .05 value 
+    geom_hline(yintercept=c(13.0103), linetype="dotted") + # Add veritcle line to show significances
+    ## Adds the q values
+    geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
+    ## Removes legend
+    theme(legend.position = "none") +
+    ## specifies limits 
+    ylim(0, ceiling(max(patternhallmarks$"neg.log.q")) + (max(patternhallmarks$"neg.log.q")/4))
+  
+  return(plot)
 })
 
 
