@@ -421,7 +421,7 @@ PatternMarkerScores:
     pattern.
 
 -   A higher score value indicates the marker gene is more associated
-    with the pattern, and vice versa.
+    with the pattern, and vice versa.l
 
 -   Scores have nonnegative values mostly falling between 0 and 2
 
