@@ -293,11 +293,56 @@ unitVector <- function(n, length)
 }
 
 #' @rdname getPatternHallmarks-methods
+#' @import msigdbr 
+#' @import dplyr
+#' @importFrom biomaRt useEnsembl getBM
+#' @import fgsea
+#' @importFrom forcats fct_reorder
 #' @aliases getPatternHallmarks
 setMethod("getPatternHallmarks", signature(object="CogapsResult"),
 function(object)
 {
-  return(1)           
+  # List of MsigDB hallmarks and the genes in each set
+  hallmark_df <- msigdbr(species = "Homo sapiens", category = "H")
+  hallmark_list <- hallmark_df %>% split(x = .$gene_symbol, f = .$gs_name)
+  
+  # obtain universe of all human hgnc gene symbols from ensembl
+  mart <- useEnsembl('genes', dataset = "hsapiens_gene_ensembl") #GRCh38
+  Hs_genes <- getBM("hgnc_symbol", mart = mart)
+  
+  patternMarkerResults <- patternMarkers(object, threshold = "cut", lp = NA, axis = 1)
+  names(patternMarkerResults$PatternMarkers) <- colnames(patternMarkerResults$PatternMarkerRanks)
+  
+  # List of each gene as a pattern marker
+  PMlist <- patternMarkerResults$PatternMarkers
+  
+  d <- list()
+  for (pattern in names(PMlist)) 
+  {
+    # Over-representation analysis of pattern markers ###########################
+    suppressWarnings(
+      result <- fora(pathways = hallmark_list,
+                     genes = PMlist[[pattern]],
+                     universe = Hs_genes$hgnc_symbol,
+                     maxSize=2038)
+    )
+    
+    # Append ratio of overlap/# of genes in hallmark (k/K)
+    result$"k/K" <- result$overlap/result$size
+    
+    # Append log-transformed HB-adjusted q value (-10 * log(adjusted p value))
+    result$"neg.log.q" <- (-10) * log10(result$padj)
+    
+    # Append shortened version of hallmark's name without "HALLMARK_"
+    result$MsigDB_Hallmark <- substr(result$pathway, 10, nchar(result$pathway))
+    
+    # Reorder dataframe by ascending adjusted p value
+    result <- mutate(result, MsigDB_Hallmark=fct_reorder(MsigDB_Hallmark, - padj))
+    
+    d[[length(d)+1]] <- result
+    
+  }
+  return(d)           
 })
 
 #' @rdname plotPatternHallmarks-methods
@@ -322,7 +367,7 @@ function(object, threshold, lp, axis)
     if (!(axis %in% 1:2))
         stop("axis must be either 1 or 2")
     ## need to scale each row of the matrix of interest so that the maximum is 1
-    resultMatrix <- if (axis == 1) object@featureLoadings[1:4] else object@sampleFactors
+    resultMatrix <- if (axis == 1) object@featureLoadings else object@sampleFactors
     normedMatrix <- t(apply(resultMatrix, 1, function(row) row / max(row)))
     ## handle the case where a custom linear combination of patterns was passed in
     if (!is.na(lp))
@@ -372,7 +417,7 @@ function(object, threshold, lp, axis)
         return(ssl)
         
       }
-      simGenes <- simplicityGENES(As=object@featureLoadings[1:4],
+      simGenes <- simplicityGENES(As=object@featureLoadings,
                                   Ps=object@sampleFactors)
       
       patternMarkers <- list()
