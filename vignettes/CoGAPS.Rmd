@@ -130,12 +130,7 @@ a safe manner:
 options(timeout=1000) # adjust this if you're getting timeout downloading the file
 url = "https://zenodo.org/record/7709664/files/inputdata.Rds?download=1"
 download.file(url,"inputdata_download.Rds")
-b <- readRDS("inputdata_download.Rds")
-
-https://github.com/FertigLab/CoGAPS/blob/master/data/inputdata.Rds
-
-
-pdac_data <- readRDS("../data/inputdata.Rds") # load R data object 
+pdac_data <- readRDS("inputdata_download.Rds")
 
 pdac_epi_counts <- counts(pdac_data)
 pdac_epi_counts <- as.matrix(pdac_data@assays$originalexp@counts)
@@ -152,7 +147,7 @@ pdac_params <- setDistributedParams(pdac_params, nSets=7)
 pdac_params
 startTime <- Sys.time()
 
-text_result <- CoGAPS(pdac_epi_counts, pdac_params)
+vignette_result <- CoGAPS(pdac_epi_counts, pdac_params)
 endTime <- Sys.time()
   
 # prints recorded time
@@ -163,13 +158,13 @@ print(endTime - startTime)
 
 ```{r}
 library(Matrix)
-
-
 library(CoGAPS)
-cogapsresult <- readRDS("../data/cogapsresult.Rds")
-# inputdata <- readRDS("~/fertiglab/manuscript_messing_around/CoGAPS/data/inputdata.Rds")
+options(timeout=1000) # adjust this if you're getting timeout downloading the file
+url = "https://zenodo.org/record/7709664/files/cogapsresult.Rds?download=1"
+download.file(url,"cogapsresult_download.Rds")
+cogapsresult <- readRDS("cogapsresult_download.Rds")
 
-plotPatternUMAP(text_result, inputdata)
+plotPatternUMAP(vignette_result, inputdata)
 
 library(gridExtra)
 library(ggplot2)
