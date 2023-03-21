@@ -71,7 +71,7 @@ installation path
 
 \* DONE (CoGAPS)
 
-## Running CoGAPS on Simulated Toy Data
+# Running CoGAPS on Simulated Toy Data
 
 We first give a walkthrough of the package features using a simple,
 simulated data set. In later sections we provide two example workflows
@@ -196,7 +196,7 @@ everything is installed how it should be.
 
 We now examine the result object.
 
-## Analyzing the Toy Data CoGAPS result
+# Analyzing the Toy Data CoGAPS result
 
 CoGAPS returns a object of the class `CogapsResult` which inherits from
 `LinearEmbeddingMatrix` (defined in the `SingleCellExperiment` package).
@@ -377,7 +377,7 @@ color_palette <- viridis(n=10)
 FeaturePlot(pdac_data, pattern_names, cols=color_palette, reduction = "umap") & NoLegend()
 ```
 
-# Pattern Markers
+## Pattern Markers
 
 To assess pattern marker genes, we provide a patternMarkers() CoGAPS
 function to find genes associated with each pattern and returns a
@@ -427,7 +427,7 @@ PatternMarkerScores:
 pm <- patternMarkers(cogapsresult, threshold="cut")
 ```
 
-# Pattern GSEA
+## Pattern GSEA
 One way to explore and use CoGAPS patterns is to conduct gene set enrichment analysis by functionally annotating the genes which are significant for each pattern. The getPatternHallmarks function provides a wrapper around the fgsea fora method and associates each pattern with msigDB hallmark pathway annotations using the list of marker genes attained from the patternMarkers statistic. 
 
 To perform gene set analysis on pattern markers, please run:
