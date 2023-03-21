@@ -228,13 +228,15 @@ We now continue with single-cell analysis.
 
 # Single-cell CoGAPS
 
-```{r load single cell data}
+```{r load single cell data from zenodo, eval=FALSE}
 # OPTION: download data object from Zenodo
 options(timeout=1000) # adjust this if you're getting timeout downloading the file
 url = "https://zenodo.org/record/7709664/files/inputdata.Rds?download=1"
 download.file(url,"inputdata_download.Rds")
 pdac_data <- readRDS("inputdata_download.Rds")
+```
 
+```{r load single cell data from file}
 # OPTION: read data object in from file
 # This file is hosted on our github repository and will be included with any github CoGAPS install,
 # or can be downloaded from: https://github.com/FertigLab/CoGAPS/blob/b6b849cf84ed91f34038048e2b29ea0fcf93570b/data/inputdata.Rds
@@ -249,7 +251,7 @@ pdac_data
 
 We also want to extract the counts matrix to provide directly to CoGAPS
 
-```{r extract counts matrix}
+```{r extract counts matrix, eval=FALSE}
 pdac_epi_counts <- as.matrix(pdac_data@assays$originalexp@counts)
 norm_pdac_epi_counts <- log1p(pdac_epi_counts)
 
@@ -291,7 +293,7 @@ increased when learning more patterns, when running more iterations, and
 when running a larger dataset, with iterations having the largest
 variable impact on the runtime of the NMF function.
 
-```{r run CoGAPS on single-cell data}
+```{r run CoGAPS on single-cell data, eval=FALSE}
 startTime <- Sys.time()
   
 pdac_epi_result <- CoGAPS(pdac_epi_counts, pdac_params)
@@ -322,7 +324,7 @@ cogapsresult <- readRDS("../data/cogapsresult.Rds")
 
 To load your own result, simply edit the file path:
 
-```{r load saved}
+```{r load saved, eval=FALSE}
 library(CoGAPS)
 cogapsresult <- readRDS("../data/pdac_epi_cogaps_result.Rds")
 ```
@@ -344,6 +346,7 @@ To store CoGAPS patterns as an Assay within a Seurat object
 (recommended):
 
 ```{r pattern assay}
+library(Seurat)
 # make sure pattern matrix is in same order as the input data
 patterns_in_order <-t(cogapsresult@sampleFactors[colnames(pdac_data),])
 
@@ -357,13 +360,13 @@ With the help of Seurat's FeaturePlot function, we generate a UMAP
 embedding of the cells colored by the intensity of each pattern.
 
 ```{r pattern UMAP}
-DefaultAssay(inputdata) <- "CoGAPS"
-pattern_names = rownames(inputdata@assays$CoGAPS)
+DefaultAssay(pdac_data) <- "CoGAPS"
+pattern_names = rownames(pdac_data@assays$CoGAPS)
 
 library(viridis)
 color_palette <- viridis(n=10)
 
-FeaturePlot(inputdata, pattern_names, cols=color_palette, reduction = "umap") & NoLegend()
+FeaturePlot(pdac_data, pattern_names, cols=color_palette, reduction = "umap") & NoLegend()
 ```
 
 # Pattern Markers
@@ -430,20 +433,20 @@ hallmarks is a list of data frames, each containing hallmark overrepresentation 
 To generate a barchart of the most significant hallmarks for any given pattern, please run:
 
 ```{r}
-pl_pattern7 <- plotPatternHallmarks(hallmarks, whichpattern = 7)
+pl_pattern7 <- plotPatternHallmarks(cogapsresult, hallmarks, whichpattern = 7)
 
 pl_pattern7
 
 ```
 To generate statistics on the association between certain sample groups and patterns, we provide a wrapper function, called runMANOVA.This will allow us to explore if the patterns we have discovered lend to statistically significant differences in the sample groups. We will first load in the original data (if not already done earlier): 
 
-```{r}
+```{r, eval=FALSE}
 pdac_data <- readRDS("../data/inputdata.Rds")
 ```
 
 Then, create a new matrix called “interestedVariables” consisting of the metadata variables of interest in conducting analysis on. Lastly, call the wrapper function, passing in the result object as well. 
 
-```{r MANOVA variables}
+```{r MANOVA variables, eval=FALSE}
 # interestedVariables <- cbind(colData(monocleobj)[["TN_assigned_cell_type"]], colData(monocleobj)[["Classifier_T_duct"]])
 # 
 # manovaResult <- manova(interestedVariables, cogapsresult@sampleFactors)
