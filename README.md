@@ -10,21 +10,20 @@ Coordinated Gene Activity in Pattern Sets (CoGAPS) implements a Bayesian MCMC ma
 
 # Installing CoGAPS
 
-*CoGAPS* is a bioconductor R package ([link](https://bioconductor.org/packages/CoGAPS)) and so the release version can be installed
-as follows:
+Via Bioconductor:
 
 ```
 install.packages("BiocManager")
-BiocManager::install("CoGAPS")
+BiocManager::install("FertigLab/CoGAPS")
 ```
 
 The most up-to-date version of *CoGAPS* can be installed directly from the
 *FertigLab* Github Repository:
 
 ```
-BiocManager::install("FertigLab/CoGAPS")
+devtools::install_github("FertigLab/CoGAPS")
 ```
 
 # Using CoGAPS
 
-Follow the vignette [here](https://www.bioconductor.org/packages/devel/bioc/vignettes/CoGAPS/inst/doc/CoGAPS.html)
+Follow the vignette [here](https://github.com/FertigLab/CoGAPS/blob/master/vignettes/CoGAPS.Rmd)
