@@ -228,7 +228,7 @@ We now continue with single-cell analysis.
 
 # Single-cell CoGAPS
 
-```{r load single cell data from zenodo, eval=FALSE}
+```{r load single cell data from zenodo}
 # OPTION: download data object from Zenodo
 options(timeout=1000) # adjust this if you're getting timeout downloading the file
 url = "https://zenodo.org/record/7709664/files/inputdata.Rds?download=1"
@@ -236,7 +236,7 @@ download.file(url,"inputdata_download.Rds")
 pdac_data <- readRDS("inputdata_download.Rds")
 ```
 
-```{r load single cell data from file}
+```{r load single cell data from file, eval=FALSE}
 # OPTION: read data object in from file
 # This file is hosted on our github repository and will be included with any github CoGAPS install,
 # or can be downloaded from: https://github.com/FertigLab/CoGAPS/blob/b6b849cf84ed91f34038048e2b29ea0fcf93570b/data/inputdata.Rds
@@ -317,9 +317,18 @@ in for downstream analysis.
 If you wish to load and examine a precomputed result object, please do
 so by:
 
-```{r load precomputed}
+```{r load precomputed, eval=FALSE}
 library(CoGAPS)
 cogapsresult <- readRDS("../data/cogapsresult.Rds")
+```
+
+```{r load precomputed from zenodo}
+# OPTION: download precomputed CoGAPS result object from Zenodo
+# Bioc vignette uses this
+options(timeout=1000) # adjust this if you're getting timeout downloading the file
+url = "https://zenodo.org/record/7709664/files/cogapsresult.Rds?download=1"
+download.file(url,"cogapsresult_download.Rds")
+cogapsresult <- readRDS("cogapsresult_download.Rds")
 ```
 
 To load your own result, simply edit the file path:
