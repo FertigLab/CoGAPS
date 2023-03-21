@@ -43,47 +43,58 @@ and enforces the additive nature of the resulting feature dimensions,
 generating solutions that are biologically intuitive to interpret
 (@SEUNG_1999).
 
-CoGAPS has two extensions that allow it to scale up to large data sets,
-Genome-Wide CoGAPS (GWCoGAPS) and Single-Cell CoGAPS (scCOGAPS). This
-package presents a unified R interface for all three methods, with a
-parallel, efficient underlying implementation in C++.
+# Software Setup
 
-# Installing CoGAPS
-
-*CoGAPS* is a bioconductor package and so the release version can be
-installed as follows:
+*CoGAPS* can be installed directly from the FertigLab Github Repository
+using R devtools:
 
 ```{r eval=FALSE}
-# if (!require("BiocManager", quietly = TRUE))
-#     install.packages("BiocManager")
-# 
-# BiocManager::install("CoGAPS")
-
-## Method 2 using devtools package
 devtools::install_github("FertigLab/CoGAPS")
 ```
 
-# Package Overview
+When CoGAPS has installed correctly, you will see this message:
+
+\*\* installing vignettes
+
+\*\* testing if installed package can be loaded from temporary location
+
+\*\* checking absolute paths in shared objects and dynamic libraries
+
+\*\* testing if installed package can be loaded from final location
+
+\*\* testing if installed package keeps a record of temporary
+installation path
+
+\* DONE (CoGAPS)
+
+## Running CoGAPS on Simulated Toy Data
 
 We first give a walkthrough of the package features using a simple,
 simulated data set. In later sections we provide two example workflows
 on real data sets.
 
-## Running CoGAPS with Default Parameters
-
-The only required argument to `CoGAPS` is the data set. This can be a
-`matrix`, `data.frame`, `SummarizedExperiment`, `SingleCellExperiment`
-or the path of a file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
+Import the CoGAPS library with the following command:
 
 ```{r}
 library(CoGAPS)
 ```
 
+To ensure CoGAPS is working properly, we will first load in the
+simulated toy data for a test run.
+
+Single-cell data will be loaded later in this file.
+
 ```{r modsim}
 modsimdata <- read.table("../data/ModSimData.txt")
 # input to CoGAPS
 modsimdata
+```
 
+Next, we will set the parameters to be used by CoGAPS. First, we will
+create a CogapsParams object, then set parameters with the setParam
+function.
+
+```{r modsim params}
 # create new parameters object
 params <- new("CogapsParams")
 
@@ -98,8 +109,14 @@ params <- setParam(params, "nPatterns", 3)
 getParam(params, "nPatterns")
 ```
 
-Once we've created the parameters object we can pass it along with our
-data to `CoGAPS`.
+Run `CoGAPS` on the ModSim data.
+
+Since this is a small dataset, the expected runtime is only about 5-10
+seconds.
+
+The only required argument to `CoGAPS` is the data set. This can be a
+`matrix`, `data.frame`, `SummarizedExperiment`, `SingleCellExperiment`
+or the path of a file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
 
 ```{r}
 # run CoGAPS with specified parameters
@@ -107,10 +124,75 @@ cogapsresult <- CoGAPS(modsimdata, params, outputFrequency = 10000)
 cogapsresult
 ```
 
-There are several other arguments that are passed directly to `CoGAPS`
-which are covered in later sections.
+Verify that this output appears:
 
-## Breaking Down the Return Object from CoGAPS
+This is CoGAPS version 3.19.1 
+
+Running Standard CoGAPS on modsimdata (25 genes and 20 samples) with
+parameters:
+
+\-- Standard Parameters \--
+
+nPatterns            3 
+
+nIterations          50000 
+
+seed                 622 
+
+sparseOptimization   FALSE 
+
+\-- Sparsity Parameters \--
+
+alpha          0.01 
+
+maxGibbsMass   100 
+
+Data Model: Dense, Normal
+
+Sampler Type: Sequential
+
+Loading Data\...Done! (00:00:00)
+
+\-- Equilibration Phase \--
+
+10000 of 50000, Atoms: 59(A), 49(P), ChiSq: 245, Time: 00:00:00 /
+00:00:00
+
+20000 of 50000, Atoms: 68(A), 46(P), ChiSq: 188, Time: 00:00:00 /
+00:00:00
+
+30000 of 50000, Atoms: 80(A), 47(P), ChiSq: 134, Time: 00:00:00 /
+00:00:00
+
+40000 of 50000, Atoms: 69(A), 46(P), ChiSq: 101, Time: 00:00:00 /
+00:00:00
+
+50000 of 50000, Atoms: 76(A), 53(P), ChiSq: 132, Time: 00:00:00 /
+00:00:00
+
+\-- Sampling Phase \--
+
+10000 of 50000, Atoms: 82(A), 52(P), ChiSq: 94, Time: 00:00:00 /
+00:00:00
+
+20000 of 50000, Atoms: 74(A), 54(P), ChiSq: 144, Time: 00:00:01 /
+00:00:01
+
+30000 of 50000, Atoms: 79(A), 47(P), ChiSq: 116, Time: 00:00:01 /
+00:00:01
+
+40000 of 50000, Atoms: 79(A), 46(P), ChiSq: 132, Time: 00:00:01 /
+00:00:01
+
+50000 of 50000, Atoms: 76(A), 48(P), ChiSq: 124, Time: 00:00:01 /
+00:00:01
+
+This means that the underlying C++ library has run correctly, and
+everything is installed how it should be.
+
+We now examine the result object.
+
+## Analyzing the Toy Data CoGAPS result
 
 CoGAPS returns a object of the class `CogapsResult` which inherits from
 `LinearEmbeddingMatrix` (defined in the `SingleCellExperiment` package).
@@ -126,98 +208,246 @@ metadata will vary depending on how `CoGAPS` was called in the first
 place. The package provides these functions for querying the metadata in
 a safe manner:
 
-```{r single cell}
+```{r modsim result}
+cogapsresult
+
+cogapsresult@sampleFactors
+
+cogapsresult@featureLoadings
+```
+
+If both matrices--sampleFactors and featureLoadings--have reasonable
+values (small, nonnegative, somewhat random-seeming), it is an
+indication that CoGAPS is working as expected.
+
+We now continue with single-cell analysis.
+
+# Single-cell CoGAPS
+
+```{r load single cell data}
+# OPTION: download data object from Zenodo
 options(timeout=1000) # adjust this if you're getting timeout downloading the file
 url = "https://zenodo.org/record/7709664/files/inputdata.Rds?download=1"
 download.file(url,"inputdata_download.Rds")
 pdac_data <- readRDS("inputdata_download.Rds")
 
-pdac_epi_counts <- counts(pdac_data)
-pdac_epi_counts <- as.matrix(pdac_data@assays$originalexp@counts)
-head(pdac_epi_counts, n=c(5L, 2L))
+# OPTION: read data object in from file
+# This file is hosted on our github repository and will be included with any github CoGAPS install,
+# or can be downloaded from: https://github.com/FertigLab/CoGAPS/blob/b6b849cf84ed91f34038048e2b29ea0fcf93570b/data/inputdata.Rds
+pdac_data <- readRDS("../data/inputdata.Rds") # load R data object 
+pdac_data
+```
+>>>>>>> 3dfda031 (vignette)
 
+> pdac_data An object of class Seurat 15184 features across 25442
+> samples within 2 assays Active assay: originalexp (15176 features,
+> 2000 variable features) 1 other assay present: CoGAPS 5 dimensional
+> reductions calculated: PCA, Aligned, UMAP, pca, umap
+
+We also want to extract the counts matrix to provide directly to CoGAPS
+
+```{r extract counts matrix}
+pdac_epi_counts <- as.matrix(pdac_data@assays$originalexp@counts)
+norm_pdac_epi_counts <- log1p(pdac_epi_counts)
+
+head(pdac_epi_counts, n=c(5L, 2L))
+head(norm_pdac_epi_counts, n=c(5L, 2L))
+```
+
+Most of the time we will set some parameters before running CoGAPS.
+Parameters are managed with a CogapsParams object. This object will
+store all parameters needed to run CoGAPS and provides a simple
+interface for viewing and setting the parameter values.
+
+```{r set params}
 library(CoGAPS)
-pdac_params <- CogapsParams(nIterations=100, # run for 100 iterations 
-                            seed=42, # set random seed for consistent results across stochastic runs
-                            nPatterns=8, # each thread will learn 8 patterns
-                            sparseOptimization=TRUE, # optimize for sparse input data
-                            distributed="genome-wide") # paralellize across sets "genome-wise
+pdac_params <- CogapsParams(nIterations=50000, # 50000 iterations 
+               	seed=42, # for consistency across stochastic runs
+               	nPatterns=8, # each thread will learn 8 patterns
+                  sparseOptimization=TRUE, # optimize for sparse data
+                  distributed="genome-wide") # parallelize across sets
 pdac_params
+```
+
+If you wish to run distributed CoGAPS, which is recommended to improve
+the computational efficiency for most large datasets, you must also call
+the setDistributedParams function. For a complete description of the
+parallelization strategy used in distributed CoGAPS, please refer to our
+preprint: <https://www.biorxiv.org/content/10.1101/2022.07.09.499398v1>
+
+```{r distributed params}
 pdac_params <- setDistributedParams(pdac_params, nSets=7)
 pdac_params
+```
+
+With all parameters set, we are now ready to run CoGAPS. Please note
+that this is the most time-consuming step of the procedure. Timing can
+take several hours and scales nlog(n) based on dataset size, as well as
+the parameter values set for 'nPatterns' and 'nIterations'. Time is
+increased when learning more patterns, when running more iterations, and
+when running a larger dataset, with iterations having the largest
+variable impact on the runtime of the NMF function.
+
+```{r run CoGAPS on single-cell data}
 startTime <- Sys.time()
-
-vignette_result <- CoGAPS(pdac_epi_counts, pdac_params)
-endTime <- Sys.time()
   
-# prints recorded time
-print(endTime - startTime)
+pdac_epi_result <- CoGAPS(pdac_epi_counts, pdac_params)
+endTime <- Sys.time()
+
+saveRDS(pdac_epi_result, "../data/pdac_epi_cogaps_result.Rds")
+
+# To save as a .csv file, use the following line:
+
+# saveCSV(pdac_epi_result, "path/to/output/directory/")
 ```
 
-# sessionInfo()
+# Analyzing the CoGAPS result
 
-```{r}
-library(Matrix)
+Now that the CoGAPS run is complete, learned patterns can be
+investigated. Due to the stochastic nature of the MCMC sampling in
+CoGAPS and long run time, it is generally a good idea to immediately
+save your CoGAPS result object to a file to have (Box 17), then read it
+in for downstream analysis.
+
+If you wish to load and examine a precomputed result object, please do
+so by:
+
+```{r load precomputed}
 library(CoGAPS)
-options(timeout=1000) # adjust this if you're getting timeout downloading the file
-url = "https://zenodo.org/record/7709664/files/cogapsresult.Rds?download=1"
-download.file(url,"cogapsresult_download.Rds")
-cogapsresult <- readRDS("cogapsresult_download.Rds")
-
-plotPatternUMAP(vignette_result, inputdata)
-
-library(gridExtra)
-library(ggplot2)
-# Merge with the column data in the cds
-factor_columns <- colnames(cogapsresult@sampleFactors)
-pattern_names <- factor_columns[grep("Pattern", factor_columns)]
-inputdata@colData <- cbind(inputdata@colData, cogapsresult@sampleFactors[,pattern_names ])
-
-plot_cells(inputdata, 
-           color_cells_by = "TN_assigned_cell_type_immune_broad",
-           label_cell_groups = FALSE, show_trajectory_graph = FALSE) +
-           ggtitle(paste0(pattern)) +
-           theme(legend.position="none")
-
-
-umaplist <- list()
-for (pattern in pattern_names)
-  # UMAP Embedding of CoGAPS Pattern Weight ###################################
-  umaplist[[length(umaplist)+1]] <- plot_cells(inputdata, color_cells_by = pattern,
-                      label_cell_groups = FALSE, show_trajectory_graph = FALSE) +
-                      ggtitle(paste0(pattern)) +
-                      theme(legend.position="none")
-
-plot <- grid.arrange(grobs = umaplist)
-plot
-
-cds2 <- subset(cds, gene_short_name %in% rownames(output@featureLoadings))
-countsdf=as.data.frame(as.matrix(cds2@assays@data$counts))
-write.csv(countsdf, "/Users/jeanette/databarn/pdac_atlas_cogaps/aws_result/counts.csv")
+cogapsresult <- readRDS("../data/cogapsresult.Rds")
+>>>>>>> 3dfda031 (vignette)
 ```
-```{r trying seurat input object and analysis}
-library(Seurat)
-inputdata <- readRDS("../data/inputdata.Rds")
-pdac_data <- readRDS("../data/inputdata.Rds")
-inputdata
-inputdata <- NormalizeData(inputdata)
-inputdata <- FindVariableFeatures(inputdata)
-inputdata <- ScaleData(inputdata)
-inputdata <- RunPCA(inputdata)
-inputdata <- RunUMAP(inputdata, dims=1:15)
 
-UMAPPlot(inputdata)
-patterns_in_order <- t(cogapsresult@sampleFactors[colnames(inputdata),])
+To load your own result, simply edit the file path:
+
+```{r load saved}
+library(CoGAPS)
+cogapsresult <- readRDS("../data/pdac_epi_cogaps_result.Rds")
+```
+
+It is recommended to immediately visualize pattern weights on a UMAP
+because you will immediately see whether they are showing strong signal
+and make common sense.
+
+Since pattern weights are all continuous and nonnegative, they can be
+used to color a UMAP in the same way as one would color by gene
+expression. The sampleFactors matrix is essentially just nPatterns
+different annotations for each cell, and featureLoadings is likewise
+just nPatterns annotations for each gene. This makes it very simple to
+incorporate pattern data into any data structure and workflow.
+
+## Load CoGAPS pattern information into Seurat object
+
+To store CoGAPS patterns as an Assay within a Seurat object
+(recommended):
+
+```{r pattern assay}
+# make sure pattern matrix is in same order as the input data
+patterns_in_order <-t(cogapsresult@sampleFactors[colnames(pdac_data),])
+
 # add CoGAPS patterns as an assay
-inputdata[["CoGAPS"]] <- CreateAssayObject(counts = patterns_in_order)
+pdac_data[["CoGAPS"]] <- CreateAssayObject(counts = patterns_in_order)
+```
+
+## Plot patterns on an embedding
+
+With the help of Seurat's FeaturePlot function, we generate a UMAP
+embedding of the cells colored by the intensity of each pattern.
+
+```{r pattern UMAP}
 DefaultAssay(inputdata) <- "CoGAPS"
 pattern_names = rownames(inputdata@assays$CoGAPS)
+
 library(viridis)
 color_palette <- viridis(n=10)
-FeaturePlot(inputdata, pattern_names, cols=color_palette, reduction = "umap") & NoLegend() 
 
-saveRDS(inputdata, "../data/inputdata_seurat.Rds")
+FeaturePlot(inputdata, pattern_names, cols=color_palette, reduction = "umap") & NoLegend()
 ```
+
+# Pattern Markers
+
+To assess pattern marker genes, we provide a patternMarkers() CoGAPS
+function to find genes associated with each pattern and returns a
+dictionary of information containing lists of marker genes, their
+ranking, and their "score" for each pattern. This is vital because genes
+are often associated with multiple patterns.
+
+patternMarkers can run in two modes, depending on the "threshold"
+parameter
+
+If threshold="all", each gene is treated as a marker of one pattern
+(whichever it is most strongly associated with). The number of marker
+genes will always equal the number of input genes. If threshold="cut", a
+gene is considered a marker of a pattern if and only if it is less
+significant to at least one other pattern. Counterintuitively, this
+results in much shorter lists of patternMarkers and is a more convenient
+statistic to use when functionally annotating patterns.
+
+The three components of the returned dictionary pm are:
+
+PatternMarkers:
+
+-   A list of marker genes for each pattern
+
+-   Can be determined using two threshold metrics (cut/all)
+
+PatternMarkerRank:
+
+-   Each marker gene ranked by association for each pattern
+
+-   Whole natural numbers, assigning each marker gene a place in the
+    rank for each pattern.
+
+-   Lower rank indicates higher association and vice versa.
+
+PatternMarkerScores:
+
+-   Scores describing how strongly a marker gene is associated with a
+    pattern.
+
+-   A higher score value indicates the marker gene is more associated
+    with the pattern, and vice versa.
+
+-   Scores have nonnegative values mostly falling between 0 and 2
+
+```{r pattern markers}
+pm <- patternMarkers(cogapsresult, threshold="cut")
+```
+
+# Pattern GSEA
+One way to explore and use CoGAPS patterns is to conduct gene set enrichment analysis by functionally annotating the genes which are significant for each pattern. The getPatternHallmarks function provides a wrapper around the fgsea fora method and associates each pattern with msigDB hallmark pathway annotations using the list of marker genes attained from the patternMarkers statistic. 
+
+To perform gene set analysis on pattern markers, please run:
+
+```{r}
+hallmarks <- getPatternHallmarks(cogapsresult)
+```
+
+hallmarks is a list of data frames, each containing hallmark overrepresentation statistics corresponding to one pattern. 
+
+To generate a barchart of the most significant hallmarks for any given pattern, please run:
+
+```{r}
+pl_pattern7 <- plotPatternHallmarks(hallmarks, whichpattern = 7)
+
+pl_pattern7
+
+```
+To generate statistics on the association between certain sample groups and patterns, we provide a wrapper function, called runMANOVA.This will allow us to explore if the patterns we have discovered lend to statistically significant differences in the sample groups. We will first load in the original data (if not already done earlier): 
+
+```{r}
+pdac_data <- readRDS("../data/inputdata.Rds")
+```
+
+Then, create a new matrix called “interestedVariables” consisting of the metadata variables of interest in conducting analysis on. Lastly, call the wrapper function, passing in the result object as well. 
+
+```{r MANOVA variables}
+# interestedVariables <- cbind(colData(monocleobj)[["TN_assigned_cell_type"]], colData(monocleobj)[["Classifier_T_duct"]])
+# 
+# manovaResult <- manova(interestedVariables, cogapsresult@sampleFactors)
+```
+The function will print out the MANOVA results for each pattern learned based on the variables of interest. From the output, we can observe that all p-values have a value of 0.0, indicating that differences observed in the sample groups based on the patterns are statistically significant. 
+
 # Citing CoGAPS
 
 If you use the CoGAPS package for your analysis, please cite
@@ -226,4 +456,3 @@ If you use the CoGAPS package for your analysis, please cite
 If you use the gene set statistic, please cite @OCHS_2009
 
 # References
-
