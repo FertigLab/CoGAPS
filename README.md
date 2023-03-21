@@ -26,4 +26,4 @@ devtools::install_github("FertigLab/CoGAPS")
 
 # Using CoGAPS
 
-Follow the vignette [here](https://github.com/FertigLab/CoGAPS/blob/master/vignettes/CoGAPS.Rmd)
+Follow the vignette [here](https://github.com/FertigLab/CoGAPS/blob/master/vignettes/CoGAPS.Rmd) and available as static html [here](https://rpubs.com/jeanettejohnson/1018399)
