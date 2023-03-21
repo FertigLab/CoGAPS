@@ -309,6 +309,81 @@ toCSV(pdac_epi_result, "../data")
 
 # Analyzing the CoGAPS result
 
+=======
+
+# OPTION: read data object in from file
+# This file is hosted on our github repository and will be included with any github CoGAPS install,
+# or can be downloaded from: https://github.com/FertigLab/CoGAPS/blob/b6b849cf84ed91f34038048e2b29ea0fcf93570b/data/inputdata.Rds
+pdac_data <- readRDS("../data/inputdata.Rds") # load R data object 
+pdac_data
+```
+>>>>>>> 3dfda031 (vignette)
+
+> pdac_data An object of class Seurat 15184 features across 25442
+> samples within 2 assays Active assay: originalexp (15176 features,
+> 2000 variable features) 1 other assay present: CoGAPS 5 dimensional
+> reductions calculated: PCA, Aligned, UMAP, pca, umap
+
+We also want to extract the counts matrix to provide directly to CoGAPS
+
+```{r extract counts matrix}
+pdac_epi_counts <- as.matrix(pdac_data@assays$originalexp@counts)
+norm_pdac_epi_counts <- log1p(pdac_epi_counts)
+
+head(pdac_epi_counts, n=c(5L, 2L))
+head(norm_pdac_epi_counts, n=c(5L, 2L))
+```
+
+Most of the time we will set some parameters before running CoGAPS.
+Parameters are managed with a CogapsParams object. This object will
+store all parameters needed to run CoGAPS and provides a simple
+interface for viewing and setting the parameter values.
+
+```{r set params}
+library(CoGAPS)
+pdac_params <- CogapsParams(nIterations=50000, # 50000 iterations 
+               	seed=42, # for consistency across stochastic runs
+               	nPatterns=8, # each thread will learn 8 patterns
+                  sparseOptimization=TRUE, # optimize for sparse data
+                  distributed="genome-wide") # parallelize across sets
+pdac_params
+```
+
+If you wish to run distributed CoGAPS, which is recommended to improve
+the computational efficiency for most large datasets, you must also call
+the setDistributedParams function. For a complete description of the
+parallelization strategy used in distributed CoGAPS, please refer to our
+preprint: <https://www.biorxiv.org/content/10.1101/2022.07.09.499398v1>
+
+```{r distributed params}
+pdac_params <- setDistributedParams(pdac_params, nSets=7)
+pdac_params
+```
+
+With all parameters set, we are now ready to run CoGAPS. Please note
+that this is the most time-consuming step of the procedure. Timing can
+take several hours and scales nlog(n) based on dataset size, as well as
+the parameter values set for 'nPatterns' and 'nIterations'. Time is
+increased when learning more patterns, when running more iterations, and
+when running a larger dataset, with iterations having the largest
+variable impact on the runtime of the NMF function.
+
+```{r run CoGAPS on single-cell data}
+startTime <- Sys.time()
+  
+pdac_epi_result <- CoGAPS(pdac_epi_counts, pdac_params)
+endTime <- Sys.time()
+
+saveRDS(pdac_epi_result, "../data/pdac_epi_cogaps_result.Rds")
+
+# To save as a .csv file, use the following line:
+
+# saveCSV(pdac_epi_result, "path/to/output/directory/")
+```
+
+# Analyzing the CoGAPS result
+
+>>>>>>> c4df5c05 (bioc vignette page new text for new manuscript)
 Now that the CoGAPS run is complete, learned patterns can be
 investigated. Due to the stochastic nature of the MCMC sampling in
 CoGAPS and long run time, it is generally a good idea to immediately
