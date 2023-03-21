@@ -46,10 +46,14 @@ generating solutions that are biologically intuitive to interpret
 # Software Setup
 
 *CoGAPS* can be installed directly from the FertigLab Github Repository
-using R devtools:
+using R devtools or from Bioconductor
 
 ```{r eval=FALSE}
 devtools::install_github("FertigLab/CoGAPS")
+
+# To install via BioConductor:
+install.packages("BiocManager")
+BiocManager::install("FertigLab/CoGAPS")
 ```
 
 When CoGAPS has installed correctly, you will see this message:
