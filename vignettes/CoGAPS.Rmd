@@ -237,7 +237,6 @@ pdac_data <- readRDS("inputdata_download.Rds")
 pdac_data <- readRDS("../data/inputdata.Rds") # load R data object 
 pdac_data
 ```
->>>>>>> 753af951 (updated vignette for bioc page)
 > pdac_data An object of class Seurat 15184 features across 25442
 > samples within 2 assays Active assay: originalexp (15176 features,
 > 2000 variable features) 1 other assay present: CoGAPS 5 dimensional
@@ -314,7 +313,6 @@ so by:
 ```{r load precomputed}
 library(CoGAPS)
 cogapsresult <- readRDS("../data/cogapsresult.Rds")
->>>>>>> 3dfda031 (vignette)
 ```
 
 To load your own result, simply edit the file path:
