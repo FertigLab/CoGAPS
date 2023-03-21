@@ -445,11 +445,10 @@ To generate a barchart of the most significant hallmarks for any given pattern, 
 pl_pattern7 <- plotPatternHallmarks(cogapsresult, hallmarks, whichpattern = 7)
 
 pl_pattern7
-
 ```
-To generate statistics on the association between certain sample groups and patterns, we provide a wrapper function, called runMANOVA.This will allow us to explore if the patterns we have discovered lend to statistically significant differences in the sample groups. We will first load in the original data (if not already done earlier): 
+To generate statistics on the association between certain sample groups and patterns, we provide a wrapper function, called MANOVA.This will allow us to explore if the patterns we have discovered lend to statistically significant differences in the sample groups. We will first load in the original data (if not already done earlier): 
 
-```{r, eval=FALSE}
+```{r load original data object again, eval=FALSE}
 pdac_data <- readRDS("../data/inputdata.Rds")
 ```
 
