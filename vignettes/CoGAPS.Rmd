@@ -241,8 +241,9 @@ pdac_data <- readRDS("inputdata_download.Rds")
 
 ```{r load single cell data from file, eval=FALSE}
 # OPTION: read data object in from file
-# This file is hosted on our github repository and will be included with any github CoGAPS install,
+# This file is hosted on our github repository
 # or can be downloaded from: https://github.com/FertigLab/CoGAPS/blob/b6b849cf84ed91f34038048e2b29ea0fcf93570b/data/inputdata.Rds
+# or from zenodo at the url in the above chunk
 pdac_data <- readRDS("../data/inputdata.Rds") # load R data object 
 pdac_data
 ```
@@ -327,7 +328,7 @@ cogapsresult <- readRDS("../data/cogapsresult.Rds")
 ```{r load precomputed from zenodo}
 # OPTION: download precomputed CoGAPS result object from Zenodo
 # Bioc vignette uses this
-options(timeout=1000) # adjust this if you're getting timeout downloading the file
+options(timeout=50000) # adjust this if you're getting timeout downloading the file
 url = "https://zenodo.org/record/7709664/files/cogapsresult.Rds?download=1"
 download.file(url,"cogapsresult_download.Rds")
 cogapsresult <- readRDS("cogapsresult_download.Rds")
