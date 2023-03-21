@@ -421,7 +421,7 @@ PatternMarkerScores:
     pattern.
 
 -   A higher score value indicates the marker gene is more associated
-    with the pattern, and vice versa.l
+    with the pattern, and vice versa.
 
 -   Scores have nonnegative values mostly falling between 0 and 2
 
@@ -455,10 +455,11 @@ pdac_data <- readRDS("../data/inputdata.Rds")
 
 Then, create a new matrix called “interestedVariables” consisting of the metadata variables of interest in conducting analysis on. Lastly, call the wrapper function, passing in the result object as well. 
 
-```{r MANOVA variables, eval=FALSE}
-# interestedVariables <- cbind(colData(monocleobj)[["TN_assigned_cell_type"]], colData(monocleobj)[["Classifier_T_duct"]])
-# 
-# manovaResult <- manova(interestedVariables, cogapsresult@sampleFactors)
+```{r MANOVA variables}
+# create dataframe of interested variables 
+interestedVariables <- cbind(pdac_data@meta.data[["nCount_RNA"]], pdac_data@meta.data[["nFeature_RNA"]])
+# call cogaps manova wrapper
+manova_results <- MANOVA(interestedVariables, cogapsresult)
 ```
 The function will print out the MANOVA results for each pattern learned based on the variables of interest. From the output, we can observe that all p-values have a value of 0.0, indicating that differences observed in the sample groups based on the patterns are statistically significant. 
 
