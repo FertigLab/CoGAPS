@@ -295,6 +295,7 @@ increased when learning more patterns, when running more iterations, and
 when running a larger dataset, with iterations having the largest
 variable impact on the runtime of the NMF function.
 
+<<<<<<< HEAD
 ```{r run CoGAPS on single-cell data, eval=FALSE}
 startTime <- Sys.time()
   
