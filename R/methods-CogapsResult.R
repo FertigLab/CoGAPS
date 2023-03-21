@@ -346,8 +346,8 @@ function(object)
 })
 
 #' @rdname plotPatternHallmarks-methods
-#' @import dplyr
-#' @importFrom ggplot2 ggplot
+#' @importFrom dplyr relocate
+#' @importFrom ggplot2 ggplot aes_string
 #' @aliases plotPatternHallmarks
 setMethod("plotPatternHallmarks", signature(object="CogapsResult", patternhallmarks = "list", whichpattern="numeric"),
 function(object, patternhallmarks, whichpattern=1)
