@@ -347,7 +347,7 @@ function(object)
 
 #' @rdname plotPatternHallmarks-methods
 #' @importFrom dplyr relocate
-#' @importFrom ggplot2 ggplot aes_string geom_col ylab coord_flip
+#' @importFrom ggplot2 ggplot aes_string geom_col ylab coord_flip theme_minimal ggtitle geom_hline
 #' @importFrom graphics plot legend lines points
 #' @aliases plotPatternHallmarks
 setMethod("plotPatternHallmarks", signature(object="CogapsResult", patternhallmarks = "list", whichpattern="numeric"),
