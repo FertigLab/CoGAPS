@@ -395,3 +395,24 @@ Pw=rep(1,ncol(object@featureLoadings)), PwNull=FALSE)
 #' pm <- patternMarkers(GIST.result)
 setGeneric("patternMarkers", function(object, threshold="all", lp=NA, axis=1) standardGeneric("patternMarkers"))
 
+#' save CoGAPS Result object as a set of csvs to directory 
+#' see fromCSV
+#' @export
+#' @docType methods
+#' @rdname toCSV-methods
+#' @description save as csv
+#' @param object CogapsResult object
+#' @param save_location directory to write to
+#' @return none
+setGeneric("toCSV", function(object, save_location=".") standardGeneric("toCSV"))
+
+#' read CoGAPS Result object from a directory with a set of csvs 
+#' see toCSV
+#' @export
+#' @docType methods
+#' @rdname fromCSV-methods
+#' @description save as csv
+#' @param save_location directory to read from
+#' @return CogapsResult object
+setGeneric("fromCSV", function(save_location=".") standardGeneric("fromCSV"))
+
