@@ -402,7 +402,7 @@ setGeneric("patternMarkers", function(object, threshold="all", lp=NA, axis=1) st
 #' @description MANOVA statistical test--wraps base R manova
 #' @param interestedVariables study design for manova
 #' @param object CogapsResult object
-#' @return manova results
+#' @return list of manova fit results
 setGeneric("MANOVA", function(interestedVariables, object) standardGeneric("MANOVA"))
 
 
