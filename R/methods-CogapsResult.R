@@ -597,7 +597,21 @@ function(object, GStoGenes, numPerm, Pw, PwNull)
 #' @aliases MANOVA
 setMethod("MANOVA", signature(interestedVariables = "matrix", object = "CogapsResult"), 
 function(interestedVariables, object){
-  return("okay")
+  pat <- as.data.frame(object@sampleFactors)
+  npat <- ncol(pat)
+  pattern_names = colnames(pat)
+  fits <- list()
+  for (pattern in pattern_names) {
+    print(pattern)
+    pattern <- unlist(pat[,pattern])
+    # all <- cbind(interestedVariables, pattern)
+    # all <- as.data.frame(all)
+    
+    fit <- manova(interestedVariables ~ pattern)
+    fits[[length(fits)+1]] <- fit
+    print(summary(fit))
+  }
+  return(fits)
 })
 
 #' @rdname toCSV-methods
