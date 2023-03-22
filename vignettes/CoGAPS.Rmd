@@ -218,6 +218,9 @@ cogapsresult
 cogapsresult@sampleFactors
 
 cogapsresult@featureLoadings
+
+# check reference result:
+modsimresult <- readRDS("../data/ModSimResult.Rds")
 ```
 
 If both matrices--sampleFactors and featureLoadings--have reasonable
@@ -303,7 +306,7 @@ saveRDS(pdac_epi_result, "../data/pdac_epi_cogaps_result.Rds")
 
 # To save as a .csv file, use the following line:
 
-# saveCSV(pdac_epi_result, "path/to/output/directory/")
+toCSV(pdac_epi_result, "../data")
 ```
 
 # Analyzing the CoGAPS result
