@@ -595,18 +595,63 @@ function(object, GStoGenes, numPerm, Pw, PwNull)
 
 #' @rdname toCSV-methods
 #' @aliases toCSV
-setMethod("toCSV", signature(object="CogapsResult", save_location="."),
+setMethod("toCSV", signature(object="CogapsResult", save_location="character"),
 function(object, save_location)
 {
-  return("okay")
+  write.csv(object@featureLoadings, file = paste0(save_location, "/featureLoadings.csv"), row.names=FALSE)
+  write.csv(object@sampleFactors, file= paste0(save_location, "/sampleFactors.csv"), row.names = FALSE)
+  
+  write.csv(object@loadingStdDev, file = paste0(save_location, "/loadingStdDev.csv"), row.names = FALSE)
+  write.csv(object@factorStdDev, file = paste0(save_location, "/factorStdDev.csv"), row.names = FALSE)
+  
+  write.csv(rownames(object@featureLoadings), file = paste0(save_location, "/geneNames.csv"), row.names = FALSE)
+  write.csv(rownames(object@sampleFactors), file = paste0(save_location, "/sampleNames.csv"), row.names = FALSE)
+  
+  write.csv(object@metadata$meanChiSq, file=paste0(save_location, "/meanChiSq.csv"), row.names = FALSE)
+  write.csv(object@metadata$chisq, file = paste0(save_location, "/chisqHistory.csv"), row.names = FALSE)
+  
+  write.csv(object@metadata$version, file = paste0(save_location, "/version.csv"), row.names = FALSE)
+  write.csv(object@metadata$atomsA, file = paste0(save_location, "/atomsA.csv"), row.names = FALSE)
+  write.csv(object@metadata$atomsP, file = paste0(save_location, "/atomsP.csv"), row.names = FALSE)
 })
 
 #' @rdname fromCSV-methods
 #' @aliases fromCSV
-setMethod("fromCSV", signature(save_location="."),
+setMethod("fromCSV", signature(save_location="character"),
 function(save_location)
 {
-    return("okay")
+  featureLoadings <- read.csv(file = paste0(save_location, "/featureLoadings.csv"))
+  sampleFactors <- read.csv(file = paste0(save_location, "/sampleFactors.csv"))
+  
+  loadingStdDev <- read.csv(file = paste0(save_location, "/loadingStdDev.csv"))
+  factorStdDev <- read.csv(file = paste0(save_location, "/factorStdDev.csv"))
+  
+  geneNames <- read.csv(file=paste0(save_location, "/geneNames.csv"))$x
+  sampleNames <- read.csv(file = paste0(save_location, "/sampleNames.csv"))$x
+  
+  meanChiSq <- read.csv(file=paste0(save_location, "/meanChiSq.csv"))$x
+  chisqHistory <- read.csv(file=paste0(save_location, "/chisqHistory.csv"))$x
+  
+  version <- read.csv(file=paste0(save_location, "/version.csv"))$x
+  atomsA <- read.csv(file=paste0(save_location, "/atomsA.csv"))$x
+  atomsP <- read.csv(file=paste0(save_location, "/atomsP.csv"))$x
+  
+  res <- new("CogapsResult",
+      Amean       = featureLoadings,
+      Asd         = loadingStdDev,
+      Pmean       = sampleFactors,
+      Psd         = factorStdDev,
+      meanChiSq   = meanChiSq,
+      geneNames   = geneNames,
+      sampleNames = sampleNames
+  )
+  
+  res@metadata$chisq = chisqHistory
+  res@metadata$version = version
+  res@metadata$atomsA = atomsA
+  res@metadata$atomsP = atomsP
+  
+  return(res)
 })
 
 #' heatmap of original data clustered by pattern markers statistic
