@@ -601,6 +601,13 @@ function(object, save_location)
   return("okay")
 })
 
+#' @rdname fromCSV-methods
+#' @aliases fromCSV
+setMethod("fromCSV", signature(save_location="."),
+function(save_location)
+{
+    return("okay")
+})
 
 #' heatmap of original data clustered by pattern markers statistic
 #' @export
