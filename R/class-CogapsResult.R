@@ -395,6 +395,17 @@ Pw=rep(1,ncol(object@featureLoadings)), PwNull=FALSE)
 #' pm <- patternMarkers(GIST.result)
 setGeneric("patternMarkers", function(object, threshold="all", lp=NA, axis=1) standardGeneric("patternMarkers"))
 
+#' MANOVA statistical test for patterns between sample groups
+#' @export
+#' @docType methods
+#' @rdname MANOVA-methods
+#' @description MANOVA statistical test--wraps base R manova
+#' @param interestedVariables study design for manova
+#' @param object CogapsResult object
+#' @return manova results
+setGeneric("MANOVA", function(interestedVariables, object) standardGeneric("MANOVA"))
+
+
 #' save CoGAPS Result object as a set of csvs to directory 
 #' see fromCSV
 #' @export
