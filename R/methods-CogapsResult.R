@@ -593,6 +593,13 @@ function(object, GStoGenes, numPerm, Pw, PwNull)
     return(finalStats)
 })
 
+#' @rdname MANOVA-methods
+#' @aliases MANOVA
+setMethod("MANOVA", signature(interestedVariables = "matrix", object = "CogapsResult"), 
+function(interestedVariables, object){
+  return("okay")
+})
+
 #' @rdname toCSV-methods
 #' @aliases toCSV
 setMethod("toCSV", signature(object="CogapsResult", save_location="character"),
