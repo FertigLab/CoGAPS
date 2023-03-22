@@ -593,6 +593,15 @@ function(object, GStoGenes, numPerm, Pw, PwNull)
     return(finalStats)
 })
 
+#' @rdname toCSV-methods
+#' @aliases toCSV
+setMethod("toCSV", signature(object="CogapsResult", save_location="."),
+function(object, save_location)
+{
+  return("okay")
+})
+
+
 #' heatmap of original data clustered by pattern markers statistic
 #' @export
 #' @docType methods
