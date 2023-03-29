@@ -597,20 +597,23 @@ function(object, GStoGenes, numPerm, Pw, PwNull)
 #' @aliases MANOVA
 setMethod("MANOVA", signature(interestedVariables = "matrix", object = "CogapsResult"), 
 function(interestedVariables, object){
+  interestedVariables <- cbind(unclass(factor(interestedVariables[,1])), unclass(factor(interestedVariables[,2])))
+  
   pat <- as.data.frame(object@sampleFactors)
   npat <- ncol(pat)
   pattern_names = colnames(pat)
+  
   fits <- list()
+  
   for (pattern in pattern_names) {
     print(pattern)
-    pattern <- unlist(pat[,pattern])
-    # all <- cbind(interestedVariables, pattern)
-    # all <- as.data.frame(all)
+    pattern_column <- unlist(pat[,pattern])
     
-    fit <- manova(interestedVariables ~ pattern)
+    fit <- manova(interestedVariables ~ pattern_column)
     fits[[length(fits)+1]] <- fit
     print(summary(fit))
   }
+  names(fits)=pattern_names
   return(fits)
 })
 
