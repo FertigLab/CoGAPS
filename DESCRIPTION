@@ -31,7 +31,13 @@ Imports:
     SummarizedExperiment,
     tools,
     utils,
-    rhdf5
+    rhdf5,
+    biomaRt,
+    dplyr,
+    fgsea,
+    forcats,
+    ggplot2,
+    msigdbr
 Suggests:
     testthat,
     knitr,
