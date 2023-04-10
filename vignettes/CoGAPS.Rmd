@@ -356,7 +356,7 @@ incorporate pattern data into any data structure and workflow.
 To store CoGAPS patterns as an Assay within a Seurat object
 (recommended):
 
-```{r pattern assay}
+```{r pattern assay, eval=FALSE}
 library(Seurat)
 # make sure pattern matrix is in same order as the input data
 patterns_in_order <-t(cogapsresult@sampleFactors[colnames(pdac_data),])
@@ -370,7 +370,7 @@ pdac_data[["CoGAPS"]] <- CreateAssayObject(counts = patterns_in_order)
 With the help of Seurat's FeaturePlot function, we generate a UMAP
 embedding of the cells colored by the intensity of each pattern.
 
-```{r pattern UMAP}
+```{r pattern UMAP, eval=FALSE}
 DefaultAssay(pdac_data) <- "CoGAPS"
 pattern_names = rownames(pdac_data@assays$CoGAPS)
 
