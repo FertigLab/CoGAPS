@@ -233,7 +233,7 @@ We now continue with single-cell analysis.
 
 ```{r load single cell data from zenodo}
 # OPTION: download data object from Zenodo
-options(timeout=1000) # adjust this if you're getting timeout downloading the file
+options(timeout=10000) # adjust this if you're getting timeout downloading the file
 url = "https://zenodo.org/record/7709664/files/inputdata.Rds?download=1"
 download.file(url,"inputdata_download.Rds")
 pdac_data <- readRDS("inputdata_download.Rds")
