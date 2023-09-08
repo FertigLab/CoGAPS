@@ -237,15 +237,9 @@ options(timeout=50000) # adjust this if you're getting timeout downloading the f
 url = "https://zenodo.org/record/7709664/files/inputdata.Rds?download=1"
 download.file(url,"inputdata_download.Rds")
 pdac_data <- readRDS("inputdata_download.Rds")
-```
-
-```{r load single cell data from file, eval=FALSE}
-# OPTION: read data object in from file
-# This file is hosted on our github repository and will be included with any github CoGAPS install,
-# or can be downloaded from: https://github.com/FertigLab/CoGAPS/blob/b6b849cf84ed91f34038048e2b29ea0fcf93570b/data/inputdata.Rds
-pdac_data <- readRDS("../data/inputdata.Rds") # load R data object 
 pdac_data
 ```
+
 > pdac_data An object of class Seurat 15184 features across 25442
 > samples within 2 assays Active assay: originalexp (15176 features,
 > 2000 variable features) 1 other assay present: CoGAPS 5 dimensional
@@ -271,8 +265,8 @@ library(CoGAPS)
 pdac_params <- CogapsParams(nIterations=50000, # 50000 iterations 
                	seed=42, # for consistency across stochastic runs
                	nPatterns=8, # each thread will learn 8 patterns
-                  sparseOptimization=TRUE, # optimize for sparse data
-                  distributed="genome-wide") # parallelize across sets
+                sparseOptimization=TRUE, # optimize for sparse data
+                distributed="genome-wide") # parallelize across sets
 pdac_params
 ```
 
@@ -317,12 +311,6 @@ in for downstream analysis.
 
 If you wish to load and examine a precomputed result object, please do
 so by:
-
-```{r load precomputed, eval=FALSE}
-library(CoGAPS)
-cogapsresult <- readRDS("../data/cogapsresult.Rds")
-```
-
 
 ```{r load precomputed from zenodo}
 # OPTION: download precomputed CoGAPS result object from Zenodo
@@ -448,11 +436,7 @@ pl_pattern7 <- plotPatternHallmarks(cogapsresult, hallmarks, whichpattern = 7)
 
 pl_pattern7
 ```
-To generate statistics on the association between certain sample groups and patterns, we provide a wrapper function, called MANOVA.This will allow us to explore if the patterns we have discovered lend to statistically significant differences in the sample groups. We will first load in the original data (if not already done earlier): 
-
-```{r load original data object again, eval=FALSE}
-pdac_data <- readRDS("../data/inputdata.Rds")
-```
+To generate statistics on the association between certain sample groups and patterns, we provide a wrapper function, called MANOVA.This will allow us to explore if the patterns we have discovered lend to statistically significant differences in the sample groups. We will first load in the original data (if not already done earlier).
 
 Then, create a new matrix called “interestedVariables” consisting of the metadata variables of interest in conducting analysis on. Lastly, call the wrapper function, passing in the result object as well. 
 
