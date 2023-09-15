@@ -239,7 +239,6 @@ download.file(url,"inputdata_download.Rds")
 pdac_data <- readRDS("inputdata_download.Rds")
 pdac_data
 ```
-
 > pdac_data An object of class Seurat 15184 features across 25442
 > samples within 2 assays Active assay: originalexp (15176 features,
 > 2000 variable features) 1 other assay present: CoGAPS 5 dimensional
@@ -267,6 +266,7 @@ pdac_params <- CogapsParams(nIterations=50000, # 50000 iterations
                	nPatterns=8, # each thread will learn 8 patterns
                 sparseOptimization=TRUE, # optimize for sparse data
                 distributed="genome-wide") # parallelize across sets
+
 pdac_params
 ```
 
@@ -315,7 +315,7 @@ so by:
 ```{r load precomputed from zenodo}
 # OPTION: download precomputed CoGAPS result object from Zenodo
 # Bioc vignette uses this
-options(timeout=1000) # adjust this if you're getting timeout downloading the file
+options(timeout=50000) # adjust this if you're getting timeout downloading the file
 url = "https://zenodo.org/record/7709664/files/cogapsresult.Rds?download=1"
 download.file(url,"cogapsresult_download.Rds")
 cogapsresult <- readRDS("cogapsresult_download.Rds")
@@ -433,7 +433,6 @@ To generate a barchart of the most significant hallmarks for any given pattern, 
 
 ```{r}
 pl_pattern7 <- plotPatternHallmarks(cogapsresult, hallmarks, whichpattern = 7)
-
 pl_pattern7
 ```
 To generate statistics on the association between certain sample groups and patterns, we provide a wrapper function, called MANOVA.This will allow us to explore if the patterns we have discovered lend to statistically significant differences in the sample groups. We will first load in the original data (if not already done earlier).
