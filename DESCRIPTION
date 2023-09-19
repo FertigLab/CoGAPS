@@ -1,5 +1,5 @@
 Package: CoGAPS
-Version: 3.21.0
+Version: 3.21.1
 Date: 2023-03-18
 Title: Coordinated Gene Activity in Pattern Sets
 Author: Jeanette Johnson, Ashley Tsang, Jacob Mitchell, Thomas Sherman, Wai-shing Lee, Conor Kelton, Ondrej Maxian, Jacob Carey,
@@ -13,7 +13,8 @@ Description: Coordinated Gene Activity in Pattern Sets (CoGAPS)
     analysis.
 Maintainer: Elana J. Fertig <ejfertig@jhmi.edu>,
     Thomas D. Sherman <tomsherman159@gmail.com>,
-    Jeanette Johnson <jjohn450@jhmi.edu>
+    Jeanette Johnson <jjohn450@jhmi.edu>,
+    Dmitrijs Lvovs <dlvovs1@jh.edu>
 Depends:
     R (>= 3.5.0)
 Imports:
