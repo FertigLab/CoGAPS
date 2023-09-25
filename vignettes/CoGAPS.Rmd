@@ -89,7 +89,7 @@ simulated toy data for a test run.
 Single-cell data will be loaded later in this file.
 
 ```{r modsim}
-modsimdata <- read.table("../data/ModSimData.txt")
+data("modsimdata")
 # input to CoGAPS
 modsimdata
 ```
@@ -220,7 +220,7 @@ cogapsresult@sampleFactors
 cogapsresult@featureLoadings
 
 # check reference result:
-modsimresult <- readRDS("../data/ModSimResult.Rds")
+data("modsimresult")
 ```
 
 If both matrices--sampleFactors and featureLoadings--have reasonable
