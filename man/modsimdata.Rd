@@ -3,7 +3,7 @@
 \docType{data}
 \name{modsimdata}
 \alias{modsimdata}
-\title{Toy example to illustrate CoGAPS}
+\title{Toy example to run CoGAPS on.}
 \format{
 'data.frame':	25 obs. of  20 variables.
 }
@@ -11,9 +11,6 @@
 data(modsimdata)
 }
 \description{
-A sample dataset to run CoGAPS on. For example containing
-}
-\details{
 \itemize{
   \item V1..V20. some variables, for example levels of gene expression
 }
