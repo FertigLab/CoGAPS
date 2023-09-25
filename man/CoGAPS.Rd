@@ -11,9 +11,10 @@ CoGAPS(
   messages = TRUE,
   outputFrequency = 1000,
   uncertainty = NULL,
+  useCheckPoint = FALSE,
   checkpointOutFile = "gaps_checkpoint.out",
   checkpointInterval = 0,
-  checkpointInFile = NULL,
+  checkpointFile = NULL,
   transposeData = FALSE,
   BPPARAM = NULL,
   workerID = 1,
@@ -43,9 +44,6 @@ file type}
 \item{checkpointInterval}{number of iterations between each checkpoint (set
 to 0 to disable checkpoints)}
 
-\item{checkpointInFile}{if this is provided, CoGAPS runs from the checkpoint
-contained in this file}
-
 \item{transposeData}{T/F for transposing data while reading it in - useful
 for data that is stored as samples x genes since CoGAPS requires data to be
 genes x samples}
@@ -66,6 +64,9 @@ snapshots}
 "all"}
 
 \item{...}{allows for overwriting parameters in params}
+
+\item{checkpointInFile}{if this is provided, CoGAPS runs from the checkpoint
+contained in this file}
 }
 \value{
 CogapsResult object
