@@ -63,5 +63,6 @@ Collate:
     'RcppExports.R'
     'SubsetData.R'
     'class-CogapsResult.R'
+    'data.R'
     'methods-CogapsParams.R'
     'methods-CogapsResult.R'
