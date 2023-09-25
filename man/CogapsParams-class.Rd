@@ -66,5 +66,11 @@ matching, as well as fixed runs of standard CoGAPS}
 \item{\code{whichMatrixFixed}}{either 'A' or 'P', indicating which matrix is fixed}
 
 \item{\code{takePumpSamples}}{whether or not to take PUMP samples}
+
+\item{\code{checkpointInterval}}{how many iterations between each checkpoint (set to 0 to disable)}
+
+\item{\code{checkpointFile}}{file path to load checkpoint from}
+
+\item{\code{checkpointOutFile}}{file path where checkpoint should be written to}
 }}
 
