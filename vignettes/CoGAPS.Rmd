@@ -89,7 +89,7 @@ simulated toy data for a test run.
 Single-cell data will be loaded later in this file.
 
 ```{r modsim}
-data("modsimdata")
+load('../data/modsimdata.rda')
 # input to CoGAPS
 modsimdata
 ```
@@ -220,7 +220,7 @@ cogapsresult@sampleFactors
 cogapsresult@featureLoadings
 
 # check reference result:
-data("modsimresult")
+load('../data/modsimresult.rda')
 ```
 
 If both matrices--sampleFactors and featureLoadings--have reasonable
