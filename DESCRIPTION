@@ -45,7 +45,7 @@ Suggests:
     rmarkdown,
     BiocStyle
 LinkingTo: Rcpp, BH
-VignetteBuilder: rmarkdown
+VignetteBuilder: knitr
 LazyLoad: true
 License: BSD_3_clause + file LICENSE
 biocViews: GeneExpression, Transcription, GeneSetEnrichment,
