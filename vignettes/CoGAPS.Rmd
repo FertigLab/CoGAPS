@@ -235,7 +235,7 @@ We now continue with single-cell analysis.
 # OPTION: download data object from Zenodo
 options(timeout=50000) # adjust this if you're getting timeout downloading the file
 url = "https://zenodo.org/record/7709664/files/inputdata.Rds"
-download.file(url,"inputdata_download.Rds", mode='wb')
+download.file(url,"inputdata_download.Rds", mode="wb")
 pdac_data <- readRDS("inputdata_download.Rds")
 pdac_data
 ```
@@ -317,7 +317,7 @@ so by:
 # Bioc vignette uses this
 options(timeout=50000) # adjust this if you're getting timeout downloading the file
 url = "https://zenodo.org/record/7709664/files/cogapsresult.Rds?download=1"
-download.file(url,"cogapsresult_download.Rds")
+download.file(url,"cogapsresult_download.Rds", mode="wb")
 cogapsresult <- readRDS("cogapsresult_download.Rds")
 ```
 
