@@ -87,8 +87,8 @@ compiledWithOpenMPSupport <- function()
 #' resultC <- CoGAPS(GIST.data_frame, params, nIterations=25)
 #' @importFrom methods new is
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
-outputFrequency=1000, uncertainty=NULL, useCheckPoint=FALSE, checkpointOutFile="gaps_checkpoint.out",
-checkpointInterval=0, checkpointFile=NULL, transposeData=FALSE,
+outputFrequency=1000, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
+checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, nSnapshots=0,
 snapshotPhase='sampling', ...)
 {
@@ -118,10 +118,9 @@ snapshotPhase='sampling', ...)
         "outputFrequency"=outputFrequency,
         "nSnapshots"=nSnapshots,
         "snapshotPhase"=snapshotPhase,
-        "useCheckPoint"=useCheckPoint,
         "checkpointOutFile"=checkpointOutFile,
         "checkpointInterval"=checkpointInterval,
-        "checkpointInFile"=checkpointFile,
+        "checkpointInFile"=checkpointInFile,
         "geneNames"=NULL, # the gene/sample names in the params object are kept
         "sampleNames"=NULL, # as a reference, these are the values actually used
         "transposeData"=transposeData,
@@ -172,7 +171,7 @@ snapshotPhase='sampling', ...)
 #' }
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
 outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
-checkpointInterval=1000, checkpointFile=NULL, transposeData=FALSE,
+checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
 {
     warning(paste("scCoGAPS is deprecated, use the main function CoGAPS",
@@ -187,7 +186,7 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
         uncertainty=uncertainty,
         checkpointOutFile=checkpointOutFile,
         checkpointInterval=checkpointInterval,
-        checkpointFile=checkpointFile,
+        checkpointInFile=checkpointInFile,
         transposeData=transposeData,
         BPPARAM=BPPARAM,
         workerID=workerID,
@@ -213,7 +212,7 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
 #' }
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
 outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
-checkpointInterval=1000, checkpointFile=NULL, transposeData=FALSE,
+checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
 {
     warning(paste("GWCoGAPS is deprecated, use the main function CoGAPS",
@@ -228,7 +227,7 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
         uncertainty=uncertainty,
         checkpointOutFile=checkpointOutFile,
         checkpointInterval=checkpointInterval,
-        checkpointFile=checkpointFile,
+        checkpointInFile=checkpointInFile,
         transposeData=transposeData,
         BPPARAM=BPPARAM,
         workerID=workerID,

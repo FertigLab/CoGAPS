@@ -71,7 +71,7 @@ function(object)
         cat(length(object@sampleNames), "sample names provided\n")
         cat("first sample name:", object@sampleNames[1], "\n")
     }
-    if (!is.null(object@checkpointFile) || !is.null(object@checkpointOutFile))
+    if (!is.null(object@checkpointInFile) || !is.null(object@checkpointOutFile))
     {
       cat("\n")
       cat("-- Checkpoint parameters--", "\n")
@@ -79,8 +79,8 @@ function(object)
       if(object@checkpointInterval == 0){
         cat("Warning!! Setting checkpointInterval=0 disables checkpoint logging.", "\n")
       }
-      if(!is.null(object@checkpointFile)){
-        cat("checkpointFile          ", checkpointFile, "\n")
+      if(!is.null(object@checkpointInFile)){
+        cat("checkpointInFile          ", checkpointInFile, "\n")
       }
       if (!is.null(object@checkpointOutFile)){
         cat("checkpointOutFile          ", object@checkpointOutFile, "\n")
@@ -121,9 +121,9 @@ function(object, whichParam, value)
         object@nPatterns <- value
         object@cut <- min(object@cut, object@nPatterns)
     }
-    else if (whichParam == "checkpointFile")
+    else if (whichParam == "checkpointInFile")
     {
-      object@checkpointFile <- value
+      object@checkpointInFile <- value
     }
     else if (whichParam == "checkpointOutFile")
     {

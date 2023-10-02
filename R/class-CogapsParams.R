@@ -38,7 +38,7 @@
 #' @slot whichMatrixFixed either 'A' or 'P', indicating which matrix is fixed
 #' @slot takePumpSamples whether or not to take PUMP samples
 #' @slot checkpointInterval how many iterations between each checkpoint (set to 0 to disable)
-#' @slot checkpointFile file path to load checkpoint from
+#' @slot checkpointInFile file path to load checkpoint from
 #' @slot checkpointOutFile file path where checkpoint should be written to
 #' @importClassesFrom S4Vectors character_OR_NULL
 setClass("CogapsParams", slots = c(
@@ -63,7 +63,7 @@ setClass("CogapsParams", slots = c(
     geneNames="character_OR_NULL",
     sampleNames="character_OR_NULL",
     checkpointInterval="numeric",
-    checkpointFile="character_OR_NULL",
+    checkpointInFile="character_OR_NULL",
     checkpointOutFile="character_OR_NULL",
     fixedPatterns="ANY",
     whichMatrixFixed="character",
@@ -118,7 +118,7 @@ setMethod("initialize", "CogapsParams",
         .Object@whichMatrixFixed <- 'N'
         .Object@takePumpSamples <- FALSE
         .Object@checkpointInterval <- 0
-        .Object@checkpointFile <- NULL
+        .Object@checkpointInFile <- NULL
         .Object@checkpointOutFile <- NULL
 
         .Object <- callNextMethod(.Object, ...)

@@ -69,7 +69,7 @@ matching, as well as fixed runs of standard CoGAPS}
 
 \item{\code{checkpointInterval}}{how many iterations between each checkpoint (set to 0 to disable)}
 
-\item{\code{checkpointFile}}{file path to load checkpoint from}
+\item{\code{checkpointInFile}}{file path to load checkpoint from}
 
 \item{\code{checkpointOutFile}}{file path where checkpoint should be written to}
 }}
