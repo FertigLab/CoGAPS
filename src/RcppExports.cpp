@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // cogaps_from_file_cpp
 Rcpp::List cogaps_from_file_cpp(const Rcpp::CharacterVector& data, const Rcpp::List& allParams, const Rcpp::Nullable<Rcpp::CharacterVector>& uncertainty);
 RcppExport SEXP _CoGAPS_cogaps_from_file_cpp(SEXP dataSEXP, SEXP allParamsSEXP, SEXP uncertaintySEXP) {

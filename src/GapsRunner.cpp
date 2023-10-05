@@ -440,6 +440,7 @@ const DataType &uncertainty, GapsRandomState *randState)
             GAPS_MESSAGE(params.printMessages, "-- Sampling Phase --\n");
             totalUpdates += runOnePhase(params, ASampler, PSampler, stats, randState,
                 rng, startTime, phase, currentIter);
+        default: break; //otherwise yield error
     }
     
     // get result
