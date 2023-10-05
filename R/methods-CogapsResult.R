@@ -62,7 +62,7 @@ function(object)
 })
 
 #' @export
-#' @importFrom graphics plot legend lines points
+#' @importFrom graphics plot legend lines points axis par text
 #' @importFrom grDevices rainbow
 plot.CogapsResult <- function(x, groups=NULL, ...)
 {
@@ -595,6 +595,7 @@ function(object, GStoGenes, numPerm, Pw, PwNull)
 
 #' @rdname MANOVA-methods
 #' @aliases MANOVA
+#' @importFrom stats manova
 setMethod("MANOVA", signature(interestedVariables = "matrix", object = "CogapsResult"), 
 function(interestedVariables, object){
   interestedVariables <- cbind(unclass(factor(interestedVariables[,1])), unclass(factor(interestedVariables[,2])))
@@ -619,6 +620,7 @@ function(interestedVariables, object){
 
 #' @rdname toCSV-methods
 #' @aliases toCSV
+#' @importFrom utils write.csv
 setMethod("toCSV", signature(object="CogapsResult", save_location="character"),
 function(object, save_location)
 {
@@ -641,6 +643,7 @@ function(object, save_location)
 
 #' @rdname fromCSV-methods
 #' @aliases fromCSV
+#' @importFrom utils read.csv
 setMethod("fromCSV", signature(save_location="character"),
 function(save_location)
 {
