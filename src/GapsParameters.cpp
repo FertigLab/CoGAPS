@@ -38,7 +38,7 @@ void GapsParameters::print() const
     gaps_printf("\n");
     gaps_printf("subsetData: %s\n", subsetData ? "TRUE" : "FALSE");
     gaps_printf("subsetGenes: %s\n", subsetGenes ? "TRUE" : "FALSE");
-    gaps_printf("dataIndicesSubset.size(): %lu\n", dataIndicesSubset.size());
+    gaps_printf("dataIndicesSubset.size(): %zu\n", dataIndicesSubset.size());
     gaps_printf("\n");
     gaps_printf("useFixedPatterns: %s\n", useFixedPatterns ? "TRUE" : "FALSE");
     gaps_printf("whichMatrixFixed: %c\n", whichMatrixFixed);
