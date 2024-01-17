@@ -316,9 +316,13 @@ so by:
 # OPTION: download precomputed CoGAPS result object from Zenodo
 # Bioc vignette uses this
 options(timeout=50000) # adjust this if you're getting timeout downloading the file
-url = "https://zenodo.org/record/7709664/files/cogapsresult.Rds?download=1"
-download.file(url,"cogapsresult_download.Rds", mode="wb")
-cogapsresult <- readRDS("cogapsresult_download.Rds")
+
+#caches download of the hosted file
+bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
+url <- "https://zenodo.org/record/7709664/files/cogapsresult.Rds"
+cogapsresult <- BiocFileCache::bfcrpath(bfc, url)
+cogapsresult <- readRDS(cogapsresult)
+
 ```
 
 To load your own result, simply edit the file path:
