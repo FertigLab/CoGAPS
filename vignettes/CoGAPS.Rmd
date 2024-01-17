@@ -234,9 +234,10 @@ We now continue with single-cell analysis.
 ```{r load single cell data from zenodo}
 # OPTION: download data object from Zenodo
 options(timeout=50000) # adjust this if you're getting timeout downloading the file
-url = "https://zenodo.org/record/7709664/files/inputdata.Rds"
-download.file(url,"inputdata_download.Rds", mode="wb")
-pdac_data <- readRDS("inputdata_download.Rds")
+bfc <- BiocFileCache::BiocFileCache()
+pdac_url <- "https://zenodo.org/record/7709664/files/inputdata.Rds"
+pdac_data <- BiocFileCache::bfcrpath(bfc, pdac_url)
+pdac_data <- readRDS(pdac_data)
 pdac_data
 ```
 > pdac_data An object of class Seurat 15184 features across 25442
@@ -314,13 +315,9 @@ so by:
 
 ```{r load precomputed from zenodo}
 # OPTION: download precomputed CoGAPS result object from Zenodo
-# Bioc vignette uses this
-options(timeout=50000) # adjust this if you're getting timeout downloading the file
-
 #caches download of the hosted file
-bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
-url <- "https://zenodo.org/record/7709664/files/cogapsresult.Rds"
-cogapsresult <- BiocFileCache::bfcrpath(bfc, url)
+cogapsresult_url <- "https://zenodo.org/record/7709664/files/cogapsresult.Rds"
+cogapsresult <- BiocFileCache::bfcrpath(bfc, cogapsresult_url)
 cogapsresult <- readRDS(cogapsresult)
 
 ```
