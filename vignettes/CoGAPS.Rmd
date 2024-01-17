@@ -23,7 +23,7 @@ library(BiocParallel)
 
 This vignette was built using CoGAPS version:
 
-```{r}
+```{r current version}
 packageVersion("CoGAPS")
 ```
 
@@ -79,7 +79,7 @@ on real data sets.
 
 Import the CoGAPS library with the following command:
 
-```{r}
+```{r library}
 library(CoGAPS)
 ```
 
@@ -122,7 +122,7 @@ The only required argument to `CoGAPS` is the data set. This can be a
 `matrix`, `data.frame`, `SummarizedExperiment`, `SingleCellExperiment`
 or the path of a file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
 
-```{r}
+```{r cogaps on modsim}
 # run CoGAPS with specified parameters
 cogapsresult <- CoGAPS(modsimdata, params, outputFrequency = 10000)
 cogapsresult
@@ -424,7 +424,7 @@ One way to explore and use CoGAPS patterns is to conduct gene set enrichment ana
 
 To perform gene set analysis on pattern markers, please run:
 
-```{r}
+```{r get hallmarks}
 hallmarks <- getPatternHallmarks(cogapsresult)
 ```
 
@@ -432,7 +432,7 @@ hallmarks is a list of data frames, each containing hallmark overrepresentation 
 
 To generate a barchart of the most significant hallmarks for any given pattern, please run:
 
-```{r}
+```{r plot hallmarks}
 pl_pattern7 <- plotPatternHallmarks(cogapsresult, hallmarks, whichpattern = 7)
 pl_pattern7
 ```
