@@ -23,7 +23,7 @@ library(BiocParallel)
 
 This vignette was built using CoGAPS version:
 
-```{r}
+```{r current version}
 packageVersion("CoGAPS")
 ```
 
@@ -79,7 +79,7 @@ on real data sets.
 
 Import the CoGAPS library with the following command:
 
-```{r}
+```{r library}
 library(CoGAPS)
 ```
 
@@ -122,7 +122,7 @@ The only required argument to `CoGAPS` is the data set. This can be a
 `matrix`, `data.frame`, `SummarizedExperiment`, `SingleCellExperiment`
 or the path of a file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
 
-```{r}
+```{r cogaps on modsim}
 # run CoGAPS with specified parameters
 cogapsresult <- CoGAPS(modsimdata, params, outputFrequency = 10000)
 cogapsresult
@@ -234,9 +234,10 @@ We now continue with single-cell analysis.
 ```{r load single cell data from zenodo}
 # OPTION: download data object from Zenodo
 options(timeout=50000) # adjust this if you're getting timeout downloading the file
-url = "https://zenodo.org/record/7709664/files/inputdata.Rds"
-download.file(url,"inputdata_download.Rds", mode="wb")
-pdac_data <- readRDS("inputdata_download.Rds")
+bfc <- BiocFileCache::BiocFileCache()
+pdac_url <- "https://zenodo.org/record/7709664/files/inputdata.Rds"
+pdac_data <- BiocFileCache::bfcrpath(bfc, pdac_url)
+pdac_data <- readRDS(pdac_data)
 pdac_data
 ```
 > pdac_data An object of class Seurat 15184 features across 25442
@@ -314,11 +315,11 @@ so by:
 
 ```{r load precomputed from zenodo}
 # OPTION: download precomputed CoGAPS result object from Zenodo
-# Bioc vignette uses this
-options(timeout=50000) # adjust this if you're getting timeout downloading the file
-url = "https://zenodo.org/record/7709664/files/cogapsresult.Rds?download=1"
-download.file(url,"cogapsresult_download.Rds", mode="wb")
-cogapsresult <- readRDS("cogapsresult_download.Rds")
+#caches download of the hosted file
+cogapsresult_url <- "https://zenodo.org/record/7709664/files/cogapsresult.Rds"
+cogapsresult <- BiocFileCache::bfcrpath(bfc, cogapsresult_url)
+cogapsresult <- readRDS(cogapsresult)
+
 ```
 
 To load your own result, simply edit the file path:
@@ -423,7 +424,7 @@ One way to explore and use CoGAPS patterns is to conduct gene set enrichment ana
 
 To perform gene set analysis on pattern markers, please run:
 
-```{r}
+```{r get hallmarks}
 hallmarks <- getPatternHallmarks(cogapsresult)
 ```
 
@@ -431,7 +432,7 @@ hallmarks is a list of data frames, each containing hallmark overrepresentation 
 
 To generate a barchart of the most significant hallmarks for any given pattern, please run:
 
-```{r}
+```{r plot hallmarks}
 pl_pattern7 <- plotPatternHallmarks(cogapsresult, hallmarks, whichpattern = 7)
 pl_pattern7
 ```
