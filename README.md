@@ -1,3 +1,4 @@
+[![R build status](https://github.com/FertigLab/CoGAPS/workflows/r-build-check/badge.svg)](https://github.com/FertigLab/CoGAPS/actions?workflow=r-build-check)
 <img src="https://user-images.githubusercontent.com/25310425/169565420-56958b50-29a2-4032-afb3-08447577d074.png" width="300">
 
 # CoGAPS
