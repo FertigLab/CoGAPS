@@ -44,7 +44,8 @@ Suggests:
     knitr,
     rmarkdown,
     BiocStyle,
-    SeuratObject
+    SeuratObject,
+    BiocFileCache
 LinkingTo: Rcpp, BH
 VignetteBuilder: knitr
 LazyLoad: true

@@ -1,0 +1,10 @@
+name: r-build-check
+on:
+    push:
+        branches: ['master']
+    workflow_dispatch:
+jobs:
+    build-check:
+        uses: FertigLab/actions/.github/workflows/r-build-check.yml@v1.1.1
+        with:
+            chargs: 'c("--no-manual")'
