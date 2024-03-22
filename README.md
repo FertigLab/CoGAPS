@@ -1,10 +1,11 @@
-<img src="https://user-images.githubusercontent.com/25310425/169565420-56958b50-29a2-4032-afb3-08447577d074.png" width="300">
+<img src="https://user-images.githubusercontent.com/25310425/169565420-56958b50-29a2-4032-afb3-08447577d074.png" width="150">
+
+[![R build status](https://github.com/FertigLab/CoGAPS/workflows/r-build-check/badge.svg)](https://github.com/FertigLab/CoGAPS/actions?workflow=r-build-check)
 
 # CoGAPS
 
 [![Bioc](https://bioconductor.org/images/logo_bioconductor.gif)](https://bioconductor.org/packages/CoGAPS)
 [![downloads](https://bioconductor.org/shields/downloads/release/CoGAPS.svg)](http://bioconductor.org/packages/stats/bioc/CoGAPS/)
-[![Build Status](https://travis-ci.org/FertigLab/CoGAPS.svg?branch=master)](https://travis-ci.org/FertigLab/CoGAPS)
 
 Coordinated Gene Activity in Pattern Sets (CoGAPS) implements a Bayesian MCMC matrix factorization algorithm, GAPS, and links it to gene set statistic methods to infer biological process activity. It can be used to perform sparse matrix factorization on any data, and when this data represents biomolecules, to do gene set analysis.
 
