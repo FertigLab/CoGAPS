@@ -358,10 +358,18 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
   method <- match.arg(method)
   A <- object@featureLoadings
   patternNames <- colnames(A)
-  gene_universe <- rownames(A)
+  features <- rownames(A)
   # enrichment method
   if(method == "enrichment") {
-    
+    d <- lapply(
+      patternNames, FUN = function(p) {
+        amp <- A[,p]
+        names(amp) <- features
+        result <- fgsea::fgsea(pathways = gene.sets, stats = , scoreType = "pos")
+        result$leadingEdge <- vapply(result$leadingEdge, FUN = toString, FUN.VALUE = character(1))
+        return(result)
+      }
+    )
   }
   
   # overrepresentation method
@@ -374,7 +382,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
       patternNames, FUN = function(p) {
         result <- fora(
           pathways = gene.sets, genes = PMlist[[p]],
-          universe = gene_universe,
+          universe = features,
           maxSize=2038)
         result[["k/K"]] <- result$overlap / result$size
         result$"neg.log.q" <- (-10) * log10(result$padj)
@@ -382,8 +390,8 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
         return(result)
       }
     )
-    return(d)
   }
+  return(d)
 })
 
 #' @rdname plotPatternHallmarks-methods
