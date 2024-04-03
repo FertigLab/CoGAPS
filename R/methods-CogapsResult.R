@@ -345,6 +345,47 @@ function(object)
   return(d)           
 })
 
+#' @rdname getPatternGeneSet-methods
+#' @import msigdbr 
+#' @import dplyr
+#' @importFrom biomaRt useEnsembl getBM
+#' @import fgsea
+#' @importFrom forcats fct_reorder
+#' @aliases getPatternGeneSet
+setMethod("getPatternGeneSet", signature(object="CogapsResult", gene.sets="list"),
+function(object, gene.sets, method = c("enrichment", "overrepresentation"))
+{
+  method <- match.arg(method)
+  A <- object@featureLoadings
+  patternNames <- colnames(A)
+  gene_universe <- rownames(A)
+  # enrichment method
+  if(method == "enrichment") {
+    
+  }
+  
+  # overrepresentation method
+  if(method == "overrepresentation") {
+    patternMarkerResults <- patternMarkers(object, threshold = "cut", lp = NA, axis = 1)
+    names(patternMarkerResults$PatternMarkers) <- patternNames
+    
+    PMlist <- patternMarkerResults$PatternMarkers
+    d <- lapply(
+      patternNames, FUN = function(p) {
+        result <- fora(
+          pathways = gene.sets, genes = PMlist[[p]],
+          universe = gene_universe,
+          maxSize=2038)
+        result[["k/K"]] <- result$overlap / result$size
+        result$"neg.log.q" <- (-10) * log10(result$padj)
+        result$"gene.set" <- p
+        return(result)
+      }
+    )
+    return(d)
+  }
+})
+
 #' @rdname plotPatternHallmarks-methods
 #' @importFrom dplyr relocate
 #' @importFrom ggplot2 ggplot aes_string geom_col ylab coord_flip theme_minimal ggtitle geom_hline geom_text theme aes ylim
