@@ -352,7 +352,7 @@ function(object)
 #' @import fgsea
 #' @importFrom forcats fct_reorder
 #' @aliases getPatternGeneSet
-setMethod("getPatternGeneSet", signature(object="CogapsResult", gene.sets="list"),
+setMethod("getPatternGeneSet", signature(object="CogapsResult", gene.sets="list", ...),
 function(object, gene.sets, method = c("enrichment", "overrepresentation"))
 {
   method <- match.arg(method)
@@ -374,7 +374,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
   
   # overrepresentation method
   if(method == "overrepresentation") {
-    patternMarkerResults <- patternMarkers(object, threshold = "cut", lp = NA, axis = 1)
+    patternMarkerResults <- patternMarkers(object, ...)
     names(patternMarkerResults$PatternMarkers) <- patternNames
     
     PMlist <- patternMarkerResults$PatternMarkers
