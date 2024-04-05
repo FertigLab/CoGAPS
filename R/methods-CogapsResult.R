@@ -415,24 +415,15 @@ function(object, patterngeneset, whichpattern=1, padj_threshold = 0.05)
   
   #plot and save the waterfall plot of ORA p-values
   plot <- ggplot(patterngeneset, aes_string(y = "neg.log.padj", x = "gene.set", fill = "gene.set")) +
-    ## Specifies barplot
     geom_col() +
-    ## Rename y axis
     ylab("-10*log10(FDR-adjusted p-value)") + 
-    ## Flips the coordinates
     coord_flip() +
-    ## Makes the background white
     theme_minimal() +
-    ## Add title
     ggtitle(paste0("Overrepresented MsigDB Hallmarks in Pattern", whichpattern)) +
-    ## This creates the dotted line at .05 value 
-    geom_hline(yintercept=neg.log.thresh, linetype="dotted") + # Add veritcle line to show significances
-    ## Adds the q values
+    geom_hline(yintercept=neg.log.thresh, linetype="dotted") + 
     geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
-    ## Removes legend
     theme(legend.position = "none") +
-    ## specifies limits 
-    ylim(0, ceiling(max(patterngeneset$"neg.log.padj")) + (max(patterngeneset$"neg.log.padj")/4))
+    ylim(0, ceiling(max(patterngeneset$neg.log.padj)) + (max(patterngeneset$neg.log.padj)/4))
   
   return(plot)
 })
