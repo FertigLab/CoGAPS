@@ -367,7 +367,8 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
         names(amp) <- features
         result <- fgsea::fgsea(pathways = gene.sets, stats = , scoreType = "pos")
         result$leadingEdge <- vapply(result$leadingEdge, FUN = toString, FUN.VALUE = character(1))
-        result$"neg.log.padj" <- (-10) * log10(result$padj)
+        result$neg.log.padj <- (-10) * log10(result$padj)
+        result$gene.set <- p
         return(result)
       }
     )
@@ -386,8 +387,8 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
           universe = features,
           maxSize=2038)
         result[["k/K"]] <- result$overlap / result$size
-        result$"neg.log.padj" <- (-10) * log10(result$padj)
-        result$"gene.set" <- p
+        result$neg.log.padj <- (-10) * log10(result$padj)
+        result$gene.set <- p
         return(result)
       }
     )
@@ -395,30 +396,24 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
   return(d)
 })
 
-#' @rdname plotPatternHallmarks-methods
+#' @rdname plotPatternGeneSet-methods
 #' @importFrom dplyr relocate
 #' @importFrom ggplot2 ggplot aes_string geom_col ylab coord_flip theme_minimal ggtitle geom_hline geom_text theme aes ylim
 #' @importFrom graphics plot legend lines points
-#' @aliases plotPatternHallmarks
-setMethod("plotPatternHallmarks", signature(object="CogapsResult", patternhallmarks = "list", whichpattern="numeric"),
-function(object, patternhallmarks, whichpattern=1)
+#' @aliases plotPatternGeneSet
+setMethod("plotPatternGeneSet", signature(object="CogapsResult", patterngeneset = "list", whichpattern="numeric"),
+function(object, patterngeneset, whichpattern=1)
 {
   # should be able to pass in info about just one pattern, or to pass all info and specify which pattern
-  if (length(patternhallmarks) > 1){
-    patternhallmarks <- patternhallmarks[[whichpattern]]
+  if (length(patterngeneset) > 1){
+    patterngeneset <- patterngeneset[[whichpattern]]
   }
   
-  # rearrange columns to move overlap genes to the end and convert to vector for
-  # compatibility with saving as csv
-  patternhallmarks <- relocate(patternhallmarks, "overlapGenes", .after = "MsigDB_Hallmark")
-  patternhallmarks <- relocate(patternhallmarks, "neg.log.padj", .after = "padj")
-  patternhallmarks <- patternhallmarks %>% mutate(overlapGenes = sapply(overlapGenes, toString))
-  
   # for plotting, limit the results to significant over-representation
-  patternhallmarks <- patternhallmarks[patternhallmarks$pval < 0.05,]
+  patterngeneset <- patterngeneset[patterngeneset$pval < 0.05,]
   
   #plot and save the waterfall plot of ORA p-values
-  plot <- ggplot(patternhallmarks, aes_string(y = "neg.log.padj", x = "MsigDB_Hallmark", fill = "MsigDB_Hallmark")) +
+  plot <- ggplot(patterngeneset, aes_string(y = "neg.log.padj", x = "gene.set", fill = "gene.set")) +
     ## Specifies barplot
     geom_col() +
     ## Rename y axis
@@ -436,7 +431,7 @@ function(object, patternhallmarks, whichpattern=1)
     ## Removes legend
     theme(legend.position = "none") +
     ## specifies limits 
-    ylim(0, ceiling(max(patternhallmarks$"neg.log.padj")) + (max(patternhallmarks$"neg.log.padj")/4))
+    ylim(0, ceiling(max(patterngeneset$"neg.log.padj")) + (max(patterngeneset$"neg.log.padj")/4))
   
   return(plot)
 })
