@@ -353,7 +353,7 @@ function(object)
 #' @importFrom forcats fct_reorder
 #' @aliases getPatternGeneSet
 setMethod("getPatternGeneSet", signature(object="CogapsResult", gene.sets="list", ...),
-function(object, gene.sets, method = c("enrichment", "overrepresentation"))
+function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
 {
   method <- match.arg(method)
   A <- object@featureLoadings
@@ -369,6 +369,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
         result$leadingEdge <- vapply(result$leadingEdge, FUN = toString, FUN.VALUE = character(1))
         result$neg.log.padj <- (-10) * log10(result$padj)
         result$gene.set <- p
+        result <- mutate(result,gene.set=fct_reorder(gene.set, - padj))
         return(result)
       }
     )
@@ -389,6 +390,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
         result[["k/K"]] <- result$overlap / result$size
         result$neg.log.padj <- (-10) * log10(result$padj)
         result$gene.set <- p
+        result <- mutate(result,gene.set=fct_reorder(gene.set, - padj))
         return(result)
       }
     )
