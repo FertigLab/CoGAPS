@@ -401,8 +401,8 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
 #' @importFrom ggplot2 ggplot aes_string geom_col ylab coord_flip theme_minimal ggtitle geom_hline geom_text theme aes ylim
 #' @importFrom graphics plot legend lines points
 #' @aliases plotPatternGeneSet
-setMethod("plotPatternGeneSet", signature(object="CogapsResult", patterngeneset = "list", whichpattern="numeric"),
-function(object, patterngeneset, whichpattern=1)
+setMethod("plotPatternGeneSet", signature(object="CogapsResult", patterngeneset = "list", whichpattern="numeric", padj_threshold = "numeric"),
+function(object, patterngeneset, whichpattern=1, padj_threshold = 0.05)
 {
   # should be able to pass in info about just one pattern, or to pass all info and specify which pattern
   if (length(patterngeneset) > 1){
@@ -410,7 +410,8 @@ function(object, patterngeneset, whichpattern=1)
   }
   
   # for plotting, limit the results to significant over-representation
-  patterngeneset <- patterngeneset[patterngeneset$pval < 0.05,]
+  patterngeneset <- patterngeneset[patterngeneset$padj < padj_threshold,]
+  neg.log.thresh <- -10*log10(padj_threshold)
   
   #plot and save the waterfall plot of ORA p-values
   plot <- ggplot(patterngeneset, aes_string(y = "neg.log.padj", x = "gene.set", fill = "gene.set")) +
@@ -425,7 +426,7 @@ function(object, patterngeneset, whichpattern=1)
     ## Add title
     ggtitle(paste0("Overrepresented MsigDB Hallmarks in Pattern", whichpattern)) +
     ## This creates the dotted line at .05 value 
-    geom_hline(yintercept=c(13.0103), linetype="dotted") + # Add veritcle line to show significances
+    geom_hline(yintercept=neg.log.thresh, linetype="dotted") + # Add veritcle line to show significances
     ## Adds the q values
     geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
     ## Removes legend
