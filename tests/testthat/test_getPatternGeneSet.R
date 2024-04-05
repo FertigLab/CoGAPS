@@ -1,0 +1,23 @@
+test_that("getPatternGeneSet works on enrichment test", {
+  #set up
+  data(GIST)
+  res <- CoGAPS(GIST.data_frame, nIterations=100,
+                seed=1, messages=FALSE)
+  gs.test <- list(
+    "gs1" = c("Hs.2", "Hs.4", "Hs.36", "Hs.96", "Hs.202"),
+    "gs2" = c("Hs.699463", "Hs.699288", "Hs.699280", "Hs.699154", "Hs.697294")
+  )
+  expect_no_error(getPatternGeneSet(object = res, gene.sets = gs.test, method = "enrichment"))
+})
+
+test_that("getPatternGeneSet works on overrepresentation test", {
+  #set up
+  data(GIST)
+  res <- CoGAPS(GIST.data_frame, nIterations=100,
+                seed=1, messages=FALSE)
+  gs.test <- list(
+    "gs1" = c("Hs.2", "Hs.4", "Hs.36", "Hs.96", "Hs.202"),
+    "gs2" = c("Hs.699463", "Hs.699288", "Hs.699280", "Hs.699154", "Hs.697294")
+  )
+  expect_no_error(getPatternGeneSet(object = res, gene.sets = gs.test, method = "overrepresentation"))
+})
