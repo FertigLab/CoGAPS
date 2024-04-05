@@ -367,6 +367,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
         names(amp) <- features
         result <- fgsea::fgsea(pathways = gene.sets, stats = , scoreType = "pos")
         result$leadingEdge <- vapply(result$leadingEdge, FUN = toString, FUN.VALUE = character(1))
+        result$"neg.log.padj" <- (-10) * log10(result$padj)
         return(result)
       }
     )
@@ -385,7 +386,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"))
           universe = features,
           maxSize=2038)
         result[["k/K"]] <- result$overlap / result$size
-        result$"neg.log.q" <- (-10) * log10(result$padj)
+        result$"neg.log.padj" <- (-10) * log10(result$padj)
         result$"gene.set" <- p
         return(result)
       }
@@ -410,18 +411,18 @@ function(object, patternhallmarks, whichpattern=1)
   # rearrange columns to move overlap genes to the end and convert to vector for
   # compatibility with saving as csv
   patternhallmarks <- relocate(patternhallmarks, "overlapGenes", .after = "MsigDB_Hallmark")
-  patternhallmarks <- relocate(patternhallmarks, "neg.log.q", .after = "padj")
+  patternhallmarks <- relocate(patternhallmarks, "neg.log.padj", .after = "padj")
   patternhallmarks <- patternhallmarks %>% mutate(overlapGenes = sapply(overlapGenes, toString))
   
   # for plotting, limit the results to significant over-representation
   patternhallmarks <- patternhallmarks[patternhallmarks$pval < 0.05,]
   
   #plot and save the waterfall plot of ORA p-values
-  plot <- ggplot(patternhallmarks, aes_string(y = "neg.log.q", x = "MsigDB_Hallmark", fill = "MsigDB_Hallmark")) +
+  plot <- ggplot(patternhallmarks, aes_string(y = "neg.log.padj", x = "MsigDB_Hallmark", fill = "MsigDB_Hallmark")) +
     ## Specifies barplot
     geom_col() +
     ## Rename y axis
-    ylab("-10*log10(FDR q-value)") + 
+    ylab("-10*log10(FDR-adjusted p-value)") + 
     ## Flips the coordinates
     coord_flip() +
     ## Makes the background white
@@ -435,7 +436,7 @@ function(object, patternhallmarks, whichpattern=1)
     ## Removes legend
     theme(legend.position = "none") +
     ## specifies limits 
-    ylim(0, ceiling(max(patternhallmarks$"neg.log.q")) + (max(patternhallmarks$"neg.log.q")/4))
+    ylim(0, ceiling(max(patternhallmarks$"neg.log.padj")) + (max(patternhallmarks$"neg.log.padj")/4))
   
   return(plot)
 })
