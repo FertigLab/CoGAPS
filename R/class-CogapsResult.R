@@ -154,14 +154,25 @@ setGeneric("getPatternMatrix", function(object)
 setGeneric("getMeanChiSq", function(object)
     {standardGeneric("getMeanChiSq")})
 
-#' generate statistics associating patterns with MSigDB hallmark gene sets
+#' generate statistics associating patterns with gene sets
 #' @export
 #' @docType methods
-#' @rdname getPatternHallmarks-methods
-#' @aliases getPatternHallmarks
+#' @rdname getPatternGeneSet-methods
+#' @aliases getPatternGeneSet
 #' @param object an object of type CogapsResult
-#' @return dataframe of hallmark info
-setGeneric("getPatternHallmarks", function(object) standardGeneric("getPatternHallmarks"))
+#' @param gene.sets a list of gene sets to test. List names should be the names of the gene sets
+#' @param method enrichment or overrepresentation. Conducts a test for gene set enrichment using {fgsea::gsea} ranking features by pattern amplitude or a test for gene set overrepresentation in pattern markers using {fgsea::fora}, respectively.
+#' @param ... additional parameters passed to {patternMarkers} if using overrepresentation method
+#' @return list of dataframes containing gene set enrichment or gene set overrepresentation statistics
+#' @examples
+#' data(GIST)
+#' gs.test <- list(
+#' "gs1" = c("Hs.2", "Hs.4", "Hs.36", "Hs.96", "Hs.202"),
+#' "gs2" = c("Hs.699463", "Hs.699288", "Hs.699280", "Hs.699154", "Hs.697294")
+#' )
+#' getPatternGeneSet(object = GIST.result, gene.sets = gs.test, method = "enrichment")
+#' getPatternGeneSet(object = GIST.result, gene.sets = gs.test, method = "overrepresentation")
+setGeneric("getPatternGeneSet", function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...) standardGeneric("getPatternGeneSet"))
 
 #' generate a barchart of most significant hallmark sets for a pattern
 #' @export
