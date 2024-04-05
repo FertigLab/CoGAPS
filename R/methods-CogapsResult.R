@@ -365,7 +365,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
       patternNames, FUN = function(p) {
         amp <- A[,p]
         names(amp) <- features
-        result <- fgsea::fgsea(pathways = gene.sets, stats = , scoreType = "pos")
+        result <- fgsea::fgsea(pathways = gene.sets, stats = amp, scoreType = "pos")
         result$leadingEdge <- vapply(result$leadingEdge, FUN = toString, FUN.VALUE = character(1))
         result$neg.log.padj <- (-10) * log10(result$padj)
         result$gene.set <- p
