@@ -368,7 +368,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
         result <- fgsea::fgsea(pathways = gene.sets, stats = amp, scoreType = "pos")
         result$leadingEdge <- vapply(result$leadingEdge, FUN = toString, FUN.VALUE = character(1))
         result$neg.log.padj <- (-10) * log10(result$padj)
-        result$gene.set <- p
+        result$gene.set <- names(gene.sets)
         result <- mutate(result,gene.set=fct_reorder(gene.set, - padj))
         return(result)
       }
@@ -389,7 +389,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
           maxSize=2038)
         result[["k/K"]] <- result$overlap / result$size
         result$neg.log.padj <- (-10) * log10(result$padj)
-        result$gene.set <- p
+        result$gene.set <- names(gene.sets)
         result <- mutate(result,gene.set=fct_reorder(gene.set, - padj))
         return(result)
       }
