@@ -346,9 +346,7 @@ function(object)
 })
 
 #' @rdname getPatternGeneSet-methods
-#' @import msigdbr 
 #' @import dplyr
-#' @importFrom biomaRt useEnsembl getBM
 #' @import fgsea
 #' @importFrom forcats fct_reorder
 #' @aliases getPatternGeneSet
@@ -369,7 +367,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
         result$leadingEdge <- vapply(result$leadingEdge, FUN = toString, FUN.VALUE = character(1))
         result$neg.log.padj <- (-10) * log10(result$padj)
         result$gene.set <- names(gene.sets)
-        result <- mutate(result,gene.set=fct_reorder(gene.set, - padj))
+        result <- dplyr::mutate(result,gene.set=forcats::fct_reorder(gene.set, - padj))
         return(result)
       }
     )
@@ -383,14 +381,14 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
     PMlist <- patternMarkerResults$PatternMarkers
     d <- lapply(
       patternNames, FUN = function(p) {
-        result <- fora(
+        result <- fgsea::fora(
           pathways = gene.sets, genes = PMlist[[p]],
           universe = features,
           maxSize=2038)
         result[["k/K"]] <- result$overlap / result$size
         result$neg.log.padj <- (-10) * log10(result$padj)
         result$gene.set <- names(gene.sets)
-        result <- mutate(result,gene.set=fct_reorder(gene.set, - padj))
+        result <- dplyr::mutate(result,gene.set=forcats::fct_reorder(gene.set, - padj))
         return(result)
       }
     )
