@@ -357,6 +357,12 @@ function(object, patterngeneset, whichpattern=1, padj_threshold = 0.05)
   } else {
     gs_df <- patterngeneset[1]
   }
+  # check the test type conducted to inform the title of the resulting plot
+  if("k/K" %in% colnames(gs_df)) {
+    method_name <- "Overrepresented"
+  } else {
+    method_name <- "Enriched"
+  }
   
   # for plotting, limit the results to significant over-representation
   gs_df <- gs_df[gs_df$padj < padj_threshold,]
@@ -370,7 +376,7 @@ function(object, patterngeneset, whichpattern=1, padj_threshold = 0.05)
     ylab("-10*log10(FDR-adjusted p-value)") + 
     coord_flip() +
     theme_minimal() +
-    ggtitle(paste0("Overrepresented MsigDB Hallmarks in Pattern_", whichpattern)) +
+    ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
     geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
     theme(legend.position = "none") +
     ylim(0, axis_max)
