@@ -177,11 +177,12 @@ setGeneric("getPatternGeneSet", function(object, gene.sets, method = c("enrichme
 #' generate a barchart of most significant hallmark sets for a pattern
 #' @export
 #' @docType methods
-#' @rdname plotPatternHallmarks-methods
+#' @rdname plotPatternGeneSet-methods
 #' @aliases plotPatternHallmarks
 #' @param object an object of type CogapsResult
-#' @param patternhallmarks output from getPatternHallmarks
+#' @param patterngeneset output from getPatternGeneSet
 #' @param whichpattern which pattern to generate bar chart for
+#' @param padj_threshold maximum adjusted p-value of gene sets rendered on the resulting plot
 #' @return image object of barchart
 setGeneric("plotPatternGeneSet", function(object, patterngeneset, whichpattern=1, padj_threshold = 0.05) standardGeneric("plotPatternGeneSet"))
 
