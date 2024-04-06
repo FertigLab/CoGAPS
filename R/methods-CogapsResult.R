@@ -348,8 +348,8 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
 #' @importFrom ggplot2 ggplot aes_string geom_col ylab coord_flip theme_minimal ggtitle geom_hline geom_text theme aes ylim
 #' @importFrom graphics plot legend lines points
 #' @aliases plotPatternGeneSet
-setMethod("plotPatternGeneSet", signature(object="CogapsResult", patterngeneset = "list", whichpattern="numeric", padj_threshold = "numeric"),
-function(object, patterngeneset, whichpattern=1, padj_threshold = 0.05)
+setMethod("plotPatternGeneSet", signature(patterngeneset = "list", whichpattern="numeric", padj_threshold = "numeric"),
+function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
 {
   # should be able to pass in info about just one pattern, or to pass all info and specify which pattern
   if (length(patterngeneset) > 1){

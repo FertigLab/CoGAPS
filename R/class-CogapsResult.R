@@ -184,7 +184,7 @@ setGeneric("getPatternGeneSet", function(object, gene.sets, method = c("enrichme
 #' @param whichpattern which pattern to generate bar chart for
 #' @param padj_threshold maximum adjusted p-value of gene sets rendered on the resulting plot
 #' @return image object of barchart
-setGeneric("plotPatternGeneSet", function(object, patterngeneset, whichpattern=1, padj_threshold = 0.05) standardGeneric("plotPatternGeneSet"))
+setGeneric("plotPatternGeneSet", function(patterngeneset, whichpattern=1, padj_threshold = 0.05) standardGeneric("plotPatternGeneSet"))
 
 #' return version number used to generate this result
 #' @export
