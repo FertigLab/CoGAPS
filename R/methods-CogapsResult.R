@@ -353,24 +353,32 @@ function(object, patterngeneset, whichpattern=1, padj_threshold = 0.05)
 {
   # should be able to pass in info about just one pattern, or to pass all info and specify which pattern
   if (length(patterngeneset) > 1){
-    patterngeneset <- patterngeneset[[whichpattern]]
+    gs_df <- patterngeneset[[whichpattern]]
+  } else {
+    gs_df <- patterngeneset[1]
   }
   
   # for plotting, limit the results to significant over-representation
-  patterngeneset <- patterngeneset[patterngeneset$padj < padj_threshold,]
-  neg.log.thresh <- -10*log10(padj_threshold)
+  gs_df <- gs_df[gs_df$padj < padj_threshold,]
+  neg.log.hline <- -10*log10(0.05)
+  
+  axis_max <- ceiling(max(gs_df$neg.log.padj)) + (max(gs_df$neg.log.padj)/4)
   
   #plot and save the waterfall plot of ORA p-values
-  plot <- ggplot(patterngeneset, aes_string(y = "neg.log.padj", x = "gene.set", fill = "gene.set")) +
+  plot <- ggplot(gs_df, aes(y = neg.log.padj, x = gene.set, fill = gene.set)) +
     geom_col() +
     ylab("-10*log10(FDR-adjusted p-value)") + 
     coord_flip() +
     theme_minimal() +
-    ggtitle(paste0("Overrepresented MsigDB Hallmarks in Pattern", whichpattern)) +
-    geom_hline(yintercept=neg.log.thresh, linetype="dotted") + 
+    ggtitle(paste0("Overrepresented MsigDB Hallmarks in Pattern_", whichpattern)) +
     geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
     theme(legend.position = "none") +
-    ylim(0, ceiling(max(patterngeneset$neg.log.padj)) + (max(patterngeneset$neg.log.padj)/4))
+    ylim(0, axis_max)
+  
+  if(neg.log.hline <= axis_max) {
+    plot <- plot +
+      geom_hline(yintercept=neg.log.hline, linetype="dotted")
+  }
   
   return(plot)
 })
