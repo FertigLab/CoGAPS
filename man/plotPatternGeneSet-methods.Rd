@@ -4,31 +4,21 @@
 \name{plotPatternGeneSet}
 \alias{plotPatternGeneSet}
 \alias{plotPatternHallmarks}
-\alias{plotPatternGeneSet,CogapsResult,list,numeric,numeric-method}
+\alias{plotPatternGeneSet,list,numeric,numeric-method}
 \title{generate a barchart of most significant hallmark sets for a pattern}
 \usage{
-plotPatternGeneSet(
-  object,
-  patterngeneset,
-  whichpattern = 1,
-  padj_threshold = 0.05
-)
+plotPatternGeneSet(patterngeneset, whichpattern = 1, padj_threshold = 0.05)
 
-\S4method{plotPatternGeneSet}{CogapsResult,list,numeric,numeric}(
-  object,
-  patterngeneset,
-  whichpattern = 1,
-  padj_threshold = 0.05
-)
+\S4method{plotPatternGeneSet}{list,numeric,numeric}(patterngeneset, whichpattern = 1, padj_threshold = 0.05)
 }
 \arguments{
-\item{object}{an object of type CogapsResult}
-
 \item{patterngeneset}{output from getPatternGeneSet}
 
 \item{whichpattern}{which pattern to generate bar chart for}
 
 \item{padj_threshold}{maximum adjusted p-value of gene sets rendered on the resulting plot}
+
+\item{object}{an object of type CogapsResult}
 }
 \value{
 image object of barchart
