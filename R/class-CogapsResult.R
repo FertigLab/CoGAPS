@@ -172,7 +172,7 @@ setGeneric("getMeanChiSq", function(object)
 #' )
 #' getPatternGeneSet(object = GIST.result, gene.sets = gs.test, method = "enrichment")
 #' getPatternGeneSet(object = GIST.result, gene.sets = gs.test, method = "overrepresentation")
-setGeneric("getPatternGeneSet", function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...) standardGeneric("getPatternGeneSet"))
+setGeneric("getPatternGeneSet", function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...) {standardGeneric("getPatternGeneSet")})
 
 #' generate a barchart of most significant hallmark sets for a pattern
 #' @export
@@ -183,7 +183,7 @@ setGeneric("getPatternGeneSet", function(object, gene.sets, method = c("enrichme
 #' @param patternhallmarks output from getPatternHallmarks
 #' @param whichpattern which pattern to generate bar chart for
 #' @return image object of barchart
-setGeneric("plotPatternHallmarks", function(object, patternhallmarks, whichpattern=1) standardGeneric("plotPatternHallmarks"))
+setGeneric("plotPatternGeneSet", function(object, patterngeneset, whichpattern=1, padj_threshold = 0.05) standardGeneric("plotPatternGeneSet"))
 
 #' return version number used to generate this result
 #' @export

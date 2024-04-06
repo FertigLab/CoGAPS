@@ -297,7 +297,7 @@ unitVector <- function(n, length)
 #' @import fgsea
 #' @importFrom forcats fct_reorder
 #' @aliases getPatternGeneSet
-setMethod("getPatternGeneSet", signature(object="CogapsResult", gene.sets="list", ...),
+setMethod("getPatternGeneSet", signature(object="CogapsResult", gene.sets="list", method = "character"),
 function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
 {
   method <- match.arg(method)
