@@ -178,8 +178,7 @@ setGeneric("getPatternGeneSet", function(object, gene.sets, method = c("enrichme
 #' @export
 #' @docType methods
 #' @rdname plotPatternGeneSet-methods
-#' @aliases plotPatternHallmarks
-#' @param object an object of type CogapsResult
+#' @aliases plotPatternGeneSet
 #' @param patterngeneset output from getPatternGeneSet
 #' @param whichpattern which pattern to generate bar chart for
 #' @param padj_threshold maximum adjusted p-value of gene sets rendered on the resulting plot
