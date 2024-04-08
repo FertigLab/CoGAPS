@@ -3,7 +3,6 @@
 \docType{methods}
 \name{plotPatternGeneSet}
 \alias{plotPatternGeneSet}
-\alias{plotPatternHallmarks}
 \alias{plotPatternGeneSet,list,numeric,numeric-method}
 \title{generate a barchart of most significant hallmark sets for a pattern}
 \usage{
@@ -17,8 +16,6 @@ plotPatternGeneSet(patterngeneset, whichpattern = 1, padj_threshold = 0.05)
 \item{whichpattern}{which pattern to generate bar chart for}
 
 \item{padj_threshold}{maximum adjusted p-value of gene sets rendered on the resulting plot}
-
-\item{object}{an object of type CogapsResult}
 }
 \value{
 image object of barchart
