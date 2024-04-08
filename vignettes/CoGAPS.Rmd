@@ -434,7 +434,10 @@ hallmark_ls <- list(
   )
 )
 
-hallmarks <- getPatternGeneSet(cogapsresult, gene.sets = hallmark_ls, method = "overrepresentation")
+hallmarks_ora <- getPatternGeneSet(
+  cogapsresult, gene.sets = hallmark_ls, method = "overrepresentation",
+  threshold = "cut", lp = NA, axis = 1 # patternMarker parameters to match PDAC atlas result
+)
 ```
 
 hallmarks is a list of data frames, each containing hallmark overrepresentation statistics corresponding to one pattern. 
@@ -442,7 +445,9 @@ hallmarks is a list of data frames, each containing hallmark overrepresentation 
 To generate a barchart of the most significant hallmarks for any given pattern, please run:
 
 ```{r plot hallmarks}
-pl_pattern7 <- plotPatternGeneSet(hallmarks, whichpattern = 7)
+pl_pattern7 <- plotPatternGeneSet(
+  patterngeneset = hallmarks_ora, whichpattern = 7, padj_threshold = 0.05
+)
 pl_pattern7
 ```
 To generate statistics on the association between certain sample groups and patterns, we provide a wrapper function, called MANOVA.This will allow us to explore if the patterns we have discovered lend to statistically significant differences in the sample groups. We will first load in the original data (if not already done earlier).
