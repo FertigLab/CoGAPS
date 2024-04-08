@@ -89,7 +89,7 @@ simulated toy data for a test run.
 Single-cell data will be loaded later in this file.
 
 ```{r modsim}
-load('../data/modsimdata.rda')
+data('modsimdata')
 # input to CoGAPS
 modsimdata
 ```
