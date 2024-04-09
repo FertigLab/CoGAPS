@@ -1,6 +1,6 @@
 Package: CoGAPS
-Version: 3.23.1
-Date: 2024-02-01
+Version: 3.24.0
+Date: 2024-03-22
 Title: Coordinated Gene Activity in Pattern Sets
 Author: Jeanette Johnson, Ashley Tsang, Jacob Mitchell, Thomas Sherman, Wai-shing Lee, Conor Kelton, Ondrej Maxian, Jacob Carey,
     Genevieve Stein-O'Brien, Michael Considine, Maggie Wodicka, John Stansfield,
@@ -33,12 +33,10 @@ Imports:
     tools,
     utils,
     rhdf5,
-    biomaRt,
     dplyr,
     fgsea,
     forcats,
-    ggplot2,
-    msigdbr
+    ggplot2
 Suggests:
     testthat,
     knitr,
