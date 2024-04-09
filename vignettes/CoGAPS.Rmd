@@ -89,7 +89,7 @@ simulated toy data for a test run.
 Single-cell data will be loaded later in this file.
 
 ```{r modsim}
-load('../data/modsimdata.rda')
+data('modsimdata')
 # input to CoGAPS
 modsimdata
 ```
@@ -220,7 +220,7 @@ cogapsresult@sampleFactors
 cogapsresult@featureLoadings
 
 # check reference result:
-load('../data/modsimresult.rda')
+data('modsimresult')
 ```
 
 If both matrices--sampleFactors and featureLoadings--have reasonable
@@ -420,12 +420,24 @@ pm <- patternMarkers(cogapsresult, threshold="cut")
 ```
 
 # Pattern GSEA
-One way to explore and use CoGAPS patterns is to conduct gene set enrichment analysis by functionally annotating the genes which are significant for each pattern. The getPatternHallmarks function provides a wrapper around the fgsea fora method and associates each pattern with msigDB hallmark pathway annotations using the list of marker genes attained from the patternMarkers statistic. 
+One way to explore and use CoGAPS patterns is to conduct gene set enrichment analysis by functionally annotating the genes which are significant for each pattern. The getPatternGeneSet function provides a wrapper around the gsea and fora methods from fgsea for gene set enrichment in CoGAPS pattern amplitudes or gene set overrepresentation in pattern markers, respectively. Gene sets for testing are provided as a list to allow testing of gene sets from many sources, such as hallmark gene sets from [msigDB](https://www.gsea-msigdb.org/gsea/msigdb/) or gene ontology sets from [org.Hs.eg.db](https://bioconductor.org/packages/release/data/annotation/html/org.Hs.eg.db.html).
 
-To perform gene set analysis on pattern markers, please run:
+To perform gene set overrepresentation on pattern markers, please run:
 
 ```{r get hallmarks}
-hallmarks <- getPatternHallmarks(cogapsresult)
+hallmark_ls <- list(
+  "HALLMARK_ALLOGRAFT_REJECTION" = c(
+    "AARS1","ABCE1","ABI1","ACHE","ACVR2A","AKT1","APBB1","B2M","BCAT1","BCL10","BCL3","BRCA1","C2","CAPG","CARTPT","CCL11","CCL13","CCL19","CCL2","CCL22","CCL4","CCL5","CCL7","CCND2","CCND3","CCR1","CCR2","CCR5","CD1D","CD2","CD247","CD28","CD3D","CD3E","CD3G","CD4","CD40","CD40LG","CD47","CD7","CD74","CD79A","CD80","CD86","CD8A","CD8B","CD96","CDKN2A","CFP","CRTAM","CSF1","CSK","CTSS","CXCL13","CXCL9","CXCR3","DARS1","DEGS1","DYRK3","EGFR","EIF3A","EIF3D","EIF3J","EIF4G3","EIF5A","ELANE","ELF4","EREG","ETS1","F2","F2R","FAS","FASLG","FCGR2B","FGR","FLNA","FYB1","GALNT1","GBP2","GCNT1","GLMN","GPR65","GZMA","GZMB","HCLS1","HDAC9","HIF1A","HLA-A","HLA-DMA","HLA-DMB","HLA-DOA","HLA-DOB","HLA-DQA1","HLA-DRA","HLA-E","HLA-G","ICAM1","ICOSLG","IFNAR2","IFNG","IFNGR1","IFNGR2","IGSF6","IKBKB","IL10","IL11","IL12A","IL12B","IL12RB1","IL13","IL15","IL16","IL18","IL18RAP","IL1B","IL2","IL27RA","IL2RA","IL2RB","IL2RG","IL4","IL4R","IL6","IL7","IL9","INHBA","INHBB","IRF4","IRF7","IRF8","ITGAL","ITGB2","ITK","JAK2","KLRD1","KRT1","LCK","LCP2","LIF","LTB","LY75","LY86","LYN","MAP3K7","MAP4K1","MBL2","MMP9","MRPL3","MTIF2","NCF4","NCK1","NCR1","NLRP3","NME1","NOS2","NPM1","PF4","PRF1","PRKCB","PRKCG","PSMB10","PTPN6","PTPRC","RARS1","RIPK2","RPL39","RPL3L","RPL9","RPS19","RPS3A","RPS9","SIT1","SOCS1","SOCS5","SPI1","SRGN","ST8SIA4","STAB1","STAT1","STAT4","TAP1","TAP2","TAPBP","TGFB1","TGFB2","THY1","TIMP1","TLR1","TLR2","TLR3","TLR6","TNF","TPD52","TRAF2","TRAT1","UBE2D1","UBE2N","WARS1","WAS","ZAP70"
+    ),
+  "HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION" = c(
+    "ABI3BP","ACTA2","ADAM12","ANPEP","APLP1","AREG","BASP1","BDNF","BGN","BMP1","CADM1","CALD1","CALU","CAP2","CAPG","CD44","CD59","CDH11","CDH2","CDH6","COL11A1","COL12A1","COL16A1","COL1A1","COL1A2","COL3A1","COL4A1","COL4A2","COL5A1","COL5A2","COL5A3","COL6A2","COL6A3","COL7A1","COL8A2","COMP","COPA","CRLF1","CCN2","CTHRC1","CXCL1","CXCL12","CXCL6","CCN1","DAB2","DCN","DKK1","DPYSL3","DST","ECM1","ECM2","EDIL3","EFEMP2","ELN","EMP3","ENO2","FAP","FAS","FBLN1","FBLN2","FBLN5","FBN1","FBN2","FERMT2","FGF2","FLNA","FMOD","FN1","FOXC2","FSTL1","FSTL3","FUCA1","FZD8","GADD45A","GADD45B","GAS1","GEM","GJA1","GLIPR1","COLGALT1","GPC1","GPX7","GREM1","HTRA1","ID2","IGFBP2","IGFBP3","IGFBP4","IL15","IL32","IL6","CXCL8","INHBA","ITGA2","ITGA5","ITGAV","ITGB1","ITGB3","ITGB5","JUN","LAMA1","LAMA2","LAMA3","LAMC1","LAMC2","P3H1","LGALS1","LOX","LOXL1","LOXL2","LRP1","LRRC15","LUM","MAGEE1","MATN2","MATN3","MCM7","MEST","MFAP5","MGP","MMP1","MMP14","MMP2","MMP3","MSX1","MXRA5","MYL9","MYLK","NID2","NNMT","NOTCH2","NT5E","NTM","OXTR","PCOLCE","PCOLCE2","PDGFRB","PDLIM4","PFN2","PLAUR","PLOD1","PLOD2","PLOD3","PMEPA1","PMP22","POSTN","PPIB","PRRX1","PRSS2","PTHLH","PTX3","PVR","QSOX1","RGS4","RHOB","SAT1","SCG2","SDC1","SDC4","SERPINE1","SERPINE2","SERPINH1","SFRP1","SFRP4","SGCB","SGCD","SGCG","SLC6A8","SLIT2","SLIT3","SNAI2","SNTB1","SPARC","SPOCK1","SPP1","TAGLN","TFPI2","TGFB1","TGFBI","TGFBR3","TGM2","THBS1","THBS2","THY1","TIMP1","TIMP3","TNC","TNFAIP3","TNFRSF11B","TNFRSF12A","TPM1","TPM2","TPM4","VCAM1","VCAN","VEGFA","VEGFC","VIM","WIPF1","WNT5A"
+  )
+)
+
+hallmarks_ora <- getPatternGeneSet(
+  cogapsresult, gene.sets = hallmark_ls, method = "overrepresentation",
+  threshold = "cut", lp = NA, axis = 1 # patternMarker parameters to match PDAC atlas result
+)
 ```
 
 hallmarks is a list of data frames, each containing hallmark overrepresentation statistics corresponding to one pattern. 
@@ -433,7 +445,9 @@ hallmarks is a list of data frames, each containing hallmark overrepresentation 
 To generate a barchart of the most significant hallmarks for any given pattern, please run:
 
 ```{r plot hallmarks}
-pl_pattern7 <- plotPatternHallmarks(cogapsresult, hallmarks, whichpattern = 7)
+pl_pattern7 <- plotPatternGeneSet(
+  patterngeneset = hallmarks_ora, whichpattern = 7, padj_threshold = 0.05
+)
 pl_pattern7
 ```
 To generate statistics on the association between certain sample groups and patterns, we provide a wrapper function, called MANOVA.This will allow us to explore if the patterns we have discovered lend to statistically significant differences in the sample groups. We will first load in the original data (if not already done earlier).

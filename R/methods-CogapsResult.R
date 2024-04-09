@@ -292,101 +292,99 @@ unitVector <- function(n, length)
     return(vec)
 }
 
-#' @rdname getPatternHallmarks-methods
-#' @import msigdbr 
+#' @rdname getPatternGeneSet-methods
 #' @import dplyr
-#' @importFrom biomaRt useEnsembl getBM
 #' @import fgsea
 #' @importFrom forcats fct_reorder
-#' @aliases getPatternHallmarks
-setMethod("getPatternHallmarks", signature(object="CogapsResult"),
-function(object)
+#' @aliases getPatternGeneSet
+setMethod("getPatternGeneSet", signature(object="CogapsResult", gene.sets="list", method = "character"),
+function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
 {
-  # List of MsigDB hallmarks and the genes in each set
-  hallmark_df <- msigdbr(species = "Homo sapiens", category = "H")
-  hallmark_list <- hallmark_df %>% split(x = .$gene_symbol, f = .$gs_name)
-  
-  # obtain universe of all human hgnc gene symbols from ensembl
-  mart <- useEnsembl('genes', dataset = "hsapiens_gene_ensembl") #GRCh38
-  Hs_genes <- getBM("hgnc_symbol", mart = mart)
-  
-  patternMarkerResults <- patternMarkers(object, threshold = "cut", lp = NA, axis = 1)
-  names(patternMarkerResults$PatternMarkers) <- colnames(patternMarkerResults$PatternMarkerRanks)
-  
-  # List of each gene as a pattern marker
-  PMlist <- patternMarkerResults$PatternMarkers
-  
-  d <- list()
-  for (pattern in names(PMlist)) 
-  {
-    # Over-representation analysis of pattern markers ###########################
-    suppressWarnings(
-      result <- fora(pathways = hallmark_list,
-                     genes = PMlist[[pattern]],
-                     universe = Hs_genes$hgnc_symbol,
-                     maxSize=2038)
+  method <- match.arg(method)
+  A <- object@featureLoadings
+  patternNames <- colnames(A)
+  features <- rownames(A)
+  # enrichment method
+  if(method == "enrichment") {
+    d <- lapply(
+      patternNames, FUN = function(p) {
+        amp <- A[,p]
+        names(amp) <- features
+        result <- fgsea::fgsea(pathways = gene.sets, stats = amp, scoreType = "pos")
+        result$leadingEdge <- vapply(result$leadingEdge, FUN = toString, FUN.VALUE = character(1))
+        result$neg.log.padj <- (-10) * log10(result$padj)
+        result$gene.set <- names(gene.sets)
+        result <- dplyr::mutate(result,gene.set=forcats::fct_reorder(gene.set, - padj))
+        return(result)
+      }
     )
-    
-    # Append ratio of overlap/# of genes in hallmark (k/K)
-    result$"k/K" <- result$overlap/result$size
-    
-    # Append log-transformed HB-adjusted q value (-10 * log(adjusted p value))
-    result$"neg.log.q" <- (-10) * log10(result$padj)
-    
-    # Append shortened version of hallmark's name without "HALLMARK_"
-    result$MsigDB_Hallmark <- substr(result$pathway, 10, nchar(result$pathway))
-    
-    # Reorder dataframe by ascending adjusted p value
-    result <- mutate(result, MsigDB_Hallmark=fct_reorder(MsigDB_Hallmark, - padj))
-    
-    d[[length(d)+1]] <- result
-    
   }
-  return(d)           
+  
+  # overrepresentation method
+  if(method == "overrepresentation") {
+    patternMarkerResults <- patternMarkers(object, ...)
+    names(patternMarkerResults$PatternMarkers) <- patternNames
+    
+    PMlist <- patternMarkerResults$PatternMarkers
+    d <- lapply(
+      patternNames, FUN = function(p) {
+        result <- fgsea::fora(
+          pathways = gene.sets, genes = PMlist[[p]],
+          universe = features,
+          maxSize=2038)
+        result[["k/K"]] <- result$overlap / result$size
+        result$neg.log.padj <- (-10) * log10(result$padj)
+        result$gene.set <- names(gene.sets)
+        result <- dplyr::mutate(result,gene.set=forcats::fct_reorder(gene.set, - padj))
+        return(result)
+      }
+    )
+  }
+  return(d)
 })
 
-#' @rdname plotPatternHallmarks-methods
+#' @rdname plotPatternGeneSet-methods
 #' @importFrom dplyr relocate
-#' @importFrom ggplot2 ggplot aes_string geom_col ylab coord_flip theme_minimal ggtitle geom_hline geom_text theme aes ylim
+#' @importFrom ggplot2 ggplot geom_col ylab coord_flip theme_minimal ggtitle geom_hline geom_text theme aes ylim
 #' @importFrom graphics plot legend lines points
-#' @aliases plotPatternHallmarks
-setMethod("plotPatternHallmarks", signature(object="CogapsResult", patternhallmarks = "list", whichpattern="numeric"),
-function(object, patternhallmarks, whichpattern=1)
+#' @aliases plotPatternGeneSet
+setMethod("plotPatternGeneSet", signature(patterngeneset = "list", whichpattern="numeric", padj_threshold = "numeric"),
+function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
 {
   # should be able to pass in info about just one pattern, or to pass all info and specify which pattern
-  if (length(patternhallmarks) > 1){
-    patternhallmarks <- patternhallmarks[[whichpattern]]
+  if (length(patterngeneset) > 1){
+    gs_df <- patterngeneset[[whichpattern]]
+  } else {
+    gs_df <- patterngeneset[1]
+  }
+  # check the test type conducted to inform the title of the resulting plot
+  if("k/K" %in% colnames(gs_df)) {
+    method_name <- "Overrepresented"
+  } else {
+    method_name <- "Enriched"
   }
   
-  # rearrange columns to move overlap genes to the end and convert to vector for
-  # compatibility with saving as csv
-  patternhallmarks <- relocate(patternhallmarks, "overlapGenes", .after = "MsigDB_Hallmark")
-  patternhallmarks <- relocate(patternhallmarks, "neg.log.q", .after = "padj")
-  patternhallmarks <- patternhallmarks %>% mutate(overlapGenes = sapply(overlapGenes, toString))
-  
   # for plotting, limit the results to significant over-representation
-  patternhallmarks <- patternhallmarks[patternhallmarks$pval < 0.05,]
+  gs_df <- gs_df[gs_df$padj < padj_threshold,]
+  neg.log.hline <- -10*log10(0.05)
+  
+  axis_max <- ceiling(max(gs_df$neg.log.padj)) + (max(gs_df$neg.log.padj)/4)
   
   #plot and save the waterfall plot of ORA p-values
-  plot <- ggplot(patternhallmarks, aes_string(y = "neg.log.q", x = "MsigDB_Hallmark", fill = "MsigDB_Hallmark")) +
-    ## Specifies barplot
+  plot <- ggplot(gs_df, aes(y = neg.log.padj, x = gene.set, fill = gene.set)) +
     geom_col() +
-    ## Rename y axis
-    ylab("-10*log10(FDR q-value)") + 
-    ## Flips the coordinates
+    ylab("-10*log10(FDR-adjusted p-value)") + 
     coord_flip() +
-    ## Makes the background white
     theme_minimal() +
-    ## Add title
-    ggtitle(paste0("Overrepresented MsigDB Hallmarks in Pattern", whichpattern)) +
-    ## This creates the dotted line at .05 value 
-    geom_hline(yintercept=c(13.0103), linetype="dotted") + # Add veritcle line to show significances
-    ## Adds the q values
+    ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
     geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
-    ## Removes legend
     theme(legend.position = "none") +
-    ## specifies limits 
-    ylim(0, ceiling(max(patternhallmarks$"neg.log.q")) + (max(patternhallmarks$"neg.log.q")/4))
+    ylim(0, axis_max)
+  
+  if(neg.log.hline <= axis_max) {
+    plot <- plot +
+      geom_hline(yintercept=neg.log.hline, linetype="dotted")
+  }
   
   return(plot)
 })
@@ -481,7 +479,16 @@ function(object, threshold, lp, axis)
     }
     else if (threshold == "all") # only the markers with the lowest scores
     {
-        patternsByMarker <- colnames(markerScores)[apply(markerScores, 1, which.min)]
+        thresholdTest <- apply(markerScores, 1, which.min)
+        patternsByMarker <- rep(0, length(markerScores))
+        i <- 0
+        for (gene in thresholdTest) {
+          if (length(names(gene))){
+            patternsByMarker[i] <- names(gene)
+          }          
+          i <- i + 1
+        }
+
         markersByPattern <- sapply(colnames(markerScores), USE.NAMES=TRUE, simplify=FALSE,
             function(pattern) rownames(markerScores)[which(patternsByMarker==pattern)])
         
