@@ -381,6 +381,7 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
   pl <- pl + ylab("-10*log10(FDR-adjusted p-value)") + 
     coord_flip() +
     theme_minimal() +
+    scale_fill_continuous(low = "#80C7EF",high = "#E69F00")+
     ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
     geom_hline(yintercept=neg.log.hline, linetype="dotted")
       
