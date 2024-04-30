@@ -345,7 +345,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
 
 #' @rdname plotPatternGeneSet-methods
 #' @importFrom dplyr relocate
-#' @importFrom ggplot2 ggplot geom_col ylab coord_flip theme_minimal ggtitle geom_hline geom_text theme aes ylim
+#' @importFrom ggplot2 ggplot geom_col labs coord_flip theme_minimal ggtitle geom_hline geom_text theme aes scale_fill_continuous element_blank
 #' @importFrom graphics plot legend lines points
 #' @aliases plotPatternGeneSet
 setMethod("plotPatternGeneSet", signature(patterngeneset = "list", whichpattern="numeric", padj_threshold = "numeric"),
@@ -368,25 +368,25 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
   gs_df <- gs_df[gs_df$padj < padj_threshold,]
   neg.log.hline <- -10*log10(0.05)
   
-  axis_max <- ceiling(max(gs_df$neg.log.padj)) + (max(gs_df$neg.log.padj)/4)
+  pl <- ggplot(gs_df, aes(y = neg.log.padj, x = gene.set))
   
-  #plot and save the waterfall plot of ORA p-values
-  plot <- ggplot(gs_df, aes(y = neg.log.padj, x = gene.set, fill = gene.set)) +
-    geom_col() +
-    ylab("-10*log10(FDR-adjusted p-value)") + 
-    coord_flip() +
-    theme_minimal() +
-    ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
-    geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
-    theme(legend.position = "none") +
-    ylim(0, axis_max)
-  
-  if(neg.log.hline <= axis_max) {
-    plot <- plot +
-      geom_hline(yintercept=neg.log.hline, linetype="dotted")
+  if(method_name == "Overrepresented") {
+    pl <- pl + geom_col(aes(fill = .data[["k/K"]]))
+  } else {
+    pl <- pl + geom_col(aes(fill = .data[["NES"]]))
   }
   
-  return(plot)
+  pl <- pl + 
+    coord_flip() +
+    theme_minimal() +
+    labs(x = NULL, y = "-10*log10(p-adj)") + 
+    geom_text(aes(x = gene.set, y = 0.05, label = gene.set), hjust = 0) +
+    scale_fill_continuous(low = "#80C7EF",high = "#E69F00") +
+    ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
+    geom_hline(yintercept=neg.log.hline, linetype="dotted") +
+    theme(axis.text.y = element_blank())
+    
+  return(pl)
 })
 
 
