@@ -384,7 +384,7 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
     scale_fill_continuous(low = "#80C7EF",high = "#E69F00") +
     ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
     geom_hline(yintercept=neg.log.hline, linetype="dotted") +
-    theme(axis.text.x = element_blank())
+    theme(axis.text.y = element_blank())
     
   return(pl)
 })
