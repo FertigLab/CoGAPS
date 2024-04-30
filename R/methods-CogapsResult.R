@@ -368,8 +368,6 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
   gs_df <- gs_df[gs_df$padj < padj_threshold,]
   neg.log.hline <- -10*log10(0.05)
   
-  axis_max <- ceiling(max(gs_df$neg.log.padj)) + (max(gs_df$neg.log.padj)/4)
-  
   pl <- ggplot(gs_df, aes(y = neg.log.padj, x = gene.set))
   
   if(method_name == "Overrepresented") {
@@ -386,18 +384,7 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
     scale_fill_continuous(low = "#80C7EF",high = "#E69F00") +
     ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
     geom_hline(yintercept=neg.log.hline, linetype="dotted")
-      
-  
-  #plot and save the waterfall plot of ORA p-values
-  # pl <- ggplot(gs_df, aes(y = neg.log.padj, x = gene.set, fill = gene.set)) +
-  #   geom_col() +
-  #   ylab("-10*log10(FDR-adjusted p-value)") + 
-  #   coord_flip() +
-  #   theme_minimal() +
-  #   ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
-  #   geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
-  #   theme(legend.position = "none") +
-  #   ylim(0, axis_max)
+    
   return(pl)
 })
 
