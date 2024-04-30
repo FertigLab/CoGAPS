@@ -382,7 +382,6 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
     coord_flip() +
     theme_minimal() +
     ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
-    geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
     theme(legend.position = "none") +
     ylim(0, axis_max)
       
