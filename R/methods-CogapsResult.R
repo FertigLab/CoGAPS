@@ -382,8 +382,7 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
     coord_flip() +
     theme_minimal() +
     ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
-    theme(legend.position = "none") +
-    ylim(0, axis_max)
+    geom_hline(yintercept=neg.log.hline, linetype="dotted")
       
   
   #plot and save the waterfall plot of ORA p-values
@@ -396,12 +395,6 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
   #   geom_text(aes(label=format(signif(padj, 4))), hjust = -.04) +
   #   theme(legend.position = "none") +
   #   ylim(0, axis_max)
-  
-  if(neg.log.hline <= axis_max) {
-    pl <- pl +
-      geom_hline(yintercept=neg.log.hline, linetype="dotted")
-  }
-  
   return(pl)
 })
 
