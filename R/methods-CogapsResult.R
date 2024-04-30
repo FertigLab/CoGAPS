@@ -345,7 +345,7 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
 
 #' @rdname plotPatternGeneSet-methods
 #' @importFrom dplyr relocate
-#' @importFrom ggplot2 ggplot geom_col ylab coord_flip theme_minimal ggtitle geom_hline geom_text theme aes ylim
+#' @importFrom ggplot2 ggplot geom_col labs coord_flip theme_minimal ggtitle geom_hline geom_text theme aes scale_fill_continuous
 #' @importFrom graphics plot legend lines points
 #' @aliases plotPatternGeneSet
 setMethod("plotPatternGeneSet", signature(patterngeneset = "list", whichpattern="numeric", padj_threshold = "numeric"),
