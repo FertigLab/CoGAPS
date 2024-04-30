@@ -378,8 +378,9 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
     pl <- pl + geom_col(aes(fill = .data[["NES"]]))
   }
   
-  pl <- pl + ylab("-10*log10(FDR-adjusted p-value)") + 
+  pl <- pl + 
     coord_flip() +
+    labs(x = "-10*log10(p-adj)", y = NULL) + 
     theme_minimal() +
     scale_fill_continuous(low = "#80C7EF",high = "#E69F00")+
     ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
