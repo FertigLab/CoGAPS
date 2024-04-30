@@ -371,7 +371,7 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
   axis_max <- ceiling(max(gs_df$neg.log.padj)) + (max(gs_df$neg.log.padj)/4)
   
   #plot and save the waterfall plot of ORA p-values
-  plot <- ggplot(gs_df, aes(y = neg.log.padj, x = gene.set, fill = gene.set)) +
+  pl <- ggplot(gs_df, aes(y = neg.log.padj, x = gene.set, fill = gene.set)) +
     geom_col() +
     ylab("-10*log10(FDR-adjusted p-value)") + 
     coord_flip() +
@@ -382,11 +382,11 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
     ylim(0, axis_max)
   
   if(neg.log.hline <= axis_max) {
-    plot <- plot +
+    pl <- pl +
       geom_hline(yintercept=neg.log.hline, linetype="dotted")
   }
   
-  return(plot)
+  return(pl)
 })
 
 
