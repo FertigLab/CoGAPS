@@ -381,9 +381,9 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
   pl <- pl + 
     coord_flip() +
     theme_minimal() +
-    labs(x = "-10*log10(p-adj)", y = NULL) + 
-    geom_text(aes(x = 0.05, y = gene.set, label = gene.set), hjust = 0) +
-    scale_fill_continuous(low = "#80C7EF",high = "#E69F00")+
+    labs(x = NULL, y = "-10*log10(p-adj)") + 
+    geom_text(aes(x = gene.set, y = 0.05, label = gene.set), hjust = 0) +
+    scale_fill_continuous(low = "#80C7EF",high = "#E69F00") +
     ggtitle(paste0(method_name, " gene sets in Pattern_", whichpattern)) +
     geom_hline(yintercept=neg.log.hline, linetype="dotted")
       
