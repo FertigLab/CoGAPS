@@ -480,17 +480,13 @@ function(object, threshold, lp, axis)
     else if (threshold == "all") # only the markers with the lowest scores
     {
         thresholdTest <- apply(markerScores, 1, which.min)
-        patternsByMarker <- rep(0, length(markerScores))
-        i <- 0
-        for (gene in thresholdTest) {
-          if (length(names(gene))){
-            patternsByMarker[i] <- names(gene)
-          }          
-          i <- i + 1
-        }
-
-        markersByPattern <- sapply(colnames(markerScores), USE.NAMES=TRUE, simplify=FALSE,
-            function(pattern) rownames(markerScores)[which(patternsByMarker==pattern)])
+        
+        #group marker names by pattern name
+        markersByPattern <- lapply(seq_len(ncol(markerScores)),
+                                   function(i) {
+                                     rownames(markerScores)[thresholdTest == i]
+                                   })
+        names(markersByPattern) <- colnames(markerScores)
         
     }
     return(list(
