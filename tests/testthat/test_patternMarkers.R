@@ -44,6 +44,6 @@ test_that("no empty patternMarkers and their names in threshold = cut", {
     test <- patternMarkers(res, threshold = "cut")
     marker_lengths <- sapply(test$PatternMarkers, length)
     expect_equal(sum(marker_lengths > 0), length(marker_lengths))
-    expect_equal(sum(nchar(names(test$PatternMarkers)) > 0),
+    expect_equal(length(test$PatternMarkers),
                  length(names(test$PatternMarkers)))
 })
