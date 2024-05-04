@@ -24,7 +24,7 @@ test_that("patternMarkers work with threshold = 'all' and axis = 1", {
     expect_no_error(patternMarkers(res, threshold = "all", axis = 1))
 })
 
-test_that("no empty patternMarkers in threshold = all", {
+test_that("no empty patternMarkers and their names in threshold = all", {
     #set up
     data(GIST)
     res <- CoGAPS(GIST.data_frame, nIterations=100,
@@ -32,4 +32,18 @@ test_that("no empty patternMarkers in threshold = all", {
     test <- patternMarkers(res, threshold = "all")
     marker_lengths <- sapply(test$PatternMarkers, length)
     expect_equal(sum(marker_lengths > 0), length(marker_lengths))
+    expect_equal(sum(nchar(names(test$PatternMarkers)) > 0),
+                 length(names(test$PatternMarkers)))
+})
+
+test_that("no empty patternMarkers and their names in threshold = cut", {
+    #set up
+    data(GIST)
+    res <- CoGAPS(GIST.data_frame, nIterations=100,
+                  seed=1, messages=FALSE)
+    test <- patternMarkers(res, threshold = "cut")
+    marker_lengths <- sapply(test$PatternMarkers, length)
+    expect_equal(sum(marker_lengths > 0), length(marker_lengths))
+    expect_equal(sum(nchar(names(test$PatternMarkers)) > 0),
+                 length(names(test$PatternMarkers)))
 })
