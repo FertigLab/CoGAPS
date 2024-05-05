@@ -457,9 +457,7 @@ function(object, threshold, lp, axis)
       #result placeholder
       markersByPattern <- list()
 
-      nP <- ncol(simGenes)
-
-      for (i in 1:nP) {
+      for (i in seq_len(ncol(simGenes))) {
         sortSim <- names(sort(simGenes[,i], decreasing = F))
         geneThresh <- min(which(simGenes[sortSim, i] > 
                                 apply(simGenes[sortSim,], 1, min)))
@@ -467,6 +465,8 @@ function(object, threshold, lp, axis)
         markerGenes <- unique(markerGenes)
         markersByPattern[[i]] <- markerGenes
       }
+      names(markersByPattern) <- colnames(simGenes)
+
     } else if (threshold == "all") {# only the markers with the lowest scores
         thresholdTest <- apply(markerScores, 1, which.min)
 
