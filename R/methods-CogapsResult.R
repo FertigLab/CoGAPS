@@ -454,7 +454,8 @@ function(object, threshold, lp, axis)
 
       simGenes <- simplicityGENES(As = object@featureLoadings,
                                   Ps = object@sampleFactors)
-      patternMarkers <- list()
+      #result placeholder
+      markersByPattern <- list()
 
       nP <- ncol(simGenes)
 
@@ -464,8 +465,7 @@ function(object, threshold, lp, axis)
                                 apply(simGenes[sortSim,], 1, min)))
         markerGenes <- sortSim[1:geneThresh]
         markerGenes <- unique(markerGenes)
-        patternMarkers[[i]] <- markerGenes
-        markersByPattern <- patternMarkers
+        markersByPattern[[i]] <- markerGenes
       }
     } else if (threshold == "all") {# only the markers with the lowest scores
         thresholdTest <- apply(markerScores, 1, which.min)
