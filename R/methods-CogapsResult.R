@@ -431,7 +431,7 @@ function(object, threshold, lp, axis)
     {
       simplicityGENES <- function(As, Ps) {
         # rescale p's to have max 1
-        pscale <- apply(Ps,1,max)
+        pscale <- apply(Ps, 2, max)
         
         # rescale A in accordance with p's having max 1
         As <- sweep(As, 2, pscale, FUN="*")
@@ -455,7 +455,6 @@ function(object, threshold, lp, axis)
       }
       simGenes <- simplicityGENES(As=object@featureLoadings,
                                   Ps=object@sampleFactors)
-      
       patternMarkers <- list()
       
       nP <- ncol(simGenes)
