@@ -428,8 +428,9 @@ function(object, threshold, lp, axis)
     colnames(markerScores) <- colnames(markerRanks) <- colnames(normedMatrix)
 
     ## keep only a subset of markers for each pattern depending on the type of threshold
-    if (threshold == "cut") # all markers which achieve minimum rank
-    {
+    if (threshold == "cut") {#all markers which achieve minimum rank
+
+      #define a ranking function
       simplicityGENES <- function(As, Ps) {
         # rescale p's to have max 1
         pscale <- apply(Ps, 2, max)
@@ -476,7 +477,6 @@ function(object, threshold, lp, axis)
                                      rownames(markerScores)[thresholdTest == i]
                                    })
         names(markersByPattern) <- colnames(markerScores)
-
     }
     return(list(
         "PatternMarkers"=markersByPattern,
