@@ -436,7 +436,7 @@ hallmark_ls <- list(
 
 hallmarks_ora <- getPatternGeneSet(
   cogapsresult, gene.sets = hallmark_ls, method = "overrepresentation",
-  threshold = "cut", lp = NA, axis = 1 # patternMarker parameters to match PDAC atlas result
+  threshold = "cut", lp = NA # patternMarker parameters to match PDAC atlas result
 )
 ```
 
