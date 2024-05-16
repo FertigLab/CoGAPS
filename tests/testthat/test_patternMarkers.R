@@ -39,3 +39,36 @@ test_that("no empty patternMarkers and their names in threshold = cut", {
     expect_equal(length(test$PatternMarkers),
                  length(names(test$PatternMarkers)))
 })
+
+# mock CogapsResult object for functional tests
+# a list that will become CogapsResult object
+mock <- list(
+  featureLoadings = diag(1, 5, 5), #make each nth gene marker in nth pattern
+  sampleFactors = matrix(rep(1, 25), nrow = 5), # 5x5 matrix of 1s
+  factorStdDev = matrix(runif(25), nrow = 5), # 5x5 matrix of random numbers
+  meanChiSq = runif(1), # single random number
+  geneNames = paste0("Gene", 1:5), # vector of gene names
+  sampleNames = paste0("Sample", 1:5) # vector of sample names
+)
+
+# create a new CogapsResult object
+obj <- new(
+  "CogapsResult",
+  Amean = mock$featureLoadings,
+  Pmean = mock$sampleFactors,
+  Asd = mock$factorStdDev,
+  Psd = mock$factorStdDev,
+  meanChiSq = mock$meanChiSq,
+  geneNames = mock$geneNames,
+  sampleNames = mock$sampleNames,
+  diagnostics = NULL
+)
+
+test_that("patternMarkers work with threshold = 'cut' for mock object", {
+  pm <- patternMarkers(obj, threshold = "cut")
+  expect_equal(pm$PatternMarkers$Pattern_1, "Gene1")
+  expect_equal(pm$PatternMarkers$Pattern_2, "Gene2")
+  expect_equal(pm$PatternMarkers$Pattern_3, "Gene3")
+  expect_equal(pm$PatternMarkers$Pattern_4, "Gene4")
+  expect_equal(pm$PatternMarkers$Pattern_5, "Gene5")
+})
