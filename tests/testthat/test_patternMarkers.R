@@ -72,3 +72,13 @@ test_that("patternMarkers work with threshold = 'cut' for mock object", {
   expect_equal(pm$PatternMarkers$Pattern_4, "Gene4")
   expect_equal(pm$PatternMarkers$Pattern_5, "Gene5")
 })
+
+
+test_that("patternMarkers work with threshold = 'all' for mock object", {
+  pm <- patternMarkers(obj, threshold = "all")
+  expect_equal(pm$PatternMarkers$Pattern_1, "Gene1")
+  expect_equal(pm$PatternMarkers$Pattern_2, "Gene2")
+  expect_equal(pm$PatternMarkers$Pattern_3, "Gene3")
+  expect_equal(pm$PatternMarkers$Pattern_4, "Gene4")
+  expect_equal(pm$PatternMarkers$Pattern_5, "Gene5")
+})
