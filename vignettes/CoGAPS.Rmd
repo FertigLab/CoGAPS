@@ -382,11 +382,7 @@ parameter
 
 If threshold="all", each gene is treated as a marker of one pattern
 (whichever it is most strongly associated with). The number of marker
-genes will always equal the number of input genes. If threshold="cut", a
-gene is considered a marker of a pattern if and only if it is less
-significant to at least one other pattern. Counterintuitively, this
-results in much shorter lists of patternMarkers and is a more convenient
-statistic to use when functionally annotating patterns.
+genes will always equal the number of input genes.
 
 The three components of the returned dictionary pm are:
 
@@ -394,7 +390,6 @@ PatternMarkers:
 
 -   A list of marker genes for each pattern
 
--   Can be determined using two threshold metrics (cut/all)
 
 PatternMarkerRank:
 
@@ -416,7 +411,7 @@ PatternMarkerScores:
 -   Scores have nonnegative values mostly falling between 0 and 2
 
 ```{r pattern markers}
-pm <- patternMarkers(cogapsresult, threshold="cut")
+pm <- patternMarkers(cogapsresult)
 ```
 
 # Pattern GSEA
@@ -436,7 +431,7 @@ hallmark_ls <- list(
 
 hallmarks_ora <- getPatternGeneSet(
   cogapsresult, gene.sets = hallmark_ls, method = "overrepresentation",
-  threshold = "cut", lp = NA # patternMarker parameters to match PDAC atlas result
+  lp = NA # patternMarker parameters to match PDAC atlas result
 )
 ```
 
