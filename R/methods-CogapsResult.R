@@ -311,10 +311,10 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
         amp <- A[,p]
         names(amp) <- features
         result <- fgsea::fgsea(pathways = gene.sets, stats = amp, scoreType = "pos")
+        result <- dplyr::rename(result, gene.set = "pathway")
+        result <- dplyr::mutate(result,gene.set=forcats::fct_reorder(gene.set, - padj))
         result$leadingEdge <- vapply(result$leadingEdge, FUN = toString, FUN.VALUE = character(1))
         result$neg.log.padj <- (-10) * log10(result$padj)
-        result$gene.set <- names(gene.sets)
-        result <- dplyr::mutate(result,gene.set=forcats::fct_reorder(gene.set, - padj))
         return(result)
       }
     )
@@ -332,10 +332,10 @@ function(object, gene.sets, method = c("enrichment", "overrepresentation"), ...)
           pathways = gene.sets, genes = PMlist[[p]],
           universe = features,
           maxSize=2038)
+        result <- dplyr::rename(result, gene.set = "pathway")
+        result <- dplyr::mutate(result,gene.set=forcats::fct_reorder(gene.set, - padj))
         result[["k/K"]] <- result$overlap / result$size
         result$neg.log.padj <- (-10) * log10(result$padj)
-        result$gene.set <- names(gene.sets)
-        result <- dplyr::mutate(result,gene.set=forcats::fct_reorder(gene.set, - padj))
         return(result)
       }
     )
