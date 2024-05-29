@@ -39,7 +39,7 @@ test_that("plotPatternGeneSet renders a plot for overrepresentation test", {
     "gs1" = c("Hs.2", "Hs.4", "Hs.36", "Hs.96", "Hs.202"),
     "gs2" = c("Hs.699463", "Hs.699288", "Hs.699280", "Hs.699154", "Hs.697294")
   )
-  gpgs_res <- getPatternGeneSet(object = GIST.result, gene.sets = gs.test, method = "overrepresentation", threshold = "cut")
+  gpgs_res <- getPatternGeneSet(object = GIST.result, gene.sets = gs.test, method = "overrepresentation")
   pl <- plotPatternGeneSet(patterngeneset = gpgs_res, whichpattern = 1, padj_threshold = 1)
   
   expect_is(pl$layers[[1]], "ggproto")
