@@ -426,11 +426,20 @@ function(object, threshold, lp){
     if(threshold=="all"){
             pIndx<-apply(ssranks,1,which.min)
             pNames <- sort(unique(pIndx))
-            ssgenes.th <- lapply(pNames,function(x) names(pIndx[pIndx==x]))
+            ssgenes.th <- lapply(pNames,function(x) pIndx[pIndx==x])
             names(ssgenes.th) <- paste0("Pattern_",pNames)
+
+            sorted.th <- list()
+            for (i in seq_along(ssgenes.th)){
+                order <- names(sort(ssranks[,i]))
+                ordered <- ssgenes.th[[i]][order]
+                sorted.th[[i]] <- names(ordered[!is.na(ordered)])
+            }
+
+            names(sorted.th) <- paste0("Pattern_",pNames)
     }
 
-    return(list("PatternMarkers"=ssgenes.th,"PatternRanks"=ssranks))
+    return(list("PatternMarkers"=sorted.th,"PatternRanks"=ssranks))
 
 })
 
