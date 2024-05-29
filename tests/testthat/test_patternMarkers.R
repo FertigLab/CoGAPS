@@ -60,3 +60,42 @@ test_that("patternMarkers work with threshold = 'all' for mock object", {
   expect_equal(pm$PatternMarkers$Pattern_4, "Gene4")
   expect_equal(pm$PatternMarkers$Pattern_5, "Gene5")
 })
+
+
+
+
+
+test_that("genes are sorted by by their ranks in the output", {
+  ## a more complicated mock object
+  test_mat <- t(matrix(c(c(10,1,1,1,1),
+                        c(2,10,2,2,2),
+                        c(3,3,10,3,3),
+                        c(4,4,4,10,4),
+                        c(5,5,5,5,10)), nrow=5, ncol=5))
+  mock <- list(
+    featureLoadings = rbind(test_mat,diag(1, 5, 5)[,5:1]),
+    sampleFactors = matrix(rep(1, 25), nrow = 5), # 5x5 matrix of 1s
+    factorStdDev = matrix(runif(25), nrow = 5), # 5x5 matrix of random numbers
+    meanChiSq = runif(1), # single random number
+    geneNames = paste0("Gene", 1:10), # vector of gene names
+    sampleNames = paste0("Sample", 1:5) # vector of sample names
+  )
+  obj <- new(
+    "CogapsResult",
+    Amean = mock$featureLoadings,
+    Pmean = mock$sampleFactors,
+    Asd = mock$featureLoadings, # just putting in, these values arent used
+    Psd = mock$sampleFactors, # just putting in, these values arent used
+    meanChiSq = mock$meanChiSq,
+    geneNames = mock$geneNames,
+    sampleNames = mock$sampleNames,
+    diagnostics = NULL
+  )
+
+  pm <- patternMarkers(obj, threshold = "all")
+  
+  expect_true(all.equal(pm$PatternMarkers$Pattern_1, c("Gene10","Gene1")))
+  expect_true(all.equal(pm$PatternMarkers$Pattern_3, c("Gene8","Gene3")))
+  expect_true(all.equal(pm$PatternMarkers$Pattern_5, c("Gene6","Gene5")))
+
+})
