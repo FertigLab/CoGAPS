@@ -423,17 +423,13 @@ function(object, threshold, lp){
             ssranks[order(sstat),i] <- 1:length(sstat)
             ssgenes[,i]<-names(sort(sstat,decreasing=FALSE))
     }}
-    if(threshold=="cut"){
+    if(threshold=="all"){
             pIndx<-apply(ssranks,1,which.min)
             pNames <- sort(unique(pIndx))
             ssgenes.th <- lapply(pNames,function(x) names(pIndx[pIndx==x]))
             names(ssgenes.th) <- paste0("Pattern_",pNames)
     }
-    if(threshold=="all"){
-            geneThresh <- apply(sweep(ssranks,1,t(apply(ssranks, 1, min)),"-"),2,function(x) which(x==0))
-            ssgenes.th <- lapply(geneThresh,names)
-    }
-    
+
     return(list("PatternMarkers"=ssgenes.th,"PatternRanks"=ssranks))
 
 })
