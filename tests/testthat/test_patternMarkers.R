@@ -29,6 +29,21 @@ test_that("no empty patternMarkers and their names in threshold = all", {
 })
 
 
+#functionsl tests
+gapsMock <- function(mock){
+    obj <- new(
+    "CogapsResult",
+    Amean = mock$featureLoadings,
+    Pmean = mock$sampleFactors,
+    Asd = mock$featureLoadings, # just putting in, these values arent used
+    Psd = mock$sampleFactors, # just putting in, these values arent used
+    meanChiSq = mock$meanChiSq,
+    geneNames = mock$geneNames,
+    sampleNames = mock$sampleNames,
+    diagnostics = NULL
+  )
+  obj
+}
 
 test_that("patternMarkers work with threshold = 'all' for mock object", {
   # mock CogapsResult object for functional tests
@@ -42,17 +57,8 @@ test_that("patternMarkers work with threshold = 'all' for mock object", {
   )
 
   # create a new CogapsResult object
-  obj <- new(
-    "CogapsResult",
-    Amean = mock$featureLoadings,
-    Pmean = mock$sampleFactors,
-    Asd = mock$factorStdDev,
-    Psd = mock$factorStdDev,
-    meanChiSq = mock$meanChiSq,
-    geneNames = mock$geneNames,
-    sampleNames = mock$sampleNames,
-    diagnostics = NULL
-  )
+  obj <- gapsMock(mock)
+
   pm <- patternMarkers(obj, threshold = "all")
   expect_equal(pm$PatternMarkers$Pattern_1, "Gene1")
   expect_equal(pm$PatternMarkers$Pattern_2, "Gene2")
@@ -76,17 +82,7 @@ test_that("genes are sorted by by their ranks in the output", {
     geneNames = paste0("Gene", 1:10), # vector of gene names
     sampleNames = paste0("Sample", 1:5) # vector of sample names
   )
-  obj <- new(
-    "CogapsResult",
-    Amean = mock$featureLoadings,
-    Pmean = mock$sampleFactors,
-    Asd = mock$featureLoadings, # just putting in, these values arent used
-    Psd = mock$sampleFactors, # just putting in, these values arent used
-    meanChiSq = mock$meanChiSq,
-    geneNames = mock$geneNames,
-    sampleNames = mock$sampleNames,
-    diagnostics = NULL
-  )
+  obj <- gapsMock(mock)
 
   pm <- patternMarkers(obj, threshold = "all")
 
