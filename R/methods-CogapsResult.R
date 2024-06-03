@@ -408,7 +408,7 @@ function(object, threshold, lp){
     # normalize each row of A to have max 1
     Arowmax <- t(apply(Amatrix, 1, function(x) x/max(x)))
 
-    # store feature ranks by L2 distance from lp
+    # container for feature ranks by L2 distance from lp
     ssranks<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))
 
     nP=dim(Amatrix)[2]
@@ -417,12 +417,12 @@ function(object, threshold, lp){
             warning("lp length must equal the number of columns of the Amatrix")
         }
             sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
-            ssranks[order(sstat),i] <- 1:length(sstat)
+            ssranks[,i] <- sstat
     } else {for(i in 1:nP){
             lp <- rep(0,dim(Amatrix)[2])
             lp[i] <- 1
             sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
-            ssranks[order(sstat),i] <- 1:length(sstat)
+            ssranks[,i] <- sstat
     }}
     if(threshold=="all"){
             pIndx<-apply(ssranks,1,which.min)
