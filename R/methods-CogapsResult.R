@@ -399,15 +399,18 @@ function(object, threshold, lp){
     Amatrix <- object@featureLoadings
     Pmatrix <- t(object@sampleFactors)
 
-    pscale <- apply(Pmatrix,1,max)   # rescale p's to have max 1
-    Amatrix <- sweep(Amatrix, 2, pscale, FUN="*")   # rescale A in accordance with p's having max 1
+    # determine norm for A if Ps were rescaled to have max 1
+    pscale <- apply(Pmatrix,1,max)
 
-    # find the A with the highest magnitude
+    # rescale A in accordance with p's having max 1
+    Amatrix <- sweep(Amatrix, 2, pscale, FUN="*")
+
+    # normalize each row of A to have max 1
     Arowmax <- t(apply(Amatrix, 1, function(x) x/max(x)))
 
-    # determine which genes are most associated with each pattern
-    ssranks<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))#list()
-    ssgenes<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=NULL)
+    # store feature ranks by L2 distance from lp
+    ssranks<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))
+
     nP=dim(Amatrix)[2]
     if(!is.na(lp)){
         if(length(lp)!=dim(Amatrix)[2]){
@@ -415,31 +418,25 @@ function(object, threshold, lp){
         }
             sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
             ssranks[order(sstat),i] <- 1:length(sstat)
-            ssgenes[,i]<-names(sort(sstat,decreasing=FALSE))
     } else {for(i in 1:nP){
             lp <- rep(0,dim(Amatrix)[2])
             lp[i] <- 1
             sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
             ssranks[order(sstat),i] <- 1:length(sstat)
-            ssgenes[,i]<-names(sort(sstat,decreasing=FALSE))
     }}
     if(threshold=="all"){
             pIndx<-apply(ssranks,1,which.min)
-            pNames <- sort(unique(pIndx))
-            ssgenes.th <- lapply(pNames,function(x) pIndx[pIndx==x])
-            names(ssgenes.th) <- paste0("Pattern_",pNames)
+            pNames<-setNames(seq_along(colnames(Amatrix)), colnames(Amatrix))
+            ssgenes.th <- lapply(pNames,function(x) names(pIndx[pIndx==x]))
 
-            sorted.th <- list()
+            #sort genes by rank for output
             for (i in seq_along(ssgenes.th)){
                 order <- names(sort(ssranks[,i]))
-                ordered <- ssgenes.th[[i]][order]
-                sorted.th[[i]] <- names(ordered[!is.na(ordered)])
+                ssgenes.th[[i]] <- intersect(order, ssgenes.th[[i]])
             }
-
-            names(sorted.th) <- paste0("Pattern_",pNames)
     }
 
-    return(list("PatternMarkers"=sorted.th,"PatternRanks"=ssranks))
+    return(list("PatternMarkers"=ssgenes.th,"PatternRanks"=ssranks))
 
 })
 
