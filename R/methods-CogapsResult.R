@@ -408,25 +408,36 @@ function(object, threshold, lp){
     # normalize each row of A to have max 1
     Arowmax <- t(apply(Amatrix, 1, function(x) x/max(x)))
 
-    # container for feature ranks by L2 distance from lp
-    ssranks<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))
-
     nP=dim(Amatrix)[2]
-    if(!is.na(lp)){
-        if(length(lp)!=dim(Amatrix)[2]){
+
+    if(!is.null(lp)){
+        if(!(unique(lengths(lp)) > 1 && unique(lengths(lp)) == nP)){
             warning("lp length must equal the number of columns of the Amatrix")
         }
-            sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
-            ssranks[,i] <- sstat
-    } else {for(i in 1:nP){
-            lp <- rep(0,dim(Amatrix)[2])
-            lp[i] <- 1
-            sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
-            ssranks[,i] <- sstat
-    }}
+        # container for feature ranks by L2 distance from lp in case of provided lp
+        ssranks<-matrix(NA, nrow=nrow(Amatrix),ncol=length(lp),
+                        dimnames=list(rownames(Amatrix), names(lp)))
+    } else {
+        lp <- list()
+        for(i in 1:nP){
+            lp_mock <- rep(0,nP)
+            lp_mock[i] <- 1
+            lp[[i]] <- lp_mock
+            }
+        names(lp) <- colnames(Amatrix)
+        # container for feature ranks by L2 distance from lp in case of one-hot encoded lp
+        ssranks<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))
+    }
+
+    #calculate the L2 distance from each row of A to lp
+    for (i in seq_along(lp)){
+    sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp[[i]])%*%(x-lp[[i]])))
+    ssranks[,i] <- sstat
+    }
+
     if(threshold=="all"){
             pIndx<-apply(ssranks,1,which.min)
-            pNames<-setNames(seq_along(colnames(Amatrix)), colnames(Amatrix))
+            pNames<-setNames(seq_along(lp), names(lp))
             ssgenes.th <- lapply(pNames,function(x) names(pIndx[pIndx==x]))
 
             #sort genes by rank for output

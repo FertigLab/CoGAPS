@@ -429,10 +429,9 @@ hallmark_ls <- list(
   )
 )
 
-hallmarks_ora <- getPatternGeneSet(
-  cogapsresult, gene.sets = hallmark_ls, method = "overrepresentation",
-  lp = NA # patternMarker parameters to match PDAC atlas result
-)
+hallmarks_ora <- getPatternGeneSet(cogapsresult,
+                                   gene.sets = hallmark_ls,
+                                   method = "overrepresentation")
 ```
 
 hallmarks is a list of data frames, each containing hallmark overrepresentation statistics corresponding to one pattern. 
