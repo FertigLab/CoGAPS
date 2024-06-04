@@ -29,7 +29,7 @@ test_that("no empty patternMarkers and their names in threshold = all", {
 })
 
 
-#functionsl tests
+#functional tests
 gapsMock <- function(mock){
     obj <- new(
     "CogapsResult",
@@ -90,4 +90,31 @@ test_that("genes are sorted by by their ranks in the output", {
   expect_true(all.equal(pm$PatternMarkers$Pattern_3, c("Gene8","Gene3")))
   expect_true(all.equal(pm$PatternMarkers$Pattern_5, c("Gene6","Gene5")))
 
+})
+
+test_that("all patterns are returned even if no markers",{
+  mock <- list(
+    featureLoadings = diag(1, 5, 5)[,5:1], #make each nth gene marker in nth pattern
+    sampleFactors = matrix(rep(1, 25), nrow = 5), # 5x5 matrix of 1s
+    factorStdDev = matrix(runif(25), nrow = 5), # 5x5 matrix of random numbers
+    meanChiSq = runif(1), # single random number
+    geneNames = paste0("Gene", 1:5), # vector of gene names
+    sampleNames = paste0("Sample", 1:5) # vector of sample names
+  )
+  #make gene1 not marker of any pattern
+  mock$featureLoadings[1:2,] <- c(0,0,0,0,0)
+
+  obj <- gapsMock(mock)
+  pm <- patternMarkers(obj, threshold = "all")
+
+  expect_true(length(pm$PatternMarkers) == 5)
+})
+
+test_that("patternMarkers works with lp", {
+    #set up
+    data(GIST)
+    res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns=5,
+                  seed=1, messages=FALSE, sparseOptimization=TRUE)
+    expect_no_error(patternMarkers(res, lp=list(my_lp=c(1,0,0,0,0))))
+    
 })

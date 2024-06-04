@@ -6,19 +6,20 @@
 \alias{patternMarkers,CogapsResult-method}
 \title{compute pattern markers statistic}
 \usage{
-patternMarkers(object, threshold = "all", lp = NA)
+patternMarkers(object, threshold = "all", lp = NULL)
 
-\S4method{patternMarkers}{CogapsResult}(object, threshold = "all", lp = NA)
+\S4method{patternMarkers}{CogapsResult}(object, threshold = "all", lp = NULL)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}
 
 \item{threshold}{the type of threshold to be used. The default "all" will
-distribute genes into pattern with the lowest ranking. The "cut" thresholds
-by the first gene to have a lower ranking, i.e. better fit to, a pattern.}
+distribute genes into patterns with the lowest ranking as ranked by the
+increasing Euclidian distance between gene and the \code{lp}.}
 
-\item{lp}{a vector of weights for each pattern to be used for finding
-markers. If NA markers for each pattern of the A matrix will be used.}
+\item{lp}{list of vectors of weights for each pattern to be used for finding
+markers. If NULL, list of synthetic one-hot markers for each column of the
+featureLoadings matrix will be generated and matched against.}
 }
 \value{
 By default a non-overlapping list of genes associated with each
