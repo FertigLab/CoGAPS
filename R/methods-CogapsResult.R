@@ -417,6 +417,9 @@ function(object, threshold, lp){
         # container for feature ranks by L2 distance from lp in case of provided lp
         ssranks<-matrix(NA, nrow=nrow(Amatrix),ncol=length(lp),
                         dimnames=list(rownames(Amatrix), names(lp)))
+        if(max(sapply(lp,max))>1){
+            stop("lp should be a list of vectors with max value of 1")
+        }
     } else {
         lp <- list()
         for(i in 1:nP){

@@ -121,5 +121,9 @@ test_that("patternMarkers works with lp", {
     res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns=5,
                   seed=1, messages=FALSE, sparseOptimization=TRUE)
     expect_no_error(patternMarkers(res, lp=list(my_lp=c(1,0,0,0,0))))
+    expect_warning(patternMarkers(res, lp=list(my_lp=c(1,0,0,0)),
+                                  threshold = "all"))
+    expect_error(patternMarkers(res, lp=list(my_lp=c(2,0,0,0,0)),
+                               threshold = "all"))
     
 })
