@@ -431,8 +431,8 @@ function(object, threshold, lp){
 
     #calculate the L2 distance from each row of A to lp
     for (i in seq_along(lp)){
-    sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp[[i]])%*%(x-lp[[i]])))
-    ssranks[,i] <- sstat
+        sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp[[i]])%*%(x-lp[[i]])))
+        ssranks[,i] <- rank(sstat, ties.method="first")
     }
 
     if(threshold=="all"){
