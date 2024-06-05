@@ -390,114 +390,68 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
 })
 
 
+#' @return By default a non-overlapping list of genes associated with each \code{lp}. If \code{full=TRUE} a data.frame of
+#' genes rankings with a column for each \code{lp} will also be returned.
 #' @rdname patternMarkers-methods
 #' @aliases patternMarkers
 setMethod("patternMarkers", signature(object="CogapsResult"),
-function(object, threshold, lp, axis)
-{
-    ## check inputs to the function
-    if (!(threshold %in% c("cut", "all")))
-        stop("threshold must be either 'cut' or 'all'")
-    if (!is.na(lp) & length(lp) != ncol(object@featureLoadings))
-        stop("lp length must equal the number of patterns")
-    if (!(axis %in% 1:2))
-        stop("axis must be either 1 or 2")
-    ## need to scale each row of the matrix of interest so that the maximum is 1
-    resultMatrix <- if (axis == 1) object@featureLoadings else object@sampleFactors
-    normedMatrix <- t(apply(resultMatrix, 1, function(row) row / max(row)))
-    ## handle the case where a custom linear combination of patterns was passed in
-    if (!is.na(lp))
-    {
-        markerScores <- apply(normedMatrix, 1, function(row) sqrt(sum((row-lp)^2)))
-        markersByPattern <- names(sort(markerScores, decreasing=FALSE, na.last=TRUE))
-        return(list(
-            "PatternMarkers"=markersByPattern,
-            "PatternMarkerRanks"=rank(markerScores),
-            "PatternMarkerScores"=markerScores
-        ))
-    }
-    ## default pattern marker calculation, each pattern has unit weight
-    markerScores <- sapply(1:ncol(normedMatrix), function(patternIndex)
-        apply(normedMatrix, 1, function(row)
-        {
-            lp <- unitVector(patternIndex, ncol(normedMatrix))
-            return(sqrt(sum((row-lp)^2)))
-        })
-    )
-    markerRanks <- apply(markerScores, 2, rank)
-    colnames(markerScores) <- colnames(markerRanks) <- colnames(normedMatrix)
-    ## keep only a subset of markers for each pattern depending on the type of threshold
-    if (threshold == "cut") # all markers which achieve minimum rank
-    {
-      simplicityGENES <- function(As, Ps) {
-        # rescale p's to have max 1
-        pscale <- apply(Ps,1,max)
-        
-        # rescale A in accordance with p's having max 1
-        As <- sweep(As, 2, pscale, FUN="*")
-        
-        # find the A with the highest magnitude
-        Arowmax <- t(apply(As, 1, function(x) x/max(x)))
-        pmax <- apply(As, 1, max)
-        
-        # determine which genes are most associated with each pattern
-        ssl <- matrix(NA, nrow=nrow(As), ncol=ncol(As),
-                      dimnames=dimnames(As))
-        for (i in 1:ncol(As)) {
-          lp <- rep(0, ncol(As))
-          lp[i] <- 1
-          ssl.stat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp)%*%(x-lp)))
-          ssl[order(ssl.stat),i] <- 1:length(ssl.stat)
-        }
-        
-        return(ssl)
-        
-      }
-      simGenes <- simplicityGENES(As=object@featureLoadings,
-                                  Ps=object@sampleFactors)
-      
-      patternMarkers <- list()
-      
-      nP <- ncol(simGenes)
-      
-      for (i in 1:nP) {
-        
-        sortSim <- names(sort(simGenes[,i],decreasing=F))
-        
-        geneThresh <- min(which(simGenes[sortSim,i] > 
-                                  apply(simGenes[sortSim,],1,min)))
-        
-        markerGenes <- sortSim[1:geneThresh]
-        
-        markerGenes <- unique(markerGenes)
-        
-        patternMarkers[[i]] <- markerGenes
-        
-        markersByPattern <- patternMarkers
-        
-      }
-    }
-    else if (threshold == "all") # only the markers with the lowest scores
-    {
-        thresholdTest <- apply(markerScores, 1, which.min)
-        patternsByMarker <- rep(0, length(markerScores))
-        i <- 0
-        for (gene in thresholdTest) {
-          if (length(names(gene))){
-            patternsByMarker[i] <- names(gene)
-          }          
-          i <- i + 1
-        }
+function(object, threshold, lp){
+    Amatrix <- object@featureLoadings
+    Pmatrix <- t(object@sampleFactors)
 
-        markersByPattern <- sapply(colnames(markerScores), USE.NAMES=TRUE, simplify=FALSE,
-            function(pattern) rownames(markerScores)[which(patternsByMarker==pattern)])
-        
+    # determine norm for A if Ps were rescaled to have max 1
+    pscale <- apply(Pmatrix,1,max)
+
+    # rescale A in accordance with p's having max 1
+    Amatrix <- sweep(Amatrix, 2, pscale, FUN="*")
+
+    # normalize each row of A to have max 1
+    Arowmax <- t(apply(Amatrix, 1, function(x) x/max(x)))
+
+    nP=dim(Amatrix)[2]
+
+    if(!is.null(lp)){
+        if(!(unique(lengths(lp)) > 1 && unique(lengths(lp)) == nP)){
+            warning("lp length must equal the number of columns of the Amatrix")
+        }
+        # container for feature ranks by L2 distance from lp in case of provided lp
+        ssranks<-matrix(NA, nrow=nrow(Amatrix),ncol=length(lp),
+                        dimnames=list(rownames(Amatrix), names(lp)))
+        if(max(sapply(lp,max))>1){
+            stop("lp should be a list of vectors with max value of 1")
+        }
+    } else {
+        lp <- list()
+        for(i in 1:nP){
+            lp_mock <- rep(0,nP)
+            lp_mock[i] <- 1
+            lp[[i]] <- lp_mock
+            }
+        names(lp) <- colnames(Amatrix)
+        # container for feature ranks by L2 distance from lp in case of one-hot encoded lp
+        ssranks<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))
     }
-    return(list(
-        "PatternMarkers"=markersByPattern,
-        "PatternMarkerRanks"=markerRanks,
-        "PatternMarkerScores"=markerScores
-    ))
+
+    #calculate the L2 distance from each row of A to lp
+    for (i in seq_along(lp)){
+        sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp[[i]])%*%(x-lp[[i]])))
+        ssranks[,i] <- rank(sstat, ties.method="first")
+    }
+
+    if(threshold=="all"){
+            pIndx<-apply(ssranks,1,which.min)
+            pNames<-setNames(seq_along(lp), names(lp))
+            ssgenes.th <- lapply(pNames,function(x) names(pIndx[pIndx==x]))
+
+            #sort genes by rank for output
+            for (i in seq_along(ssgenes.th)){
+                order <- names(sort(ssranks[,i]))
+                ssgenes.th[[i]] <- intersect(order, ssgenes.th[[i]])
+            }
+    }
+
+    return(list("PatternMarkers"=ssgenes.th,"PatternRanks"=ssranks))
+
 })
 
 #' @rdname calcCoGAPSStat-methods
