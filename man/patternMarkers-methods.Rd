@@ -14,22 +14,26 @@ patternMarkers(object, threshold = "all", lp = NULL)
 \item{object}{an object of type CogapsResult}
 
 \item{threshold}{the type of threshold to be used. The default "all" will
-distribute genes into patterns with the lowest ranking as ranked by the
-increasing Euclidian distance between gene and the \code{lp}.}
+distribute features into patterns with the highest ranking as ranked by the
+increasing Euclidian distance between feature loadings and \code{lp}. The
+alternative "cut" will do the same, but will only keep the features that are
+ranked higher than the first feature having greater intra-pattern rank than
+inter-pattern rank. This is useful to limit the number of markers ranked
+similarly everywhere.}
 
 \item{lp}{list of vectors of weights for each pattern to be used for finding
 markers. If NULL, list of synthetic one-hot markers for each column of the
 featureLoadings matrix will be generated and matched against.}
 }
 \value{
-By default a non-overlapping list of genes associated with each
-\code{lp}.
+List of: list of marker features for each pattern (best rank first),
+and a matrix of ranks of each feature in each pattern.
 
-By default a non-overlapping list of genes associated with each \code{lp}. If \code{full=TRUE} a data.frame of
-genes rankings with a column for each \code{lp} will also be returned.
+List of: list of marker features for each pattern (best rank first),
+and a matrix of ranks of each feature in each pattern.
 }
 \description{
-calculate the most associated pattern for each gene
+estimate the most associated pattern for each feature
 }
 \examples{
 data(GIST)
