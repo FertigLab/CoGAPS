@@ -33,7 +33,7 @@ test_that("test outputs generic in threshold = all", {
 })
 
 
-#functional tests
+############################## functional tests ###############################
 gapsMock <- function(mock){
     obj <- new(
     "CogapsResult",
@@ -126,4 +126,59 @@ test_that("patternMarkers works with lp", {
     expect_error(patternMarkers(res, lp=list(my_lp=c(2,0,0,0,0)),
                                threshold = "all"))
     
+})
+
+###################### threshold = "cut" tests ################################
+
+test_that("threshold = cut does not yield error", {
+    #set up
+    data(GIST)
+    res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns=5,
+                  seed=1, messages=FALSE, sparseOptimization=TRUE)
+    expect_no_error(patternMarkers(res, threshold = "cut"))
+})
+
+test_that("patternMarkers work with threshold = 'cut' for mock object", {
+  # mock CogapsResult object for functional tests
+  mock <- list(
+    featureLoadings = diag(1, 5, 5), #make each nth gene marker in nth pattern
+    sampleFactors = matrix(rep(1, 25), nrow = 5), # 5x5 matrix of 1s
+    factorStdDev = matrix(runif(25), nrow = 5), # 5x5 matrix of random numbers
+    meanChiSq = runif(1), # single random number
+    geneNames = paste0("Gene", 1:5), # vector of gene names
+    sampleNames = paste0("Sample", 1:5) # vector of sample names
+  )
+
+  # create a new CogapsResult object
+  obj <- gapsMock(mock)
+
+  pm <- patternMarkers(obj, threshold = "cut")
+  expect_equal(pm$PatternMarkers$Pattern_1, "Gene1")
+  expect_equal(pm$PatternMarkers$Pattern_2, "Gene2")
+  expect_equal(pm$PatternMarkers$Pattern_3, "Gene3")
+  expect_equal(pm$PatternMarkers$Pattern_4, "Gene4")
+  expect_equal(pm$PatternMarkers$Pattern_5, "Gene5")
+})
+
+test_that("threshold = 'cut' filters out weak markers correctly", {
+  # mock CogapsResult object for functional tests
+  mock <- list(
+    featureLoadings = rbind(diag(1, 5, 5),rep(0.1,5)), #add a weak marker
+    sampleFactors = matrix(rep(1, 30), nrow = 6), # 6x5 matrix of 1s
+    factorStdDev = matrix(runif(30), nrow = 5), # 6x5 matrix of random numbers
+    meanChiSq = runif(1), # single random number
+    geneNames = paste0("Gene", 1:6), # vector of gene names
+    sampleNames = paste0("Sample", 1:6) # vector of sample names
+  )
+
+  # create a new CogapsResult object
+  obj <- gapsMock(mock)
+
+  pm <- patternMarkers(obj, threshold = "cut")
+  expect_equal(pm$PatternMarkers$Pattern_1, "Gene1")
+  expect_equal(pm$PatternMarkers$Pattern_2, "Gene2")
+  expect_equal(pm$PatternMarkers$Pattern_3, "Gene3")
+  expect_equal(pm$PatternMarkers$Pattern_4, "Gene4")
+  expect_equal(pm$PatternMarkers$Pattern_5, "Gene5")
+  expect_equal(nrow(pm$PatternRanks), 6)
 })
