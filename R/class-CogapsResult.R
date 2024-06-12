@@ -403,7 +403,8 @@ Pw=rep(1,ncol(object@featureLoadings)), PwNull=FALSE)
 #' markers. If NULL, list of synthetic one-hot markers for each column of the
 #' featureLoadings matrix will be generated and matched against.
 #' @return List of: list of marker features for each pattern (best rank first),
-#' and a matrix of ranks of each feature in each pattern.
+#' a matrix of ranks of each feature in each pattern, a matrix of scores for
+#' each feature in each pattern.
 #' @examples
 #' data(GIST)
 #' pm <- patternMarkers(GIST.result)

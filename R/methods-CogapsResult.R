@@ -432,10 +432,14 @@ function(object, threshold, lp){
         ssranks<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))
     }
 
+    #container for feature scores
+    ssscores<-ssranks
+
     #for each lp, calculate the L2 distance from each row of A to lp[i], rank
     for (i in seq_along(lp)){
         sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp[[i]])%*%(x-lp[[i]])))
         ssranks[,i] <- rank(sstat, ties.method="first")
+        ssscores[,i] <- sstat
     }
 
     if(threshold=="all"){
@@ -460,7 +464,9 @@ function(object, threshold, lp){
         names(ssgenes.th) <- names(lp)
     }
 
-    return(list("PatternMarkers"=ssgenes.th,"PatternRanks"=ssranks))
+    return(list("PatternMarkers"=ssgenes.th,
+                "PatternRanks"=ssranks,
+                "PatternScores"=ssscores))
 
 })
 

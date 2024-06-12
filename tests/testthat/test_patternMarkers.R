@@ -32,6 +32,14 @@ test_that("test outputs generic in threshold = all", {
                  nrow(res@featureLoadings))
 })
 
+test_that("all outputs are present", {
+  data(GIST)
+  res <- CoGAPS(GIST.data_frame, nIterations=100,
+                seed=1, messages=FALSE)
+  test <- patternMarkers(res)
+  expect_true(all(c("PatternMarkers", "PatternRanks", "PatternScores") %in%
+                  names(test)))
+})
 
 ############################## functional tests ###############################
 gapsMock <- function(mock){
