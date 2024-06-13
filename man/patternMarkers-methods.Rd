@@ -22,10 +22,11 @@ rank. This is useful to limit the number of markers ranked similarly
 everywhere. Features may be present in multiple patterns for "cut".}
 
 \item{lp}{list of vectors of weights for each pattern to be used for finding
-markers. If NULL, list of synthetic one-hot markers for each column of the
-featureLoadings matrix will be generated and matched against.}
+markers. If NULL, list of synthetic one-hot markers for each pattern will be
+generated and matched against.}
 
-\item{axis}{axis to use for ranking. 1 for features, 2 for samples.}
+\item{axis}{controls the matrix to use for ranking. 1 for featureLoadings,
+2 for sampleFactors.}
 }
 \value{
 List of: list of marker features for each pattern (best rank first),
