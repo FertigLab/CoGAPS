@@ -6,9 +6,9 @@
 \alias{patternMarkers,CogapsResult-method}
 \title{compute pattern markers statistic}
 \usage{
-patternMarkers(object, threshold = "all", lp = NULL)
+patternMarkers(object, threshold = "all", lp = NULL, axis = 1)
 
-\S4method{patternMarkers}{CogapsResult}(object, threshold = "all", lp = NULL)
+\S4method{patternMarkers}{CogapsResult}(object, threshold = "all", lp = NULL, axis = 1)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}
@@ -16,14 +16,16 @@ patternMarkers(object, threshold = "all", lp = NULL)
 \item{threshold}{the type of threshold to be used. The default "all" will
 distribute features into patterns with the highest ranking as ranked by the
 increasing Euclidian distance between feature loadings and \code{lp}. The
-alternative "cut" will do the same, but will only keep the features that are
-ranked higher than the first feature having greater intra-pattern rank than
-inter-pattern rank. This is useful to limit the number of markers ranked
-similarly everywhere.}
+alternative "cut" will only keep the features that are ranked higher than
+the first feature having greater intra-pattern compared to inter-pattern
+rank. This is useful to limit the number of markers ranked similarly
+everywhere. Features may be present in multiple patterns for "cut".}
 
 \item{lp}{list of vectors of weights for each pattern to be used for finding
 markers. If NULL, list of synthetic one-hot markers for each column of the
 featureLoadings matrix will be generated and matched against.}
+
+\item{axis}{axis to use for ranking. 1 for features, 2 for samples.}
 }
 \value{
 List of: list of marker features for each pattern (best rank first),

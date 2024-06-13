@@ -395,20 +395,21 @@ Pw=rep(1,ncol(object@featureLoadings)), PwNull=FALSE)
 #' @param threshold the type of threshold to be used. The default "all" will
 #' distribute features into patterns with the highest ranking as ranked by the
 #' increasing Euclidian distance between feature loadings and \code{lp}. The
-#' alternative "cut" will do the same, but will only keep the features that are
-#' ranked higher than the first feature having greater intra-pattern rank than
-#' inter-pattern rank. This is useful to limit the number of markers ranked
-#' similarly everywhere.
+#' alternative "cut" will only keep the features that are ranked higher than
+#' the first feature having greater intra-pattern compared to inter-pattern
+#' rank. This is useful to limit the number of markers ranked similarly
+#' everywhere. Features may be present in multiple patterns for "cut".
 #' @param lp list of vectors of weights for each pattern to be used for finding
 #' markers. If NULL, list of synthetic one-hot markers for each column of the
 #' featureLoadings matrix will be generated and matched against.
+#' @param axis axis to use for ranking. 1 for features, 2 for samples.
 #' @return List of: list of marker features for each pattern (best rank first),
 #' a matrix of ranks of each feature in each pattern, a matrix of scores for
 #' each feature in each pattern.
 #' @examples
 #' data(GIST)
 #' pm <- patternMarkers(GIST.result)
-setGeneric("patternMarkers", function(object, threshold="all", lp=NULL) standardGeneric("patternMarkers"))
+setGeneric("patternMarkers", function(object, threshold="all", lp=NULL, axis=1) standardGeneric("patternMarkers"))
 
 #' MANOVA statistical test for patterns between sample groups
 #' @export

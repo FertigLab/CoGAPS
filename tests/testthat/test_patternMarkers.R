@@ -41,6 +41,24 @@ test_that("all outputs are present", {
                   names(test)))
 })
 
+test_that("all outputs are present with non-default axis", {
+  data(GIST)
+  res <- CoGAPS(GIST.data_frame, nIterations=100,
+                seed=1, messages=FALSE)
+  test <- patternMarkers(res, axis = 2)
+  expect_true(all(c("PatternMarkers", "PatternRanks", "PatternScores") %in%
+                  names(test)))
+})
+
+test_that("all samples present with non-default axis and threshold='all' ", {
+  data(GIST)
+  res <- CoGAPS(GIST.data_frame, nIterations=100,
+                seed=1, messages=FALSE)
+  test <- patternMarkers(res, axis = 2, threshold = "all")
+  expect_true(all(unique(unlist(test$PatternMarkers))
+                  %in% rownames(res@sampleFactors)))
+})
+
 ############################## functional tests ###############################
 gapsMock <- function(mock){
     obj <- new(
