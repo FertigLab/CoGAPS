@@ -351,7 +351,7 @@ pattern.
 If `threshold="all"` (default), each gene is treated as a marker of exactly one pattern,
 whichever it is most strongly associated with, based on the distance metric. 
 
-For the `threshold="cut"`, the candidates are sorted by best inter-pattern rank
+For the `threshold="cut"`, the candidates are sorted by best intra-pattern rank
 and are added to markers list unitil a certain rank is reached. This rank 
 corresponds to the first occurence of intra-pattern rank being worse than the
 inter-pattern rank. This mode usually yields much less markers per pattern, and 
