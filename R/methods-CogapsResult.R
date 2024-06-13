@@ -395,9 +395,19 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
 #' @rdname patternMarkers-methods
 #' @aliases patternMarkers
 setMethod("patternMarkers", signature(object="CogapsResult"),
-function(object, threshold, lp){
-    Amatrix <- object@featureLoadings
-    Pmatrix <- t(object@sampleFactors)
+function(object, threshold, lp, axis){
+    #look for features-markers of patterns with axis=1
+    #or samples-markers of patterns with axis=2
+    if(axis == 1){
+        Amatrix <- object@featureLoadings
+        Pmatrix <- t(object@sampleFactors)
+    } else if(axis == 2){
+        Amatrix <- object@sampleFactors
+        Pmatrix <- t(object@featureLoadings)
+    } else {
+        stop("axis must be 1 or 2")
+    }
+
 
     # determine norm for A if Ps were rescaled to have max 1
     pscale <- apply(Pmatrix,1,max)
