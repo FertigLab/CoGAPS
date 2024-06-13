@@ -382,8 +382,8 @@ PatternScores:
 
 * Scores describe how strongly a marker gene is associated with a
   pattern.
-* A higher score value indicates the marker gene is more associated
-  with the pattern, and vice versa.
+* A higher score value indicates the marker gene is less associated
+  with the pattern (as score is a distance) metric, and vice versa.
 * Scores have nonnegative values mostly falling between 0 and 2
 
 ## Example
