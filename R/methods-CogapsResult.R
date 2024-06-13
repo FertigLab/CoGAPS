@@ -443,25 +443,9 @@ function(object, threshold, lp){
     }
 
     if(threshold=="all"){
-        pIndx<-apply(ssranks,1,which.min)
-        pNames<-setNames(seq_along(lp), names(lp))
-        ssgenes.th <- lapply(pNames,function(x) names(pIndx[pIndx==x]))
-
-        #sort genes by rank for output
-        for (i in seq_along(ssgenes.th)){
-            order <- names(sort(ssranks[,i]))
-            ssgenes.th[[i]] <- intersect(order, ssgenes.th[[i]])
-        }
+        ssgenes.th <- .patternMarkers_all(ssranks)
     } else if(threshold=="cut"){
-        ssgenes.th <- list()
-        for (i in seq_along(lp)){
-            sortSim <- names(sort(ssranks[,i], decreasing = FALSE))
-            #first intra-pattern rank that is worse than inter-pattern rank
-            geneThresh <- min(which(ssranks[sortSim, i] > apply(ssranks[sortSim,], 1, min)))
-            markerGenes <- sortSim[1:geneThresh-1]
-            ssgenes.th[[i]] <- markerGenes
-        }
-        names(ssgenes.th) <- names(lp)
+        ssgenes.th <- .patternMarkers_cut(ssranks)
     }
 
     return(list("PatternMarkers"=ssgenes.th,
@@ -469,6 +453,35 @@ function(object, threshold, lp){
                 "PatternScores"=ssscores))
 
 })
+
+#' @noRd
+.patternMarkers_all <- function(ssranks) {
+        pIndx<-apply(ssranks,1,which.min)
+        pNames<-setNames(seq_along(colnames(ssranks)), colnames(ssranks))
+        ssgenes.th <- lapply(pNames,function(x) names(pIndx[pIndx==x]))
+
+        #sort genes by rank for output
+        for (i in seq_along(ssgenes.th)){
+            order <- names(sort(ssranks[,i]))
+            ssgenes.th[[i]] <- intersect(order, ssgenes.th[[i]])
+        }
+        return(ssgenes.th)
+}
+
+#' @noRd
+.patternMarkers_cut <- function(ssranks) {
+    ssgenes.th <- list()
+    for (i in seq_along(colnames(ssranks))){
+        sortSim <- names(sort(ssranks[,i], decreasing = FALSE))
+        #first intra-pattern rank that is worse than inter-pattern rank
+        geneThresh <- min(which(ssranks[sortSim, i] > apply(ssranks[sortSim,], 1, min)))
+        markerGenes <- sortSim[1:geneThresh-1]
+        ssgenes.th[[i]] <- markerGenes
+    }
+    names(ssgenes.th) <- colnames(ssranks)
+
+    return(ssgenes.th)
+}
 
 #' @rdname calcCoGAPSStat-methods
 #' @aliases calcCoGAPSStat
