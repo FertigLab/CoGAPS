@@ -125,71 +125,43 @@ or the path of a file (`tsv`, `csv`, `mtx`, `gct`) containing the data.
 ```{r cogaps on modsim}
 # run CoGAPS with specified parameters
 cogapsresult <- CoGAPS(modsimdata, params, outputFrequency = 10000)
-cogapsresult
 ```
 
-Verify that this output appears:
-
+Verify that a similar output appears:
+```{eval=FALSE}
 This is CoGAPS version 3.19.1 
 
 Running Standard CoGAPS on modsimdata (25 genes and 20 samples) with
 parameters:
 
-\-- Standard Parameters \--
-
+-- Standard Parameters --
 nPatterns            3 
-
 nIterations          50000 
-
 seed                 622 
-
 sparseOptimization   FALSE 
 
-\-- Sparsity Parameters \--
-
+-- Sparsity Parameters --
 alpha          0.01 
-
 maxGibbsMass   100 
-
 Data Model: Dense, Normal
-
 Sampler Type: Sequential
-
 Loading Data\...Done! (00:00:00)
 
-\-- Equilibration Phase \--
+-- Equilibration Phase --
+10000 of 50000, Atoms: 59(A), 49(P), ChiSq: 245, Time: 00:00:00 00:00:00
+20000 of 50000, Atoms: 68(A), 46(P), ChiSq: 188, Time: 00:00:00 00:00:00
+30000 of 50000, Atoms: 80(A), 47(P), ChiSq: 134, Time: 00:00:00 00:00:00
+40000 of 50000, Atoms: 69(A), 46(P), ChiSq: 101, Time: 00:00:00 00:00:00
+50000 of 50000, Atoms: 76(A), 53(P), ChiSq: 132, Time: 00:00:00 00:00:00
 
-10000 of 50000, Atoms: 59(A), 49(P), ChiSq: 245, Time: 00:00:00 /
-00:00:00
+-- Sampling Phase --
 
-20000 of 50000, Atoms: 68(A), 46(P), ChiSq: 188, Time: 00:00:00 /
-00:00:00
-
-30000 of 50000, Atoms: 80(A), 47(P), ChiSq: 134, Time: 00:00:00 /
-00:00:00
-
-40000 of 50000, Atoms: 69(A), 46(P), ChiSq: 101, Time: 00:00:00 /
-00:00:00
-
-50000 of 50000, Atoms: 76(A), 53(P), ChiSq: 132, Time: 00:00:00 /
-00:00:00
-
-\-- Sampling Phase \--
-
-10000 of 50000, Atoms: 82(A), 52(P), ChiSq: 94, Time: 00:00:00 /
-00:00:00
-
-20000 of 50000, Atoms: 74(A), 54(P), ChiSq: 144, Time: 00:00:01 /
-00:00:01
-
-30000 of 50000, Atoms: 79(A), 47(P), ChiSq: 116, Time: 00:00:01 /
-00:00:01
-
-40000 of 50000, Atoms: 79(A), 46(P), ChiSq: 132, Time: 00:00:01 /
-00:00:01
-
-50000 of 50000, Atoms: 76(A), 48(P), ChiSq: 124, Time: 00:00:01 /
-00:00:01
+10000 of 50000, Atoms: 82(A), 52(P), ChiSq: 94, Time: 00:00:00 00:00:00
+20000 of 50000, Atoms: 74(A), 54(P), ChiSq: 144, Time: 00:00:01 00:00:01
+30000 of 50000, Atoms: 79(A), 47(P), ChiSq: 116, Time: 00:00:01 00:00:01
+40000 of 50000, Atoms: 79(A), 46(P), ChiSq: 132, Time: 00:00:01 00:00:01
+50000 of 50000, Atoms: 76(A), 48(P), ChiSq: 124, Time: 00:00:01 00:00:01
+```
 
 This means that the underlying C++ library has run correctly, and
 everything is installed how it should be.
@@ -214,9 +186,7 @@ a safe manner:
 
 ```{r modsim result}
 cogapsresult
-
 cogapsresult@sampleFactors
-
 cogapsresult@featureLoadings
 
 # check reference result:
@@ -240,10 +210,6 @@ pdac_data <- BiocFileCache::bfcrpath(bfc, pdac_url)
 pdac_data <- readRDS(pdac_data)
 pdac_data
 ```
-> pdac_data An object of class Seurat 15184 features across 25442
-> samples within 2 assays Active assay: originalexp (15176 features,
-> 2000 variable features) 1 other assay present: CoGAPS 5 dimensional
-> reductions calculated: PCA, Aligned, UMAP, pca, umap
 
 We also want to extract the counts matrix to provide directly to CoGAPS
 
@@ -262,7 +228,7 @@ interface for viewing and setting the parameter values.
 
 ```{r set params}
 library(CoGAPS)
-pdac_params <- CogapsParams(nIterations=50000, # 50000 iterations 
+pdac_params <- CogapsParams(nIterations=50000, # 50000 iterations
                	seed=42, # for consistency across stochastic runs
                	nPatterns=8, # each thread will learn 8 patterns
                 sparseOptimization=TRUE, # optimize for sparse data
@@ -370,46 +336,57 @@ FeaturePlot(pdac_data, pattern_names, cols=color_palette, reduction = "umap") & 
 ```
 
 # Pattern Markers
+We provide a `patternMarkers()` CoGAPS function to find markers (i.e. genes or 
+samples) most associated with each pattern. It returns a per-pattern
+dictionary of markers, their ranking, and their distance "score" for each
+pattern.
 
-To assess pattern marker genes, we provide a patternMarkers() CoGAPS
-function to find genes associated with each pattern and returns a
-dictionary of information containing lists of marker genes, their
-ranking, and their "score" for each pattern. This is vital because genes
-are often associated with multiple patterns.
+## Marker assignment methods
+`patternMarkers()` can run in two marker selection modes, controlled with
+the "threshold" parameter, which can be set to "all" or "cut". In both cases
+the ranking of markers is essentially sorting Euclidian distances between a
+candidate marker and a synthetic one-row matrix that represents an "ideal" 
+pattern.
 
-patternMarkers can run in two modes, depending on the "threshold"
-parameter
+If `threshold="all"` (default), each gene is treated as a marker of exactly one pattern,
+whichever it is most strongly associated with, based on the distance metric. 
 
-If threshold="all", each gene is treated as a marker of one pattern
-(whichever it is most strongly associated with). The number of marker
-genes will always equal the number of input genes.
+For the `threshold="cut"`, the candidates are sorted by best inter-pattern rank
+and are added to markers list unitil a certain rank is reached. This rank 
+corresponds to the first occurence of intra-pattern rank being worse than the
+inter-pattern rank. This mode usually yields much less markers per pattern, and 
+the same marker can appear in multiple patterns.
+
+## Axis selection
+The `axis` parameter can be used to select the axis along which the markers are
+selected. By default, `axis=1`, which means that the feature (i.e. gene) markers
+are estimated. If `axis=2`, the sample markers are estimated. 
 
 The three components of the returned dictionary pm are:
 
+## `patternMarkers()` Output
+Output is a list of three components:
+
 PatternMarkers:
 
--   A list of marker genes for each pattern
+* A list of marker genes for each pattern
 
+PatternRanks:
 
-PatternMarkerRank:
-
--   Each marker gene ranked by association for each pattern
-
--   Whole natural numbers, assigning each marker gene a place in the
+*   Each marker gene ranked by association for each pattern
+*   Whole natural numbers, assigning each marker a place in the
     rank for each pattern.
+*   Lower rank indicates higher association and vice versa.
 
--   Lower rank indicates higher association and vice versa.
+PatternScores:
 
-PatternMarkerScores:
+* Scores describe how strongly a marker gene is associated with a
+  pattern.
+* A higher score value indicates the marker gene is more associated
+  with the pattern, and vice versa.
+* Scores have nonnegative values mostly falling between 0 and 2
 
--   Scores describing how strongly a marker gene is associated with a
-    pattern.
-
--   A higher score value indicates the marker gene is more associated
-    with the pattern, and vice versa.
-
--   Scores have nonnegative values mostly falling between 0 and 2
-
+## Example
 ```{r pattern markers}
 pm <- patternMarkers(cogapsresult)
 ```
