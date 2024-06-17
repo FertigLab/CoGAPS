@@ -395,9 +395,19 @@ function(patterngeneset, whichpattern=1, padj_threshold = 0.05)
 #' @rdname patternMarkers-methods
 #' @aliases patternMarkers
 setMethod("patternMarkers", signature(object="CogapsResult"),
-function(object, threshold, lp){
-    Amatrix <- object@featureLoadings
-    Pmatrix <- t(object@sampleFactors)
+function(object, threshold, lp, axis){
+    #look for features-markers of patterns with axis=1
+    #or samples-markers of patterns with axis=2
+    if(axis == 1){
+        Amatrix <- object@featureLoadings
+        Pmatrix <- t(object@sampleFactors)
+    } else if(axis == 2){
+        Amatrix <- object@sampleFactors
+        Pmatrix <- t(object@featureLoadings)
+    } else {
+        stop("axis must be 1 or 2")
+    }
+
 
     # determine norm for A if Ps were rescaled to have max 1
     pscale <- apply(Pmatrix,1,max)
@@ -432,15 +442,32 @@ function(object, threshold, lp){
         ssranks<-matrix(NA, nrow=nrow(Amatrix), ncol=ncol(Amatrix),dimnames=dimnames(Amatrix))
     }
 
+    #container for feature scores
+    ssscores<-ssranks
+
     #for each lp, calculate the L2 distance from each row of A to lp[i], rank
     for (i in seq_along(lp)){
         sstat <- apply(Arowmax, 1, function(x) sqrt(t(x-lp[[i]])%*%(x-lp[[i]])))
         ssranks[,i] <- rank(sstat, ties.method="first")
+        ssscores[,i] <- sstat
     }
 
     if(threshold=="all"){
+        ssgenes.th <- .patternMarkers_all(ssranks)
+    } else if(threshold=="cut"){
+        ssgenes.th <- .patternMarkers_cut(ssranks)
+    }
+
+    return(list("PatternMarkers"=ssgenes.th,
+                "PatternRanks"=ssranks,
+                "PatternScores"=ssscores))
+
+})
+
+#' @noRd
+.patternMarkers_all <- function(ssranks) {
         pIndx<-apply(ssranks,1,which.min)
-        pNames<-setNames(seq_along(lp), names(lp))
+        pNames<-setNames(seq_along(colnames(ssranks)), colnames(ssranks))
         ssgenes.th <- lapply(pNames,function(x) names(pIndx[pIndx==x]))
 
         #sort genes by rank for output
@@ -448,21 +475,23 @@ function(object, threshold, lp){
             order <- names(sort(ssranks[,i]))
             ssgenes.th[[i]] <- intersect(order, ssgenes.th[[i]])
         }
-    } else if(threshold=="cut"){
-        ssgenes.th <- list()
-        for (i in seq_along(lp)){
-            sortSim <- names(sort(ssranks[,i], decreasing = FALSE))
-            #first intra-pattern rank that is worse than inter-pattern rank
-            geneThresh <- min(which(ssranks[sortSim, i] > apply(ssranks[sortSim,], 1, min)))
-            markerGenes <- sortSim[1:geneThresh-1]
-            ssgenes.th[[i]] <- markerGenes
-        }
-        names(ssgenes.th) <- names(lp)
+        return(ssgenes.th)
+}
+
+#' @noRd
+.patternMarkers_cut <- function(ssranks) {
+    ssgenes.th <- list()
+    for (i in seq_along(colnames(ssranks))){
+        sortSim <- names(sort(ssranks[,i], decreasing = FALSE))
+        #first intra-pattern rank that is worse than inter-pattern rank
+        geneThresh <- min(which(ssranks[sortSim, i] > apply(ssranks[sortSim,], 1, min)))
+        markerGenes <- sortSim[1:geneThresh-1]
+        ssgenes.th[[i]] <- markerGenes
     }
+    names(ssgenes.th) <- colnames(ssranks)
 
-    return(list("PatternMarkers"=ssgenes.th,"PatternRanks"=ssranks))
-
-})
+    return(ssgenes.th)
+}
 
 #' @rdname calcCoGAPSStat-methods
 #' @aliases calcCoGAPSStat
