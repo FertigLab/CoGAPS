@@ -6,9 +6,9 @@
 \alias{patternMarkers,CogapsResult-method}
 \title{compute pattern markers statistic}
 \usage{
-patternMarkers(object, threshold = "all", lp = NULL)
+patternMarkers(object, threshold = "all", lp = NULL, axis = 1)
 
-\S4method{patternMarkers}{CogapsResult}(object, threshold = "all", lp = NULL)
+\S4method{patternMarkers}{CogapsResult}(object, threshold = "all", lp = NULL, axis = 1)
 }
 \arguments{
 \item{object}{an object of type CogapsResult}
@@ -16,18 +16,22 @@ patternMarkers(object, threshold = "all", lp = NULL)
 \item{threshold}{the type of threshold to be used. The default "all" will
 distribute features into patterns with the highest ranking as ranked by the
 increasing Euclidian distance between feature loadings and \code{lp}. The
-alternative "cut" will do the same, but will only keep the features that are
-ranked higher than the first feature having greater intra-pattern rank than
-inter-pattern rank. This is useful to limit the number of markers ranked
-similarly everywhere.}
+alternative "cut" will only keep the features that are ranked higher than
+the first feature having greater intra-pattern compared to inter-pattern
+rank. This is useful to limit the number of markers ranked similarly
+everywhere. Features may be present in multiple patterns for "cut".}
 
 \item{lp}{list of vectors of weights for each pattern to be used for finding
-markers. If NULL, list of synthetic one-hot markers for each column of the
-featureLoadings matrix will be generated and matched against.}
+markers. If NULL, list of synthetic one-hot markers for each pattern will be
+generated and matched against.}
+
+\item{axis}{controls the matrix to use for ranking. 1 for featureLoadings,
+2 for sampleFactors.}
 }
 \value{
 List of: list of marker features for each pattern (best rank first),
-and a matrix of ranks of each feature in each pattern.
+a matrix of ranks of each feature in each pattern, a matrix of scores for
+each feature in each pattern.
 
 List of: list of marker features for each pattern (best rank first),
 and a matrix of ranks of each feature in each pattern.
