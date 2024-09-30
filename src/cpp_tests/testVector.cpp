@@ -1,4 +1,5 @@
-#include "catch.h"
+#include <testthat.h>
+#include "testthat-tweak.h"
 #include "../data_structures/Vector.h"
 #include "../math/Random.h"
 #include "../math/VectorMath.h"
@@ -11,7 +12,7 @@
 namespace bpt = boost::posix_time;
 #define bpt_now() bpt::microsec_clock::local_time()
 
-TEST_CASE("Benchmark Dot Product")
+TEST_CASE("Benchmark Dot Product", "[benchmark],[dotproduct]")
 {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
