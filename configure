@@ -3247,9 +3247,13 @@ fi
 # Check whether --enable-cpp-tests was given.
 if test ${enable_cpp_tests+y}
 then :
-  enableval=$enable_cpp_tests; cpp_tests=yes
+  enableval=$enable_cpp_tests; case "${enableval}" in
+        no)  cpp_tests_disable=yes ;;
+        yes) cpp_tests_disable=no ;;
+        *) as_fn_error $? "--enable-cpp-tests understads only 'no' value" "$LINENO" 5 ;;
+     esac
 else case e in #(
-  e) cpp_tests=no ;;
+  e) cpp_tests_disable=no ;;
 esac
 fi
 
@@ -3359,7 +3363,7 @@ GAPS_SOURCE_FILES+=" math/Random.o"
 GAPS_SOURCE_FILES+=" math/VectorMath.o"
 
 # add c++ tests to source list
-if test "x$cpp_tests" = "xyes" ; then
+if test "x$cpp_tests_disable" != "xyes" ; then
     echo "Enabling C++ Unit Tests"
     GAPS_CPP_FLAGS+=" -DGAPS_CPP_UNIT_TESTS "
     GAPS_SOURCE_FILES+=" cpp_tests/testVector.o"
