@@ -43,8 +43,9 @@ Suggests:
     rmarkdown,
     BiocStyle,
     SeuratObject,
-    BiocFileCache
-LinkingTo: Rcpp, BH
+    BiocFileCache,
+    xml2
+LinkingTo: Rcpp, BH, testthat
 VignetteBuilder: knitr
 LazyLoad: true
 License: BSD_3_clause + file LICENSE
