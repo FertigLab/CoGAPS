@@ -12,7 +12,7 @@
 namespace bpt = boost::posix_time;
 #define bpt_now() bpt::microsec_clock::local_time()
 
-TEST_CASE("Benchmark Dot Product", "[benchmark],[dotproduct]")
+TEST_CASE("Benchmark Dot Product", "[benchmark][dotproduct]")
 {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
@@ -44,7 +44,7 @@ TEST_CASE("Benchmark Dot Product", "[benchmark],[dotproduct]")
 }
 #endif
 
-TEST_CASE("Test Vector.h")
+TEST_CASE("Test Vector.h","[vector]")
 {
     GapsRandomState randState(123);
 
