@@ -1,5 +1,5 @@
 #include <testthat.h>
-#include "testthat-tweak.h"
+#include "../testthat-tweak.h"
 #include "../data_structures/Vector.h"
 #include "../math/Random.h"
 #include "../math/VectorMath.h"
