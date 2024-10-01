@@ -1,4 +1,5 @@
-#include "catch.h"
+#include <testthat.h>
+#include "../testthat-tweak.h"
 #include "../atomic/ConcurrentAtomicDomain.h"
 #include "../utils/GapsPrint.h"
 
