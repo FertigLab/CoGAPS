@@ -107,6 +107,7 @@ if test "x$cpp_tests_disable" != "xyes" ; then
     echo "Enabling C++ Unit Tests"
     GAPS_CPP_FLAGS+=" -DGAPS_CPP_UNIT_TESTS "
     GAPS_SOURCE_FILES+=" cpp_tests/testVector.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSparseVector.o"
 fi
 
 # export variables containing flags
