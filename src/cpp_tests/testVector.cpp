@@ -4,47 +4,8 @@
 #include "../math/Random.h"
 #include "../math/VectorMath.h"
 
-// optional test used for benchmarking, set to 0 to disable, 1 to enable
-#if 0
 
-// boost time helpers
-#include <boost/date_time/posix_time/posix_time.hpp>
-namespace bpt = boost::posix_time;
-#define bpt_now() bpt::microsec_clock::local_time()
-
-TEST_CASE("Benchmark Dot Product", "[benchmark][dotproduct]")
-{
-    GapsRandomState randState(123);
-    GapsRng rng(&randState);
-
-    std::vector<Vector> mVecs;
-    for (unsigned i = 0; i < 1300; ++i)
-    {
-        mVecs.push_back(Vector(50000));
-        for (unsigned j = 0; j < mVecs[i].size(); ++j)
-        {
-            mVecs[i][j] = rng.uniform(0.f, 100.f);
-        }
-    }
-
-    float sum = 0.f;
-    bpt::ptime start = bpt_now();
-    for (unsigned i = 0; i < mVecs.size(); ++i)
-    {
-        for (unsigned j = i; j < mVecs.size(); ++j)
-        {
-            sum += gaps::dot(mVecs[i], mVecs[j]);
-        }
-    }
-    bpt::time_duration diff = bpt_now() - start;
-    gaps_printf("-------\n-------\n-------\n-------\n", sum);
-    gaps_printf("sum: %f\n", sum);
-    gaps_printf("dot product milliseconds: %lu\n", diff.total_milliseconds());
-    gaps_printf("-------\n-------\n-------\n-------\n", sum);
-}
-#endif
-
-TEST_CASE("Test Vector.h","[vector]")
+TEST_CASE("Test Vector","[vector]")
 {
     GapsRandomState randState(123);
 
@@ -87,3 +48,43 @@ TEST_CASE("Test Vector.h","[vector]")
         REQUIRE(gaps::sum(v) == 2.f * s);
     }
 }
+
+// optional test used for benchmarking, set to 0 to disable, 1 to enable
+#if 0
+
+// boost time helpers
+#include <boost/date_time/posix_time/posix_time.hpp>
+namespace bpt = boost::posix_time;
+#define bpt_now() bpt::microsec_clock::local_time()
+
+TEST_CASE("Benchmark Dot Product", "[benchmark][dotproduct]")
+{
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
+    
+    std::vector<Vector> mVecs;
+    for (unsigned i = 0; i < 1300; ++i)
+    {
+        mVecs.push_back(Vector(50000));
+        for (unsigned j = 0; j < mVecs[i].size(); ++j)
+        {
+            mVecs[i][j] = rng.uniform(0.f, 100.f);
+        }
+    }
+    
+    float sum = 0.f;
+    bpt::ptime start = bpt_now();
+    for (unsigned i = 0; i < mVecs.size(); ++i)
+    {
+        for (unsigned j = i; j < mVecs.size(); ++j)
+        {
+            sum += gaps::dot(mVecs[i], mVecs[j]);
+        }
+    }
+    bpt::time_duration diff = bpt_now() - start;
+    gaps_printf("-------\n-------\n-------\n-------\n", sum);
+    gaps_printf("sum: %f\n", sum);
+    gaps_printf("dot product milliseconds: %lu\n", diff.total_milliseconds());
+    gaps_printf("-------\n-------\n-------\n-------\n", sum);
+}
+#endif
