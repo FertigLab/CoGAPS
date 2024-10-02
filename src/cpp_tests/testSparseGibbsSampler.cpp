@@ -1,4 +1,5 @@
-#include "catch.h"
+#include <testthat.h>
+#include "../testthat-tweak.h"
 #include "../gibbs_sampler/AsynchronousGibbsSampler.h"
 #include "../gibbs_sampler/DenseStoragePolicy.h"
 #include "../gibbs_sampler/SparseStoragePolicy.h"
