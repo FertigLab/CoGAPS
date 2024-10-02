@@ -1,4 +1,5 @@
-#include "catch.h"
+#include <testthat.h>
+#include "../testthat-tweak.h"
 #include "../data_structures/HybridMatrix.h"
 #include "../data_structures/Matrix.h"
 #include "../math/VectorMath.h"
