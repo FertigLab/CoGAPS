@@ -45,10 +45,10 @@ public:
     unsigned outputFrequency;
     unsigned checkpointInterval;
     unsigned snapshotFrequency;
-    float alphaA;
-    float alphaP;
-    float maxGibbsMassA;
-    float maxGibbsMassP;
+    double alphaA;
+    double alphaP;
+    double maxGibbsMassA;
+    double maxGibbsMassP;
     PumpThreshold pumpThreshold;
     GapsAlgorithmPhase snapshotPhase;
     bool useFixedPatterns;
