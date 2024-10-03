@@ -94,10 +94,10 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.seed = Rcpp::as<int>(gapsParams.slot("seed"));
     params.nPatterns = Rcpp::as<int>(gapsParams.slot("nPatterns"));
     params.nIterations = gapsParams.slot("nIterations");
-    params.alphaA = Rcpp::as<double>(gapsParams.slot("alphaA"));
-    params.alphaP = Rcpp::as<double>(gapsParams.slot("alphaP"));
-    params.maxGibbsMassA = Rcpp::as<double>(gapsParams.slot("maxGibbsMassA"));
-    params.maxGibbsMassP = Rcpp::as<double>(gapsParams.slot("maxGibbsMassP"));
+    params.alphaA = Rcpp::as<float>(gapsParams.slot("alphaA"));
+    params.alphaP = Rcpp::as<float>(gapsParams.slot("alphaP"));
+    params.maxGibbsMassA = Rcpp::as<float>(gapsParams.slot("maxGibbsMassA"));
+    params.maxGibbsMassP = Rcpp::as<float>(gapsParams.slot("maxGibbsMassP"));
     params.useSparseOptimization = Rcpp::as<bool>(gapsParams.slot("sparseOptimization"));
     params.asynchronousUpdates = Rcpp::as<bool>(allParams["asynchronousUpdates"]);
 

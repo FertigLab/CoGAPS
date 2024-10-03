@@ -16,8 +16,8 @@ Matrix GapsStatistics::Amean() const
     gaps_printf("max value of Amean: %f\n", gaps::max(mAMeanMatrix));
     gaps_printf("min value of Amean: %f\n", gaps::min(mAMeanMatrix));
 #endif
-    GAPS_ASSERT(gaps::min(mAMeanMatrix / static_cast<float> (mStatUpdates)) >= 0.f);
-    return mAMeanMatrix / static_cast<float> (mStatUpdates);
+    GAPS_ASSERT(gaps::min(mAMeanMatrix / static_cast<float>(mStatUpdates)) >= 0.f);
+    return mAMeanMatrix / static_cast<float>(mStatUpdates);
 }
 
 Matrix GapsStatistics::Asd() const
@@ -27,9 +27,9 @@ Matrix GapsStatistics::Asd() const
     {
         for (unsigned j = 0; j < mat.nCol(); ++j)
         {
-            double meanTerm = GAPS_SQ(mAMeanMatrix(i,j)) / static_cast<float> (mStatUpdates);
-            double numer = gaps::max(0.f, mAStdMatrix(i,j) - meanTerm);
-            mat(i,j) = std::sqrt(numer / (static_cast<float> (mStatUpdates) - 1.f));
+            float meanTerm = GAPS_SQ(mAMeanMatrix(i,j)) / static_cast<float>(mStatUpdates);
+            float numer = gaps::max(0.f, mAStdMatrix(i,j) - meanTerm);
+            mat(i,j) = std::sqrt(numer / (static_cast<float>(mStatUpdates) - 1.f));
         }
     }
     return mat;
@@ -41,8 +41,8 @@ Matrix GapsStatistics::Pmean() const
     gaps_printf("max value of Pmean: %f\n", gaps::max(mPMeanMatrix));
     gaps_printf("min value of Pmean: %f\n", gaps::min(mPMeanMatrix));
 #endif
-    GAPS_ASSERT(gaps::min(mPMeanMatrix / static_cast<float> (mStatUpdates)) >= 0.f);
-    return mPMeanMatrix / static_cast<float> (mStatUpdates);
+    GAPS_ASSERT(gaps::min(mPMeanMatrix / static_cast<float>(mStatUpdates)) >= 0.f);
+    return mPMeanMatrix / static_cast<float>(mStatUpdates);
 }
 
 Matrix GapsStatistics::Psd() const
@@ -52,58 +52,58 @@ Matrix GapsStatistics::Psd() const
     {
         for (unsigned j = 0; j < mat.nCol(); ++j)
         {
-            double meanTerm = GAPS_SQ(mPMeanMatrix(i,j)) / static_cast<float> (mStatUpdates);
-            double numer = gaps::max(0.f, mPStdMatrix(i,j) - meanTerm);
+            float meanTerm = GAPS_SQ(mPMeanMatrix(i,j)) / static_cast<float>(mStatUpdates);
+            float numer = gaps::max(0.f, mPStdMatrix(i,j) - meanTerm);
             mat(i,j) = std::sqrt(numer / (static_cast<float>(mStatUpdates) - 1.f));
         }
     }
     return mat;
 }
 
-double GapsStatistics::meanChiSq(const DenseNormalModel &model) const
+float GapsStatistics::meanChiSq(const DenseNormalModel &model) const
 {
     GAPS_ASSERT(model.mDMatrix.nRow() == mAMeanMatrix.nRow());
     GAPS_ASSERT(model.mDMatrix.nCol() == mPMeanMatrix.nRow());
 
-    double chisq = 0.f;
+    float chisq = 0.f;
     for (unsigned i = 0; i < model.mDMatrix.nRow(); ++i)
     {
         for (unsigned j = 0; j < model.mDMatrix.nCol(); ++j)
         {
-            double m = 0.f;
+            float m = 0.f;
             for (unsigned k = 0; k < mAMeanMatrix.nCol(); ++k)
             {
                 m += mAMeanMatrix(i,k) * mPMeanMatrix(j,k);
             }
             m /= GAPS_SQ(static_cast<float>(mStatUpdates));
 
-            double d = model.mDMatrix(i,j);
-            double s = model.mSMatrix(i,j);
+            float d = model.mDMatrix(i,j);
+            float s = model.mSMatrix(i,j);
             chisq += GAPS_SQ(d - m) / GAPS_SQ(s);
         }
     }
     return chisq;
 }
 
-double GapsStatistics::meanChiSq(const SparseNormalModel &model) const
+float GapsStatistics::meanChiSq(const SparseNormalModel &model) const
 {
     GAPS_ASSERT(model.mDMatrix.nRow() == mAMeanMatrix.nRow());
     GAPS_ASSERT(model.mDMatrix.nCol() == mPMeanMatrix.nRow());
 
-    double chisq = 0.f;
+    float chisq = 0.f;
     for (unsigned i = 0; i < model.mDMatrix.nRow(); ++i)
     {
         for (unsigned j = 0; j < model.mDMatrix.nCol(); ++j)
         {
-            double m = 0.f;
+            float m = 0.f;
             for (unsigned k = 0; k < mAMeanMatrix.nCol(); ++k)
             {
                 m += mAMeanMatrix(i,k) * mPMeanMatrix(j,k);
             }
             m /= GAPS_SQ(static_cast<float>(mStatUpdates));
 
-            double d = model.mDMatrix.getCol(j).at(i);
-            double s = gaps::max(d * 0.1f, 0.1f);
+            float d = model.mDMatrix.getCol(j).at(i);
+            float s = gaps::max(d * 0.1f, 0.1f);
             chisq += GAPS_SQ(d - m) / GAPS_SQ(s);
         }
     }
@@ -112,7 +112,7 @@ double GapsStatistics::meanChiSq(const SparseNormalModel &model) const
 
 Matrix GapsStatistics::pumpMatrix() const
 {
-    double denom = mPumpUpdates != 0 ? static_cast<float> (mPumpUpdates) : 1.f;
+    float denom = mPumpUpdates != 0 ? static_cast<float>(mPumpUpdates) : 1.f;
     return mPumpMatrix / denom;
 }
 
@@ -130,7 +130,7 @@ Matrix GapsStatistics::meanPattern() const
     return mat;
 }
 
-void GapsStatistics::addChiSq(double chisq)
+void GapsStatistics::addChiSq(float chisq)
 {
     mChisqHistory.push_back(chisq);
 }
@@ -141,7 +141,7 @@ void GapsStatistics::addAtomCount(unsigned atomA, unsigned atomP)
     mAtomHistoryP.push_back(atomP);
 }
 
-std::vector<float>  GapsStatistics::chisqHistory() const
+std::vector<float> GapsStatistics::chisqHistory() const
 {
     return mChisqHistory;
 }
