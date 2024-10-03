@@ -55,27 +55,15 @@ void DenseNormalModel::extraInitialization()
 
 float DenseNormalModel::chiSq() const
 {
-    double chisq = 0.f;
-    double mDM = 0.f;
-    double mAP = 0.f;
-    double mSM = 0.f;
-    double add = 0.f;
+    float chisq = 0.f;
     for (unsigned i = 0; i < mDMatrix.nRow(); ++i)
     {
         for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
         {
             GAPS_ASSERT(mSMatrix(i,j) > 0.f);
-            mDM = mDMatrix(i,j);
-            mAP = mAPMatrix(i,j);
-            mSM = mSMatrix(i,j);
-            if (mDM < 0.00001f) { mDM = 0.f;}
-            if (mAP < 0.00001f) { mAP = 0.f;}
-            add = ((mDM - mAP) / mSM) * ((mDM - mAP) / mSM);
-            chisq += add;
+            chisq += GAPS_SQ((mDMatrix(i,j) - mAPMatrix(i,j)) / mSMatrix(i,j));
         }
     }
-    gaps_printf("%f",chisq);
-    gaps_printf("\n");
     return chisq;
 }
 
