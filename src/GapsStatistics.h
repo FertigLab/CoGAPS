@@ -29,12 +29,12 @@ public:
     Matrix Psd() const;
     Matrix pumpMatrix() const;
     Matrix meanPattern() const;
-    void addChiSq(float chisq);
+    void addChiSq(double chisq);
     void addAtomCount(unsigned atomA, unsigned atomP);
     std::vector<float> chisqHistory() const;
     std::vector<unsigned> atomHistory(char m) const;
-    float meanChiSq(const DenseNormalModel &model) const;
-    float meanChiSq(const SparseNormalModel &model) const;
+    double meanChiSq(const DenseNormalModel &model) const;
+    double meanChiSq(const SparseNormalModel &model) const;
     const std::vector<Matrix>& getEquilibrationSnapshots(char whichMatrix) const;
     const std::vector<Matrix>& getSamplingSnapshots(char whichMatrix) const;
     friend Archive& operator<<(Archive &ar, const GapsStatistics &stat);
@@ -130,7 +130,7 @@ void GapsStatistics::update(const DataModel &AModel, const DataModel &PModel)
     ++mStatUpdates;
     for (unsigned j = 0; j < mNumPatterns; ++j)
     {
-        float norm = gaps::max(PModel.mMatrix.getCol(j));
+        double norm = gaps::max(PModel.mMatrix.getCol(j));
         norm = (norm == 0.f) ? 1.f : norm;
         Vector quot(PModel.mMatrix.getCol(j) / norm);
         mPMeanMatrix.getCol(j) += quot;

@@ -17,7 +17,7 @@ class DenseNormalModel
 public:
     template <class DataType>
     DenseNormalModel(const DataType &data, bool transpose, bool subsetRows,
-        const GapsParameters &params, float alpha, float maxGibbsMass);
+        const GapsParameters &params, double alpha, double maxGibbsMass);
     template <class DataType>
     void setUncertainty(const DataType &unc, bool transpose, bool subsetRows,
         const GapsParameters &params);
@@ -25,7 +25,7 @@ public:
     void setAnnealingTemp(float temp);
     void sync(const DenseNormalModel &model, unsigned nThreads=1);
     void extraInitialization();
-    float chiSq() const;
+    double chiSq() const;
     float dataSparsity() const;
     friend Archive& operator<<(Archive &ar, const DenseNormalModel &m);
     friend Archive& operator>>(Archive &ar, DenseNormalModel &m);
@@ -34,12 +34,12 @@ protected:
     uint64_t nElements() const;
     uint64_t nPatterns() const;
     float annealingTemp() const;
-    float lambda() const;
-    float maxGibbsMass() const;
+    double lambda() const;
+    double maxGibbsMass() const;
     bool canUseGibbs(unsigned col) const;
     bool canUseGibbs(unsigned c1, unsigned c2) const;
-    void changeMatrix(unsigned row, unsigned col, float delta);
-    void safelyChangeMatrix(unsigned row, unsigned col, float delta);
+    void changeMatrix(unsigned row, unsigned col, double delta);
+    void safelyChangeMatrix(unsigned row, unsigned col, double delta);
     float deltaLogLikelihood(unsigned r1, unsigned c1, unsigned r2, unsigned c2, float mass);
     OptionalFloat sampleBirth(unsigned row, unsigned col, GapsRng *rng);
     OptionalFloat sampleDeathAndRebirth(unsigned row, unsigned col, float delta, GapsRng *rng);
@@ -58,14 +58,14 @@ protected:
     const Matrix *mOtherMatrix; // pointer to P if this is A, and vice versa
     Matrix mSMatrix; // uncertainty values for each data point
     Matrix mAPMatrix; // cached product of A and P
-    float mMaxGibbsMass;
+    double mMaxGibbsMass;
     float mAnnealingTemp;
     float mLambda;
 };
 
 template <class DataType>
 DenseNormalModel::DenseNormalModel(const DataType &data, bool transpose,
-bool subsetRows, const GapsParameters &params, float alpha, float maxGibbsMass)
+bool subsetRows, const GapsParameters &params, double alpha, double maxGibbsMass)
     :
 mDMatrix(data, transpose, subsetRows, params.dataIndicesSubset),
 mMatrix(mDMatrix.nCol(), params.nPatterns),

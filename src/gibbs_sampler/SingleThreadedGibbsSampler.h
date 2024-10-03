@@ -38,7 +38,7 @@ class SingleThreadedGibbsSampler : public DataModel
 public:
     template <class DataType>
     SingleThreadedGibbsSampler(const DataType &data, bool transpose, bool subsetRows,
-        float alpha, float maxGibbsMass, const GapsParameters &params,
+        double alpha, double maxGibbsMass, const GapsParameters &params,
         GapsRandomState *randState);
     unsigned nAtoms() const;
     float getAverageQueueLength() const;
@@ -66,7 +66,7 @@ private:
 template <class DataModel>
 template <class DataType>
 SingleThreadedGibbsSampler<DataModel>::SingleThreadedGibbsSampler(const DataType &data,
-bool transpose, bool subsetRows, float alpha, float maxGibbsMass,
+bool transpose, bool subsetRows, double alpha, double maxGibbsMass,
 const GapsParameters &params, GapsRandomState *randState)
     :
 DataModel(data, transpose, subsetRows, params, alpha, maxGibbsMass),
@@ -158,7 +158,7 @@ void SingleThreadedGibbsSampler<DataModel>::death()
     unsigned row = (atom->pos() / mBinLength) / mNumPatterns;
     unsigned col = (atom->pos() / mBinLength) % mNumPatterns;
     // determine mass to attempt rebirth with
-    float rebirthMass = atom->mass(); // default rebirth mass == no change to atom
+    double rebirthMass = atom->mass(); // default rebirth mass == no change to atom
     AlphaParameters alpha = DataModel::alphaParametersWithChange(row, col, -1.f * atom->mass())
         * DataModel::annealingTemp();
     if (DataModel::canUseGibbs(col))
@@ -171,7 +171,7 @@ void SingleThreadedGibbsSampler<DataModel>::death()
         }
     }
     // handle accept/reject of the rebirth
-    float deltaLL = rebirthMass * (alpha.s_mu - alpha.s * rebirthMass / 2.f);
+    double deltaLL = rebirthMass * (alpha.s_mu - alpha.s * rebirthMass / 2.f);
     if (std::log(mRng.uniform()) < deltaLL) // accept
     {
         if (rebirthMass != atom->mass())
@@ -213,7 +213,7 @@ void SingleThreadedGibbsSampler<DataModel>::move()
     }
     
     // conditionally accept move based on change to likelihood
-    float deltaLL = DataModel::deltaLogLikelihood(r1, c1, r2, c2, atom->mass());
+    double deltaLL = DataModel::deltaLogLikelihood(r1, c1, r2, c2, atom->mass());
     if (std::log(mRng.uniform()) < deltaLL)
     {
         mDomain.move(atom, pos);
@@ -243,8 +243,8 @@ void SingleThreadedGibbsSampler<DataModel>::exchange()
     {
         OptionalFloat mass = DataModel::sampleExchange(r1, c1, atom1->mass(),
             r2, c2, atom2->mass(), &mRng);
-        float newMass1 = atom1->mass() + mass.value();
-        float newMass2 = atom2->mass() - mass.value();
+        double newMass1 = atom1->mass() + mass.value();
+        double newMass2 = atom2->mass() - mass.value();
         if (mass.hasValue() && newMass1 > gaps::epsilon && newMass2 > gaps::epsilon)
         {
             DataModel::safelyChangeMatrix(r1, c1, newMass1 - atom1->mass());
