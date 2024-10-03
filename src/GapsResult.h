@@ -30,7 +30,7 @@ struct GapsResult
     uint64_t totalUpdates;
     uint32_t seed;
     unsigned totalRunningTime;
-    float meanChiSq;
+    double meanChiSq;
     float averageQueueLengthA;
     float averageQueueLengthP;
 };
