@@ -53,9 +53,9 @@ void DenseNormalModel::extraInitialization()
     }
 }
 
-double DenseNormalModel::chiSq() const
+float DenseNormalModel::chiSq() const
 {
-    double chisq = 0.f;
+    float chisq = 0.f;
     for (unsigned i = 0; i < mDMatrix.nRow(); ++i)
     {
         for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
@@ -87,12 +87,12 @@ float DenseNormalModel::annealingTemp() const
     return mAnnealingTemp;
 }
 
-double DenseNormalModel::lambda() const
+float DenseNormalModel::lambda() const
 {
     return mLambda;
 }
 
-double DenseNormalModel::maxGibbsMass() const
+float DenseNormalModel::maxGibbsMass() const
 {
     return mMaxGibbsMass;
 }
@@ -107,16 +107,16 @@ bool DenseNormalModel::canUseGibbs(unsigned c1, unsigned c2) const
     return canUseGibbs(c1) || canUseGibbs(c2);
 }
 
-void DenseNormalModel::changeMatrix(unsigned row, unsigned col, double delta)
+void DenseNormalModel::changeMatrix(unsigned row, unsigned col, float delta)
 {
     mMatrix(row, col) += delta;
     updateAPMatrix(row, col, delta);
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
 }
 
-void DenseNormalModel::safelyChangeMatrix(unsigned row, unsigned col, double delta)
+void DenseNormalModel::safelyChangeMatrix(unsigned row, unsigned col, float delta)
 {
-    double newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
+    float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
     updateAPMatrix(row, col, newVal - mMatrix(row, col));
     mMatrix(row, col) = newVal;
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);
