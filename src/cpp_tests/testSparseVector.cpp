@@ -5,7 +5,7 @@
 #include "../math/Math.h"
 #include "../math/VectorMath.h"
 
-TEST_CASE("Test SparseVector","[sparse]")
+TEST_CASE("Test SparseVector","[sparsevector]")
 {
     GapsRandomState randState(123);
 

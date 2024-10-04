@@ -5,7 +5,7 @@
 #include "../math/VectorMath.h"
 #include "../math/MatrixMath.h"
 
-TEST_CASE("Test HybridMatrix.h")
+TEST_CASE("Test HybridMatrix.h","[hybridmatrix]")
 {
     HybridMatrix mat(100, 250);
     REQUIRE(mat.nRow() == 100);
