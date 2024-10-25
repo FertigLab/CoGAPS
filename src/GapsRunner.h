@@ -13,11 +13,11 @@ class GapsRandomState;
 
 namespace gaps
 {
-    // data stored in matrix
+    // main function to run CoGAPS from data stored in a matrix
     GapsResult run(const Matrix &data, GapsParameters &params,
         const Matrix &uncertainty, GapsRandomState *randState);
 
-    // data stored in file
+    // main function to run CoGAPS from data stored in a file
     GapsResult run(const std::string &data, GapsParameters &params,
         const std::string &uncertainty, GapsRandomState *randState);
 
