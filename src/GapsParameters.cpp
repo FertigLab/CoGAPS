@@ -3,6 +3,7 @@
 #include "utils/GapsPrint.h"
 #include "file_parser/FileParser.h"
 
+// Display the parameters used for a CoGAPS run
 void GapsParameters::print() const
 {
     gaps_printf("\n---- C++ Parameters ----\n\n");
