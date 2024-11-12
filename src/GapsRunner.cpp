@@ -283,7 +283,7 @@ GapsRng &rng, bpt::ptime startTime, GapsAlgorithmPhase phase, unsigned &currentI
         if (phase == GAPS_SAMPLING_PHASE)
         {
             if (params.useFixedPatterns) {
-                if (params.whichMatrixFixed == "A") {
+                if (params.whichMatrixFixed == 'A') {
                     stats.updateP(ASampler, PSampler);
                 } else {  // P fixed
                     stats.updateA(ASampler, PSampler);
