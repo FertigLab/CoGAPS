@@ -17,6 +17,7 @@
 #pragma GCC diagnostic pop
 #endif
 
+// library allowing for message passing in distributed mode
 #ifdef __GAPS_OPENMP__
 #include <omp.h>
 #endif
@@ -53,7 +54,8 @@ struct GapsTime
     }
 };
 
-// forward declaration
+// forward declaration for running the CoGAPS algorithm across that can be 
+// defined for different classes of input data to be defined
 template <class Sampler, class DataType>
 static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &params,
     const DataType &uncertainty, GapsRandomState *randState);
@@ -105,7 +107,8 @@ const DataType &uncertainty, GapsRandomState *randState)
 }
 
 // these two functions are the top-level functions exposed to the C++
-// code that is being wrapped by any given language
+// code that is being wrapped by any given language for the 
+// interface (e.g., R, python, etc)
 
 GapsResult gaps::run(const Matrix &data, GapsParameters &params,
 const Matrix &uncertainty, GapsRandomState *randState)
@@ -131,6 +134,8 @@ static double estimatedNumUpdates(double current, double total, float nAtoms)
         total * coef * std::log(total) - total * coef;
 }
 
+// function to return status update and number of iterations for 
+// the sampler as CoGAPS runs
 template <class Sampler>
 static double estimatedPercentComplete(const GapsParameters &params,
 const Sampler &ASampler, const Sampler &PSampler, GapsAlgorithmPhase phase, unsigned iter)
@@ -152,6 +157,7 @@ const Sampler &ASampler, const Sampler &PSampler, GapsAlgorithmPhase phase, unsi
     return estimatedCompleted / estimatedTotal;
 }
 
+// function to display status update during the CoGAPS run
 template <class Sampler>
 static void displayStatus(const GapsParameters &params,
 const Sampler &ASampler, const Sampler &PSampler, bpt::ptime startTime,
@@ -162,10 +168,14 @@ GapsAlgorithmPhase phase, unsigned iter, GapsStatistics &stats)
         float cs = PSampler.chiSq();
         unsigned nA = ASampler.nAtoms();
         unsigned nP = PSampler.nAtoms();
+
+        // chi^2 fit to data
         stats.addChiSq(cs);
+        // number of atoms
         stats.addAtomCount(nA, nP);
         if (params.printMessages)
         {
+            // estimate run time to output
             bpt::time_duration diff = bpt_now() - startTime;
             double perComplete = estimatedPercentComplete(params, ASampler,
                 PSampler, phase, iter);
