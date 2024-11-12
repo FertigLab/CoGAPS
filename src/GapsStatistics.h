@@ -20,6 +20,10 @@ public:
     template <class DataModel>
     void update(const DataModel &AModel, const DataModel &PModel);
     template <class DataModel>
+    void updateA(const DataModel &AModel, const DataModel &PModel);
+    template <class DataModel>
+    void updateP(const DataModel &AModel, const DataModel &PModel);
+    template <class DataModel>
     void updatePump(const DataModel &AModel);
     template <class DataModel>
     void takeSnapshot(GapsAlgorithmPhase whichPhase, const DataModel &AModel, const DataModel &PModel);
@@ -143,6 +147,43 @@ void GapsStatistics::update(const DataModel &AModel, const DataModel &PModel)
         GAPS_ASSERT(gaps::min(prod) >= 0.f);
     }
 }
+
+template <class DataModel>
+void GapsStatistics::updateA(const DataModel &AModel, const DataModel &PModel)
+{
+    GAPS_ASSERT(mNumPatterns == AModel.mMatrix.nCol());
+    GAPS_ASSERT(mNumPatterns == PModel.mMatrix.nCol());
+    ++mStatUpdates;
+    for (unsigned j = 0; j < mNumPatterns; ++j)
+    {
+        float norm = gaps::max(PModel.mMatrix.getCol(j));
+        norm = 1.f;
+        Vector prod(AModel.mMatrix.getCol(j) * norm);
+        mAMeanMatrix.getCol(j) += prod;
+        mAStdMatrix.getCol(j) += gaps::elementSq(prod);
+        GAPS_ASSERT(norm > 0.f);
+        GAPS_ASSERT(gaps::min(prod) >= 0.f);
+    }
+}
+
+template <class DataModel>
+void GapsStatistics::updateP(const DataModel &AModel, const DataModel &PModel)
+{
+    GAPS_ASSERT(mNumPatterns == AModel.mMatrix.nCol());
+    GAPS_ASSERT(mNumPatterns == PModel.mMatrix.nCol());
+    ++mStatUpdates;
+    for (unsigned j = 0; j < mNumPatterns; ++j)
+    {
+        float norm = gaps::max(PModel.mMatrix.getCol(j));
+        norm = 1.f;
+        Vector quot(PModel.mMatrix.getCol(j) / norm);
+        mPMeanMatrix.getCol(j) += quot;
+        mPStdMatrix.getCol(j) += gaps::elementSq(quot);
+        GAPS_ASSERT(norm > 0.f);
+        GAPS_ASSERT(gaps::min(quot) >= 0.f);
+    }
+}
+
 
 template <class DataModel>
 void GapsStatistics::takeSnapshot(GapsAlgorithmPhase whichPhase, const DataModel &AModel,
