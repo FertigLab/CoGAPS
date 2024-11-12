@@ -17,7 +17,6 @@
 #pragma GCC diagnostic pop
 #endif
 
-// library allowing for message passing in distributed mode
 #ifdef __GAPS_OPENMP__
 #include <omp.h>
 #endif
@@ -54,8 +53,7 @@ struct GapsTime
     }
 };
 
-// forward declaration for running the CoGAPS algorithm across that can be 
-// defined for different classes of input data to be defined
+// forward declaration
 template <class Sampler, class DataType>
 static GapsResult runCoGAPSAlgorithm(const DataType &data, GapsParameters &params,
     const DataType &uncertainty, GapsRandomState *randState);
@@ -107,8 +105,7 @@ const DataType &uncertainty, GapsRandomState *randState)
 }
 
 // these two functions are the top-level functions exposed to the C++
-// code that is being wrapped by any given language for the 
-// interface (e.g., R, python, etc)
+// code that is being wrapped by any given language
 
 GapsResult gaps::run(const Matrix &data, GapsParameters &params,
 const Matrix &uncertainty, GapsRandomState *randState)
@@ -134,8 +131,6 @@ static double estimatedNumUpdates(double current, double total, float nAtoms)
         total * coef * std::log(total) - total * coef;
 }
 
-// function to return status update and number of iterations for 
-// the sampler as CoGAPS runs
 template <class Sampler>
 static double estimatedPercentComplete(const GapsParameters &params,
 const Sampler &ASampler, const Sampler &PSampler, GapsAlgorithmPhase phase, unsigned iter)
@@ -157,7 +152,6 @@ const Sampler &ASampler, const Sampler &PSampler, GapsAlgorithmPhase phase, unsi
     return estimatedCompleted / estimatedTotal;
 }
 
-// function to display status update during the CoGAPS run
 template <class Sampler>
 static void displayStatus(const GapsParameters &params,
 const Sampler &ASampler, const Sampler &PSampler, bpt::ptime startTime,
@@ -168,16 +162,10 @@ GapsAlgorithmPhase phase, unsigned iter, GapsStatistics &stats)
         float cs = PSampler.chiSq();
         unsigned nA = ASampler.nAtoms();
         unsigned nP = PSampler.nAtoms();
-
-        // chi^2 fit to data
         stats.addChiSq(cs);
-
-        // number of atoms
         stats.addAtomCount(nA, nP);
-
         if (params.printMessages)
         {
-            // estimate run time to output
             bpt::time_duration diff = bpt_now() - startTime;
             double perComplete = estimatedPercentComplete(params, ASampler,
                 PSampler, phase, iter);
@@ -294,15 +282,19 @@ GapsRng &rng, bpt::ptime startTime, GapsAlgorithmPhase phase, unsigned &currentI
 
         if (phase == GAPS_SAMPLING_PHASE)
         {
-            // update the statistics based on the A and P matrices
-            stats.update(ASampler, PSampler);
-
-            // flag to implement developmental statistic called PUMP
-            // which computes pattern markers for prioritizing gene markers
-            // computed along the chain as part of the MCMC sampling 
-            if (params.takePumpSamples)
-            {
-                stats.updatePump(ASampler);
+            if (params.useFixedPatterns) {
+                if (params.whichMatrixFixed == "A") {
+                    stats.updateP(ASampler, PSampler);
+                } else {  // P fixed
+                    stats.updateA(ASampler, PSampler);
+                }
+     
+            } else {
+                stats.update(ASampler, PSampler);
+                if (params.takePumpSamples)
+                {
+                    stats.updatePump(ASampler);
+                }
             }
         }
         if (params.snapshotPhase == phase || params.snapshotPhase == GAPS_ALL_PHASES)
