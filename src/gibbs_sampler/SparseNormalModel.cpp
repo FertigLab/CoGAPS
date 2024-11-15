@@ -51,9 +51,10 @@ float SparseNormalModel::chiSq() const
         SparseIterator<1> it(mDMatrix.getCol(j));                                           // iterate non-zero elements of col j
         while (!it.atEnd())
         {
+            float val = get<1>(it);                                                         // val = Data
             float dot = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(it.getIndex()));  // dot = A * P again
-            float dsq = get<1>(it) * get<1>(it);                                            // dsq = Data squared  
-            chisq += (1 + dot * (dot - 2 * get<1>(it) - dsq * dot)) / (1 + dsq);            // chisq
+            float dsq = val * val;                                                          // dsq = Data squared  
+            chisq += (1 + dot * (dot - 2 * val - dsq * dot)) / (1 + dsq);                   // chisq
             it.next();
         }
     }
