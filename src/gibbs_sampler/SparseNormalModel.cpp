@@ -61,34 +61,6 @@ float SparseNormalModel::chiSq() const
 }
 
 
-// // test version - mfo@jh.edu
-// float SparseNormalModel::chiSq() const
-// {
-//     double chisq = 0.f;
-//     double mDM = 0.f;
-//     double mAP = 0.f;
-//     double mSM = 0.f;
-//     double add = 0.f;
-//     for (unsigned i = 0; i < mDMatrix.nRow(); ++i)
-//     {
-//         for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
-//         {
-//             GAPS_ASSERT(mSMatrix(i,j) > 0.f);
-//             mDM = mDMatrix(i,j);
-//             mAP = mAPMatrix(i,j);
-//             mSM = mSMatrix(i,j);
-//  //           if (mDM < 0.00001f) { mDM = 0.f;}
-//  //           if (mAP < 0.00001f) { mAP = 0.f;}
-//             add = ((mDM - mAP) / mSM) * ((mDM - mAP) / mSM);
-//             chisq += add;
-//         }
-//     }
-//     gaps_printf("%f",chisq);
-//     gaps_printf("\n");
-//     return chisq;
-// }
-
-
 float SparseNormalModel::dataSparsity() const
 {
     return gaps::sparsity(mDMatrix);
