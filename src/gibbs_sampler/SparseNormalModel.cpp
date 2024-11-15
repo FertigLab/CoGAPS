@@ -53,7 +53,7 @@ float SparseNormalModel::chiSq() const
         {
             float dot = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(it.getIndex()));  // dot = A * P again
             float dsq = get<1>(it) * get<1>(it);                                            // dsq = Data squared  
-            chisq += 1 + dot * (dot - 2 * get<1>(it) - dsq * dot) / dsq;                    // chisq
+            chisq += (1 + dot * (dot - 2 * get<1>(it) - dsq * dot)) / (1 + dsq);            // chisq
             it.next();
         }
     }
