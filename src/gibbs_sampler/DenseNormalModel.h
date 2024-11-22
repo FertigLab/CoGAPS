@@ -53,9 +53,9 @@ protected:
     AlphaParameters alphaParametersWithChange(unsigned row, unsigned col, float ch);
     void updateAPMatrix(unsigned row, unsigned col, float delta);
 
-    Matrix mDMatrix; // samples by genes for A, genes by samples for P
-    Matrix mMatrix; // genes by patterns for A, samples by patterns for P
-    const Matrix *mOtherMatrix; // pointer to P if this is A, and vice versa
+    Matrix mDMatrix; // Data Matrix, samples x genes or genes x samples
+    Matrix mMatrix; // A (left mult) or P (right mult) based on mDMatrix
+    const Matrix *mOtherMatrix; // pointer to vis-a-vis of mMartix
     Matrix mSMatrix; // uncertainty values for each data point
     Matrix mAPMatrix; // cached product of A and P
     float mMaxGibbsMass;
