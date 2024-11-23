@@ -63,15 +63,17 @@ test_that("chisq changes between iterations with fixed A", {
   data("GIST")
   testMatrix <- GIST.matrix
   nPat <- 5
-  nIter <- 1000
+  nIter <- 100
   #run CoGAPS normally
-  res1 <- CoGAPS(testMatrix, nPatterns=nPat, nIterations=nIter, seed=42, outputFrequency = 100)
+  res1 <- CoGAPS(testMatrix, nPatterns=nPat, nIterations=nIter, seed=42,
+                 outputFrequency = 10, messages = FALSE)
 
   #run with fixed A
   fixed <- res1@featureLoadings
   param <- CogapsParams()
   param <- setFixedPatterns(param, fixed, "A")
-  res2 <- CoGAPS(testMatrix, param, nPatterns=nPat, nIterations=nIter, seed=42,outputFrequency = 100)
+  res2 <- CoGAPS(testMatrix, param, nPatterns=nPat, nIterations=nIter, seed=42,
+                 outputFrequency = 10, messages = FALSE)
 
   expect_true(length(unique(res2@metadata$chisq))==length(res2@metadata$chisq))
 })
@@ -80,17 +82,17 @@ test_that("chisq changes between iterations with fixed P", {
   data("GIST")
   testMatrix <- GIST.matrix
   nPat <- 5
-  nIter <- 1000
+  nIter <- 100
   #run CoGAPS normally
-  res1 <- CoGAPS(testMatrix, nPatterns=nPat, nIterations=nIter, seed=42, 
-                 outputFrequency = 100, messages = FALSE)
+  res1 <- CoGAPS(testMatrix, nPatterns=nPat, nIterations=nIter, seed=42,
+                 outputFrequency = 10, messages = FALSE)
 
   #run with fixed P
   fixed <- res1@sampleFactors
   param <- CogapsParams()
   param <- setFixedPatterns(param, fixed, "P")
   res2 <- CoGAPS(testMatrix, param, nPatterns=nPat, nIterations=nIter, seed=42,
-                 outputFrequency = 100, messages = FALSE)
+                 outputFrequency = 10, messages = FALSE)
 
   expect_true(length(unique(res2@metadata$chisq))==length(res2@metadata$chisq))
 })
