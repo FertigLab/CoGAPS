@@ -165,7 +165,13 @@ GapsAlgorithmPhase phase, unsigned iter, GapsStatistics &stats)
 {
     if (params.outputFrequency > 0 && ((iter + 1) % params.outputFrequency) == 0)
     {
-        float cs = PSampler.chiSq();
+        float cs;
+        if (params.whichMatrixFixed == 'P') {
+            cs = ASampler.chiSq();
+        } else {
+            cs = PSampler.chiSq();
+        }
+
         unsigned nA = ASampler.nAtoms();
         unsigned nP = PSampler.nAtoms();
 
