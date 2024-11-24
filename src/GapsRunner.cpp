@@ -479,7 +479,7 @@ const DataType &uncertainty, GapsRandomState *randState)
     // as meanChisq is based on mean matrices, which is 0's if a matrix is fixed.
     if (params.whichMatrixFixed != 'N')
     {
-        result.meanChiSq = NULL;
+        result.meanChiSq = 0;
     } else {
         result.meanChiSq = stats.meanChiSq(PSampler);
     }
