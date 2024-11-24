@@ -76,6 +76,8 @@ test_that("chisq changes between iterations with fixed A", {
                  outputFrequency = 10, messages = FALSE)
 
   expect_true(length(unique(res2@metadata$chisq))==length(res2@metadata$chisq))
+  #when fixed, Amean is all 0 thus meanchisq is not available
+  expect_true(res2@metadata$meanChiSq == 0)
 })
 
 test_that("chisq changes between iterations with fixed P", {
@@ -95,4 +97,6 @@ test_that("chisq changes between iterations with fixed P", {
                  outputFrequency = 10, messages = FALSE)
 
   expect_true(length(unique(res2@metadata$chisq))==length(res2@metadata$chisq))
+  #when fixed, Pmean is all 0 thus meanchisq is not available
+  expect_true(res2@metadata$meanChiSq == 0)
 })

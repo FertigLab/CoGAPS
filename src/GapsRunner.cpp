@@ -471,10 +471,18 @@ const DataType &uncertainty, GapsRandomState *randState)
     // get result
     GapsResult result(stats);
     result.totalRunningTime = static_cast<unsigned>((bpt_now() - startTime).total_seconds());
-    result.meanChiSq = stats.meanChiSq(PSampler);
     result.averageQueueLengthA = ASampler.getAverageQueueLength();
     result.averageQueueLengthP = PSampler.getAverageQueueLength();
     result.totalUpdates = totalUpdates;
+
+    // do not return meanChisQ if running with a fixed matrix to avoid confusion
+    // as meanChisq is based on mean matrices, which is 0's if a matrix is fixed.
+    if (params.whichMatrixFixed != 'N')
+    {
+        result.meanChiSq = NULL;
+    } else {
+        result.meanChiSq = stats.meanChiSq(PSampler);
+    }
 
     // handle pump statistics
     if (params.takePumpSamples)
