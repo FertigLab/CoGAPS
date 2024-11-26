@@ -54,9 +54,9 @@ protected:
     AlphaParameters alphaParameters(unsigned r1, unsigned c1, unsigned r2, unsigned c2);
     AlphaParameters alphaParametersWithChange(unsigned row, unsigned col, float ch);
 
-    SparseMatrix mDMatrix; // samples by genes for A, genes by samples for P
-    HybridMatrix mMatrix; // genes by patterns for A, samples by patterns for P
-    const HybridMatrix *mOtherMatrix; // pointer to P if this is A, and vice versa
+    SparseMatrix mDMatrix; // Data Matrix D, samp x genes or genes x samp
+    HybridMatrix mMatrix; // A (left mult) or P (right mult) based on mDMatrix
+    const HybridMatrix *mOtherMatrix; // pointer to vis-a-vis of mMartix
     Matrix mZ2;
     Vector mZ1;
     float mBeta;
