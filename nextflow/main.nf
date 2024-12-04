@@ -44,7 +44,8 @@ process COGAPS {
       if (!(is.null(dist_param))){
         params <- setDistributedParams(params, nSets = $cparams.nsets);
       };
-      cogapsResult <- CoGAPS(data = data, params = params, nThreads = $cparams.nthreads);
+      cogapsResult <- CoGAPS(data = data, params = params, nThreads = $cparams.nthreads,
+                             outputFrequency = floor($cparams.niterations/10));
       saveRDS(cogapsResult, file = "${prefix}/cogapsResult.rds")'
 
   cat <<-END_VERSIONS > versions.yml
