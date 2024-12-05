@@ -87,7 +87,7 @@ process PREPROCESS {
   """
   mkdir "${prefix}"
 
-  Rscript -e 'res <- Seurat::Read10X("$data/raw_feature_bc_matrix/");
+  Rscript -e 'res <- Seurat::Read10X("$data/filtered_feature_bc_matrix/");
               res <- Seurat::NormalizeData(res);
               saveRDS(res, file="${prefix}/dgCMatrix.rds")';
 
