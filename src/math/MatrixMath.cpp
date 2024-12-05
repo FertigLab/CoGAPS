@@ -71,7 +71,18 @@ float gaps::nonZeroMean(const SparseMatrix &mat)
     return sum / static_cast<float>(nNonZeroes);
 }
 
-Matrix gaps::pmax(Matrix mat, float p)
+Matrix gaps::pmax(Matrix mat, float factor, float min_threshold=factor)
+//threshold=factor for back compatibility
+{
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        for (unsigned i = 0; i < mat.nRow(); ++i)
+        {
+            mat(i,j) = gaps::max(mat(i,j) * factor, min_threshold);
+        }   
+    }
+    return mat;
+}
 {
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
