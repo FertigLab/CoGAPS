@@ -4,7 +4,12 @@ test_that('chi-square reported by CoGAPS mathches manually calculated (w/uncerta
     unc <- 0.1*as.matrix(data)
     res <- CoGAPS(data, nIterations=1000, uncertainty = unc,
                   seed=1, messages=FALSE, sparseOptimization=FALSE)
-    reported <- getMeanChiSq(res)
+
+    res2 <- CoGAPS(data, nIterations=1000,
+                  seed=1, messages=FALSE, sparseOptimization=FALSE)
+    
+    getMeanChiSq(res)
+    getMeanChiSq(res2)
 
     A <- getAmplitudeMatrix(res)
     P <- getPatternMatrix(res)

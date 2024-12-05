@@ -70,13 +70,18 @@ bool subsetRows, const GapsParameters &params, float alpha, float maxGibbsMass)
 mDMatrix(data, transpose, subsetRows, params.dataIndicesSubset),
 mMatrix(mDMatrix.nCol(), params.nPatterns),
 mOtherMatrix(NULL),
-mSMatrix(gaps::pmax(mDMatrix, 0.1f)),
+mSMatrix(gaps::pmax(mDMatrix, 0.1f,0.0001f)),
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
 mMaxGibbsMass(maxGibbsMass),
 mAnnealingTemp(1.f),
 mLambda(0.f)
 {
     float meanD = gaps::nonZeroMean(mDMatrix);
+    std::cout<<" trnsp "<<transpose  <<std::endl;
+    std::cout<<" pad mean uncert mtrx "<<gaps::mean(mSMatrix)  <<std::endl;
+    std::cout<<" pad min uncert mtrx "<<gaps::min(mSMatrix)  <<std::endl;
+    std::cout<<" pad max uncert mtrx "<<gaps::max(mSMatrix)  <<std::endl;
+
     mLambda = alpha * std::sqrt(nPatterns() / meanD);
     mMaxGibbsMass = mMaxGibbsMass / mLambda;
 
@@ -85,6 +90,9 @@ mLambda(0.f)
         gaps_printf("\nWarning: Large values detected, is data log transformed?\n");
     }
     mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
+    std::cout<<"After pad mean uncert mtrx "<<gaps::mean(mSMatrix)  <<std::endl;
+    std::cout<<"After pad min uncert mtrx "<<gaps::min(mSMatrix)  <<std::endl;
+    std::cout<<"After pad max uncert mtrx "<<gaps::max(mSMatrix)  <<std::endl;
 }
 
 template <class DataType>
