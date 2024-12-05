@@ -78,12 +78,25 @@ BEGIN_RCPP
 END_RCPP
 }
 // run_catch_unit_tests
-int run_catch_unit_tests();
-RcppExport SEXP _CoGAPS_run_catch_unit_tests() {
+int run_catch_unit_tests(Rcpp::String reporter);
+RcppExport SEXP _CoGAPS_run_catch_unit_tests(SEXP reporterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(run_catch_unit_tests());
+    Rcpp::traits::input_parameter< Rcpp::String >::type reporter(reporterSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_catch_unit_tests(reporter));
+    return rcpp_result_gen;
+END_RCPP
+}
+// run_catch_unit_tests_by_tag
+int run_catch_unit_tests_by_tag(Rcpp::String tag, Rcpp::String reporter);
+RcppExport SEXP _CoGAPS_run_catch_unit_tests_by_tag(SEXP tagSEXP, SEXP reporterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::String >::type tag(tagSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type reporter(reporterSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_catch_unit_tests_by_tag(tag, reporter));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -95,7 +108,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_CoGAPS_checkpointsEnabled_cpp", (DL_FUNC) &_CoGAPS_checkpointsEnabled_cpp, 0},
     {"_CoGAPS_compiledWithOpenMPSupport_cpp", (DL_FUNC) &_CoGAPS_compiledWithOpenMPSupport_cpp, 0},
     {"_CoGAPS_getFileInfo_cpp", (DL_FUNC) &_CoGAPS_getFileInfo_cpp, 1},
-    {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 0},
+    {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 1},
+    {"_CoGAPS_run_catch_unit_tests_by_tag", (DL_FUNC) &_CoGAPS_run_catch_unit_tests_by_tag, 2},
     {NULL, NULL, 0}
 };
 

@@ -1,10 +1,11 @@
-#include "catch.h"
+#include <testthat.h>
+#include "../testthat-tweak.h"
 #include "../data_structures/SparseVector.h"
 #include "../math/Random.h"
 #include "../math/Math.h"
 #include "../math/VectorMath.h"
 
-TEST_CASE("Test SparseVector.h")
+TEST_CASE("Test SparseVector","[sparse]")
 {
     GapsRandomState randState(123);
 

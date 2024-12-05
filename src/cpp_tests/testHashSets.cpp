@@ -1,4 +1,5 @@
-#include "catch.h"
+#include <testthat.h>
+#include "../testthat-tweak.h"
 #include "../data_structures/HashSets.h"
 #include "../math/Random.h"
 
