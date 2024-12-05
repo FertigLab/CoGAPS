@@ -25,6 +25,7 @@ namespace gaps
     template <class MatrixType>
     float mean(const MatrixType &mat);
     Matrix pmax(Matrix mat, float factor, float min_threshold);
+    Matrix pmax(Matrix mat, float factor);
 } // namespace gaps
 
 Matrix operator*(Matrix mat, float f);
