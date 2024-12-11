@@ -36,28 +36,31 @@ void SparseNormalModel::extraInitialization()
     // nop - not needed
 }
 
+
 float SparseNormalModel::chiSq() const
 {
     float chisq = 0.f;
-    for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
+    for (unsigned j = 0; j < mDMatrix.nCol(); ++j)                                          // for each col of Data Matrix
     {
-        for (unsigned i = 0; i < mDMatrix.nRow(); ++i)
+        for (unsigned i = 0; i < mDMatrix.nRow(); ++i)                                      // for each row of Data Matrix
         {
-            float dot = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(i));
-            chisq += dot * dot;
+            float dot = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(i));              // dot = A * P
+            chisq += dot * dot;                                                             // chisq = chisq+dot^2
         }
 
-        SparseIterator<1> it(mDMatrix.getCol(j));
+        SparseIterator<1> it(mDMatrix.getCol(j));                                           // iterate non-zero elements of col j
         while (!it.atEnd())
         {
-            float dot = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(it.getIndex()));
-            float dsq = get<1>(it) * get<1>(it);
-            chisq += 1 + dot * (dot - 2 * get<1>(it) - dsq * dot) / dsq;
+            float val = get<1>(it);                                                         // val = Data
+            float dot = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(it.getIndex()));  // dot = A * P again
+            float dsq = val * val;                                                          // dsq = Data squared  
+            chisq += (1 + dot * (dot - 2 * val - dsq * dot)) / (1 + dsq);                   // chisq
             it.next();
         }
     }
-    return chisq * mBeta;
+    return chisq * mBeta;                                                                   // mBeta is 100
 }
+
 
 float SparseNormalModel::dataSparsity() const
 {
