@@ -135,12 +135,12 @@ process ADATA_2DGCMAT {
               i <- hdf5r::readDataSet(f[["X/indices"]]);
               p <- hdf5r::readDataSet(f[["X/indptr"]]);
               x <- hdf5r::readDataSet(f[["X/data"]]);
-              dims <- c(hdf5r::h5attributes(f[["X/"]])[["shape"]][1],
-                        hdf5r::h5attributes(f[["X/"]])[["shape"]][2]);
+              dims <- c(hdf5r::h5attributes(f[["X/"]])[["shape"]][2],
+                        hdf5r::h5attributes(f[["X/"]])[["shape"]][1]);
               res <- Matrix::sparseMatrix(i = i, p = p, x = x, dims = dims, index1=FALSE);
               message("Read matrix with dimensions: ", dims[1],",",dims[2]);
-              colnames(res) <- hdf5r::readDataSet(f[["var/_index"]]);
-              rownames(res) <- hdf5r::readDataSet(f[["obs/_index"]]);
+              rownames(res) <- hdf5r::readDataSet(f[["var/_index"]]);
+              colnames(res) <- hdf5r::readDataSet(f[["obs/_index"]]);
               hdf5r::h5close(f);
               message("Normalizing data");
               res <- Seurat::NormalizeData(res);
