@@ -108,6 +108,7 @@ if test "x$cpp_tests_disable" != "xyes" ; then
     GAPS_CPP_FLAGS+=" -DGAPS_CPP_UNIT_TESTS "
     GAPS_SOURCE_FILES+=" cpp_tests/testVector.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testSparseVector.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testMatrix.o"
 #    GAPS_SOURCE_FILES+=" cpp_tests/testConcurrentAtomicDomain.o"
 fi
 # commented files in the if above are to be reviwed
