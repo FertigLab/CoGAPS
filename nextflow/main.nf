@@ -56,7 +56,7 @@ process COGAPS {
   """
 }
 
-process TENX_2DGCMAT {
+process COGAPS_TENX2DGC {
   tag "$meta.id"
   label 'process_low'
   container 'docker.io/satijalab/seurat:5.0.0'
@@ -99,7 +99,7 @@ process TENX_2DGCMAT {
   """
 }
 
-process ADATA_2DGCMAT {
+process COGAPS_ADATA2DGC {
   tag "$meta.id"
   label 'process_low'
   container 'docker.io/satijalab/seurat:5.0.0'
@@ -129,29 +129,45 @@ process ADATA_2DGCMAT {
   prefix = task.ext.prefix ?: "${meta.id}"
   """
   mkdir "${prefix}"
-
-  Rscript -e 'message("Reading data from ", "$data");
+  Rscript -e 'message("Reading", "$data");
               f <- hdf5r::h5file(filename = "$data", mode="r");
+              enctype <- hdf5r::h5attributes(f[["X/"]])[["encoding-type"]];
+
               i <- hdf5r::readDataSet(f[["X/indices"]]);
               p <- hdf5r::readDataSet(f[["X/indptr"]]);
               x <- hdf5r::readDataSet(f[["X/data"]]);
-              dims <- c(hdf5r::h5attributes(f[["X/"]])[["shape"]][2],
-                        hdf5r::h5attributes(f[["X/"]])[["shape"]][1]);
-              res <- Matrix::sparseMatrix(i = i, p = p, x = x, dims = dims, index1=FALSE);
-              message("Read matrix with dimensions: ", dims[1],",",dims[2]);
-              rownames(res) <- hdf5r::readDataSet(f[["var/_index"]]);
-              colnames(res) <- hdf5r::readDataSet(f[["obs/_index"]]);
-              hdf5r::h5close(f);
+              var <- hdf5r::readDataSet(f[["var/_index"]]);
+              obs <- hdf5r::readDataSet(f[["obs/_index"]]);
+
+              message("Got", enctype, " ", length(var), "x", length(obs));
+
+              if(enctype=="csr_matrix"){
+                dimnames <- list(var, obs)
+                transpose <- FALSE
+              } else if (enctype=="csc_matrix"){
+                dimnames <- list(obs, var)
+                transpose <- TRUE
+              } else {
+                stop("Unknown encoding type")
+              };
+              message("Creating dgCMatrix");
+              res <- Matrix::sparseMatrix(i=i, p=p, x=x, dims=lengths(dimnames),
+                                          dimnames=dimnames, index1=FALSE, repr="C");
+
+              if(transpose){
+                res <- Matrix::t(res)
+              }; 
+
               message("Normalizing data");
               res <- Seurat::NormalizeData(res);
-              message("Saving");
+              message("Saving dgCMatrix");
               saveRDS(res, file="${prefix}/dgCMatrix.rds")';
 
   cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        seurat: \$(Rscript -e 'print(packageVersion("hdf5r"))' | awk '{print \$2}')
+        hdf5r: \$(Rscript -e 'print(packageVersion("hdf5r"))' | awk '{print \$2}')
         Matrix: \$(Rscript -e 'print(packageVersion("Matrix"))' | awk '{print \$2}')
-        Matrix: \$(Rscript -e 'print(packageVersion("Seurat"))' | awk '{print \$2}')
+        Seurat: \$(Rscript -e 'print(packageVersion("Seurat"))' | awk '{print \$2}')
         R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
   END_VERSIONS
   """
