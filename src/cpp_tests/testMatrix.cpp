@@ -144,11 +144,14 @@ TEST_CASE("Test Matrix pad","[matrix][matrixpad]")
     SECTION("pad")
     {
         Matrix mat(100, 250);
+        float foam=3;
         //here
         REQUIRE(!mat.empty());
         REQUIRE(mat.nRow() == 100);
         REQUIRE(mat.nCol() == 250);
         REQUIRE(gaps::isVectorZero(mat.getCol(14)));
+        mat.pad(foam);
+        REQUIRE(mat.nRow()*mat.nCol()*foam == gaps::sum(mat));
     }
 
 }
