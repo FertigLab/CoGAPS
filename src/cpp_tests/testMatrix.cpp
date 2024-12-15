@@ -136,3 +136,19 @@ TEST_CASE("Test Matrix","[matrix][matrixfull]")
         //std::remove("testMatWrite.mtx");
     }
 }
+
+
+TEST_CASE("Test Matrix pad","[matrix][matrixpad]")
+{
+
+    SECTION("pad")
+    {
+        Matrix mat(100, 250);
+        //here
+        REQUIRE(!mat.empty());
+        REQUIRE(mat.nRow() == 100);
+        REQUIRE(mat.nCol() == 250);
+        REQUIRE(gaps::isVectorZero(mat.getCol(14)));
+    }
+
+}
