@@ -28,7 +28,8 @@ mSize(v.size())
 
 void Vector::pad(float val)
 {
-    for (unsigned i = mSize; i < mData.size(); ++i)
+    //here was the Msize as start value, error!
+    for (unsigned i = 0; i < mData.size(); ++i)
     {
         mData[i] = val;
     }
