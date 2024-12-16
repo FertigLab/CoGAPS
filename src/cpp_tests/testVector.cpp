@@ -17,6 +17,16 @@ TEST_CASE("Test Vector","[vector]")
         REQUIRE(gaps::sum(v) == 0.f);
     }
 
+    SECTION("Test padding")
+    {
+        Vector v(100);
+        float foam=3;
+        v.pad(foam);
+        REQUIRE(v.size() == 100);
+        REQUIRE(!gaps::isVectorZero(v));
+        REQUIRE(100*foam==gaps::sum(v));
+    }
+
     SECTION("Test std::vector constructor")
     {   
         GapsRng rng(&randState);
