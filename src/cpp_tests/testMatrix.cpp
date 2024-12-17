@@ -149,9 +149,24 @@ TEST_CASE("Test Matrix pad","[matrix][matrixpad]")
         REQUIRE(!mat.empty());
         REQUIRE(mat.nRow() == 100);
         REQUIRE(mat.nCol() == 250);
-        REQUIRE(gaps::isVectorZero(mat.getCol(14)));
+        REQUIRE(gaps::isVectorZero(mat.getCol(42)));
         mat.pad(foam);
         REQUIRE(mat.nRow()*mat.nCol()*foam == gaps::sum(mat));
+    }
+
+}
+
+TEST_CASE("Test Matrix assign","[matrix][matrixassign]")
+{
+
+    SECTION("pad")
+    {
+        Matrix mat(100, 250), cpmat(100,250);
+        float foam=3;
+        //here
+        mat.pad(foam);
+        cpmat=mat;
+        REQUIRE(mat.nRow()*mat.nCol()*foam == gaps::sum(cpmat));
     }
 
 }
