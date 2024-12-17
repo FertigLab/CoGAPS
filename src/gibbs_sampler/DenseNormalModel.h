@@ -70,13 +70,14 @@ bool subsetRows, const GapsParameters &params, float alpha, float maxGibbsMass)
 mDMatrix(data, transpose, subsetRows, params.dataIndicesSubset),
 mMatrix(mDMatrix.nCol(), params.nPatterns),
 mOtherMatrix(NULL),
-mSMatrix(gaps::pmax(mDMatrix, 0.1f,0.0001f)),
+mSMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
 mAPMatrix(mDMatrix.nRow(), mDMatrix.nCol()),
 mMaxGibbsMass(maxGibbsMass),
 mAnnealingTemp(1.f),
 mLambda(0.f)
 {
     float meanD = gaps::nonZeroMean(mDMatrix);
+    float factor=0.1f; //it is like 42 but for variance
     std::cout<<" trnsp "<<transpose  <<std::endl;
     std::cout<<" pad mean uncert mtrx "<<gaps::mean(mSMatrix)  <<std::endl;
     std::cout<<" pad min uncert mtrx "<<gaps::min(mSMatrix)  <<std::endl;
@@ -89,7 +90,10 @@ mLambda(0.f)
     {
         gaps_printf("\nWarning: Large values detected, is data log transformed?\n");
     }
-    mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
+    mSMatrix=gaps::pmax(mDMatrix, factor, mLambda); 
+    //we suppose that mLambda estimates an atom size expectation
+    //so msMatrix[i,j] is max(mDMatrix[i,j]*factor, atom size)
+    // it was Tom's mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
     std::cout<<"After pad mean uncert mtrx "<<gaps::mean(mSMatrix)  <<std::endl;
     std::cout<<"After pad min uncert mtrx "<<gaps::min(mSMatrix)  <<std::endl;
     std::cout<<"After pad max uncert mtrx "<<gaps::max(mSMatrix)  <<std::endl;
