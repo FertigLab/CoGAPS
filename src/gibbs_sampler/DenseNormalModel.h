@@ -95,6 +95,8 @@ mLambda(0.f)
     //we suppose that mLambda estimates an atom size expectation
     //so msMatrix[i,j] is max(mDMatrix[i,j]*factor, atom size)
     // it was Tom's mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
+    std::cout<<"mLambda "<<mLambda<<std::endl;
+    std::cout<<"min - temp value "<<gaps::min(gaps::pmax(mDMatrix, factor, mLambda))  <<std::endl;
     std::cout<<"After pmax mean uncert mtrx "<<gaps::mean(mSMatrix)  <<std::endl;
     std::cout<<"After pmax min uncert mtrx "<<gaps::min(mSMatrix)  <<std::endl;
     std::cout<<"After pmax max uncert mtrx "<<gaps::max(mSMatrix)  <<std::endl;
