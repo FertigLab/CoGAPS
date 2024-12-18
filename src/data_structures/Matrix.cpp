@@ -147,6 +147,8 @@ Matrix& Matrix::operator=(const Matrix& other) {
             mCols[j][i] = other(i,j);
         }
     }
+    mNumCols=other.mNumCols;
+    mNumRows=other.mNumRows;
     return *this;
 }
 
