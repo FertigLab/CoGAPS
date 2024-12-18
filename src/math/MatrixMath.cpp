@@ -71,45 +71,48 @@ float gaps::nonZeroMean(const SparseMatrix &mat)
     return sum / static_cast<float>(nNonZeroes);
 }
 
-Matrix gaps::pmax(Matrix mat, float factor, float min_threshold)
+Matrix gaps::pmax(const Matrix & mat, float factor, float min_threshold)
 {
+    Matrix rmat(mat.nRow(), mat.nCol());
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
         for (unsigned i = 0; i < mat.nRow(); ++i)
         {
-            mat(i,j) = gaps::max(mat(i,j) * factor, min_threshold);
+            rmat(i,j) = gaps::max(mat(i,j) * factor, min_threshold);
         }   
     }
-    return mat;
+    return rmat;
 }
 
 //overload threshold=factor for back compatibility
-Matrix gaps::pmax(Matrix mat, float factor)
+Matrix gaps::pmax(const Matrix & mat, float factor)
 {
    return gaps::pmax(mat, factor, factor);
 }
 
 
-Matrix operator*(Matrix mat, float f)
+Matrix operator*(const Matrix & mat, float f)
 {
+    Matrix rmat(mat.nRow(), mat.nCol());
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
         for (unsigned i = 0; i < mat.nRow(); ++i)
         {
-            mat(i,j) *= f;
+            rmat(i,j) = f * mat(i,j);
         }   
     }
-    return mat;
+    return rmat;
 }
 
-Matrix operator/(Matrix mat, float f)
+Matrix operator/(const Matrix & mat, float f)
 {
+    Matrix rmat(mat.nRow(), mat.nCol());
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
         for (unsigned i = 0; i < mat.nRow(); ++i)
         {
-            mat(i,j) /= f;
+            rmat(i,j) = mat(i,j) / f;
         }   
     }
-    return mat;
+    return rmat;
 }

@@ -24,12 +24,12 @@ namespace gaps
     float sum(const MatrixType &mat);
     template <class MatrixType>
     float mean(const MatrixType &mat);
-    Matrix pmax(Matrix mat, float factor, float min_threshold);
-    Matrix pmax(Matrix mat, float factor);
+    Matrix pmax(const Matrix & mat, float factor, float min_threshold);
+    Matrix pmax(const Matrix & mat, float factor);
 } // namespace gaps
 
-Matrix operator*(Matrix mat, float f);
-Matrix operator/(Matrix mat, float f);
+Matrix operator*(const Matrix & mat, float f);
+Matrix operator/(const Matrix & mat, float f);
 
 template <class MatrixType>
 float gaps::min(const MatrixType &mat)
