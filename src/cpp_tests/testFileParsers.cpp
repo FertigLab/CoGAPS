@@ -1,4 +1,5 @@
-#include "catch.h"
+#include <testthat.h>
+#include "../testthat-tweak.h"
 #include "../file_parser/CsvParser.h"
 #include "../file_parser/TsvParser.h"
 #include "../file_parser/MtxParser.h"

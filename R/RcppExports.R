@@ -25,7 +25,11 @@ getFileInfo_cpp <- function(path) {
     .Call('_CoGAPS_getFileInfo_cpp', PACKAGE = 'CoGAPS', path)
 }
 
-run_catch_unit_tests <- function() {
-    .Call('_CoGAPS_run_catch_unit_tests', PACKAGE = 'CoGAPS')
+run_catch_unit_tests <- function(reporter = "console") {
+    .Call('_CoGAPS_run_catch_unit_tests', PACKAGE = 'CoGAPS', reporter)
+}
+
+run_catch_unit_tests_by_tag <- function(tag = "", reporter = "console") {
+    .Call('_CoGAPS_run_catch_unit_tests_by_tag', PACKAGE = 'CoGAPS', tag, reporter)
 }
 

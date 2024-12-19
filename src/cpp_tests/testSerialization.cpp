@@ -1,4 +1,5 @@
-#include "catch.h"
+#include <testthat.h>
+#include "../testthat-tweak.h"
 #include "../utils/Archive.h"
 #include "../data_structures/Matrix.h"
 #include "../math/Random.h"
