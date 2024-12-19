@@ -97,6 +97,7 @@ mLambda(0.f)
     // it was Tom's mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
     std::cout<<"mLambda "<<mLambda<<std::endl;
     std::cout<<"min - temp value "<<gaps::min(gaps::pmax(mDMatrix, factor, mLambda))  <<std::endl;
+    std::cout<<"max - temp value "<<gaps::max(gaps::pmax(mDMatrix, factor, mLambda))  <<std::endl;
     std::cout<<"After pmax mean uncert mtrx "<<gaps::mean(mSMatrix)  <<std::endl;
     std::cout<<"After pmax min uncert mtrx "<<gaps::min(mSMatrix)  <<std::endl;
     std::cout<<"After pmax max uncert mtrx "<<gaps::max(mSMatrix)  <<std::endl;
