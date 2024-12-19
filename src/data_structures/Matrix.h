@@ -18,7 +18,6 @@ public:
         std::vector<unsigned> indices);
     Matrix(const std::string &path, bool genesInCols, bool subsetGenes,
         std::vector<unsigned> indices);
-    Matrix& operator=(const Matrix& other);
     unsigned nRow() const;
     unsigned nCol() const;
     void pad(float val);

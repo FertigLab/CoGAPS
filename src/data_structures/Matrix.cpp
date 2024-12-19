@@ -133,24 +133,6 @@ std::vector<unsigned> indices)
     }
 }
 
-Matrix& Matrix::operator=(const Matrix& other) {
-    if (this == &other) { // Self-assignment check (very important!)
-        return *this;
-    }
-
-    mCols.clear();
-    for (unsigned j = 0; j < other.mNumCols; ++j)
-    {
-        mCols.push_back(Vector(other.mNumRows));
-        for (unsigned i = 0; i < other.mNumRows; ++i)
-        {
-            mCols[j][i] = other(i,j);
-        }
-    }
-    mNumCols=other.mNumCols;
-    mNumRows=other.mNumRows;
-    return *this;
-}
 
 unsigned Matrix::nRow() const
 {
