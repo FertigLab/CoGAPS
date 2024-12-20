@@ -4,6 +4,7 @@
 //#include "../file_parser/MtxParser.h"
 //#include "../file_parser/CharacterDelimitedParser.h"
 #include "../file_parser/FileParser.h"
+#include "../math/Math.h"
 #include "../math/Random.h"
 #include "../math/VectorMath.h"
 #include "../math/MatrixMath.h"
@@ -181,6 +182,7 @@ TEST_CASE("Test gap Matrix pmax","[matrix][matrixpmax]")
         for (unsigned i = 0; i < mat.nRow(); ++i) {
             mat(i,i)=foam;
         }
+        REQUIRE(minfoam == gaps::min(foam,minfoam));
         cpmat=gaps::pmax(mat,1,minfoam);
         REQUIRE(minfoam == gaps::min(cpmat));
     }

@@ -5,6 +5,7 @@
 #include "../data_structures/HybridVector.h"
 #include "../data_structures/SparseVector.h"
 #include "../utils/GapsAssert.h"
+#include "math.h"
 #include "SIMD.h"
 
 namespace gaps
