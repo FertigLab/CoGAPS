@@ -78,7 +78,7 @@ Matrix gaps::pmax(const Matrix & mat, float factor, float min_threshold)
     {
         for (unsigned i = 0; i < mat.nRow(); ++i)
         {
-            rmat(i,j) = gaps::max(mat(i,j) * factor, min_threshold);
+            rmat(i,j) = std::max(mat(i,j) * factor, min_threshold);
         }   
     }
     return rmat;
