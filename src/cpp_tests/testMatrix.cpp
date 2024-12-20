@@ -183,7 +183,11 @@ TEST_CASE("Test gap Matrix pmax","[matrix][matrixpmax]")
             mat(i,i)=foam;
         }
         REQUIRE(minfoam == gaps::min(foam,minfoam));
+        REQUIRE(foam == gaps::max(foam,minfoam));
+        REQUIRE(minfoam == std::min(foam,minfoam));
+        REQUIRE(foam == std::max(foam,minfoam));
         cpmat=gaps::pmax(mat,1,minfoam);
+        REQUIRE(minfoam == cpmat(0,1));
         REQUIRE(minfoam == gaps::min(cpmat));
     }
 }
