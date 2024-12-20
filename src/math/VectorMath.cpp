@@ -168,11 +168,16 @@ Vector operator/(const HybridVector &hv, float f)
     return v;
 }
 
-Vector gaps::pmax(Vector v, float p)
+Vector gaps::pmax(const Vector & v, float f, float min_thr)
 {
+    Vector res(v.size());
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        v[i] = gaps::max(v[i] * p, p);
+        res[i] = gaps::max(v[i] * f, min_thr);
     }
     return v;
+}
+
+Vector gaps::pmax(const Vector & v, float f) {
+    return (geps::pmax*(v,f,f);
 }
