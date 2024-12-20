@@ -158,8 +158,7 @@ TEST_CASE("Test Matrix pad","[matrix][matrixpad]")
 
 TEST_CASE("Test Matrix assign","[matrix][matrixassign]")
 {
-
-    SECTION("pad")
+    SECTION("assign")
     {
         Matrix mat(100, 250), cpmat(100,250);
         float foam=3;
@@ -169,4 +168,20 @@ TEST_CASE("Test Matrix assign","[matrix][matrixassign]")
         REQUIRE(mat.nRow()*mat.nCol()*foam == gaps::sum(cpmat));
     }
 
+}
+
+
+TEST_CASE("Test gap Matrix pmax","[matrix][matrixpmax]")
+{
+    SECTION("pmax")
+    {
+        Matrix mat(100, 250), cpmat(100,250);
+        float foam=3,minfoam=0.3;
+        //here
+        for (unsigned i = 0; i < mat.nRow(); ++i) {
+            mat(i,i)=foam;
+        }
+        cpmat=gaps::pmax(mat,1,minfoam);
+        REQUIRE(minfoam == gaps::min(cpmat));
+    }
 }
