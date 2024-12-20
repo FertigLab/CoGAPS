@@ -127,13 +127,14 @@ bool gaps::isVectorZero(const HybridVector &v)
     return v.empty();
 }
 
-Vector gaps::elementSq(Vector v)
+Vector gaps::elementSq(const & Vector v)
 {
+    Vector res(v.size());
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        v[i] *= v[i];
+        res[i] = v[i] * v[i];
     }
-    return v;
+    return res;
 }
 
 Vector operator*(Vector v, float f)
@@ -156,7 +157,7 @@ Vector operator*(const HybridVector &hv, float f)
         v[i] = hv[i] * f;
     }
     return v;
-}
+a
 
 Vector operator/(const HybridVector &hv, float f)
 {
@@ -175,9 +176,9 @@ Vector gaps::pmax(const Vector & v, float f, float min_thr)
     {
         res[i] = gaps::max(v[i] * f, min_thr);
     }
-    return v;
+    return res;
 }
 
 Vector gaps::pmax(const Vector & v, float f) {
-    return (geps::pmax*(v,f,f);
+    return (gaps::pmax*(v,f,f);
 }
