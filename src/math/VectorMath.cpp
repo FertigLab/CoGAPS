@@ -4,7 +4,7 @@
 
 float gaps::min(const Vector &v)
 {
-    float mn = 0.f;
+    float mn = v[0];
     for (unsigned i = 0; i < v.size(); ++i)
     {
         mn = (v[i] < mn) ? v[i] : mn;
@@ -14,7 +14,7 @@ float gaps::min(const Vector &v)
 
 float gaps::min(const HybridVector &v)
 {
-    float mn = 0.f;
+    float mn = v[0];
     for (unsigned i = 0; i < v.size(); ++i)
     {
         mn = (v[i] < mn) ? v[i] : mn;
@@ -24,8 +24,8 @@ float gaps::min(const HybridVector &v)
 
 float gaps::min(const SparseVector &v)
 {
-    float mn = 0.f;
     SparseIterator<1> it(v);
+    float mn = get<1>(it);
     while (!it.atEnd())
     {
         mn = (get<1>(it) < mn) ? get<1>(it) : mn;
@@ -36,8 +36,8 @@ float gaps::min(const SparseVector &v)
 
 float gaps::max(const Vector &v)
 {
-    float mx = 0.f;
-    for (unsigned i = 0; i < v.size(); ++i)
+    float mx = v[0];
+    for (unsigned i = 1; i < v.size(); ++i)
     {
         mx = (v[i] > mx) ? v[i] : mx;
     }
@@ -46,8 +46,8 @@ float gaps::max(const Vector &v)
 
 float gaps::max(const HybridVector &v)
 {
-    float mx = 0.f;
-    for (unsigned i = 0; i < v.size(); ++i)
+    float mx = v[0];
+    for (unsigned i = 1; i < v.size(); ++i)
     {
         mx = (v[i] > mx) ? v[i] : mx;
     }
@@ -56,8 +56,8 @@ float gaps::max(const HybridVector &v)
 
 float gaps::max(const SparseVector &v)
 {
-    float mx = 0.f;
     SparseIterator<1> it(v);
+    float mx = get<1>(it);
     while (!it.atEnd())
     {
         mx = (get<1>(it) > mx) ? get<1>(it) : mx;
@@ -69,7 +69,7 @@ float gaps::max(const SparseVector &v)
 unsigned gaps::whichMax(const Vector &v)
 {
     unsigned ndx = 0;
-    float mx = 0.f;
+    float mx = v[0];
     for (unsigned i = 0; i < v.size(); ++i)
     {
         ndx = (v[i] > mx) ? i : ndx;
@@ -174,7 +174,7 @@ Vector gaps::pmax(const Vector & v, float f, float min_thr)
     Vector res(v.size());
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        res[i] = gaps::max(v[i] * f, min_thr);
+        res[i] = std::max(v[i] * f, min_thr);
     }
     return res;
 }
