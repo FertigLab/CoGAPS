@@ -34,7 +34,6 @@ Imports:
     utils,
     rhdf5,
     dplyr,
-    fgsea,
     forcats,
     ggplot2
 Suggests:
