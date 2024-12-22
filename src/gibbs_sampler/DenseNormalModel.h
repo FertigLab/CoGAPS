@@ -91,7 +91,8 @@ mLambda(0.f)
     {
         gaps_printf("\nWarning: Large values detected, is data log transformed?\n");
     }
-    mSMatrix=gaps::pmax(mDMatrix, factor, mLambda); 
+    mSMatrix=gaps::pmax(mDMatrix, factor); 
+    //mSMatrix=gaps::pmax(mDMatrix, factor, mLambda); 
     //we suppose that mLambda estimates an atom size expectation
     //so msMatrix[i,j] is max(mDMatrix[i,j]*factor, atom size)
     // it was Tom's mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
