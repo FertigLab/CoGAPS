@@ -8,9 +8,9 @@ RUN sudo apt-get update -y && \
     apt-get upgrade -y && \
     apt-get install libhdf5-dev build-essential patch -y
 
-#packages below didn't install with devtools::install_deps, needed BiocManager
-RUN Rscript -e 'install.packages("BiocManager");\
-                BiocManager::install(c("S4Vectors", "SingleCellExperiment", "SummarizedExperiment", "rhdf5"))'
+#packages below didn't install with devtools::install_deps, needed BiocManager;
+#it is already installed in rocker/tidyverse:4
+RUN Rscript -e 'BiocManager::install(c("S4Vectors", "SingleCellExperiment", "SummarizedExperiment", "rhdf5", "fgsea"),ask=FALSE)'
 
 #install all other dependencies
 RUN Rscript -e 'devtools::install_deps(".", dependencies=TRUE)'
