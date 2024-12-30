@@ -13,8 +13,8 @@ RUN sudo apt-get update -y && \
 RUN Rscript -e 'BiocManager::install(c("S4Vectors", "SingleCellExperiment", "SummarizedExperiment", "rhdf5", "fgsea"),ask=FALSE)'
 
 #install all other dependencies
-RUN Rscript -e 'devtools::install_deps(".", dependencies=TRUE, upgrade=always)'
+RUN Rscript -e 'devtools::install_deps(".", dependencies=TRUE)'
 
 #need to restart R sometimes https://github.com/r-lib/devtools/issues/2395
-RUN Rscript -e 'devtools::install(".", dependencies=TRUE, upgrade=always)'
+RUN Rscript -e 'devtools::install(".", dependencies=TRUE)'
 
