@@ -1,10 +1,11 @@
-#include "catch.h"
+#include <testthat.h>
+#include "../testthat-tweak.h"
 #include "../data_structures/HybridMatrix.h"
 #include "../data_structures/Matrix.h"
 #include "../math/VectorMath.h"
 #include "../math/MatrixMath.h"
 
-TEST_CASE("Test HybridMatrix.h")
+TEST_CASE("Test HybridMatrix.h","[hybridmatrix]")
 {
     HybridMatrix mat(100, 250);
     REQUIRE(mat.nRow() == 100);
