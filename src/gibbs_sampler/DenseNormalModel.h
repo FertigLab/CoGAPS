@@ -78,11 +78,6 @@ mLambda(0.f)
 {
     float meanD = gaps::nonZeroMean(mDMatrix);
     float factor=0.1f; //it is like 42 but for variance
-    std::cout<<" trnsp "<<transpose <<std::endl;
-    std::cout << std::scientific<<std::setprecision(40);
-    std::cout<<" mean new uncert mtrx "<<gaps::mean(mSMatrix)  <<std::endl;
-    std::cout<<" min new uncert mtrx "<<gaps::min(mSMatrix)  <<std::endl;
-    std::cout<<" max new uncert mtrx "<<gaps::max(mSMatrix)  <<std::endl;
 
     mLambda = alpha * std::sqrt(nPatterns() / meanD);
     mMaxGibbsMass = mMaxGibbsMass / mLambda;
@@ -95,6 +90,7 @@ mLambda(0.f)
     //we suppose that mLambda estimates an atom size expectation
     //so msMatrix[i,j] is max(mDMatrix[i,j]*factor, atom size)
     // it was Tom's mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
+    //std::cout << std::scientific<<std::setprecision(40);
     //std::cout<<"mLambda "<<mLambda<<std::endl;
 }
 
