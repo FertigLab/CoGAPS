@@ -62,13 +62,14 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
         REQUIRE(ASampler.internallyConsistent());
         REQUIRE(PSampler.internallyConsistent());
     #endif
+        ASampler.update(10, 1);
+        PSampler.update(10, 1);
+
         ASampler.sync(PSampler);
         PSampler.sync(ASampler);
-        ASampler.extraInitialization();
-        PSampler.extraInitialization();
 
-        REQUIRE(ASampler.chiSq() == AChiInit);
-        REQUIRE(PSampler.chiSq() == PChiInit);
+        REQUIRE(ASampler.chiSq() < AChiInit);
+        REQUIRE(PSampler.chiSq() < PChiInit);
     }
 }
 
@@ -105,5 +106,13 @@ TEST_CASE("Test DenseGibbsSampler on gist matrix","[densesinglesampler][gistmat]
         REQUIRE(ASampler.internallyConsistent());
         REQUIRE(PSampler.internallyConsistent());
     #endif
+        ASampler.update(10, 1);
+        PSampler.update(10, 1);
+
+        ASampler.sync(PSampler);
+        PSampler.sync(ASampler);
+
+        REQUIRE(ASampler.chiSq() < AChiInit);
+        REQUIRE(PSampler.chiSq() < PChiInit);
     }
 }
