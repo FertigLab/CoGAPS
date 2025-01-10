@@ -1,9 +1,9 @@
 #include <testthat.h>
 #include "../testthat-tweak.h"
-#include "../gibbs_sampler/AsynchronousGibbsSampler.h"
-#include "../gibbs_sampler/DenseStoragePolicy.h"
+#include "../gibbs_sampler/SingleThreadedGibbsSampler.h"
+#include "../gibbs_sampler/DenseNormalModel.h"
 
-TEST_CASE("Test DenseGibbsSampler")
+TEST_CASE("Test DenseGibbsSampler","[densesinglesample]")
 {
     SECTION("Construct from data matrix")
     {
@@ -18,9 +18,9 @@ TEST_CASE("Test DenseGibbsSampler")
 
         GapsRandomState randState(123);
         GapsParameters params(data);
-        GibbsSampler<DenseStorage> ASampler(data, true, false, params.alphaA,
+        SingleThreadedGibbsSampler<DenseNormalModel> ASampler(data, true, false, params.alphaA,
             params.maxGibbsMassA, params, &randState);
-        GibbsSampler<DenseStorage> PSampler(data, false, false, params.alphaP,
+        SingleThreadedGibbsSampler<DenseNormalModel> PSampler(data, false, false, params.alphaP,
             params.maxGibbsMassP, params, &randState);
     
         REQUIRE(ASampler.chiSq() == 100.f * data.nRow() * data.nCol());
