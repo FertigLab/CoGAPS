@@ -33,8 +33,22 @@ CoGAPS:::run_catch_unit_tests_by_tag("Test Vector.h")
 #call cpp test(s) by tag "vector"
 CoGAPS:::run_catch_unit_tests_by_tag("[vector]")
 
+#call cpp test(s) by tag "vector" or "green"
+CoGAPS:::run_catch_unit_tests_by_tag("[vector],[green]")
+
+#call cpp test(s) by tag "vector" and "green"
+CoGAPS:::run_catch_unit_tests_by_tag("[vector][green]")
+CoGAPS:::run_catch_unit_tests_by_tag("[green][vector]")
+
 ```
-The tags need to be defined in `/src/cpp_tests/[test-name].cpp`
+The tags need to be defined in `/src/cpp_tests/[test-name].cpp` in TEST_CASE:
+
+```
+TEST_CASE("Mt test case -- what is it","[tag1][tag2]")
+{
+}
+```
+
 
 ## adding cpp tests to compilation / making changes
 To ask for the cpp tests to be compiled, each `test.cpp` needs to be added to the `configure.ac`. Example from `configure.ac`:
