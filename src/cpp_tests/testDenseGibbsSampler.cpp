@@ -62,6 +62,9 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
         REQUIRE(ASampler.internallyConsistent());
         REQUIRE(PSampler.internallyConsistent());
     #endif
+        float AsumInit=gaps::sum(ASampler.APmatrix());
+        float PsumInit=gaps::sum(PSampler.APmatrix());
+
         ASampler.update(10, 1);
         PSampler.update(10, 1);
 
@@ -73,6 +76,9 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
         
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);
+
+        REQUIRE(gaps::sum(ASampler.APmatrix()) != AsumInit);
+        REQUIRE(gaps::sum(PSampler.APmatrix()) != PsumInit);
     }
 }
 
@@ -109,6 +115,9 @@ TEST_CASE("Test DenseGibbsSampler on gist matrix","[densesinglesampler][gistmat]
         REQUIRE(ASampler.internallyConsistent());
         REQUIRE(PSampler.internallyConsistent());
     #endif
+        float AsumInit=gaps::sum(ASampler.APmatrix());
+        float PsumInit=gaps::sum(PSampler.APmatrix());
+
         ASampler.update(10, 1);
         PSampler.update(10, 1);
 
@@ -120,5 +129,9 @@ TEST_CASE("Test DenseGibbsSampler on gist matrix","[densesinglesampler][gistmat]
 
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);
+
+        REQUIRE(gaps::sum(ASampler.APmatrix()) != AsumInit);
+        REQUIRE(gaps::sum(PSampler.APmatrix()) != PsumInit);
+
     }
 }

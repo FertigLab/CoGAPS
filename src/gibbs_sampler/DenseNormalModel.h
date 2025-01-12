@@ -14,27 +14,7 @@ class Archive;
 
 class DenseNormalModel
 {
-public:
-    template <class DataType>
-    DenseNormalModel(const DataType &data, bool transpose, bool subsetRows,
-        const GapsParameters &params, float alpha, float maxGibbsMass);
-    template <class DataType>
-    void setUncertainty(const DataType &unc, bool transpose, bool subsetRows,
-        const GapsParameters &params);
-    void setMatrix(const Matrix &mat);
-    void setAnnealingTemp(float temp);
-    void sync(const DenseNormalModel &model, unsigned nThreads=1);
-    void extraInitialization();
-    float chiSq() const;
-    float dataSparsity() const;
-    friend Archive& operator<<(Archive &ar, const DenseNormalModel &m);
-    friend Archive& operator>>(Archive &ar, DenseNormalModel &m);
 protected:
-    Matrix mDMatrix; // samples by genes for A, genes by samples for P
-    Matrix mMatrix; // genes by patterns for A, samples by patterns for P
-    const Matrix *mOtherMatrix; // pointer to P if this is A, and vice versa
-    Matrix mSMatrix; // uncertainty values for each data point
-    Matrix mAPMatrix; // cached product of A and P
     friend class GapsStatistics;
     uint64_t nElements() const;
     uint64_t nPatterns() const;
@@ -51,6 +31,11 @@ protected:
     OptionalFloat sampleExchange(unsigned r1, unsigned c1, float m1, unsigned r2,
         unsigned c2, float m2, GapsRng *rng);
 //private: // TODO
+    Matrix mDMatrix; // samples by genes for A, genes by samples for P
+    Matrix mMatrix; // genes by patterns for A, samples by patterns for P
+    const Matrix *mOtherMatrix; // pointer to P if this is A, and vice versa
+    Matrix mSMatrix; // uncertainty values for each data point
+    Matrix mAPMatrix; // cached product of A and P
     DenseNormalModel(const DenseNormalModel&); // = delete (no c++11)
     DenseNormalModel& operator=(const DenseNormalModel&); // = delete (no c++11)
     AlphaParameters alphaParameters(unsigned row, unsigned col);
@@ -61,7 +46,27 @@ protected:
     float mMaxGibbsMass;
     float mAnnealingTemp;
     float mLambda;
+public:
+    template <class DataType>
+    DenseNormalModel(const DataType &data, bool transpose, bool subsetRows,
+        const GapsParameters &params, float alpha, float maxGibbsMass);
+    template <class DataType>
+    void setUncertainty(const DataType &unc, bool transpose, bool subsetRows,
+        const GapsParameters &params);
+    void setMatrix(const Matrix &mat);
+    void setAnnealingTemp(float temp);
+    void sync(const DenseNormalModel &model, unsigned nThreads=1);
+    void extraInitialization();
+    float chiSq() const;
+    float dataSparsity() const;
+    const Matrix & APmatrix () const 
+    {
+        return mAPMatrix;
+    };
+    friend Archive& operator<<(Archive &ar, const DenseNormalModel &m);
+    friend Archive& operator>>(Archive &ar, DenseNormalModel &m);
 };
+
 
 template <class DataType>
 DenseNormalModel::DenseNormalModel(const DataType &data, bool transpose,
