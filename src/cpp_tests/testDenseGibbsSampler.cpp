@@ -24,7 +24,7 @@ static Matrix convertRMatrix(const Rcpp::NumericMatrix &rmat)
 
 TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][randommat]")
 {
-    SECTION("Construct from random data matrix")
+    SECTION("Construct from random data matrix and do steps")
     {
         
         Matrix data(25, 50);
@@ -68,6 +68,9 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
         ASampler.sync(PSampler);
         PSampler.sync(ASampler);
 
+        ASampler.extraInitialization();
+        PSampler.extraInitialization();
+        
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);
     }
@@ -111,6 +114,9 @@ TEST_CASE("Test DenseGibbsSampler on gist matrix","[densesinglesampler][gistmat]
 
         ASampler.sync(PSampler);
         PSampler.sync(ASampler);
+        
+        ASampler.extraInitialization();
+        PSampler.extraInitialization();
 
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);

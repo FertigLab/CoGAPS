@@ -272,4 +272,6 @@ Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<DataModel> &s)
     return ar;
 }
 
+
+
 #endif // __COGAPS_SINGLE_THREADED_GIBBS_SAMPLER_H__

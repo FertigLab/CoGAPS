@@ -116,7 +116,7 @@ void DenseNormalModel::changeMatrix(unsigned row, unsigned col, float delta)
 
 void DenseNormalModel::safelyChangeMatrix(unsigned row, unsigned col, float delta)
 {
-    float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
+    float newVal = std::max(mMatrix(row, col) + delta, 0.f);
     updateAPMatrix(row, col, newVal - mMatrix(row, col));
     mMatrix(row, col) = newVal;
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);

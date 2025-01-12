@@ -30,6 +30,11 @@ public:
     friend Archive& operator<<(Archive &ar, const DenseNormalModel &m);
     friend Archive& operator>>(Archive &ar, DenseNormalModel &m);
 protected:
+    Matrix mDMatrix; // samples by genes for A, genes by samples for P
+    Matrix mMatrix; // genes by patterns for A, samples by patterns for P
+    const Matrix *mOtherMatrix; // pointer to P if this is A, and vice versa
+    Matrix mSMatrix; // uncertainty values for each data point
+    Matrix mAPMatrix; // cached product of A and P
     friend class GapsStatistics;
     uint64_t nElements() const;
     uint64_t nPatterns() const;
@@ -53,11 +58,6 @@ protected:
     AlphaParameters alphaParametersWithChange(unsigned row, unsigned col, float ch);
     void updateAPMatrix(unsigned row, unsigned col, float delta);
 
-    Matrix mDMatrix; // samples by genes for A, genes by samples for P
-    Matrix mMatrix; // genes by patterns for A, samples by patterns for P
-    const Matrix *mOtherMatrix; // pointer to P if this is A, and vice versa
-    Matrix mSMatrix; // uncertainty values for each data point
-    Matrix mAPMatrix; // cached product of A and P
     float mMaxGibbsMass;
     float mAnnealingTemp;
     float mLambda;
@@ -101,5 +101,6 @@ bool subsetRows, const GapsParameters &params)
     mSMatrix = Matrix(unc, transpose, subsetRows, params.dataIndicesSubset);
     mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
 }
+
 
 #endif // __COGAPS_DENSE_STORAGE_POLICY_H__
