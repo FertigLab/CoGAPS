@@ -59,9 +59,17 @@ public:
     void extraInitialization();
     float chiSq() const;
     float dataSparsity() const;
-    const Matrix & APmatrix () const 
+    const Matrix & APMatrix () const 
     {
         return mAPMatrix;
+    };
+    const Matrix & MyMatrix () const 
+    {
+        return mMatrix;
+    };
+    const Matrix & UMatrix () const 
+    {
+        return mSMatrix;
     };
     friend Archive& operator<<(Archive &ar, const DenseNormalModel &m);
     friend Archive& operator>>(Archive &ar, DenseNormalModel &m);
