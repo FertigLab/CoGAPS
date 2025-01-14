@@ -31,11 +31,14 @@ protected:
     OptionalFloat sampleExchange(unsigned r1, unsigned c1, float m1, unsigned r2,
         unsigned c2, float m2, GapsRng *rng);
 //private: // TODO
+    // P means transpose = TRUE
     Matrix mDMatrix; // samples by genes for A, genes by samples for P
     Matrix mMatrix; // genes by patterns for A, samples by patterns for P
     const Matrix *mOtherMatrix; // pointer to P if this is A, and vice versa
     Matrix mSMatrix; // uncertainty values for each data point
     Matrix mAPMatrix; // cached product of A and P
+    //GAPS_ASSERT(mMatrix.nRow() == mAPMatrix.nCol());
+    
     DenseNormalModel(const DenseNormalModel&); // = delete (no c++11)
     DenseNormalModel& operator=(const DenseNormalModel&); // = delete (no c++11)
     AlphaParameters alphaParameters(unsigned row, unsigned col);
