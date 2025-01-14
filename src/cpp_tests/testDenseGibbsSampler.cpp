@@ -7,7 +7,7 @@
 #include <Rcpp.h>
 
 // convert R to C++ data type
-// it is copied from CoGAPS.cpp not to change the maun headers
+// it is copied from CoGAPS.cpp not to change the main headers
 static Matrix convertRMatrix(const Rcpp::NumericMatrix &rmat)
 {
     Matrix mat(rmat.nrow(), rmat.ncol());
@@ -20,6 +20,46 @@ static Matrix convertRMatrix(const Rcpp::NumericMatrix &rmat)
     }
     return mat;
 }
+
+
+TEST_CASE("Basic test on tiny matrix","[densesinglesampler][tinymat]")
+{
+    SECTION("Construct tiny matrix and do steps")
+    {
+        unsigned int patno=2;
+        
+        Matrix data(5,10);
+        for (unsigned i = 0; i < data.nRow(); ++i)
+        {
+            for (unsigned j = 0; j < data.nCol(); ++j)
+            {
+                data(i,j) = i + j + 1.f; //nonzero
+            }
+        }
+
+        GapsRandomState randState(42);
+        GapsParameters params(data);
+        params.nPatterns=patno;
+        SingleThreadedGibbsSampler<DenseNormalModel> ASampler(data, true, false, params.alphaA,
+            params.maxGibbsMassA, params, &randState);
+        Matrix AMM(data.nCol(),patno);
+        AMM.pad(5);
+        ASampler.setMatrix(AMM);
+        SingleThreadedGibbsSampler<DenseNormalModel> PSampler(data, false, false, params.alphaP,
+            params.maxGibbsMassP, params, &randState);
+        Matrix PMM(data.nRow(),patno);
+        PMM.pad(2);
+        PSampler.setMatrix(PMM);
+        ASampler.sync(PSampler);
+        PSampler.sync(ASampler);
+        ASampler.extraInitialization();
+        //actually, it is AP = A times P
+        const Matrix & AAP=ASampler.APMatrix();
+        //just a ref
+        REQUIRE(gaps::sum(AAP) == 20 * data.nRow() * data.nCol());
+    }
+}
+
 
 
 TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][randommat]")
@@ -35,7 +75,6 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
                 data(i,j) = i + j + 1.f;
             }
         }
-
         GapsRandomState randState(42);
         GapsParameters params(data);
         SingleThreadedGibbsSampler<DenseNormalModel> ASampler(data, true, false, params.alphaA,
