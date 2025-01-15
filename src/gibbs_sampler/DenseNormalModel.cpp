@@ -37,6 +37,7 @@ void DenseNormalModel::sync(const DenseNormalModel &model, unsigned nThreads)
 
 void DenseNormalModel::extraInitialization()
 {
+    std::cout<<"*************\n";
     GAPS_ASSERT(mOtherMatrix->nRow() == mAPMatrix.nRow());
     GAPS_ASSERT(mOtherMatrix->nCol() == mMatrix.nCol());
     GAPS_ASSERT(mMatrix.nRow() == mAPMatrix.nCol());
@@ -45,10 +46,13 @@ void DenseNormalModel::extraInitialization()
         for (unsigned i = 0; i < mAPMatrix.nRow(); ++i)
         {
             mAPMatrix(i,j) = 0.f;
+            std::cout<<"* "<<i<<","<<j<<" -- "; 
             for (unsigned k = 0; k < mMatrix.nCol(); ++k)
             {
                 mAPMatrix(i,j) += mOtherMatrix->operator()(i,k) * mMatrix(j,k);
+                std::cout<<mOtherMatrix->operator()(i,k)<<"*"<< mMatrix(j,k)<<"+";
             }
+            std::cout<<"  =  "<<mAPMatrix(i,j)<<std::endl;
         }
     }
 }
