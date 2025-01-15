@@ -22,6 +22,22 @@ static Matrix convertRMatrix(const Rcpp::NumericMatrix &rmat)
 }
 
 
+//copied from Matrix.cpp, changed: std::ostream instead of Archive
+std::ostream& operator<<(std::ostream &ar, const Matrix &mat)
+{
+    ar << mat.nRow() <<" x "<< mat.nCol() << std::endl;
+    for (unsigned i = 0; i < mat.nRow(); ++i) {
+        for (unsigned j = 0; j < mat.nCol(); ++j)
+        {
+            ar << mat(i,j) << " ";
+        }
+        ar<<std::endl;
+    }
+    return ar;
+}
+
+
+
 TEST_CASE("Basic test on tiny matrix","[densesinglesampler][tinymat]")
 {
     SECTION("Construct tiny matrix and do steps")
@@ -56,6 +72,7 @@ TEST_CASE("Basic test on tiny matrix","[densesinglesampler][tinymat]")
         //actually, it is AP = A times P
         const Matrix & AAP=ASampler.APMatrix();
         //just a ref
+        std::cout<<std::fixed<<std::setprecision(0)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nAP\n"<<AAP<<"\n";
         REQUIRE(gaps::sum(AAP) == 20 * data.nRow() * data.nCol());
     }
 }
