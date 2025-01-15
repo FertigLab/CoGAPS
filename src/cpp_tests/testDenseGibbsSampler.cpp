@@ -75,7 +75,7 @@ TEST_CASE("Basic test on tiny matrix","[densesinglesampler][tinymat]")
         const Matrix & AAP=ASampler.APMatrix();
         const Matrix & PAP=PSampler.APMatrix();
         //just a ref
-        std::cout<<std::fixed<<std::setprecision(0)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nP.AP\n"<<PAP<<"\nA.AP\n"<<AAP<<"\n";
+        std::cout<<std::fixed<<std::setprecision(0)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nA.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
         REQUIRE(gaps::sum(AAP) == 20 * data.nRow() * data.nCol());
         REQUIRE(gaps::sum(PAP) == 20 * data.nRow() * data.nCol());
     }
