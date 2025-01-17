@@ -45,14 +45,7 @@ TEST_CASE("Basic test on tiny matrix","[densesinglesampler][tinymat]")
         unsigned int patno=2;
         
         Matrix data(5,10);
-        for (unsigned i = 0; i < data.nRow(); ++i)
-        {
-            for (unsigned j = 0; j < data.nCol(); ++j)
-            {
-                data(i,j) = i + j + 1.f; //nonzero
-            }
-        }
-
+        data.pad(20);
         GapsRandomState randState(42);
         GapsParameters params(data);
         params.nPatterns=patno;
@@ -75,7 +68,7 @@ TEST_CASE("Basic test on tiny matrix","[densesinglesampler][tinymat]")
         const Matrix & AAP=ASampler.APMatrix();
         const Matrix & PAP=PSampler.APMatrix();
         //just a ref
-        std::cout<<std::fixed<<std::setprecision(0)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nA.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
+        std::cout<<std::fixed<<std::setprecision(0)<<"Original data:\n"<<data<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nA.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
         REQUIRE(gaps::sum(AAP) == 20 * data.nRow() * data.nCol());
         REQUIRE(gaps::sum(PAP) == 20 * data.nRow() * data.nCol());
     }
