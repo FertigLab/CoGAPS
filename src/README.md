@@ -13,5 +13,5 @@ A sapler can be transposed or not. The run ivolves a transposed and a nontranspo
 
 A transposed (left, A, if the D is nontransposed) carries a transposed AP matrix of $l \times m$ and the puspose (A) matrix of $m \times k$ size.
 
-A nontransposed (right, P, if the D is nontransposed) carries a nontransposed AP matrix of $m \times l$ and the puspose (A) matrix of $l \times k$ size. 
+A nontransposed (right, P, if the D is nontransposed) carries a nontransposed AP matrix of $m \times l$ and the puspose (P) matrix of $l \times k$ size. 
  
