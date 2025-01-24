@@ -117,7 +117,7 @@ void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nTh
     char type; //#
     for (unsigned i = 0; i < nSteps; ++i)
     {
-        switch (getUpdateType())
+        switch (type=getUpdateType())
         {
             case 'B': birth();    break;
             case 'D': death();    break;
