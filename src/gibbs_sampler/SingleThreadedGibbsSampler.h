@@ -111,10 +111,12 @@ char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
     return u1 < 0.75f ? 'M' : 'E';
 }
 
+
 template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThreads) // NOLINT
 {
     char type; //#
+    std::cout<<"Type: ";
     for (unsigned i = 0; i < nSteps; ++i)
     {
         switch (type=getUpdateType())
@@ -124,8 +126,8 @@ void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nTh
             case 'M': move();     break;
             case 'E': exchange(); break;
         }
+        std::cout<<type;
     }
-    std::cout<<"Type: "<<type;
 }
 
 // add an atom at a random position, calculate mass either with an
