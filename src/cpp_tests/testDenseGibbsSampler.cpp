@@ -136,20 +136,24 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
             PSampler.update(1, 1);
             std::cout<<" sum after="<<gaps::sum(PSampler.MyMatrix())<<"\n";
 
+            ASampler.extraInitialization();
+            PSampler.extraInitialization();
+            
             std::cout<<" AP sums: "<<
                 gaps::sum(ASampler.APMatrix())<<" and "<<
                 gaps::sum(PSampler.APMatrix())<<std::endl;
+
             /*ASampler.sync(PSampler);
             PSampler.sync(ASampler);
 
             std::cout<<" AP sums after sync: "<<
                 gaps::sum(ASampler.APMatrix())<<" and "<<
-                gaps::sum(PSampler.APMatrix())<<std::endl;
+                gaps::sum(PSampler.APMatrix())<<std::endl;*/
             ASampler.extraInitialization();
             PSampler.extraInitialization();
-            std::cout<<" AP sums after init: "<<
+            std::cout<<" AP sums after extra init: "<<
                 gaps::sum(ASampler.APMatrix())<<" and "<<
-                gaps::sum(PSampler.APMatrix())<<std::endl;*/
+                gaps::sum(PSampler.APMatrix())<<std::endl;
             
         }
         ASampler.sync(PSampler);
