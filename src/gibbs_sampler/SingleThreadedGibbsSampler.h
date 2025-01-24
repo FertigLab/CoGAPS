@@ -13,6 +13,7 @@
 #include <limits>
 #include <stdint.h>
 #include <vector>
+#include <iomanip>
 
 #include "../atomic/AtomicDomain.h"
 typedef Atom AtomType;
@@ -113,6 +114,7 @@ char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
 template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThreads) // NOLINT
 {
+    char type; //#
     for (unsigned i = 0; i < nSteps; ++i)
     {
         switch (getUpdateType())
@@ -123,6 +125,7 @@ void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nTh
             case 'E': exchange(); break;
         }
     }
+    std::cout<<"Type: "<<type;
 }
 
 // add an atom at a random position, calculate mass either with an
