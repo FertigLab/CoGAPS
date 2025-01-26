@@ -260,7 +260,7 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
         const Matrix & AAP=ASampler.APMatrix();
         const Matrix & PAP=PSampler.APMatrix();
         //just a ref
-        std::cout<<std::fixed<<std::setprecision(0)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nA.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
+        std::cout<<std::fixed<<std::setprecision(2)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nA.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);
 
