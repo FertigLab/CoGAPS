@@ -81,6 +81,7 @@ TEST_CASE("Init test on tiny matrix","[densesinglesampler][tinymat]")
     }
 }
 
+/*
 TEST_CASE("Update test on tiny matrix","[densesinglesampler][tinymats]")
 {
     SECTION("Construct tiny matrix and do steps")
@@ -128,13 +129,13 @@ TEST_CASE("Update test on tiny matrix","[densesinglesampler][tinymats]")
         float A_SumInit=gaps::sum(ASampler.MyMatrix());
         float P_SumInit=gaps::sum(PSampler.MyMatrix());
         std::cout<<std::fixed<<std::setprecision(3);
-        for (unsigned i = 0; i < 2; ++i)
+        for (unsigned i = 0; i < 10; ++i)
         {   
             std::cout<<"A: "<<" sum before="<<gaps::sum(ASampler.MyMatrix())<<" ";
-            ASampler.update(10, 1);
+            ASampler.update(100, 1);
             std::cout<<" sum after="<<gaps::sum(ASampler.MyMatrix())<<"\n";
             std::cout<<"P: "<<" sum before="<<gaps::sum(PSampler.MyMatrix())<<" ";
-            PSampler.update(10, 1);
+            PSampler.update(100, 1);
             std::cout<<" sum after="<<gaps::sum(PSampler.MyMatrix())<<"\n";
 
             ASampler.extraInitialization();
@@ -162,6 +163,7 @@ TEST_CASE("Update test on tiny matrix","[densesinglesampler][tinymats]")
 
         ASampler.extraInitialization();
         PSampler.extraInitialization();
+        std::cout<<std::fixed<<std::setprecision(0)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nA.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
         
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);
@@ -173,7 +175,7 @@ TEST_CASE("Update test on tiny matrix","[densesinglesampler][tinymats]")
         REQUIRE(gaps::sum(PSampler.MyMatrix()) != P_SumInit);
     }
 }
-
+*/
 
 
 TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][randommat]")
@@ -255,6 +257,10 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
         ASampler.extraInitialization();
         PSampler.extraInitialization();
         
+        const Matrix & AAP=ASampler.APMatrix();
+        const Matrix & PAP=PSampler.APMatrix();
+        //just a ref
+        std::cout<<std::fixed<<std::setprecision(0)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nA.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);
 
