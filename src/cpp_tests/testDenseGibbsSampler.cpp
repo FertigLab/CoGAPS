@@ -150,7 +150,7 @@ TEST_CASE("Update test on tiny matrix","[densesinglesampler][tinymats]")
 
             std::cout<<" AP sums after sync: "<<
                 gaps::sum(ASampler.APMatrix())<<" and "<<
-                gaps::sum(PSampler.APMatrix())<<std::endl;*/
+                gaps::sum(PSampler.APMatrix())<<std::endl;* /
             ASampler.extraInitialization();
             PSampler.extraInitialization();
             std::cout<<" AP sums after extra init: "<<
