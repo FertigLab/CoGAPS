@@ -131,10 +131,10 @@ TEST_CASE("Update test on tiny matrix","[densesinglesampler][tinymats]")
         for (unsigned i = 0; i < 2; ++i)
         {   
             std::cout<<"A: "<<" sum before="<<gaps::sum(ASampler.MyMatrix())<<" ";
-            ASampler.update(1, 1);
+            ASampler.update(10, 1);
             std::cout<<" sum after="<<gaps::sum(ASampler.MyMatrix())<<"\n";
             std::cout<<"P: "<<" sum before="<<gaps::sum(PSampler.MyMatrix())<<" ";
-            PSampler.update(1, 1);
+            PSampler.update(10, 1);
             std::cout<<" sum after="<<gaps::sum(PSampler.MyMatrix())<<"\n";
 
             ASampler.extraInitialization();
