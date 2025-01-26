@@ -101,14 +101,14 @@ TEST_CASE("Update test on tiny matrix","[densesinglesampler][tinymats]")
         params.nPatterns=patno;
         SingleThreadedGibbsSampler<DenseNormalModel> ASampler(data, true, false, params.alphaA,
             params.maxGibbsMassA, params, &randState);
-        Matrix AMM(ASampler.MyMatrix());
-        AMM.pad(5);
-        ASampler.setMatrix(AMM);
+        //Matrix AMM(ASampler.MyMatrix());
+        //AMM.pad(5);
+        //ASampler.setMatrix(AMM);
         SingleThreadedGibbsSampler<DenseNormalModel> PSampler(data, false, false, params.alphaP,
             params.maxGibbsMassP, params, &randState);
-        Matrix PMM(PSampler.MyMatrix());
-        PMM.pad(2);
-        PSampler.setMatrix(PMM);
+        //Matrix PMM(PSampler.MyMatrix());
+        //PMM.pad(2);
+        //PSampler.setMatrix(PMM);
         ASampler.sync(PSampler);
         PSampler.sync(ASampler);
         ASampler.extraInitialization();
