@@ -140,7 +140,7 @@ void SingleThreadedGibbsSampler<DataModel>::birth()
     unsigned row = (pos / mBinLength) / mNumPatterns;
     unsigned col = (pos / mBinLength) % mNumPatterns;
     
-    std::cout<<"Birth at ["<<row<<","<<col<<"]; apos="<<pos<<std::endl;
+    std::cout<<std::end<<l"Birth at ["<<row<<","<<col<<"]; apos="<<pos<<std::endl;
 
     // try to get mass using gibbs, resort to exponential if needed
     OptionalFloat mass = DataModel::canUseGibbs(col)
