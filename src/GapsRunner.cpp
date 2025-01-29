@@ -165,16 +165,20 @@ GapsAlgorithmPhase phase, unsigned iter, GapsStatistics &stats)
 {
     if (params.outputFrequency > 0 && ((iter + 1) % params.outputFrequency) == 0)
     {
-        float cs = PSampler.chiSq();
+        float cs;
+        if (params.whichMatrixFixed == 'P') {
+            cs = ASampler.chiSq();
+        } else {
+            cs = PSampler.chiSq();
+        }
+
         unsigned nA = ASampler.nAtoms();
         unsigned nP = PSampler.nAtoms();
 
         // chi^2 fit to data
         stats.addChiSq(cs);
-
         // number of atoms
         stats.addAtomCount(nA, nP);
-
         if (params.printMessages)
         {
             // estimate run time to output
@@ -294,15 +298,19 @@ GapsRng &rng, bpt::ptime startTime, GapsAlgorithmPhase phase, unsigned &currentI
 
         if (phase == GAPS_SAMPLING_PHASE)
         {
-            // update the statistics based on the A and P matrices
-            stats.update(ASampler, PSampler);
-
-            // flag to implement developmental statistic called PUMP
-            // which computes pattern markers for prioritizing gene markers
-            // computed along the chain as part of the MCMC sampling 
-            if (params.takePumpSamples)
-            {
-                stats.updatePump(ASampler);
+            if (params.useFixedPatterns) {
+                if (params.whichMatrixFixed == 'A') {
+                    stats.updateP(ASampler, PSampler);
+                } else {  // P fixed
+                    stats.updateA(ASampler, PSampler);
+                }
+     
+            } else {
+                stats.update(ASampler, PSampler);
+                if (params.takePumpSamples)
+                {
+                    stats.updatePump(ASampler);
+                }
             }
         }
         if (params.snapshotPhase == phase || params.snapshotPhase == GAPS_ALL_PHASES)
@@ -463,10 +471,18 @@ const DataType &uncertainty, GapsRandomState *randState)
     // get result
     GapsResult result(stats);
     result.totalRunningTime = static_cast<unsigned>((bpt_now() - startTime).total_seconds());
-    result.meanChiSq = stats.meanChiSq(PSampler);
     result.averageQueueLengthA = ASampler.getAverageQueueLength();
     result.averageQueueLengthP = PSampler.getAverageQueueLength();
     result.totalUpdates = totalUpdates;
+
+    // do not return meanChisQ if running with a fixed matrix to avoid confusion
+    // as meanChisq is based on mean matrices, which is 0's if a matrix is fixed.
+    if (params.whichMatrixFixed != 'N')
+    {
+        result.meanChiSq = 0;
+    } else {
+        result.meanChiSq = stats.meanChiSq(PSampler);
+    }
 
     // handle pump statistics
     if (params.takePumpSamples)
