@@ -83,6 +83,108 @@ TEST_CASE("Basic test on tiny matrix","[densesinglesampler][tinymat]")
 
 
 
+
+TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][randommat]")
+{
+    SECTION("Construct from random data matrix and do steps")
+    {
+        
+        Matrix data(25, 50);
+        for (unsigned i = 0; i < data.nRow(); ++i)
+        {
+            for (unsigned j = 0; j < data.nCol(); ++j)
+            {
+                data(i,j) = i + j + 1.f;
+            }
+        }
+        GapsRandomState randState(42);
+        GapsParameters params(data);
+        SingleThreadedGibbsSampler<DenseNormalModel> ASampler(data, true, false, params.alphaA,
+            params.maxGibbsMassA, params, &randState);
+        SingleThreadedGibbsSampler<DenseNormalModel> PSampler(data, false, false, params.alphaP,
+            params.maxGibbsMassP, params, &randState);
+        
+
+        REQUIRE(ASampler.chiSq() == 100.f * data.nRow() * data.nCol());
+        REQUIRE(PSampler.chiSq() == 100.f * data.nRow() * data.nCol());
+    
+        double AChiInit=ASampler.chiSq();
+        double PChiInit=PSampler.chiSq();
+
+        ASampler.sync(PSampler);
+        PSampler.sync(ASampler);
+        ASampler.extraInitialization();
+        PSampler.extraInitialization();
+
+        REQUIRE(ASampler.chiSq() == AChiInit);
+        REQUIRE(PSampler.chiSq() == PChiInit);
+
+    #ifdef GAPS_DEBUG
+        REQUIRE(ASampler.internallyConsistent());
+        REQUIRE(PSampler.internallyConsistent());
+    #endif
+        float A_APSumInit=gaps::sum(ASampler.APMatrix());
+        float P_APSumInit=gaps::sum(PSampler.APMatrix());
+        float A_SumInit=gaps::sum(ASampler.MyMatrix());
+        float P_SumInit=gaps::sum(PSampler.MyMatrix());
+        std::cout<<std::fixed<<std::setprecision(3);
+        for (unsigned i = 0; i < 2; ++i)
+        {   
+            std::cout<<"A: "<<" sum before="<<gaps::sum(ASampler.MyMatrix())<<" ";
+            ASampler.update(1, 1);
+            std::cout<<" sum after="<<gaps::sum(ASampler.MyMatrix())<<"\n";
+            std::cout<<"P: "<<" sum before="<<gaps::sum(PSampler.MyMatrix())<<" ";
+            PSampler.update(1, 1);
+            std::cout<<" sum after="<<gaps::sum(PSampler.MyMatrix())<<"\n";
+
+            ASampler.extraInitialization();
+            PSampler.extraInitialization();
+            
+            std::cout<<" AP sums: "<<
+                gaps::sum(ASampler.APMatrix())<<" and "<<
+                gaps::sum(PSampler.APMatrix())<<std::endl;
+
+            /*ASampler.sync(PSampler);
+            PSampler.sync(ASampler);
+
+            std::cout<<" AP sums after sync: "<<
+                gaps::sum(ASampler.APMatrix())<<" and "<<
+                gaps::sum(PSampler.APMatrix())<<std::endl;*/
+            ASampler.extraInitialization();
+            PSampler.extraInitialization();
+            std::cout<<" AP sums after extra init: "<<
+                gaps::sum(ASampler.APMatrix())<<" and "<<
+                gaps::sum(PSampler.APMatrix())<<std::endl;
+            
+        }
+        ASampler.sync(PSampler);
+        PSampler.sync(ASampler);
+
+        ASampler.extraInitialization();
+        PSampler.extraInitialization();
+
+        const Matrix & AAP=ASampler.APMatrix();
+        const Matrix & PAP=PSampler.APMatrix();
+        //just a ref
+        std::cout<<std::fixed<<std::setprecision(2)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\n";//A.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
+
+        REQUIRE(ASampler.chiSq() < AChiInit);
+        REQUIRE(PSampler.chiSq() < PChiInit);
+
+        REQUIRE(gaps::sum(ASampler.APMatrix()) != A_APSumInit);
+        
+        REQUIRE(ASampler.chiSq() < AChiInit);
+        REQUIRE(PSampler.chiSq() < PChiInit);
+
+        REQUIRE(gaps::sum(ASampler.APMatrix()) != A_APSumInit);
+        REQUIRE(gaps::sum(PSampler.APMatrix()) != P_APSumInit);
+
+        REQUIRE(gaps::sum(ASampler.MyMatrix()) != A_SumInit);
+        REQUIRE(gaps::sum(PSampler.MyMatrix()) != P_SumInit);
+    }
+}
+
+
 TEST_CASE("Test DenseGibbsSampler on random 2 matrix","[densesinglesampler][randommat2]")
 {
     SECTION("Construct from random data matrix and do steps")
@@ -162,95 +264,11 @@ TEST_CASE("Test DenseGibbsSampler on random 2 matrix","[densesinglesampler][rand
         ASampler.extraInitialization();
         PSampler.extraInitialization();
         
-        REQUIRE(ASampler.chiSq() < AChiInit);
-        REQUIRE(PSampler.chiSq() < PChiInit);
+        const Matrix & AAP=ASampler.APMatrix();
+        const Matrix & PAP=PSampler.APMatrix();
+        //just a ref
+        std::cout<<std::fixed<<std::setprecision(2)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\n";//A.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
 
-        REQUIRE(gaps::sum(ASampler.APMatrix()) != A_APSumInit);
-        REQUIRE(gaps::sum(PSampler.APMatrix()) != P_APSumInit);
-
-        REQUIRE(gaps::sum(ASampler.MyMatrix()) != A_SumInit);
-        REQUIRE(gaps::sum(PSampler.MyMatrix()) != P_SumInit);
-    }
-}
-TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][randommat]")
-{
-    SECTION("Construct from random data matrix and do steps")
-    {
-        
-        Matrix data(25, 50);
-        for (unsigned i = 0; i < data.nRow(); ++i)
-        {
-            for (unsigned j = 0; j < data.nCol(); ++j)
-            {
-                data(i,j) = i + j + 1.f;
-            }
-        }
-        GapsRandomState randState(42);
-        GapsParameters params(data);
-        SingleThreadedGibbsSampler<DenseNormalModel> ASampler(data, true, false, params.alphaA,
-            params.maxGibbsMassA, params, &randState);
-        SingleThreadedGibbsSampler<DenseNormalModel> PSampler(data, false, false, params.alphaP,
-            params.maxGibbsMassP, params, &randState);
-        
-
-        REQUIRE(ASampler.chiSq() == 100.f * data.nRow() * data.nCol());
-        REQUIRE(PSampler.chiSq() == 100.f * data.nRow() * data.nCol());
-    
-        double AChiInit=ASampler.chiSq();
-        double PChiInit=PSampler.chiSq();
-
-        ASampler.sync(PSampler);
-        PSampler.sync(ASampler);
-        ASampler.extraInitialization();
-        PSampler.extraInitialization();
-
-        REQUIRE(ASampler.chiSq() == AChiInit);
-        REQUIRE(PSampler.chiSq() == PChiInit);
-
-    #ifdef GAPS_DEBUG
-        REQUIRE(ASampler.internallyConsistent());
-        REQUIRE(PSampler.internallyConsistent());
-    #endif
-        float A_APSumInit=gaps::sum(ASampler.APMatrix());
-        float P_APSumInit=gaps::sum(PSampler.APMatrix());
-        float A_SumInit=gaps::sum(ASampler.MyMatrix());
-        float P_SumInit=gaps::sum(PSampler.MyMatrix());
-        std::cout<<std::fixed<<std::setprecision(3);
-        for (unsigned i = 0; i < 2; ++i)
-        {   
-            std::cout<<"A: "<<" sum before="<<gaps::sum(ASampler.MyMatrix())<<" ";
-            ASampler.update(1, 1);
-            std::cout<<" sum after="<<gaps::sum(ASampler.MyMatrix())<<"\n";
-            std::cout<<"P: "<<" sum before="<<gaps::sum(PSampler.MyMatrix())<<" ";
-            PSampler.update(1, 1);
-            std::cout<<" sum after="<<gaps::sum(PSampler.MyMatrix())<<"\n";
-
-            ASampler.extraInitialization();
-            PSampler.extraInitialization();
-            
-            std::cout<<" AP sums: "<<
-                gaps::sum(ASampler.APMatrix())<<" and "<<
-                gaps::sum(PSampler.APMatrix())<<std::endl;
-
-            /*ASampler.sync(PSampler);
-            PSampler.sync(ASampler);
-
-            std::cout<<" AP sums after sync: "<<
-                gaps::sum(ASampler.APMatrix())<<" and "<<
-                gaps::sum(PSampler.APMatrix())<<std::endl;*/
-            ASampler.extraInitialization();
-            PSampler.extraInitialization();
-            std::cout<<" AP sums after extra init: "<<
-                gaps::sum(ASampler.APMatrix())<<" and "<<
-                gaps::sum(PSampler.APMatrix())<<std::endl;
-            
-        }
-        ASampler.sync(PSampler);
-        PSampler.sync(ASampler);
-
-        ASampler.extraInitialization();
-        PSampler.extraInitialization();
-        
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);
 
