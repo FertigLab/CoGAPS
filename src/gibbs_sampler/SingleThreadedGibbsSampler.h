@@ -116,7 +116,7 @@ template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThreads) // NOLINT
 {
     char type; //#
-    std::cout<<"Type: ";
+    //std::cout<<"Type: ";
     for (unsigned i = 0; i < nSteps; ++i)
     {
         switch (type=getUpdateType())
@@ -126,7 +126,7 @@ void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nTh
             case 'M': move();     break;
             case 'E': exchange(); break;
         }
-        std::cout<<type;
+        //std::cout<<type;
     }
 }
 
@@ -140,7 +140,7 @@ void SingleThreadedGibbsSampler<DataModel>::birth()
     unsigned row = (pos / mBinLength) / mNumPatterns;
     unsigned col = (pos / mBinLength) % mNumPatterns;
     
-    std::cout<<"Birth at ["<<row<<","<<col<<"]; apos="<<pos;
+    std::cout<<"Birth at ["<<row<<","<<col<<"]; apos="<<pos<<std::endl;
 
     // try to get mass using gibbs, resort to exponential if needed
     OptionalFloat mass = DataModel::canUseGibbs(col)
