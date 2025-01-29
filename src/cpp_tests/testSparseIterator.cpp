@@ -1,4 +1,5 @@
-#include "catch.h"
+#include <testthat.h>
+#include "../testthat-tweak.h"
 #include "../math/Random.h"
 #include "../math/VectorMath.h"
 #include "../data_structures/Matrix.h"
@@ -9,7 +10,7 @@
 
 #include <bitset>
 
-TEST_CASE("Test SparseIterator.h - One Dimensional")
+TEST_CASE("Test SparseIterator.h - One Dimensional","[sparseiterator][1D]")
 {
 #if 0
     SECTION("Simple Case")
@@ -62,7 +63,7 @@ TEST_CASE("Test SparseIterator.h - One Dimensional")
     }
 }
 
-TEST_CASE("Test SparseIterator.h - Two Dimensional")
+TEST_CASE("Test SparseIterator.h - Two Dimensional","[sparseiterator][2D]")
 {
 #if 0
    SECTION("Simple Case")
@@ -240,7 +241,7 @@ static float tripleProduct(const Vector &v1, const Vector &v2, const Vector &v3)
     return prod;
 }   
 
-TEST_CASE("Test SparseIterator.h - Three Dimensional")
+TEST_CASE("Test SparseIterator.h - Three Dimensional","[sparseiterator][3D]")
 {
 #if 0
    SECTION("Simple Case")

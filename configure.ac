@@ -1,5 +1,5 @@
 # get version of CoGAPS from DESCRIPTION file
-AC_INIT(CoGAPS, m4_esyscmd_s([awk '/^Version:/ {print $2}' DESCRIPTION]))
+AC_INIT([CoGAPS],m4_esyscmd_s([awk '/^Version:/ {print $2}' DESCRIPTION]))
 
 # get C++ compiler from R configuration
 CXX=`"${R_HOME}/bin/R" CMD config CXX`
@@ -10,20 +10,21 @@ AC_REQUIRE_CPP
 AC_PROG_CXX
 
 # Check if compiling debug version
-AC_ARG_ENABLE(debug, [AC_HELP_STRING([--enable-debug],
-    [build debug version of CoGAPS])], [build_debug=yes], [build_debug=no])
+AC_ARG_ENABLE(debug, [AS_HELP_STRING([--enable-debug],[build debug version of CoGAPS])], [build_debug=yes], [build_debug=no])
 
 # Check if running C++ tests (this adds to compilation time)
-AC_ARG_ENABLE(cpp-tests, [AC_HELP_STRING([--enable-cpp-tests],
-    [turn on C++ unit tests])], [cpp_tests=yes], [cpp_tests=no])
-
+AC_ARG_ENABLE(cpp-tests, [AS_HELP_STRING([--enable-cpp-tests],[turn on C++ unit tests])], 
+       [case "${enableval}" in
+        no)  cpp_tests_disable=yes ;;
+        yes) cpp_tests_disable=no ;;
+        *) AC_MSG_ERROR([--enable-cpp-tests understads only 'no' value]) ;;
+     esac],[cpp_tests_disable=no]) 
+    
 # Check if compiler warnings should be turned on
-AC_ARG_ENABLE(warnings, [AC_HELP_STRING([--enable-warnings],
-    [compile CoGAPS with warning messages])], [warnings=yes], [warnings=no])
+AC_ARG_ENABLE(warnings, [AS_HELP_STRING([--enable-warnings],[compile CoGAPS with warning messages])], [warnings=yes], [warnings=no])
 
 # Use SIMD unless requested not to
-AC_ARG_ENABLE(simd, [AC_HELP_STRING([--enable-simd],
-    [compile with SIMD support if available])],
+AC_ARG_ENABLE(simd, [AS_HELP_STRING([--enable-simd],[compile with SIMD support if available])],
     [use_simd=$enableval], [use_simd=yes])
 
 # default CoGAPS specific flags
@@ -36,8 +37,7 @@ AX_COMPILER_VENDOR
 AX_COMPILER_VERSION
 
 # set openmp flags, disable only if requested
-AC_ARG_ENABLE(openmp, [AC_HELP_STRING([--enable-openmp],
-    [compile with openMP support if available])],
+AC_ARG_ENABLE(openmp, [AS_HELP_STRING([--enable-openmp],[compile with openMP support if available])],
     [use_openmp=$enableval], [use_openmp=yes])
 
 AX_OPENMP
@@ -103,11 +103,19 @@ GAPS_SOURCE_FILES+=" math/Random.o"
 GAPS_SOURCE_FILES+=" math/VectorMath.o"
 
 # add c++ tests to source list
-if test "x$cpp_tests" = "xyes" ; then
+if test "x$cpp_tests_disable" != "xyes" ; then
     echo "Enabling C++ Unit Tests"
     GAPS_CPP_FLAGS+=" -DGAPS_CPP_UNIT_TESTS "
     GAPS_SOURCE_FILES+=" cpp_tests/testVector.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSparseVector.o"
+	GAPS_SOURCE_FILES+=" cpp_tests/testHashSets.o"
+	GAPS_SOURCE_FILES+=" cpp_tests/testHybridMatrix.o"
+	GAPS_SOURCE_FILES+=" cpp_tests/testHybridVector.o"
+	GAPS_SOURCE_FILES+=" cpp_tests/testSparseIterator.o"
+#    GAPS_SOURCE_FILES+=" cpp_tests/testConcurrentAtomicDomain.o"
 fi
+# commented files in the if above are to be reviwed
+
 
 # export variables containing flags
 AC_SUBST(GAPS_CPP_FLAGS)

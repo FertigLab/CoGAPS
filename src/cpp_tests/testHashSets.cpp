@@ -1,8 +1,9 @@
-#include "catch.h"
+#include <testthat.h>
+#include "../testthat-tweak.h"
 #include "../data_structures/HashSets.h"
 #include "../math/Random.h"
 
-TEST_CASE("Test HashSets.h - FixedHashSetU32")
+TEST_CASE("Test HashSets.h - FixedHashSetU32","[hashset][U32]")
 {
     GapsRandomState randState(123);
 
@@ -26,7 +27,7 @@ TEST_CASE("Test HashSets.h - FixedHashSetU32")
     }
 }
 
-TEST_CASE("Test HashSets.h - SmallHashSetU64")
+TEST_CASE("Test HashSets.h - SmallHashSetU64","[hashset][U64]")
 {
     GapsRandomState randState(123);
 
@@ -50,7 +51,7 @@ TEST_CASE("Test HashSets.h - SmallHashSetU64")
     }
 }
 
-TEST_CASE("Test HashSets.h - SmallPairedHashSetU64")
+TEST_CASE("Test HashSets.h - SmallPairedHashSetU64","[hashset][pairedU64]")
 {
     SmallPairedHashSetU64 hSet;
     REQUIRE(hSet.isEmpty());
