@@ -130,12 +130,12 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
         std::cout<<std::fixed<<std::setprecision(3);
         for (unsigned i = 0; i < 2; ++i)
         {   
-            std::cout<<"A: "<<" sum before="<<gaps::sum(ASampler.MyMatrix())<<" ";
+            std::cout<<"A: "<<" sum before="<<gaps::sum(ASampler.MyMatrix())<<"\n";
             ASampler.update(1, 1);
-            std::cout<<" sum after="<<gaps::sum(ASampler.MyMatrix())<<"\n";
-            std::cout<<"P: "<<" sum before="<<gaps::sum(PSampler.MyMatrix())<<" ";
+            std::cout<<"A sum after="<<gaps::sum(ASampler.MyMatrix())<<"\n";
+            std::cout<<"P: "<<" sum before="<<gaps::sum(PSampler.MyMatrix())<<"\n";
             PSampler.update(1, 1);
-            std::cout<<" sum after="<<gaps::sum(PSampler.MyMatrix())<<"\n";
+            std::cout<<"P sum after="<<gaps::sum(PSampler.MyMatrix())<<"\n";
 
             ASampler.extraInitialization();
             PSampler.extraInitialization();
@@ -231,12 +231,12 @@ TEST_CASE("Test DenseGibbsSampler on random 2 matrix","[densesinglesampler][rand
         std::cout<<std::fixed<<std::setprecision(3);
         for (unsigned i = 0; i < 2; ++i)
         {   
-            std::cout<<"A: "<<" sum before="<<gaps::sum(ASampler.MyMatrix())<<" ";
+            std::cout<<"A: "<<" sum before="<<gaps::sum(ASampler.MyMatrix())<<"\n";
             ASampler.update(1, 1);
-            std::cout<<" sum after="<<gaps::sum(ASampler.MyMatrix())<<"\n";
-            std::cout<<"P: "<<" sum before="<<gaps::sum(PSampler.MyMatrix())<<" ";
+            std::cout<<"A sum after="<<gaps::sum(ASampler.MyMatrix())<<"\n";
+            std::cout<<"P: "<<" sum before="<<gaps::sum(PSampler.MyMatrix())<<"\n";
             PSampler.update(1, 1);
-            std::cout<<" sum after="<<gaps::sum(PSampler.MyMatrix())<<"\n";
+            std::cout<<"P sum after="<<gaps::sum(PSampler.MyMatrix())<<"\n";
 
             ASampler.extraInitialization();
             PSampler.extraInitialization();
