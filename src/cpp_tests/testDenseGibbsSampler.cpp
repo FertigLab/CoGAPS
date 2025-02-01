@@ -328,6 +328,9 @@ TEST_CASE("Test DenseGibbsSampler on gist matrix","[densesinglesampler][gistmat]
         ASampler.extraInitialization();
         PSampler.extraInitialization();
 
+        std::cout<<std::fixed<<std::setprecision(10)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\n";//A.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
+
+
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);
 
