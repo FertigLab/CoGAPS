@@ -6,7 +6,8 @@
 \usage{
 CoGAPS(
   data,
-  params = new("CogapsParams"),
+  params = new("CogapsParams", nPatterns = nPatterns),
+  nPatterns,
   nThreads = 1,
   messages = TRUE,
   outputFrequency = 1000,

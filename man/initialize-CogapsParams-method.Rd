@@ -4,7 +4,7 @@
 \alias{initialize,CogapsParams-method}
 \title{constructor for CogapsParams}
 \usage{
-\S4method{initialize}{CogapsParams}(.Object, distributed = NULL, ...)
+\S4method{initialize}{CogapsParams}(.Object, distributed = NULL, nPatterns, ...)
 }
 \arguments{
 \item{.Object}{CogapsParams object}
