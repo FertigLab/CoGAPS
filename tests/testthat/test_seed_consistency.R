@@ -37,7 +37,7 @@ test_that("same seed == same result",
     res2 <- CoGAPS(gistMtxPath, nIterations=100, outputFrequency=10, seed=42,
                    nPatterns=7, messages=FALSE, distributed="genome-wide")
     expect_true(resultsEqual(res1, res2))
-    
+
     # multiple threads, dense sampler
     res1 <- CoGAPS(gistMtxPath, nIterations=100, outputFrequency=10, seed=42,
                    nPatterns=7, messages=FALSE, nThreads=1,

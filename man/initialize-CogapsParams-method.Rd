@@ -12,6 +12,8 @@
 \item{distributed}{either "genome-wide" or "single-cell" indicating which
 distributed algorithm should be used}
 
+\item{nPatterns}{number of patterns}
+
 \item{...}{initial values for slots}
 }
 \value{

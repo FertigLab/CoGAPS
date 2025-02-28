@@ -14,17 +14,11 @@ callInternalCoGAPS(data, allParams, uncertainty, subsetIndices, workerID)
 
 \item{allParams}{list of all parameters}
 
-\item{uncertainty}{uncertainty of data in the same format}
+\item{uncertainty}{uncertainty of data in the same format as data}
 
-\item{index}{index for which subset to run on}
+\item{subsetIndices}{indices of the subset of data to run on}
 
-\item{sets}{list of all subsets}
-
-\item{geneNames}{names of all genes}
-
-\item{sampleNames}{names of all samples}
-
-\item{fixedMatrix}{matrix of matched patterns}
+\item{workerID}{worker ID for parallelization}
 }
 \value{
 CogapsResult object
