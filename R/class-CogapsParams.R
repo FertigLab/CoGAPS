@@ -78,7 +78,7 @@ setClass("CogapsParams", slots = c(
 #' @return initialized CogapsParams object
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsParams",
-    function(.Object, distributed=NULL, ...)
+    function(.Object, distributed=NULL, nPatterns, ...)
     {
         getMilliseconds <- function(time) floor((time$sec %% 1) * 1000)
 
@@ -94,8 +94,8 @@ setMethod("initialize", "CogapsParams",
             if (distributed == "none") # allows it to be a pure string parameter
                 distributed <- NULL
         .Object@distributed <- distributed
-        
-        .Object@nPatterns <- 7
+
+        .Object@nPatterns <- nPatterns
         .Object@nIterations <- 50000
         .Object@alphaA <- 0.01
         .Object@alphaP <- 0.01

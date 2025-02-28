@@ -86,11 +86,12 @@ compiledWithOpenMPSupport <- function()
 #' params <- setParam(params, "nPatterns", 3)
 #' resultC <- CoGAPS(GIST.data_frame, params, nIterations=25)
 #' @importFrom methods new is
-CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
-outputFrequency=1000, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
-checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
-BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, nSnapshots=0,
-snapshotPhase='sampling', ...)
+CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
+                   nPatterns, nThreads=1, messages=TRUE, outputFrequency=1000,
+                   uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
+                   checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
+                   BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, nSnapshots=0,
+                   snapshotPhase='sampling', ...)
 {
     # pre-process inputs
     if (is(data, "character"))
