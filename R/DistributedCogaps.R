@@ -3,15 +3,11 @@
 #' instead. It is a light wrapper around cogaps_cpp that handles setting
 #' the distributed parameters
 #' @keywords internal
-#'
-#' @param index index for which subset to run on
-#' @param sets list of all subsets
 #' @param data data in a supported format
 #' @param allParams list of all parameters
-#' @param uncertainty uncertainty of data in the same format
-#' @param geneNames names of all genes
-#' @param sampleNames names of all samples
-#' @param fixedMatrix matrix of matched patterns
+#' @param uncertainty uncertainty of data in the same format as data
+#' @param subsetIndices indices of the subset of data to run on
+#' @param workerID worker ID for parallelization
 #' @return CogapsResult object
 callInternalCoGAPS <- function(data, allParams, uncertainty, subsetIndices,
 workerID)

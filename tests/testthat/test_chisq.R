@@ -2,7 +2,7 @@ test_that('chi-square reported by CoGAPS mathches manually calculated (w/uncerta
     data(GIST)
     data <- GIST.data_frame
     unc <- 0.1*as.matrix(data)
-    res <- CoGAPS(data, nIterations=1000, uncertainty = unc,
+    res <- CoGAPS(data, nIterations=1000, uncertainty=unc, nPatterns=3,
                   seed=1, messages=FALSE, sparseOptimization=FALSE)
     reported <- getMeanChiSq(res)
 

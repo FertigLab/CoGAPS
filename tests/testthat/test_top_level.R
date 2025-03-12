@@ -21,12 +21,12 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     # data types
     res <- list()
-    res[[1]] <- CoGAPS(testDataFrame, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
-    res[[2]] <- CoGAPS(testMatrix, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
-    res[[3]] <- CoGAPS(gistCsvPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
-    res[[4]] <- CoGAPS(gistTsvPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
-    res[[5]] <- CoGAPS(gistMtxPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
-    res[[6]] <- CoGAPS(gistGctPath, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[1]] <- CoGAPS(testDataFrame, nPatterns=7, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[2]] <- CoGAPS(testMatrix, nPatterns=7, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[3]] <- CoGAPS(gistCsvPath, nPatterns=7, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[4]] <- CoGAPS(gistTsvPath, nPatterns=7, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[5]] <- CoGAPS(gistMtxPath, nPatterns=7, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
+    res[[6]] <- CoGAPS(gistGctPath, nPatterns=7, nIterations=100, outputFrequency=50, seed=1, messages=FALSE)
     expect_true(all(sapply(res, no_na_in_result)))
     
     expect_equal(nrow(res[[1]]@featureLoadings), 1363)
@@ -41,17 +41,17 @@ test_that("Valid Top-Level CoGAPS Calls",
     # transposing data
     res <- list()
     res[[1]] <- CoGAPS(testDataFrame, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE)
+        nPatterns=7, outputFrequency=50, seed=1, messages=FALSE)
     res[[2]] <- CoGAPS(testMatrix, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE)
+        nPatterns=7, outputFrequency=50, seed=1, messages=FALSE)
     res[[3]] <- CoGAPS(gistCsvPath, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE)
+        nPatterns=7, outputFrequency=50, seed=1, messages=FALSE)
     res[[4]] <- CoGAPS(gistTsvPath, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE)
+        nPatterns=7, outputFrequency=50, seed=1, messages=FALSE)
     res[[5]] <- CoGAPS(gistMtxPath, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE)
+        nPatterns=7, outputFrequency=50, seed=1, messages=FALSE)
     res[[6]] <- CoGAPS(gistGctPath, transposeData=TRUE, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE)
+        nPatterns=7, outputFrequency=50, seed=1, messages=FALSE)
     expect_true(all(sapply(res, no_na_in_result)))
     
     expect_equal(nrow(res[[1]]@featureLoadings), 9)
@@ -65,24 +65,24 @@ test_that("Valid Top-Level CoGAPS Calls",
 
     # passing uncertainty
     expect_error(res <- CoGAPS(testDataFrame, uncertainty=as.matrix(GIST.uncertainty),
-        nIterations=100, outputFrequency=50, seed=1, messages=FALSE), NA)    
+        nPatterns=7, nIterations=100, outputFrequency=50, seed=1, messages=FALSE), NA)
     expect_true(no_na_in_result(res))
 
     # multiple threads
-    expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
+    expect_error(res <- CoGAPS(testDataFrame, nIterations=100, nPatterns=7,
         outputFrequency=50, seed=1, messages=FALSE, nThreads=2), NA)
     expect_true(no_na_in_result(res))
 
-    expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
+    expect_error(res <- CoGAPS(testDataFrame, nIterations=100, nPatterns=7,
         outputFrequency=50, seed=1, messages=FALSE, nThreads=6), NA)
     expect_true(no_na_in_result(res))
 
-    expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
+    expect_error(res <- CoGAPS(testDataFrame, nIterations=100, nPatterns=7,
         outputFrequency=50, seed=1, messages=FALSE, nThreads=12), NA)
     expect_true(no_na_in_result(res))
 
     # genome-wide CoGAPS 
-    expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
+    expect_error(res <- CoGAPS(gistTsvPath, nIterations=100, nPatterns=7,
         outputFrequency=50, seed=1, messages=FALSE, distributed="genome-wide"), NA)
     expect_true(no_na_in_result(res))
 
@@ -91,7 +91,7 @@ test_that("Valid Top-Level CoGAPS Calls",
     #expect_equal(rownames(res@featureLoadings), rownames(GIST.matrix))
     expect_equal(rownames(res@sampleFactors), colnames(GIST.matrix))
 
-    expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
+    expect_error(res <- CoGAPS(gistTsvPath, nIterations=100, nPatterns=7,
         outputFrequency=50, seed=1, messages=FALSE, distributed="genome-wide"), NA)
     expect_true(no_na_in_result(res))
 
@@ -99,7 +99,7 @@ test_that("Valid Top-Level CoGAPS Calls",
     expect_equal(nrow(res@sampleFactors), 9)
 
     # single-cell CoGAPS
-    expect_error(res <- CoGAPS(gistCsvPath, nIterations=100,
+    expect_error(res <- CoGAPS(gistCsvPath, nIterations=100, nPatterns=7,
         outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell",
         transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
@@ -109,7 +109,7 @@ test_that("Valid Top-Level CoGAPS Calls",
     expect_equal(rownames(res@featureLoadings), colnames(GIST.matrix))
 #    expect_equal(rownames(res@sampleFactors), rownames(GIST.matrix))
 
-    expect_error(res <- CoGAPS(gistMtxPath, nIterations=100,
+    expect_error(res <- CoGAPS(gistMtxPath, nIterations=100, nPatterns=7,
         outputFrequency=50, seed=1, messages=FALSE, distributed="single-cell",
         transposeData=TRUE), NA)
     expect_true(no_na_in_result(res))
@@ -122,10 +122,10 @@ test_that("Valid Top-Level CoGAPS Calls",
         messages=FALSE, nPatterns=3, distributed="none")
     expect_true(is.null(res@metadata$params@distributed))
 
-    params <- CogapsParams()
+    params <- CogapsParams(nPatterns=3)
     params <- setParam(params, "distributed", "none")
-    res <- CoGAPS(gistCsvPath, params, nIterations=100, outputFrequency=100, seed=42,
-        messages=FALSE, nPatterns=3)
+    res <- CoGAPS(gistCsvPath, params=params, nIterations=100, outputFrequency=100, seed=42,
+        messages=FALSE)
     expect_true(is.null(res@metadata$params@distributed))
 
     # test using RDS file for parameters
@@ -137,8 +137,8 @@ test_that("Valid Top-Level CoGAPS Calls",
     params <- setFixedPatterns(params, matP, "P")
     saveRDS(params, file="temp_params.rds")
 
-    res1 <- CoGAPS(gistMtxPath, params)
-    res2 <- CoGAPS(gistMtxPath, "temp_params.rds")
+    res1 <- CoGAPS(gistMtxPath, params=params)
+    res2 <- CoGAPS(gistMtxPath, params="temp_params.rds")
     file.remove("temp_params.rds")
     
     expect_true(all(res1@featureLoadings == res2@featureLoadings))

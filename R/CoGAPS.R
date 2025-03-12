@@ -46,6 +46,7 @@ compiledWithOpenMPSupport <- function()
 #' SingleCellExperiment. The supported file types are csv, tsv, and mtx.
 #' @param data File name or R object (see details for supported types)
 #' @param params CogapsParams object
+#' @param nPatterns rank of the nmf decomposition
 #' @param nThreads maximum number of threads to run on
 #' @param messages T/F for displaying output
 #' @param outputFrequency number of iterations between each output (set to 0 to
@@ -75,22 +76,23 @@ compiledWithOpenMPSupport <- function()
 #' @examples
 #' # Running from R object
 #' data(GIST)
-#' resultA <- CoGAPS(GIST.data_frame, nIterations=25)
+#' resultA <- CoGAPS(GIST.data_frame, nPatterns=3, nIterations=25)
 #'
 #' # Running from file name
 #' gist_path <- system.file("extdata/GIST.mtx", package="CoGAPS")
-#' resultB <- CoGAPS(gist_path, nIterations=25)
+#' resultB <- CoGAPS(gist_path, nPatterns=3, nIterations=25)
 #'
 #' # Setting Parameters
-#' params <- new("CogapsParams")
-#' params <- setParam(params, "nPatterns", 3)
-#' resultC <- CoGAPS(GIST.data_frame, params, nIterations=25)
+#' params <- new("CogapsParams", nPatterns=3)
+#' params <- setParam(params, "nIterations", 25)
+#' resultC <- CoGAPS(GIST.data_frame, params)
 #' @importFrom methods new is
-CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
-outputFrequency=1000, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
-checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
-BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, nSnapshots=0,
-snapshotPhase='sampling', ...)
+CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
+                   nPatterns, nThreads=1, messages=TRUE, outputFrequency=1000,
+                   uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
+                   checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
+                   BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, nSnapshots=0,
+                   snapshotPhase='sampling', ...)
 {
     # pre-process inputs
     if (is(data, "character"))
@@ -163,10 +165,9 @@ snapshotPhase='sampling', ...)
 #' @examples
 #' \dontrun{
 #' data(GIST)
-#' params <- new("CogapsParams")
+#' params <- new("CogapsParams", nPatterns=3)
 #' params <- setDistributedParams(params, nSets=2)
 #' params <- setParam(params, "nIterations", 100)
-#' params <- setParam(params, "nPatterns", 3)
 #' result <- scCoGAPS(t(GIST.matrix), params, BPPARAM=BiocParallel::SerialParam())
 #' }
 scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
@@ -204,10 +205,9 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
 #' @examples
 #' \dontrun{
 #' data(GIST)
-#' params <- new("CogapsParams")
+#' params <- new("CogapsParams", nPatterns=3)
 #' params <- setDistributedParams(params, nSets=2)
 #' params <- setParam(params, "nIterations", 100)
-#' params <- setParam(params, "nPatterns", 3)
 #' result <- GWCoGAPS(GIST.matrix, params, BPPARAM=BiocParallel::SerialParam())
 #' }
 GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,

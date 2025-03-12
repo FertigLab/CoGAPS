@@ -4,7 +4,7 @@ test_that("standard cogaps on a subset of the data",
 {
     data(GIST)    
     subset <- sample(1:nrow(GIST.matrix), 500)
-    result <- CoGAPS(GIST.matrix, nIterations=50, messages=FALSE, seed=42,
+    result <- CoGAPS(GIST.matrix, nPatterns=7, nIterations=50, messages=FALSE, seed=42,
         subsetIndices=subset, subsetDim=1)
     expect_equal(length(subset), nrow(result@featureLoadings))
 })

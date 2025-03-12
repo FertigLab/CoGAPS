@@ -4,13 +4,15 @@
 \alias{initialize,CogapsParams-method}
 \title{constructor for CogapsParams}
 \usage{
-\S4method{initialize}{CogapsParams}(.Object, distributed = NULL, ...)
+\S4method{initialize}{CogapsParams}(.Object, distributed = NULL, nPatterns, ...)
 }
 \arguments{
 \item{.Object}{CogapsParams object}
 
 \item{distributed}{either "genome-wide" or "single-cell" indicating which
 distributed algorithm should be used}
+
+\item{nPatterns}{number of patterns}
 
 \item{...}{initial values for slots}
 }

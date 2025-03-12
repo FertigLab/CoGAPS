@@ -74,11 +74,12 @@ setClass("CogapsParams", slots = c(
 #' @param .Object CogapsParams object
 #' @param distributed either "genome-wide" or "single-cell" indicating which
 #' distributed algorithm should be used
+#' @param nPatterns number of patterns
 #' @param ... initial values for slots
 #' @return initialized CogapsParams object
 #' @importFrom methods callNextMethod
 setMethod("initialize", "CogapsParams",
-    function(.Object, distributed=NULL, ...)
+    function(.Object, distributed=NULL, nPatterns, ...)
     {
         getMilliseconds <- function(time) floor((time$sec %% 1) * 1000)
 
@@ -94,8 +95,8 @@ setMethod("initialize", "CogapsParams",
             if (distributed == "none") # allows it to be a pure string parameter
                 distributed <- NULL
         .Object@distributed <- distributed
-        
-        .Object@nPatterns <- 7
+
+        .Object@nPatterns <- nPatterns
         .Object@nIterations <- 50000
         .Object@alphaA <- 0.01
         .Object@alphaP <- 0.01
@@ -201,7 +202,7 @@ setValidity("CogapsParams",
 #' @param value the value to set the parameter to
 #' @return the modified params object
 #' @examples
-#'  params <- new("CogapsParams")
+#'  params <- new("CogapsParams", nPatterns=3)
 #'  params <- setParam(params, "seed", 123)
 setGeneric("setParam", function(object, whichParam, value)
     {standardGeneric("setParam")})
@@ -220,7 +221,7 @@ setGeneric("setParam", function(object, whichParam, value)
 #' @param maxNS maximum of individual set contributions a cluster can contain
 #' @return the modified params object
 #' @examples
-#'  params <- new("CogapsParams")
+#'  params <- new("CogapsParams", nPatterns=3)
 #'  params <- setDistributedParams(params, 5)
 setGeneric("setDistributedParams", function(object, nSets=NULL, cut=NULL,
 minNS=NULL, maxNS=NULL)
@@ -237,7 +238,7 @@ minNS=NULL, maxNS=NULL)
 #' @param weights vector of weights
 #' @return the modified params object
 #' @examples
-#'  params <- new("CogapsParams")
+#'  params <- new("CogapsParams", nPatterns=3)
 #'  params <- setAnnotationWeights(params, c('a', 'b', 'c'), c(1,2,1))
 setGeneric("setAnnotationWeights", function(object, annotation, weights)
     {standardGeneric("setAnnotationWeights")})
@@ -253,7 +254,7 @@ setGeneric("setAnnotationWeights", function(object, annotation, weights)
 #' @param whichMatrixFixed either 'A' or 'P' indicating which matrix is fixed
 #' @return the modified params object
 #' @examples
-#' params <- new("CogapsParams")
+#' params <- new("CogapsParams", nPatterns=3)
 #' data(GIST)
 #' params <- setFixedPatterns(params, getSampleFactors(GIST.result), 'P')
 setGeneric("setFixedPatterns", function(object, fixedPatterns, whichMatrixFixed)
@@ -268,7 +269,7 @@ setGeneric("setFixedPatterns", function(object, fixedPatterns, whichMatrixFixed)
 #' @param whichParam a string with the name of the requested parameter
 #' @return the value of the parameter
 #' @examples
-#'  params <- new("CogapsParams")
+#'  params <- new("CogapsParams", nPatterns=3)
 #'  getParam(params, "seed")
 setGeneric("getParam", function(object, whichParam)
     {standardGeneric("getParam")})

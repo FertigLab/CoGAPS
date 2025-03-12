@@ -68,10 +68,9 @@ wrapper around genome-wide distributed algorithm for CoGAPS
 \examples{
 \dontrun{
 data(GIST)
-params <- new("CogapsParams")
+params <- new("CogapsParams", nPatterns=3)
 params <- setDistributedParams(params, nSets=2)
 params <- setParam(params, "nIterations", 100)
-params <- setParam(params, "nPatterns", 3)
 result <- GWCoGAPS(GIST.matrix, params, BPPARAM=BiocParallel::SerialParam())
 }
 }
