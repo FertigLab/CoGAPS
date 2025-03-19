@@ -222,7 +222,7 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
         float A_SumInit=gaps::sum(ASampler.MyMatrix());
         float P_SumInit=gaps::sum(PSampler.MyMatrix());
         std::cout<<std::fixed<<std::setprecision(3);
-        for (unsigned i = 0; i < 2; ++i)
+        for (unsigned i = 0; i < 20; ++i)
         {   
             std::cout<<"A: "<<" sum before="<<gaps::sum(ASampler.MyMatrix())<<" ";
             ASampler.update(1, 1);
@@ -260,7 +260,7 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
         const Matrix & AAP=ASampler.APMatrix();
         const Matrix & PAP=PSampler.APMatrix();
         //just a ref
-        std::cout<<std::fixed<<std::setprecision(2)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nA.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
+        std::cout<<std::fixed<<std::setprecision(20)<<"A:\n"<<ASampler.MyMatrix()<<"\nP\n"<<PSampler.MyMatrix()<<"\nA.AP\n"<<AAP<<"\nP.AP\n"<<PAP<<"\n";
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);
 
