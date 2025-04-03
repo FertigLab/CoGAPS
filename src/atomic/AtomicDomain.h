@@ -36,8 +36,12 @@ private:
     void erase(Atom *atom);
     void move(Atom *atom, uint64_t newPos);
 
-    AtomMapType mAtomMap; // sorted, used when inserting atoms to find neighbors
-    std::vector<Atom> mAtoms; // unsorted, used for reads
+    AtomMapType mAtomMap; 
+    // sorted, used when inserting atoms to find neighbors
+    //It is a map from atomic coordinate to index
+    std::vector<Atom> mAtoms; 
+    // unsorted, used for reads
+    //vector of atoms, we store them here index by the map
     uint64_t mDomainLength; // size of atomic domain to ensure all bins are equal length
 };
 
