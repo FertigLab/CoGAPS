@@ -36,13 +36,17 @@ private:
     void erase(Atom *atom);
     void move(Atom *atom, uint64_t newPos);
 
-    AtomMapType mAtomMap; 
-    // sorted, used when inserting atoms to find neighbors
-    //It is a map from atomic coordinate to index
     std::vector<Atom> mAtoms; 
-    // unsorted, used for reads
-    //vector of atoms, we store them here index by the map
+    //It is the vector of atoms, we store them here, it is storage
+
+    AtomMapType mAtomMap; 
+    //it is a map from atomic space coordinate (key) to index in the storage
+    //sorted, used when inserting atoms to find neighbors
+
+    //Two structures are easy to understand in DB metaphor: mAtoms is the table of atoms; mAtomMap is the index by atomic coord
+
     uint64_t mDomainLength; // size of atomic domain to ensure all bins are equal length
+
 };
 
 #endif // __COGAPS_ATOMIC_DOMAIN_H__
