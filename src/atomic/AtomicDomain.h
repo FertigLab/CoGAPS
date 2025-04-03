@@ -38,6 +38,10 @@ private:
 
     std::vector<Atom> mAtoms; 
     //It is the vector of atoms, we store them here, it is storage
+    //CoPilot: 
+    //The index type for the std::vector<Atom> named mAtoms is std::vector<Atom>::size_type, 
+    //which is typically defined as std::size_t. 
+    //This type is used for indexing and specifying the size of the vector.
 
     AtomMapType mAtomMap; 
     //it is a map from atomic space coordinate (key) to index in the storage
