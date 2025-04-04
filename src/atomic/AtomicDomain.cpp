@@ -29,14 +29,14 @@ Atom* AtomicDomain::front()
 Atom* AtomicDomain::randomAtom(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
-    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
+    size_t index = rng->uniform64(0, mAtoms.size() - 1);
     return &(mAtoms[index]);
 }
 
 AtomNeighborhood AtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
 {
     GAPS_ASSERT(size() > 0);
-    unsigned index = rng->uniform32(0, mAtoms.size() - 1);
+    size_t index = rng->uniform64(0, mAtoms.size() - 1);
     Atom *center = &(mAtoms[index]);
     Atom *left = center->hasLeft() ? &(mAtoms[center->leftIndex()]) : NULL;
     Atom *right = center->hasRight() ? &(mAtoms[center->rightIndex()]) : NULL;
@@ -60,10 +60,10 @@ uint64_t AtomicDomain::size() const
 
 Atom* AtomicDomain::insert(uint64_t pos, float mass)
 {
-    unsigned index = mAtoms.size();
+    size_t index = mAtoms.size();
     mAtoms.push_back(Atom(pos, mass));
     mAtoms[index].setIndex(index);
-    mAtoms[index].setIterator(mAtomMap.insert(std::pair<uint64_t, unsigned>(pos, index)).first);
+    mAtoms[index].setIterator(mAtomMap.insert(std::pair<uint64_t, size_t>(pos, index)).first);
 
     // connect with right and left neighbors
     AtomMapType::iterator itRight(mAtoms[index].iterator());
@@ -95,7 +95,7 @@ void AtomicDomain::erase(Atom *atom)
     }
     
     // update the neighbors and the map
-    unsigned index = atom->index();
+    size_t index = atom->index();
     if (index < mAtoms.size() - 1) // we are moving the last atom
     {
         int leftIndex = mAtoms.back().leftIndex();
