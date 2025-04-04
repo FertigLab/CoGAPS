@@ -76,17 +76,19 @@ bool Atom::hasRight() const
     return mHasRight;
 }
 
-int Atom::leftIndex() const
+size_t Atom::leftIndex() const
 {
+    GAPS_ASSERT(mHasLeft);
     return mLeftIndex;
 }
 
-int Atom::rightIndex() const
+size_t Atom::rightIndex() const
 {
+    GAPS_ASSERT(mHasRight);
     return mRightIndex;
 }
 
-int Atom::index() const
+size_t Atom::index() const
 {
     return mIndex;
 }
