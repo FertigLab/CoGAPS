@@ -61,6 +61,7 @@ public:
     
     std::pair<iterator, bool> insert(const std::pair<K, V> &val)
     {
+        //insert return iterator and success flag
         std::pair< typename std::map<K, V>::iterator, bool> result = mMap.insert(val);
         iterator it(result.first);
         return std::pair<iterator, bool>(it, result.second);
@@ -78,7 +79,12 @@ public:
 
     void updateKey(iterator it, const K &newKey)
     {
-        const_cast<uint64_t&>((*it).first) = newKey; // TODO cleaner solution that this
+        // const_cast<uint64_t&>((*it).first) = newKey; 
+        // TODO cleaner solution that this
+        std::pair<K,V> newpair(newKey,it.mIt->second);
+        mMap.erase(it.mIt);
+        mMap.insert(newpair);
+
     }
 
     iterator begin()
