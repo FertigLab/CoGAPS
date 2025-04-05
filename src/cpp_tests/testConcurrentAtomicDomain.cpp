@@ -4,7 +4,7 @@
 #include "../math/Random.h"
 #include "../utils/GapsPrint.h"
 
-TEST_CASE("AtomicDomain")
+TEST_CASE("ConcurrentAtomicDomain")
 {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
