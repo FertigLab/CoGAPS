@@ -21,6 +21,12 @@ public:
     AtomNeighborhood randomAtomWithNeighbors(GapsRng *rng);
     uint64_t randomFreePosition(GapsRng *rng) const;
     uint64_t size() const;
+
+    //we move the access function to public to be able to test them
+    Atom* insert(uint64_t pos, float mass);
+    void erase(Atom *atom);
+    void move(Atom *atom, uint64_t newPos);
+
     friend Archive& operator<<(Archive &ar, const AtomicDomain &domain);
     friend Archive& operator>>(Archive &ar, AtomicDomain &domain);
 private:
@@ -31,10 +37,6 @@ private:
     // to enforce this contract between classes.
     template <class StoragePolicy>
     friend class SingleThreadedGibbsSampler;
-
-    Atom* insert(uint64_t pos, float mass);
-    void erase(Atom *atom);
-    void move(Atom *atom, uint64_t newPos);
 
     std::vector<Atom> mAtoms; 
     //It is the vector of atoms, we store them here, it is storage
