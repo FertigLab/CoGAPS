@@ -94,25 +94,32 @@ Atom* AtomicDomain::insert(uint64_t pos, float mass)
 void AtomicDomain::erase(Atom *atom)
 {
     mAtomMap.erase(atom->iterator());
-    if (atom->hasLeft())
+    if (atom->hasLeft() && atom->hasRight())
     {
         mAtoms[atom->leftIndex()].setRightIndex(atom->rightIndex());
-    }
-    if (atom->hasRight())
-    {
         mAtoms[atom->rightIndex()].setLeftIndex(atom->leftIndex());
+    } else {
+        if (atom->hasRight())
+        //is we are here, hasLeft is false
+        {
+            mAtoms[atom->rightIndex()].unsetLeftIndex();
+        }
+        if (atom->hasLeft())
+        //is we are here, hasRight is false
+        {
+            mAtoms[atom->leftIndex()].unsetRightIndex();
+        }
     }
-    
     // update the neighbors and the map
     size_t index = atom->index();
-    if (index < mAtoms.size() - 1) // we are moving the last atom
+    if (index < mAtoms.size() - 1) // we are erasing not the last atom 
     {
         int leftIndex = mAtoms.back().leftIndex();
         int rightIndex = mAtoms.back().rightIndex();
         mAtoms[index] = mAtoms.back();
         mAtoms[index].setIndex(index);
         mAtoms[index].iterator()->second = index;
-        if (leftIndex >= 0)
+        if (Hasleft
         {
             mAtoms[leftIndex].setRightIndex(index);
         }
