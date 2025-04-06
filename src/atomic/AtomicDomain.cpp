@@ -61,9 +61,18 @@ uint64_t AtomicDomain::size() const
 Atom* AtomicDomain::insert(uint64_t pos, float mass)
 {
     size_t index = mAtoms.size();
+    //it will be the index of the atom if inserted
+    auto insertresult=mAtomMap.insert(std::pair<uint64_t, size_t>(pos, index));
+    if (!insertresult.second) {
+        //already exists - so the second ib the returned pair is false
+        //and the first is the map iterator to the existing pair
+        index=insertresult.first->second;
+        return &(mAtoms[index]);
+    }
+    //if we are here, we did de novo insertion
     mAtoms.push_back(Atom(pos, mass));
     mAtoms[index].setIndex(index);
-    mAtoms[index].setIterator(mAtomMap.insert(std::pair<uint64_t, size_t>(pos, index)).first);
+    mAtoms[index].setIterator(insertresult.first);
 
     // connect with right and left neighbors
     AtomMapType::iterator itRight(mAtoms[index].iterator());
