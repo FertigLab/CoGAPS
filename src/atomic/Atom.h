@@ -37,6 +37,8 @@ private:
     void updatePos(uint64_t newPos);
     void setLeftIndex(size_t index);
     void setRightIndex(size_t index);
+    void unsetLeftIndex();
+    void unsetRightIndex();
     void setIndex(size_t index);
     void setIterator(AtomMapType::iterator it);    
     bool hasLeft() const;

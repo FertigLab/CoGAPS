@@ -56,6 +56,16 @@ void Atom::setRightIndex(size_t index)
     mHasRight = true;
 }
 
+void Atom::unsetLeftIndex(){
+    mLeftIndex = (size_t)0;
+    mHasLeft = false;
+}
+
+void Atom::unsetRightIndex(){
+    mRightIndex = (size_t)0;
+    mHasRight = false;
+}
+
 void Atom::setIndex(size_t index)
 {
     mIndex = index;
