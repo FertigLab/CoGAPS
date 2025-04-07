@@ -29,6 +29,13 @@ TEST_CASE("AtomicDomain-basic","[atomicdomain][basic]")
         //atomic coord and mass
         REQUIRE(domain.size() == 3);
     }
+    SECTION("RandomAtom")
+    {
+        size_t sz=domain.size();
+        Atom * del = domain.randomAtom(&rng);
+        std::cout<<del->pos()<<std::endl<<std::flush;
+        REQUIRE(domain.size() == sz);
+    }
     SECTION("DePopulate")
     {
         size_t sz=domain.size();
