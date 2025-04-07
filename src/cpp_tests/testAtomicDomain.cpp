@@ -32,7 +32,9 @@ TEST_CASE("AtomicDomain-basic","[atomicdomain][basic]")
     SECTION("DePopulate")
     {
         size_t sz=domain.size();
-        domain.erase(domain.randomAtom(&rng)); 
+        Atom * del = domain.randomAtom(&rng);
+        std::cout<<del->pos()<<std::endl<<std::flush;
+        domain.erase(del); 
         //atomic coord
         REQUIRE(domain.size() == sz-1);
 
