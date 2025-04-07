@@ -112,22 +112,29 @@ void AtomicDomain::erase(Atom *atom)
     }
     // update the neighbors and the map
     size_t index = atom->index();
-    if (index < mAtoms.size() - 1) // we are erasing not the last atom 
+    if (index < mAtoms.size() - 1) 
+    // we are erasing not the last atom
+    // we copy the last to [index] and then
+    // erase the last, the same axtion,
+    // saves time
+    // we just copy all the data members,
+    // because we can
+    // AtomicDomain is a friend of Atom
     {
-        int leftIndex = mAtoms.back().leftIndex();
-        int rightIndex = mAtoms.back().rightIndex();
-        mAtoms[index] = mAtoms.back();
-        mAtoms[index].setIndex(index);
-        mAtoms[index].iterator()->second = index;
-        if (Hasleft
-        {
-            mAtoms[leftIndex].setRightIndex(index);
-        }
-        if (rightIndex >= 0)
-        {
-            mAtoms[rightIndex].setLeftIndex(index);
-        }
+        const Atom &src =  mAtoms.back();
+        Atom &dst = mAtoms[index];
+
+        dst.mIterator=src.mIterator;
+        dst.mPos=src.mPos; // position of the atom
+        dst.mHasRight=src.mHasRight;
+        dst.mHasLeft=src.mHasLeft;
+        //are the following two defined
+        dst.mLeftIndex=src.mLeftIndex; // index of left neighbor in the atomic storage
+        dst.mRightIndex=src.mRightIndex; // index of right neighbor in the atomic storage
+        dst.mMass=src.mMass; 
+        dst.mIndex=index; // the line differs!
     }
+    //we remove the last atom now -- whatever
     mAtoms.pop_back();
 }
 
