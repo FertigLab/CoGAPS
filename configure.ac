@@ -112,6 +112,7 @@ if test "x$cpp_tests_disable" != "xyes" ; then
     GAPS_SOURCE_FILES+=" cpp_tests/testSparseMatrix.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testDenseGibbsSampler.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testAtomicDomain.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testRandom.o"
 fi
 # commented files in the if above are to be reviwed
 

@@ -7,6 +7,26 @@
 
 // this is intended to replicated the random stream that happens when
 // each proposal is creating a new rng and using it a few times
+
+GapsRandomState testRandState(42);
+GapsRng testRng(&testRandState);
+
+TEST_CASE("Random Number Generation -- basic","[randomrng][basic]")
+{
+    SECTION("Make sure uniform is working")
+    {
+        REQUIRE(testRng.uniform64() != testRng.uniform64());
+        REQUIRE(testRng.uniform64(0,1000) != testRng.uniform64(0,1000));
+        REQUIRE(testRng.uniform64(1000,1000) == 1000);
+        REQUIRE(testRng.uniform32() != testRng.uniform32());
+        REQUIRE(testRng.uniform32(0,100) != testRng.uniform32(0,100));
+        REQUIRE(testRng.uniform32(1000,1000) == 1000);
+    }
+
+}
+
+#if 0
+
 class EmulatedRng
 {
 public:
@@ -42,7 +62,7 @@ private:
 
 static void requireSmallError(float in, float out, float est, float tol)
 {
-    float denom = gaps::max(std::abs(out), 1.f);
+    float denom = std::max(std::abs(out), 1.f);
     if (std::abs(est - out) / denom >= tol)
     {
         gaps_printf("input: %f, output: %f, error: %f\n", in, out,
@@ -50,8 +70,7 @@ static void requireSmallError(float in, float out, float est, float tol)
     }
     REQUIRE(std::abs(est - out) / denom < tol);
 }
-
-TEST_CASE("Test error of q_norm lookup table")
+TEST_CASE("Test error of q_norm lookup table","[randomrng][q_norm]")
 {
     GapsRandomState randState(123);
 
@@ -68,7 +87,7 @@ TEST_CASE("Test error of q_norm lookup table")
     }
 }
 
-TEST_CASE("Test error of p_norm lookup table")
+TEST_CASE("Test error of p_norm lookup table","[randomrng][p_norm]")
 {
     GapsRandomState randState(123);
 
@@ -84,6 +103,7 @@ TEST_CASE("Test error of p_norm lookup table")
         requireSmallError(p, actual_val, lookup_val, tolerance);
     }
 }
+#endif
 
 #if 0
 TEST_CASE("write random file to use in diehard tests")
