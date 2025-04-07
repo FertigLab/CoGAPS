@@ -26,8 +26,7 @@ Atom* AtomicDomain::front()
     //and index the atom storage by the value and return the reference to the atom
 }
 
-Atom* AtomicDomain::randomAtom(GapsRng *rng)
-{
+Atom* AtomicDomain::randomAtom(GapsRng *rng){
     GAPS_ASSERT(size() > 0);
     size_t index = rng->uniform64(0, mAtoms.size() - 1);
     return &(mAtoms[index]);
@@ -94,6 +93,7 @@ Atom* AtomicDomain::insert(uint64_t pos, float mass)
 void AtomicDomain::erase(Atom *atom)
 {
     mAtomMap.erase(atom->iterator());
+    //remove from map
     if (atom->hasLeft() && atom->hasRight())
     {
         mAtoms[atom->leftIndex()].setRightIndex(atom->rightIndex());
@@ -140,10 +140,12 @@ void AtomicDomain::erase(Atom *atom)
 
 void AtomicDomain::move(Atom *atom, uint64_t newPos)
 {
+
     GAPS_ASSERT(newPos > (atom->hasLeft() ? mAtoms[atom->leftIndex()].pos() : 0));
     GAPS_ASSERT(newPos < (atom->hasRight() ? mAtoms[atom->rightIndex()].pos() : mDomainLength));
     atom->updatePos(newPos);
     mAtomMap.updateKey(atom->iterator(), newPos);
+    //check, looks supersuspiciuos
 }
 
 Archive& operator<<(Archive &ar, const AtomicDomain &domain)
