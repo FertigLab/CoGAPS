@@ -34,6 +34,7 @@ TEST_CASE("AtomicDomain-basic","[atomicdomain][basic]")
         size_t sz=domain.size();
         Atom * del = domain.randomAtom(&rng);
         std::cout<<del->pos()<<std::endl<<std::flush;
+        REQUIRE(domain.size() == sz);
         domain.erase(del); 
         //atomic coord
         REQUIRE(domain.size() == sz-1);
