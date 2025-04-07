@@ -22,7 +22,12 @@ TEST_CASE("Random Number Generation -- basic","[randomrng][basic]")
         REQUIRE(testRng.uniform32(0,100) != testRng.uniform32(0,100));
         REQUIRE(testRng.uniform32(1000,1000) == 1000);
     }
-
+    SECTION("Make sure uniform is working on size_t")
+    {
+        size_t zero=0, thou=1000;
+        REQUIRE(testRng.uniform64(zero,thou) != testRng.uniform64(zero,thou));
+        REQUIRE(testRng.uniform64(thou,thou) == thou);
+    }    
 }
 
 #if 0
