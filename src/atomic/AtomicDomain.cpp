@@ -27,7 +27,11 @@ Atom* AtomicDomain::front()
 }
 
 Atom* AtomicDomain::randomAtom(GapsRng *rng){
-    GAPS_ASSERT(size() > 0);
+    if (size()<=0) {
+        //throw Rcpp::exception("Empty AtomicDomain trying to run randomAtom.",false);
+        Rcpp::stop("Tut erunduk!!!.\n");
+    }
+    //GAPS_ASSERT(size() > 0);
     size_t index = rng->uniform64(0, mAtoms.size() - 1);
     return &(mAtoms[index]);
 }
