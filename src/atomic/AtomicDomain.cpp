@@ -92,6 +92,7 @@ Atom* AtomicDomain::insert(uint64_t pos, float mass)
 
 void AtomicDomain::erase(Atom *atom)
 {
+    GAPS_ASSERT(size() > 0);
     mAtomMap.erase(atom->iterator());
     //remove from map
     if (atom->hasLeft() && atom->hasRight())
