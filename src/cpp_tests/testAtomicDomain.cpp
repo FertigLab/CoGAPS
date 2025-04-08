@@ -1,4 +1,5 @@
 #include <testthat.h>
+#include <Rcpp.h>
 #include "../testthat-tweak.h"
 #include "../atomic/AtomicDomain.h"
 #include "../math/Random.h"
@@ -49,7 +50,7 @@ TEST_CASE("AtomicDomain randompick","[atomicdomain][randompick]") {
     }
 }
 
-TEST_CASE("AtomicDomain randompick fro, empty","[atomicdomain][randompickempty]") {
+TEST_CASE("AtomicDomain randompick from empty","[atomicdomain][randompickempty]") {
     SECTION("RandomAtomChooseEmpty")
     {
         AtomicDomain domain_e(2);
