@@ -7,7 +7,6 @@
 GapsRandomState randState(123);
 GapsRng AtomicRng(&randState);
 
-AtomicDomain domain(2);
 
 
 TEST_CASE("AtomicDomain populate","[atomicdomain][populate]")
@@ -15,10 +14,12 @@ TEST_CASE("AtomicDomain populate","[atomicdomain][populate]")
 
     SECTION("Construction")
     {
+        AtomicDomain domain(2);
         REQUIRE(domain.size() == 0);
     }
     SECTION("Populate")
     {
+        AtomicDomain domain(2);
         domain.insert((uint64_t)100000,0.01); 
         //atomic coord and mass
         REQUIRE(domain.size() == 1);
@@ -37,16 +38,34 @@ TEST_CASE("AtomicDomain populate","[atomicdomain][populate]")
 TEST_CASE("AtomicDomain randompick","[atomicdomain][randompick]") {
     SECTION("RandomAtomChoose")
     {
-        size_t sz=domain.size();
-        Atom * del = domain.randomAtom(&AtomicRng);
+        AtomicDomain domainp(2);
+        domainp.insert((uint64_t)200000,0.02); 
+        //atomic coord and mass
+        domainp.insert((uint64_t)400000,0.01); 
+        size_t sz=domainp.size();
+        Atom * del = domainp.randomAtom(&AtomicRng);
         std::cout<<"Picked position "<<del->pos()<<std::endl<<std::flush;
-        REQUIRE(domain.size() == sz);
+        REQUIRE(domainp.size() == sz);
+    }
+}
+
+TEST_CASE("AtomicDomain randompick fro, empty","[atomicdomain][randompickempty]") {
+    SECTION("RandomAtomChooseEmpty")
+    {
+        AtomicDomain domain_e(2);
+        Atom * dele = domain_e.randomAtom(&AtomicRng);
+        REQUIRE(domain_e.size() == 0);
     }
 }
 
 TEST_CASE("AtomicDomain depopulate","[atomicdomain][depopulate]") {
     SECTION("DePopulate")
     {
+        AtomicDomain domain(2);
+        domain.insert((uint64_t)200000,0.02); 
+        //atomic coord and mass
+        domain.insert((uint64_t)100000,0.03); 
+        domain.insert((uint64_t)400000,0.01); 
         size_t sz=domain.size();
         Atom * del = domain.randomAtom(&AtomicRng);
         std::cout<<"We remove at "<<del->pos()<<std::endl<<std::flush;
@@ -55,14 +74,18 @@ TEST_CASE("AtomicDomain depopulate","[atomicdomain][depopulate]") {
         //atomic coord
         REQUIRE(domain.size() == sz-1);
         std::cout<<"domain.size()"<<domain.size()<<std::endl<<std::flush;
-        //domain.erase(domain.randomAtom(&AtomicRng)); 
-        //atomic coord
-        //REQUIRE(domain.size() == sz-2);
-        
-        //domain.erase(domain.randomAtom(&AtomicRng)); 
-        //atomic coord
-        //REQUIRE(domain.size() == sz-3);
-        
     }
 }
+
+TEST_CASE("AtomicDomain depopulateempty","[atomicdomain][depopulateempty]") {
+    SECTION("DePopulate")
+    {
+        AtomicDomain domain(2);
+        Atom * del = domain.randomAtom(&AtomicRng);
+        domain.erase(del); 
+        //atomic coord
+        REQUIRE(domain.size() == 0);
+    }
+}
+
 
