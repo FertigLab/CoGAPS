@@ -4,12 +4,15 @@
 #include "../math/Random.h"
 #include "../utils/GapsPrint.h"
 
-TEST_CASE("AtomicDomain-basic","[atomicdomain][basic]")
-{
-    GapsRandomState randState(123);
-    GapsRng rng(&randState);
+GapsRandomState randState(123);
+GapsRng AtomicRng(&randState);
 
-    AtomicDomain domain(2);
+AtomicDomain domain(2);
+
+
+TEST_CASE("AtomicDomain populate","[atomicdomain][populate]")
+{
+
     SECTION("Construction")
     {
         REQUIRE(domain.size() == 0);
@@ -29,28 +32,34 @@ TEST_CASE("AtomicDomain-basic","[atomicdomain][basic]")
         //atomic coord and mass
         REQUIRE(domain.size() == 3);
     }
-    SECTION("RandomAtom")
+}
+
+TEST_CASE("AtomicDomain randompick","[atomicdomain][randompick]") {
+    SECTION("RandomAtomChoose")
     {
         size_t sz=domain.size();
-        Atom * del = domain.randomAtom(&rng);
-        std::cout<<del->pos()<<std::endl<<std::flush;
+        Atom * del = domain.randomAtom(&AtomicRng);
+        std::cout<<"Picked position "<<del->pos()<<std::endl<<std::flush;
         REQUIRE(domain.size() == sz);
     }
+}
+
+TEST_CASE("AtomicDomain depopulate","[atomicdomain][depopulate]") {
     SECTION("DePopulate")
     {
         size_t sz=domain.size();
-        Atom * del = domain.randomAtom(&rng);
-        std::cout<<del->pos()<<std::endl<<std::flush;
+        Atom * del = domain.randomAtom(&AtomicRng);
+        std::cout<<"We remove at "<<del->pos()<<std::endl<<std::flush;
         REQUIRE(domain.size() == sz);
         domain.erase(del); 
         //atomic coord
         REQUIRE(domain.size() == sz-1);
-
-        //domain.erase(domain.randomAtom(&rng)); 
+        std::cout<<"domain.size()"<<domain.size()<<std::endl<<std::flush;
+        //domain.erase(domain.randomAtom(&AtomicRng)); 
         //atomic coord
         //REQUIRE(domain.size() == sz-2);
         
-        //domain.erase(domain.randomAtom(&rng)); 
+        //domain.erase(domain.randomAtom(&AtomicRng)); 
         //atomic coord
         //REQUIRE(domain.size() == sz-3);
         
