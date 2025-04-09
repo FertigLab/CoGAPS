@@ -18,6 +18,7 @@ TEST_CASE("Random Number Generation -- basic","[randomrng][basic]")
         REQUIRE(testRng.uniform64() != testRng.uniform64());
         REQUIRE(testRng.uniform64(0,1000) != testRng.uniform64(0,1000));
         REQUIRE(testRng.uniform64(1000,1000) == 1000);
+        REQUIRE(testRng.uniform64(0,2)<3);
         REQUIRE(testRng.uniform32() != testRng.uniform32());
         REQUIRE(testRng.uniform32(0,100) != testRng.uniform32(0,100));
         REQUIRE(testRng.uniform32(1000,1000) == 1000);
