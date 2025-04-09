@@ -32,10 +32,17 @@ public:
     void updateMass(float newMass);
     friend Archive& operator<<(Archive& ar, const Atom &a);
     friend Archive& operator>>(Archive& ar, Atom &a);
-private:
     // only the atomic domain can change the position of an atom, since it is
     // responsible for keeping them ordered
     friend class AtomicDomain;
+    bool hasLeft() const;
+    bool hasRight() const;
+    size_t leftIndex() const;
+    size_t rightIndex() const;
+    size_t index() const;
+    AtomMapType::iterator iterator() const;
+
+private:
     void updatePos(uint64_t newPos);
     void setLeftIndex(size_t index);
     void setRightIndex(size_t index);
@@ -43,12 +50,6 @@ private:
     void unsetRightIndex();
     void setIndex(size_t index);
     void setIterator(AtomMapType::iterator it);    
-    bool hasLeft() const;
-    bool hasRight() const;
-    size_t leftIndex() const;
-    size_t rightIndex() const;
-    size_t index() const;
-    AtomMapType::iterator iterator() const;
 
     AtomMapType::iterator mIterator; // iterator to position in map
     uint64_t mPos; // position of the atom
