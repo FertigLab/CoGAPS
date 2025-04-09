@@ -78,6 +78,7 @@ uint32_t GapsRng::uniform32()
 // inclusive of a and b
 uint32_t GapsRng::uniform32(uint32_t a, uint32_t b)
 {
+    GAPS_ASSERT(a<=b);
     if (b == a)
     {
         return a;
@@ -105,6 +106,7 @@ uint64_t GapsRng::uniform64()
 // inclusive of a and b
 uint64_t GapsRng::uniform64(uint64_t a, uint64_t b)
 {
+    GAPS_ASSERT(a<=b);
     if (b == a)
     {
         return a;
