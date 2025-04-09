@@ -44,7 +44,6 @@ AtomNeighborhood AtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
 
 uint64_t AtomicDomain::randomFreePosition(GapsRng *rng) const
 {
-    GAPS_ASSERT(size() > 0);
     uint64_t pos = rng->uniform64(1, mDomainLength);
     while (mAtomMap.count(pos) != 0u)
     {
@@ -93,7 +92,7 @@ Atom* AtomicDomain::insert(uint64_t pos, float mass)
 
 void AtomicDomain::erase(Atom *atom)
 {
-    GAPS_ASSERT(size() > 0);
+    GAPS_ASSERT_MSG(size() > 0, "empty AtomicDomain tries to erase an atom");
     mAtomMap.erase(atom->iterator());
     //remove from map
     if (atom->hasLeft() && atom->hasRight())
@@ -134,7 +133,8 @@ void AtomicDomain::erase(Atom *atom)
         dst.mLeftIndex=src.mLeftIndex; // index of left neighbor in the atomic storage
         dst.mRightIndex=src.mRightIndex; // index of right neighbor in the atomic storage
         dst.mMass=src.mMass; 
-        dst.mIndex=index; // the line differs!
+        GAPS_ASSERT(dst.mIndex==index);
+        dst.mIterator->second=index; //we tell the map we moved the atom inside the array
     }
     //we remove the last atom now -- whatever
     mAtoms.pop_back();
@@ -145,9 +145,13 @@ void AtomicDomain::move(Atom *atom, uint64_t newPos)
 
     GAPS_ASSERT(newPos > (atom->hasLeft() ? mAtoms[atom->leftIndex()].pos() : 0));
     GAPS_ASSERT(newPos < (atom->hasRight() ? mAtoms[atom->rightIndex()].pos() : mDomainLength));
+    //we do not jump over neighbour
+
+    std::pair<uint64_t, size_t> newpair(newPos,atom->iterator()->second);
+    mAtomMap.erase(atom->pos());
     atom->updatePos(newPos);
-    mAtomMap.updateKey(atom->iterator(), newPos);
-    //check, looks supersuspiciuos
+    mAtomMap.insert(newpair);
+
 }
 
 Archive& operator<<(Archive &ar, const AtomicDomain &domain)
