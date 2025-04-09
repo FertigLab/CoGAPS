@@ -1,13 +1,15 @@
 #ifndef __COGAPS_ATOM_H__
 #define __COGAPS_ATOM_H__
 
+#include <map>
+
 struct Atom;
 class Archive;
 class AtomicDomain;
 
 // this is the map used internally by the atomic domain
-#include "../data_structures/MutableMap.h"
-typedef MutableMap<uint64_t, size_t> AtomMapType;
+// #include "../data_structures/MutableMap.h" -- it is unsafe
+typedef std::map<uint64_t, size_t> AtomMapType;
 
 struct AtomNeighborhood
 {
