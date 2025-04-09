@@ -26,6 +26,16 @@ Atom* AtomicDomain::front()
     //and index the atom storage by the value and return the reference to the atom
 }
 
+Atom* AtomicDomain::storedAtom(size_t ind){
+    GAPS_ASSERT_MSG(size() > ind, "AtomicDomain tries to get atom higher than ut has");
+    return &(mAtoms[ind]);
+}
+
+std::map<uint64_t, size_t>::const_iterator AtomicDomain::front_it(){
+    GAPS_ASSERT_MSG(size() > 0, "empty AtomicDomain tries to get random atom");
+    return mAtomMap.begin();
+}
+
 Atom* AtomicDomain::randomAtom(GapsRng *rng){
     GAPS_ASSERT_MSG(size() > 0, "empty AtomicDomain tries to get random atom");
     size_t index = rng->uniform64(0, mAtoms.size() - 1);

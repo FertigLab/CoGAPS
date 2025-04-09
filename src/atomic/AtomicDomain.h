@@ -17,6 +17,8 @@ class AtomicDomain
 public:
     explicit AtomicDomain(uint64_t nBins);
     Atom* front();
+    std::map<uint64_t, size_t>::const_iterator front_it();   
+    Atom* storedAtom(size_t ind);
     Atom* randomAtom(GapsRng *rng);
     AtomNeighborhood randomAtomWithNeighbors(GapsRng *rng);
     uint64_t randomFreePosition(GapsRng *rng) const;
