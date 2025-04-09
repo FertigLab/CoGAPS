@@ -54,8 +54,8 @@ TEST_CASE("AtomicDomain randompick from empty","[atomicdomain][randompickempty]"
     SECTION("RandomAtomChooseEmpty")
     {
         AtomicDomain domain_e(2);
-        Atom * dele = domain_e.randomAtom(&AtomicRng);
         REQUIRE(domain_e.size() == 0);
+        REQUIRE_THROWS(domain_e.randomAtom(&AtomicRng));
     }
 }
 
@@ -80,12 +80,12 @@ TEST_CASE("AtomicDomain depopulate","[atomicdomain][depopulate]") {
 
 TEST_CASE("AtomicDomain depopulateempty","[atomicdomain][depopulateempty]") {
     SECTION("DePopulate")
-    {
+    {   
         AtomicDomain domain(2);
-        Atom * del = domain.randomAtom(&AtomicRng);
-        domain.erase(del); 
-        //atomic coord
         REQUIRE(domain.size() == 0);
+        Atom * del;
+        REQUIRE_THROWS(del=domain.randomAtom(&AtomicRng));
+        REQUIRE_THROWS(domain.erase(del)); 
     }
 }
 
