@@ -5,7 +5,7 @@
 #include "math/Random.h"
 #include "utils/Archive.h"
 #include "utils/GlobalConfig.h"
-#include "gibbs_sampler/AsynchronousGibbsSampler.h"
+//#include "gibbs_sampler/AsynchronousGibbsSampler.h"
 #include "gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "gibbs_sampler/DenseNormalModel.h"
 #include "gibbs_sampler/SparseNormalModel.h"
@@ -69,8 +69,8 @@ const DataType &uncertainty, GapsRandomState *randState)
     if (params.asynchronousUpdates)
     {
         GAPS_MESSAGE(params.printMessages, "Sampler Type: Asynchronous\n");
-        return runCoGAPSAlgorithm< AsynchronousGibbsSampler<DataModel> >(data,
-            params, uncertainty, randState);
+        //return runCoGAPSAlgorithm< AsynchronousGibbsSampler<DataModel> >(data,
+            //params, uncertainty, randState);
     }
     GAPS_MESSAGE(params.printMessages, "Sampler Type: Sequential\n");
     return runCoGAPSAlgorithm< SingleThreadedGibbsSampler<DataModel> >(data,
