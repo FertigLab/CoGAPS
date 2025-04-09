@@ -27,11 +27,7 @@ Atom* AtomicDomain::front()
 }
 
 Atom* AtomicDomain::randomAtom(GapsRng *rng){
-    if (size()<=0) {
-        //throw Rcpp::exception("Empty AtomicDomain trying to run randomAtom.",false);
-        Rcpp::stop("Tut erunduk!!!.\n");
-    }
-    //GAPS_ASSERT(size() > 0);
+    GAPS_ASSERT_MSG(size() > 0, "empty AtomicDomain tries to get random atom");
     size_t index = rng->uniform64(0, mAtoms.size() - 1);
     return &(mAtoms[index]);
 }
@@ -48,6 +44,7 @@ AtomNeighborhood AtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
 
 uint64_t AtomicDomain::randomFreePosition(GapsRng *rng) const
 {
+    GAPS_ASSERT(size() > 0);
     uint64_t pos = rng->uniform64(1, mDomainLength);
     while (mAtomMap.count(pos) != 0u)
     {
