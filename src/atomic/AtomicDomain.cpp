@@ -145,6 +145,12 @@ void AtomicDomain::erase(Atom *atom)
         dst.mMass=src.mMass; 
         GAPS_ASSERT(dst.mIndex==index);
         dst.mIterator->second=index; //we tell the map we moved the atom inside the array
+        if (dst.hasLeft()){
+            mAtoms[dst.leftIndex()].setRightIndex(index);
+        }
+        if (dst.hasRight()){
+            mAtoms[dst.rightIndex()].setLeftIndex(index);
+        }
     }
     //we remove the last atom now -- whatever
     mAtoms.pop_back();
