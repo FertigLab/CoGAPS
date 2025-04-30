@@ -172,3 +172,23 @@ process COGAPS_ADATA2DGC {
   END_VERSIONS
   """
 }
+
+//example channel with data folders, for example
+ch_data = Channel.fromPath('./test/**gist.rds')
+  .map { tuple([id:it.getParent().getName()], it)}
+
+//example channel with cparams
+ch_cparams = Channel.of([npatterns: 7, niterations: 100, sparse: 1, distributed: 'null', nsets:1, nthreads:1],
+                        [npatterns: 7, niterations: 100, sparse: 0, distributed: 'null', nsets:1, nthreads:1])
+
+// combine the two channels as input to CoGAPS
+ch_input = ch_data.combine(ch_cparams)
+
+//run the workflow
+workflow {
+  COGAPS(ch_input)
+}
+
+//example:
+//nextflow run main.nf -profile docker -resume
+//nextflow run main.nf -profile slurm -resume
