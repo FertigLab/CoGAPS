@@ -661,6 +661,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+enable_gaps_debug
 enable_debug
 enable_cpp_tests
 enable_warnings
@@ -1295,7 +1296,8 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-debug          build debug version of CoGAPS
+  --enable-gaps-debug     build debug version of CoGAPS
+  --enables-debug         build debug version of CoGAPS
   --enable-cpp-tests      turn on C++ unit tests
   --enable-warnings       compile CoGAPS with warning messages
   --enable-simd           compile with SIMD support if available
@@ -3232,7 +3234,19 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
-# Check if compiling debug version
+# Check if compiling gaps debug version; actuaooly, it includes broken tests and swithcing on asserts;
+# we switched on the asserts unconditionally
+# Check whether --enable-gaps_debug was given.
+if test ${enable_gaps_debug+y}
+then :
+  enableval=$enable_gaps_debug; build_gaps_debug=yes
+else case e in #(
+  e) build_gaps_debug=no ;;
+esac
+fi
+
+
+#Switches on debug cpp flags -g -O0
 # Check whether --enable-debug was given.
 if test ${enable_debug+y}
 then :
@@ -3241,6 +3255,7 @@ else case e in #(
   e) build_debug=no ;;
 esac
 fi
+
 
 
 # Check if running C++ tests (this adds to compilation time)
@@ -3308,8 +3323,14 @@ fi
 
 echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compiler_version"
 
-# set compile flags for debug build
+# set GAPS_DEBUG for debug build
 if test "x$build_debug" = "xyes" ; then
+    echo "Building CoGAPS with debuf information"
+    GAPS_CPP_FLAGS+=" -g -O0 "
+fi
+
+# set GAPS_DEBUG for debug build
+if test "x$build_gaps_debug" = "xyes" ; then
     echo "Building Debug Version of CoGAPS"
     GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
 fi

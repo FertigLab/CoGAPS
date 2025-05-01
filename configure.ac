@@ -9,8 +9,13 @@ AC_LANG(C++)
 AC_REQUIRE_CPP
 AC_PROG_CXX
 
-# Check if compiling debug version
-AC_ARG_ENABLE(debug, [AS_HELP_STRING([--enable-debug],[build debug version of CoGAPS])], [build_debug=yes], [build_debug=no])
+# Check if compiling gaps debug version; actuaooly, it includes broken tests and swithcing on asserts; 
+# we switched on the asserts unconditionally
+AC_ARG_ENABLE(gaps_debug, [AS_HELP_STRING([--enable-gaps-debug],[build debug version of CoGAPS])], [build_gaps_debug=yes], [build_gaps_debug=no])
+
+#Switches on debug cpp flags -g -O0
+AC_ARG_ENABLE(debug, [AS_HELP_STRING([--enables-debug],[build debug version of CoGAPS])], [build_debug=yes], [build_debug=no])
+
 
 # Check if running C++ tests (this adds to compilation time)
 AC_ARG_ENABLE(cpp-tests, [AS_HELP_STRING([--enable-cpp-tests],[turn on C++ unit tests])], 
@@ -48,8 +53,14 @@ fi
 
 echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compiler_version"
 
-# set compile flags for debug build
+# set GAPS_DEBUG for debug build
 if test "x$build_debug" = "xyes" ; then
+    echo "Building CoGAPS with debuf information"
+    GAPS_CPP_FLAGS+=" -g -O0 "
+fi
+
+# set GAPS_DEBUG for debug build
+if test "x$build_gaps_debug" = "xyes" ; then
     echo "Building Debug Version of CoGAPS"
     GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
 fi
