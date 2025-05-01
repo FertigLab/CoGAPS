@@ -1297,7 +1297,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-gaps-debug     build debug version of CoGAPS
-  --enables-debug         build debug version of CoGAPS
+  --enables-debug         build CoGAPS with debug options
   --enable-cpp-tests      turn on C++ unit tests
   --enable-warnings       compile CoGAPS with warning messages
   --enable-simd           compile with SIMD support if available
@@ -3236,21 +3236,31 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 # Check if compiling gaps debug version; actuaooly, it includes broken tests and swithcing on asserts;
 # we switched on the asserts unconditionally
-# Check whether --enable-gaps_debug was given.
+# Check whether --enable-gaps-debug was given.
 if test ${enable_gaps_debug+y}
 then :
-  enableval=$enable_gaps_debug; build_gaps_debug=yes
+  enableval=$enable_gaps_debug; case "${enableval}" in
+        yes) build_gaps_debug=yes ;;
+        no)  build_gaps_debug=no ;;
+        *) as_fn_error $? "--enable-gaps-debug understads only 'no' or 'yes' values" "$LINENO" 5 ;;
+     esac
 else case e in #(
   e) build_gaps_debug=no ;;
 esac
 fi
 
 
+
+
 #Switches on debug cpp flags -g -O0
 # Check whether --enable-debug was given.
 if test ${enable_debug+y}
 then :
-  enableval=$enable_debug; build_debug=yes
+  enableval=$enable_debug; case "${enableval}" in
+        yes) build_debug=yes ;;
+        no)  build_debug=no ;;
+        *) as_fn_error $? "--enable-debug understads only 'no' or 'yes' values" "$LINENO" 5 ;;
+     esac
 else case e in #(
   e) build_debug=no ;;
 esac
@@ -3265,7 +3275,7 @@ then :
   enableval=$enable_cpp_tests; case "${enableval}" in
         no)  cpp_tests_disable=yes ;;
         yes) cpp_tests_disable=no ;;
-        *) as_fn_error $? "--enable-cpp-tests understads only 'no' value" "$LINENO" 5 ;;
+        *) as_fn_error $? "--enable-cpp-tests understads only 'no' or 'yes' values" "$LINENO" 5 ;;
      esac
 else case e in #(
   e) cpp_tests_disable=no ;;
@@ -3323,9 +3333,9 @@ fi
 
 echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compiler_version"
 
-# set GAPS_DEBUG for debug build
+# set -g -O0 for debug options
 if test "x$build_debug" = "xyes" ; then
-    echo "Building CoGAPS with debuf information"
+    echo "Building CoGAPS with debug information"
     GAPS_CPP_FLAGS+=" -g -O0 "
 fi
 
@@ -3403,6 +3413,12 @@ fi
 
 
 
+
+echo "Writing src/Makevars"
+echo Echoing GAPS_CPP_FLAGS:
+echo $GAPS_CPP_FLAGS
+echo Echoing GAPS_CXX_FLAGS:
+echo $GAPS_CXX_FLAGS
 
 # create makefile, output configure file
 ac_config_files="$ac_config_files src/Makevars"

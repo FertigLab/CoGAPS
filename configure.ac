@@ -11,10 +11,22 @@ AC_PROG_CXX
 
 # Check if compiling gaps debug version; actuaooly, it includes broken tests and swithcing on asserts; 
 # we switched on the asserts unconditionally
-AC_ARG_ENABLE(gaps_debug, [AS_HELP_STRING([--enable-gaps-debug],[build debug version of CoGAPS])], [build_gaps_debug=yes], [build_gaps_debug=no])
+AC_ARG_ENABLE(gaps-debug, [AS_HELP_STRING([--enable-gaps-debug],[build debug version of CoGAPS])], 
+       [case "${enableval}" in
+        yes) build_gaps_debug=yes ;;
+        no)  build_gaps_debug=no ;;
+        *) AC_MSG_ERROR([--enable-gaps-debug understads only 'no' or 'yes' values]) ;;
+     esac],[build_gaps_debug=no]) 
+
+
 
 #Switches on debug cpp flags -g -O0
-AC_ARG_ENABLE(debug, [AS_HELP_STRING([--enables-debug],[build debug version of CoGAPS])], [build_debug=yes], [build_debug=no])
+AC_ARG_ENABLE(debug, [AS_HELP_STRING([--enables-debug],[build CoGAPS with debug options])],
+       [case "${enableval}" in
+        yes) build_debug=yes ;;
+        no)  build_debug=no ;;
+        *) AC_MSG_ERROR([--enable-debug understads only 'no' or 'yes' values]) ;;
+     esac],[build_debug=no]) 
 
 
 # Check if running C++ tests (this adds to compilation time)
@@ -22,7 +34,7 @@ AC_ARG_ENABLE(cpp-tests, [AS_HELP_STRING([--enable-cpp-tests],[turn on C++ unit 
        [case "${enableval}" in
         no)  cpp_tests_disable=yes ;;
         yes) cpp_tests_disable=no ;;
-        *) AC_MSG_ERROR([--enable-cpp-tests understads only 'no' value]) ;;
+        *) AC_MSG_ERROR([--enable-cpp-tests understads only 'no' or 'yes' values]) ;;
      esac],[cpp_tests_disable=no]) 
     
 # Check if compiler warnings should be turned on
@@ -53,9 +65,9 @@ fi
 
 echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compiler_version"
 
-# set GAPS_DEBUG for debug build
+# set -g -O0 for debug options
 if test "x$build_debug" = "xyes" ; then
-    echo "Building CoGAPS with debuf information"
+    echo "Building CoGAPS with debug information"
     GAPS_CPP_FLAGS+=" -g -O0 "
 fi
 
@@ -133,6 +145,12 @@ AC_SUBST(GAPS_CPP_FLAGS)
 AC_SUBST(GAPS_CXX_FLAGS)
 AC_SUBST(GAPS_LIBS)
 AC_SUBST(GAPS_SOURCE_FILES)
+
+echo "Writing src/Makevars"
+echo Echoing GAPS_CPP_FLAGS: 
+echo $GAPS_CPP_FLAGS
+echo Echoing GAPS_CXX_FLAGS:
+echo $GAPS_CXX_FLAGS
 
 # create makefile, output configure file
 AC_CONFIG_FILES([src/Makevars])
