@@ -16,4 +16,15 @@ A transposed (left, A, if the D is nontransposed) carries a transposed AP matrix
 A nontransposed (right, P, if the D is nontransposed) carries a nontransposed AP matrix of $m \times l$ and the puspose (P) matrix of $l \times k$ size.
 
 So, for any correct sampler, nrows(MyMatrix)==ncols(APMatrix); ncols(MyMatrix) is the pattern munber, and APMatrix has the same dimesions as transposed other\_sampler.APMatrix. After `sync()` APMatrix==tr(other\_sampler.APMatrix).
- 
+
+## Debug, etc congigure options
+All the options for config are given in ../configure.ac
+
+After changing, run autoconf
+
+To pass and option to configure when running devtools::load_all or similar, set the environment varianle, for example, to run ./configure --enable-debug, run the following in R:
+
+Sys.setenv(enable_debug="yes")
+devtools::load_all(recompile = TRUE) 
+
+We suppose we are in the root of the package.
