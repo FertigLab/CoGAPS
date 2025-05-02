@@ -1,6 +1,7 @@
 #ifndef __COGAPS_ATOM_H__
 #define __COGAPS_ATOM_H__
 
+#include <cstdint>
 #include <map>
 
 struct Atom;
