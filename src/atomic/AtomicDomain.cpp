@@ -11,7 +11,7 @@
 
 AtomicDomain::AtomicDomain(uint64_t nBins)
 {
-    //nBins is the naumber of matrix elements to be fitted (nrows(A)*ncols(A)+nrows(P)*ncols(P)) in our run;
+    //nBins is the number of matrix elements to be fitted (nrows(A)*ncols(A)+nrows(P)*ncols(P)) in our run;
     //each element has a band in atomic space; the max possible atomic coord is the max uit_64 and
     //we want the bands to be equal, so see below 
     uint64_t binLength = std::numeric_limits<uint64_t>::max() / nBins;
@@ -66,6 +66,7 @@ uint64_t AtomicDomain::size() const
 {
     return mAtoms.size();
 }
+
 
 Atom* AtomicDomain::insert(uint64_t pos, float mass)
 {

@@ -57,7 +57,11 @@ private:
     uint64_t mNumBins;
     uint64_t mBinLength;
     uint64_t mNumPatterns;
-    double mDomainLength; // length of entire atomic domain
+    double mdDomainLength; 
+    // doudle length of entire atomic domain
+    // actually, if we need uint64_t value, we call mDomain.DomainLength()
+    // the dmDomainLength is not to kill a old field
+    //  
     double mAlpha;
 };
 
@@ -75,7 +79,7 @@ mRng(randState),
 mNumBins(DataModel::nElements()),
 mBinLength(std::numeric_limits<uint64_t>::max() / (DataModel::nElements())),
 mNumPatterns(DataModel::nPatterns()),
-mDomainLength(mBinLength * DataModel::nElements()),
+mdDomainLength(mBinLength * DataModel::nElements()),
 mAlpha(alpha)
 {}
 
@@ -103,8 +107,8 @@ char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
     if (u1 < 0.5f)
     {
         double nAtoms = static_cast<double>(mDomain.size());
-        double numer = nAtoms * mDomainLength;
-        float deathProb = numer / (numer + mAlpha * mNumBins * (mDomainLength - nAtoms));
+        double numer = nAtoms * mdDomainLength; //here, we need double version of the domain length
+        float deathProb = numer / (numer + mAlpha * mNumBins * (mdDomainLength - nAtoms));
         return mRng.uniform() < deathProb ? 'D' : 'B';
     }
     return u1 < 0.75f ? 'M' : 'E';
@@ -195,9 +199,7 @@ void SingleThreadedGibbsSampler<DataModel>::move()
     AtomNeighborhoodType hood = mDomain.randomAtomWithNeighbors(&mRng);
     AtomType *atom = hood.center;
     uint64_t lbound = hood.hasLeft() ? hood.left->pos() : 0;
-    uint64_t rbound = hood.hasRight() ? hood.right->pos() :
-        static_cast<uint64_t>(mDomainLength);
-
+    uint64_t rbound = hood.hasRight() ? hood.right->pos() : mDomain.DomainLength();
     // randomly select new position to move to and calculation the row and col of it
     uint64_t pos = mRng.uniform64(lbound + 1, rbound - 1);
     unsigned r1 = (atom->pos() / mBinLength) / mNumPatterns;
@@ -260,7 +262,7 @@ template <class DataModel>
 Archive& operator<<(Archive &ar, const SingleThreadedGibbsSampler<DataModel> &s)
 {
     operator<<(ar, static_cast<const DataModel&>(s)) << s.mDomain << s.mNumBins
-        << s.mBinLength << s.mNumPatterns << s.mDomainLength << s.mAlpha;
+        << s.mBinLength << s.mNumPatterns << s.mdDomainLength << s.mAlpha;
     return ar;
 }
 
@@ -268,7 +270,7 @@ template <class DataModel>
 Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<DataModel> &s)
 {
     operator>>(ar, static_cast<DataModel&>(s)) << s.mDomain << s.mNumBins
-        << s.mBinLength << s.mNumPatterns << s.mDomainLength << s.mAlpha;
+        << s.mBinLength << s.mNumPatterns << s.mdDomainLength << s.mAlpha;
     return ar;
 }
 

@@ -23,7 +23,7 @@ public:
     AtomNeighborhood randomAtomWithNeighbors(GapsRng *rng);
     uint64_t randomFreePosition(GapsRng *rng) const;
     uint64_t size() const;
-
+    uint64_t DomainLength() const;
     //we move the access function to public to be able to test them
     Atom* insert(uint64_t pos, float mass);
     void erase(Atom *atom);
@@ -56,5 +56,10 @@ private:
     uint64_t mDomainLength; // size of atomic domain to ensure all bins are equal length
 
 };
+
+inline uint64_t AtomicDomain::DomainLength() const
+{
+    return mDomainLength;
+}
 
 #endif // __COGAPS_ATOMIC_DOMAIN_H__
