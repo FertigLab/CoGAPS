@@ -3,6 +3,7 @@
 //clang++ -arch x86_64 -std=gnu++17 -O0 static_cast_standalone_test.cpp
 #include <cstdint>
 #include <iostream>
+#include <limits>
 
 void priint(uint64_t a){
     std::cout<<a<<std::endl;
