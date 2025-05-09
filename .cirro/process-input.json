@@ -1,4 +1,4 @@
 {
-    "cirro_input": "$.params.inputs",
-    "outdir": "$.params.dataset.s3|/data/"
-}
+    "outdir": "$.dataset.dataPath",
+    "input": "$.inputs.[*].dataPath"
+  }
