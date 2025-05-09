@@ -174,7 +174,7 @@ process COGAPS_ADATA2DGC {
 }
 
 //example channel with data folders, for example
-ch_data = Channel.fromPath('./test/**gist.rds')
+ch_data = Channel.fromPath("${params.input}/**gist.rds")
   .map { tuple([id:it.getParent().getName()], it)}
 
 //example channel with cparams
