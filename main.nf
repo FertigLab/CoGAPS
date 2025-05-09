@@ -1,6 +1,6 @@
 process COGAPS {
   tag "$prefix"
-  label 'process_medium'
+  label 'process_high'
   label 'process_long'
   container 'ghcr.io/fertiglab/cogaps:master'
 
@@ -101,7 +101,7 @@ process COGAPS_TENX2DGC {
 
 process COGAPS_ADATA2DGC {
   tag "$meta.id"
-  label 'process_low'
+  label 'process_medium'
   container 'docker.io/satijalab/seurat:5.0.0'
 
   input:
