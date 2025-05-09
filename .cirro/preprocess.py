@@ -3,7 +3,6 @@
 from cirro.helpers.preprocess_dataset import PreprocessDataset
 import pandas as pd
 import numpy as np
-from urllib.parse import urlparse
 
 SAMPLESHEET_REQUIRED_COLUMNS = ("sample", 
                                 "data_directory"
@@ -11,11 +10,6 @@ SAMPLESHEET_REQUIRED_COLUMNS = ("sample",
 
 def set_params_as_samplesheet(ds: PreprocessDataset) -> pd.DataFrame:
     ds.logger.info([ds.params])
-    
-    # If the reference_scrna is not a URL, we assume it is a file mask string
-    # to look for in the data directory downstream
-    if 'reference_scrna' in ds.params and not is_url(ds.params['reference_scrna']):
-        ds.params['expression_profile'] = ds.params['reference_scrna']
     
     samplesheet = df_from_params(ds.params)
 
