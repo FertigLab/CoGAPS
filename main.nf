@@ -184,8 +184,22 @@ workflow {
     .map { tuple([id:it.getName().replace('.', '-')], it)}
 
   //example channel with cparams
-  ch_cparams = Channel.of([npatterns: 7, niterations: 100, sparse: 1, distributed: 'null', nsets:1, nthreads:1],
-                          [npatterns: 7, niterations: 100, sparse: 0, distributed: 'null', nsets:1, nthreads:1])
+  ch_cparams = Channel.of([npatterns: 5, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:8, nthreads:1],
+//                          [npatterns: 6, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 7, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 8, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 9, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 10, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 11, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 12, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 13, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 14, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 15, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 16, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 17, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 18, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+//                          [npatterns: 19, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
+                          [npatterns: 20, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:8, nthreads:1])
 
   // convert adata to dgCMatrix
   COGAPS_ADATA2DGC(ch_adata)
