@@ -9,7 +9,8 @@
 ^inst/benchmarks/
 ^inst/profiling/
 ^inst/vignettes/
-^nextflow
+^nextflow*
+^main.nf
 
 ^.git
 

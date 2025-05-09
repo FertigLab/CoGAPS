@@ -173,22 +173,32 @@ process COGAPS_ADATA2DGC {
   """
 }
 
-//example channel with data folders, for example
-ch_data = Channel.fromPath("${params.input}/**gist.rds")
-  .map { tuple([id:it.getParent().getName()], it)}
 
-//example channel with cparams
-ch_cparams = Channel.of([npatterns: 7, niterations: 100, sparse: 1, distributed: 'null', nsets:1, nthreads:1],
-                        [npatterns: 7, niterations: 100, sparse: 0, distributed: 'null', nsets:1, nthreads:1])
-
-// combine the two channels as input to CoGAPS
-ch_input = ch_data.combine(ch_cparams)
-
-//run the workflow
+//example workflow
 workflow {
+  //example channel with data folders, for example
+  ch_adata = Channel.fromPath("${params.input}/**.h5ad")
+    .map { tuple([id:it.getName().replace('.', '-')], it)}
+
+  ch_rds = Channel.fromPath("${params.input}/**.rds")
+    .map { tuple([id:it.getName().replace('.', '-')], it)}
+
+  //example channel with cparams
+  ch_cparams = Channel.of([npatterns: 7, niterations: 100, sparse: 1, distributed: 'null', nsets:1, nthreads:1],
+                          [npatterns: 7, niterations: 100, sparse: 0, distributed: 'null', nsets:1, nthreads:1])
+
+  // convert adata to dgCMatrix
+  COGAPS_ADATA2DGC(ch_adata)
+
+  // ch_cogaps_input of converted adatas and rdses
+  ch_input = COGAPS_ADATA2DGC.out.dgCMatrix
+  ch_input = ch_input.mix(ch_rds)
+
+  // combine the two channels as input to CoGAPS
+  ch_input = ch_input.combine(ch_cparams)
+
   COGAPS(ch_input)
 }
 
 //example:
-//nextflow run main.nf -profile docker -resume
-//nextflow run main.nf -profile slurm -resume
+//nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -profile docker 
