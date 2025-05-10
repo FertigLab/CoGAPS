@@ -42,7 +42,11 @@ process COGAPS {
                              sparseOptimization = as.logical($cparams.sparse),
                              distributed=dist_param);
       if (!(is.null(dist_param))){
-        params <- setDistributedParams(params, nSets = $cparams.nsets);
+        allow_cpus <- as.numeric($task.cpus) - 1;
+        if ($cparams.nsets > allow_cpus){
+          message("Warning: nsets is greater than available cpus. Setting nsets to ", allow_cpus);
+        } 
+        params <- setDistributedParams(params, nSets = min($cparams.nsets,allow_cpus));
       };
       cogapsResult <- CoGAPS(data = data, params = params, nThreads = $cparams.nthreads,
                              outputFrequency = floor($cparams.niterations/10));
@@ -184,22 +188,8 @@ workflow {
     .map { tuple([id:it.getName().replace('.', '-')], it)}
 
   //example channel with cparams
-  ch_cparams = Channel.of([npatterns: 5, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:8, nthreads:1],
-//                          [npatterns: 6, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 7, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 8, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 9, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 10, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 11, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 12, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 13, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 14, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 15, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 16, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 17, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 18, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-//                          [npatterns: 19, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:1, nthreads:1],
-                          [npatterns: 20, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:8, nthreads:1])
+  ch_cparams = Channel.of([npatterns: 5, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:8, nthreads:1]
+                         )
 
   // convert adata to dgCMatrix
   COGAPS_ADATA2DGC(ch_adata)
