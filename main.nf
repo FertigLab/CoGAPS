@@ -188,7 +188,7 @@ workflow {
     .map { tuple([id:it.getName().replace('.', '-')], it)}
 
   //example channel with cparams
-  ch_cparams = Channel.of([npatterns: 5, niterations: 100, sparse: 0, distributed: 'single-cell', nsets:8, nthreads:1]
+  ch_cparams = Channel.of([npatterns: 5, niterations: 100, sparse: 1, distributed: 'null', nsets:8, nthreads:1]
                          )
 
   // convert adata to dgCMatrix
