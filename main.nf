@@ -49,7 +49,7 @@ process COGAPS {
         params <- setDistributedParams(params, nSets = min($cparams.nsets,allow_cpus));
       };
       cogapsResult <- CoGAPS(data = data, params = params, nThreads = $cparams.nthreads,
-                             outputFrequency = floor($cparams.niterations/10));
+                             outputFrequency = 100);
       saveRDS(cogapsResult, file = "${prefix}/cogapsResult.rds")'
 
   cat <<-END_VERSIONS > versions.yml
