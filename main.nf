@@ -1,6 +1,6 @@
 process COGAPS {
   tag "$prefix"
-  label 'process_high'
+  label 'process_high_memory'
   label 'process_long'
   container 'ghcr.io/fertiglab/cogaps:master'
 
@@ -188,10 +188,10 @@ workflow {
     .map { tuple([id:it.getName().replace('.', '-')], it)}
 
   //example channel with cparams
-  ch_cparams = Channel.of([npatterns: 5, niterations: 10000, sparse: 0, distributed: 'single-cell', nsets:8, nthreads:1],
-                          [npatterns: 10, niterations: 10000, sparse: 0, distributed: 'single-cell', nsets:8, nthreads:1],
-                          [npatterns: 15, niterations: 10000, sparse: 0, distributed: 'single-cell', nsets:8, nthreads:1],
-                          [npatterns: 20, niterations: 10000, sparse: 0, distributed: 'single-cell', nsets:8, nthreads:1],
+  ch_cparams = Channel.of([npatterns: 5, niterations: 10000, sparse: 0, distributed: null, nsets:1, nthreads:1],
+                          [npatterns: 10, niterations: 10000, sparse: 0, distributed: null, nsets:1, nthreads:1],
+                          [npatterns: 15, niterations: 10000, sparse: 0, distributed: null, nsets:1, nthreads:1],
+                          [npatterns: 20, niterations: 10000, sparse: 0, distributed: null, nsets:1, nthreads:1],
                          )
 
   // convert adata to dgCMatrix
