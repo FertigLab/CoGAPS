@@ -31,6 +31,13 @@ process COGAPS {
   mkdir -p "${prefix}"
   Rscript -e 'library("CoGAPS");
       sparse <- readRDS("$dgCMatrix");
+      #select top 5K genes
+      message("finding top 5K genes");
+      vars <- apply(sparse, 1, var);
+      top_genes <- order(vars, decreasing=TRUE)[1:5000];
+      sparse <- sparse[top_genes,];
+      message("selected top ", length(top_genes), " genes of ", length(vars));
+   
       data <- as.matrix(sparse);
       #avoid errors with distributed params
       dist_param <- NULL;
