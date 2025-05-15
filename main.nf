@@ -1,6 +1,6 @@
 process COGAPS {
   tag "$prefix"
-  label 'process_high_memory'
+  label 'process_high'
   label 'process_long'
   container 'ghcr.io/fertiglab/cogaps:master'
 
@@ -32,9 +32,9 @@ process COGAPS {
   Rscript -e 'library("CoGAPS");
       sparse <- readRDS("$dgCMatrix");
       #select top 5K genes
-      message("finding top 5K genes");
+      message("finding top ", ${params.n_top_genes}, " genes");
       vars <- apply(sparse, 1, var);
-      top_genes <- order(vars, decreasing=TRUE)[1:5000];
+      top_genes <- order(vars, decreasing=TRUE)[1:${params.n_top_genes}];
       sparse <- sparse[top_genes,];
       message("selected top ", length(top_genes), " genes of ", length(vars));
    
@@ -49,11 +49,15 @@ process COGAPS {
                              sparseOptimization = as.logical($cparams.sparse),
                              distributed=dist_param);
       if (!(is.null(dist_param))){
-        allow_cpus <- as.numeric($task.cpus) - 1;
-        if ($cparams.nsets > allow_cpus){
+        nsets <- $cparams.nsets;
+        allow_cpus <- as.numeric($task.cpus);
+        if( allow_cpus < 2){
+          stop("Error: distributed mode requires at least 2 cpus")
+        }
+        if (nsets > allow_cpus){
           message("Warning: nsets is greater than available cpus. Setting nsets to ", allow_cpus);
         } 
-        params <- setDistributedParams(params, nSets = min($cparams.nsets,allow_cpus));
+        params <- setDistributedParams(params, nSets = min(nsets,allow_cpus));
       };
       cogapsResult <- CoGAPS(data = data, params = params, nThreads = $cparams.nthreads,
                              outputFrequency = 100);
@@ -195,10 +199,10 @@ workflow {
     .map { tuple([id:it.getName().replace('.', '-')], it)}
 
   //example channel with cparams
-  ch_cparams = Channel.of([npatterns: 5, niterations: 10000, sparse: 0, distributed: null, nsets:1, nthreads:1],
-                          [npatterns: 10, niterations: 10000, sparse: 0, distributed: null, nsets:1, nthreads:1],
-                          [npatterns: 15, niterations: 10000, sparse: 0, distributed: null, nsets:1, nthreads:1],
-                          [npatterns: 20, niterations: 10000, sparse: 0, distributed: null, nsets:1, nthreads:1],
+  ch_cparams = Channel.of([npatterns: 5, niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1],
+                          [npatterns: 10, niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1],
+                          [npatterns: 15, niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1],
+                          [npatterns: 20, niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1],
                          )
 
   // convert adata to dgCMatrix
