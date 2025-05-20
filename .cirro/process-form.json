@@ -2,11 +2,17 @@
   "form": {
     "type": "object",
     "properties": {
+      "niterations": {
+        "title": "niterations",
+        "description": "number of iterations to run",
+        "type": "integer",
+        "default": 1000
+      },
       "n_top_genes": {
         "title": "n_top_genes",
         "description": "number of top genes (by var) to use",
         "type": "integer",
-        "default": 5000
+        "default": 1000
       },
       "distributed": {
         "title": "distributed",
