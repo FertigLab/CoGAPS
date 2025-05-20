@@ -1,7 +1,8 @@
 
 {
-  "out_dir": "$.dataset.dataPath",
   "n_top_genes": "$.dataset.params.n_top_genes",
   "distributed": "$.dataset.params.distributed",
-  "nsets": "$.dataset.params.nsets"
+  "nsets": "$.dataset.params.nsets",
+  "outdir": "$.dataset.dataPath",
+  "input": "$.inputs.[*].dataPath"
 }
