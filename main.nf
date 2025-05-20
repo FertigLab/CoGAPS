@@ -103,7 +103,6 @@ process COGAPS_TENX2DGC {
   mkdir "${prefix}"
 
   Rscript -e 'res <- Seurat::Read10X("$data/filtered_feature_bc_matrix/");
-              res <- Seurat::NormalizeData(res);
               saveRDS(res, file="${prefix}/dgCMatrix.rds")';
 
   cat <<-END_VERSIONS > versions.yml
@@ -172,9 +171,6 @@ process COGAPS_ADATA2DGC {
               if(transpose){
                 res <- Matrix::t(res)
               }; 
-
-              message("Normalizing data");
-              res <- Seurat::NormalizeData(res);
               message("Saving dgCMatrix");
               saveRDS(res, file="${prefix}/dgCMatrix.rds")';
 
