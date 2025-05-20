@@ -1,5 +1,6 @@
 
 {
+  "niterations": "$.dataset.params.niterations",
   "n_top_genes": "$.dataset.params.n_top_genes",
   "distributed": "$.dataset.params.distributed",
   "nsets": "$.dataset.params.nsets",
