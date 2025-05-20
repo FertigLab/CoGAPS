@@ -1,8 +1,31 @@
 {
-    "form": {
-      "type": "object",
-      "properties": {},
-      "required": []
+  "form": {
+    "type": "object",
+    "properties": {
+      "n_top_genes": {
+        "title": "n_top_genes",
+        "description": "number of top genes (by var) to use",
+        "type": "integer",
+        "default": 5000
+      },
+      "distributed": {
+        "title": "distributed",
+        "description": "single run: none, distributed: genome-wide, single-cell",
+        "type": "string",
+        "enum": [
+          "none",
+          "genome-wide",
+          "single-cell"
+        ]
+      },
+      "nsets": {
+        "title": "nsets",
+        "description": "If distributed, number of sets to split into",
+        "type": "integer",
+        "default": 4
+      }
     },
-    "ui": {}
-  }
+    "required": []
+  },
+  "ui": {}
+}
