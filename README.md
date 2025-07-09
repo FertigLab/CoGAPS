@@ -30,7 +30,7 @@ devtools::install_github("FertigLab/CoGAPS")
 Follow the vignette [here](https://github.com/FertigLab/CoGAPS/blob/master/vignettes/CoGAPS.Rmd) and available as static html [here](https://rpubs.com/jeanettejohnson/1018399)
 
 # Run as nextflow pipeline
-The example below will attempt running CoGAPS with number of patterns 3 and 4 on every `.rds` and `.h5ad` file.
+The example below will attempt running CoGAPS with number of patterns 3 and 4 on every `.rds` and `.h5ad` file in the input folder (`tests/nextflow`).
 ```
 nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -profile docker --max_memory 10GB --npatterns 3,4
 ```
