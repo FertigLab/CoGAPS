@@ -5,5 +5,6 @@
   "distributed": "$.dataset.params.distributed",
   "nsets": "$.dataset.params.nsets",
   "outdir": "$.dataset.dataPath",
-  "input": "$.inputs.[*].dataPath"
+  "input": "$.inputs.[*].dataPath",
+  "npatterns": "$.dataset.params.npatterns"
 }
