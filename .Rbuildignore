@@ -9,9 +9,8 @@
 ^inst/benchmarks/
 ^inst/profiling/
 ^inst/vignettes/
-^nextflow
 
-^.git
+^\.git
 
 ^src/Makevars(?!.in$|.win$)
 ^src/Cogaps.o
@@ -66,3 +65,11 @@
 ^src/gibbs_sampler/SparseNormalModel.o
 
 ^src/math/VectorMath\.o$
+
+^nextflow*
+^main\.nf
+^work*
+\.nextflow
+\.cirro
+^tests/nextflow
+

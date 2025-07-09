@@ -1,6 +1,6 @@
 process COGAPS {
   tag "$prefix"
-  label 'process_medium'
+  label 'process_high'
   label 'process_long'
   container 'ghcr.io/fertiglab/cogaps:master'
 
@@ -31,6 +31,14 @@ process COGAPS {
   mkdir -p "${prefix}"
   Rscript -e 'library("CoGAPS");
       sparse <- readRDS("$dgCMatrix");
+      #select top 5K genes
+      message("finding top ", ${params.n_top_genes}, " genes");
+      vars <- apply(sparse, 1, var);
+      ngenes <- min(length(vars),${params.n_top_genes});
+      top_genes <- order(vars, decreasing=TRUE)[1:ngenes];
+      sparse <- sparse[top_genes,];
+      message("selected top ", length(top_genes), " genes of ", length(vars));
+   
       data <- as.matrix(sparse);
       #avoid errors with distributed params
       dist_param <- NULL;
@@ -42,10 +50,18 @@ process COGAPS {
                              sparseOptimization = as.logical($cparams.sparse),
                              distributed=dist_param);
       if (!(is.null(dist_param))){
-        params <- setDistributedParams(params, nSets = $cparams.nsets);
+        nsets <- $cparams.nsets;
+        allow_cpus <- as.numeric($task.cpus);
+        if( allow_cpus < 2){
+          stop("Error: distributed mode requires at least 2 cpus")
+        }
+        if (nsets > allow_cpus){
+          message("Warning: nsets is greater than available cpus. Setting nsets to ", allow_cpus);
+        } 
+        params <- setDistributedParams(params, nSets = min(nsets,allow_cpus));
       };
       cogapsResult <- CoGAPS(data = data, params = params, nThreads = $cparams.nthreads,
-                             outputFrequency = floor($cparams.niterations/10));
+                             outputFrequency = 100);
       saveRDS(cogapsResult, file = "${prefix}/cogapsResult.rds")'
 
   cat <<-END_VERSIONS > versions.yml
@@ -88,7 +104,6 @@ process COGAPS_TENX2DGC {
   mkdir "${prefix}"
 
   Rscript -e 'res <- Seurat::Read10X("$data/filtered_feature_bc_matrix/");
-              res <- Seurat::NormalizeData(res);
               saveRDS(res, file="${prefix}/dgCMatrix.rds")';
 
   cat <<-END_VERSIONS > versions.yml
@@ -101,7 +116,7 @@ process COGAPS_TENX2DGC {
 
 process COGAPS_ADATA2DGC {
   tag "$meta.id"
-  label 'process_low'
+  label 'process_medium'
   container 'docker.io/satijalab/seurat:5.0.0'
 
   input:
@@ -157,9 +172,6 @@ process COGAPS_ADATA2DGC {
               if(transpose){
                 res <- Matrix::t(res)
               }; 
-
-              message("Normalizing data");
-              res <- Seurat::NormalizeData(res);
               message("Saving dgCMatrix");
               saveRDS(res, file="${prefix}/dgCMatrix.rds")';
 
@@ -173,22 +185,39 @@ process COGAPS_ADATA2DGC {
   """
 }
 
-//example channel with data folders, for example
-ch_data = Channel.fromPath('./test/**gist.rds')
-  .map { tuple([id:it.getParent().getName()], it)}
 
-//example channel with cparams
-ch_cparams = Channel.of([npatterns: 7, niterations: 100, sparse: 1, distributed: 'null', nsets:1, nthreads:1],
-                        [npatterns: 7, niterations: 100, sparse: 0, distributed: 'null', nsets:1, nthreads:1])
-
-// combine the two channels as input to CoGAPS
-ch_input = ch_data.combine(ch_cparams)
-
-//run the workflow
+//example workflow
 workflow {
+  //example channel with data folders, for example
+  ch_adata = Channel.fromPath("${params.input}/**.h5ad")
+    .map { tuple([id:it.getName().replace('.', '-')], it)}
+
+  ch_rds = Channel.fromPath("${params.input}/**.rds")
+    .map { tuple([id:it.getName().replace('.', '-')], it)}
+
+  //make a channel with desired pattern number
+  def patterns = params.npatterns.split(',').collect { it.toInteger() }
+  ch_patterns = Channel.from(patterns)
+
+  //example channel with cparams
+  ch_fixed_params = Channel.of([niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1])
+
+  ch_cparams = ch_patterns
+    .combine(ch_fixed_params)
+    .map { tuple([id:it[0].toString(), npatterns:it[0], niterations:it[1].niterations, sparse:it[1].sparse, distributed:it[1].distributed, nsets:it[1].nsets, nthreads:it[1].nthreads]) }
+
+  // convert adata to dgCMatrix
+  COGAPS_ADATA2DGC(ch_adata)
+
+  // ch_cogaps_input of converted adatas and rdses
+  ch_input = COGAPS_ADATA2DGC.out.dgCMatrix
+  ch_input = ch_input.mix(ch_rds)
+
+  // combine the two channels as input to CoGAPS
+  ch_input = ch_input.combine(ch_cparams)
+
   COGAPS(ch_input)
 }
 
 //example:
-//nextflow run main.nf -profile docker -resume
-//nextflow run main.nf -profile slurm -resume
+//nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -profile docker 
