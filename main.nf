@@ -34,7 +34,8 @@ process COGAPS {
       #select top 5K genes
       message("finding top ", ${params.n_top_genes}, " genes");
       vars <- apply(sparse, 1, var);
-      top_genes <- order(vars, decreasing=TRUE)[1:${params.n_top_genes}];
+      ngenes <- min(length(vars),${params.n_top_genes});
+      top_genes <- order(vars, decreasing=TRUE)[1:ngenes];
       sparse <- sparse[top_genes,];
       message("selected top ", length(top_genes), " genes of ", length(vars));
    
@@ -194,12 +195,16 @@ workflow {
   ch_rds = Channel.fromPath("${params.input}/**.rds")
     .map { tuple([id:it.getName().replace('.', '-')], it)}
 
+  //make a channel with desired pattern number
+  def patterns = params.npatterns.split(',').collect { it.toInteger() }
+  ch_patterns = Channel.from(patterns)
+
   //example channel with cparams
-  ch_cparams = Channel.of([npatterns: 5, niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1],
-                          [npatterns: 10, niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1],
-                          [npatterns: 15, niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1],
-                          [npatterns: 20, niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1],
-                         )
+  ch_fixed_params = Channel.of([niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1])
+
+  ch_cparams = ch_patterns
+    .combine(ch_fixed_params)
+    .map { tuple([id:it[0].toString(), npatterns:it[0], niterations:it[1].niterations, sparse:it[1].sparse, distributed:it[1].distributed, nsets:it[1].nsets, nthreads:it[1].nthreads]) }
 
   // convert adata to dgCMatrix
   COGAPS_ADATA2DGC(ch_adata)

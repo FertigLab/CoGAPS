@@ -67,3 +67,6 @@
 ^src/gibbs_sampler/SparseNormalModel.o
 
 ^src/math/VectorMath\.o$
+
+nextflow\.config
+main\.nf
