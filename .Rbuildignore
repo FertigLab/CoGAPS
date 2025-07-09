@@ -9,10 +9,8 @@
 ^inst/benchmarks/
 ^inst/profiling/
 ^inst/vignettes/
-^nextflow*
-^main.nf
 
-^.git
+^\.git
 
 ^src/Makevars(?!.in$|.win$)
 ^src/Cogaps.o
@@ -68,5 +66,10 @@
 
 ^src/math/VectorMath\.o$
 
-nextflow\.config
-main\.nf
+^nextflow*
+^main\.nf
+^work*
+\.nextflow
+\.cirro
+^tests/nextflow
+
