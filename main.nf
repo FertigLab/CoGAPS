@@ -3,7 +3,7 @@ process COGAPS {
   label 'process_medium'
   label 'process_high_memory'
   label 'process_long'
-  container 'ghcr.io/fertiglab/cogaps:master'
+  container 'ghcr.io/fertiglab/cogaps:nextflow'
 
   input:
     tuple val(meta), path(dgCMatrix), val(cparams)
@@ -184,7 +184,7 @@ process COGAPS_ADATA2DGC {
 process COGAPS_PREPROCESS {
   tag "$prefix"
   label 'process_medium'
-  container 'ghcr.io/fertiglab/cogaps:master'
+  container 'ghcr.io/fertiglab/cogaps:nextflow'
 
   input:
     tuple val(meta), path(dgCMatrix)
@@ -201,6 +201,19 @@ process COGAPS_PREPROCESS {
   Rscript -e 'library("Matrix");
       library(sparseMatrixStats)
       sparse <- readRDS("$dgCMatrix");
+
+      #drop rows with > 95% zero counts
+      message("filtering rows with >95% zeros");
+      nz <- rowSums(sparse != 0);
+      sparse <- sparse[nz > 0.05 * ncol(sparse),];
+      message("filtered to ", nrow(sparse), " columns of ", length(nz));
+
+      #drop columns with > 95% zero counts
+      message("filtering columns with >95% zeros");
+      nz <- colSums(sparse != 0);
+      sparse <- sparse[,nz > 0.05 * nrow(sparse)];
+      message("filtered to ", ncol(sparse), " rows of ", length(nz));
+
       #select top N genes
       message("finding top ", ${params.n_top_genes}, " genes");
       vars <- rowVars(sparse);
