@@ -199,10 +199,11 @@ process COGAPS_PREPROCESS {
   """
   mkdir -p "${prefix}"
   Rscript -e 'library("Matrix");
+      library(sparseMatrixStats)
       sparse <- readRDS("$dgCMatrix");
       #select top N genes
       message("finding top ", ${params.n_top_genes}, " genes");
-      vars <- apply(sparse, 1, var);
+      vars <- rowVars(sparse);
       ngenes <- min(length(vars),${params.n_top_genes});
       top_genes <- order(vars, decreasing=TRUE)[1:ngenes];
       sparse <- sparse[top_genes,];
