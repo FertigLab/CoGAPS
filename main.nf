@@ -63,6 +63,7 @@ process COGAPS {
         R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
   END_VERSIONS
   """
+
 }
 
 process COGAPS_TENX2DGC {
@@ -75,6 +76,7 @@ process COGAPS_TENX2DGC {
   output:
       tuple val(meta), path("${prefix}/dgCMatrix.rds"), emit: dgCMatrix
       path "versions.yml"                             , emit: versions
+
 
   script:
   def args = task.ext.args ?: ''
@@ -99,6 +101,7 @@ process COGAPS_TENX2DGC {
   """
   mkdir "${prefix}"
   touch "${prefix}/dgCMatrix.rds"
+
   cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         seurat: \$(Rscript -e 'print(packageVersion("Seurat"))' | awk '{print \$2}')
@@ -262,6 +265,11 @@ workflow {
   ch_input = COGAPS_PREPROCESS.out.dgCMatrix
     .map { tuple(it[0], it[1]) }
 
+  // ch_cogaps_input of converted adatas and rdses
+  ch_input = COGAPS_ADATA2DGC.out.dgCMatrix
+  ch_input = ch_input.mix(ch_rds)
+
+
   // combine the two channels as input to CoGAPS
   ch_input = ch_input.combine(ch_cparams)
 
@@ -270,3 +278,4 @@ workflow {
 
 //example:
 //nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -profile docker --max_memory 10GB --max_cpus 8
+
