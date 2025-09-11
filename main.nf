@@ -1,7 +1,6 @@
 process COGAPS {
   tag "$prefix"
-  label 'process_medium'
-  label 'process_high_memory'
+  label 'process_high'
   label 'process_long'
   container 'ghcr.io/fertiglab/cogaps:nextflow'
 
