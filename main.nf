@@ -279,11 +279,6 @@ workflow {
   ch_input = COGAPS_PREPROCESS.out.dgCMatrix
     .map { tuple(it[0], it[1]) }
 
-  // ch_cogaps_input of converted adatas and rdses
-  ch_input = COGAPS_ADATA2DGC.out.dgCMatrix
-  ch_input = ch_input.mix(ch_rds)
-
-
   // combine the two channels as input to CoGAPS
   ch_input = ch_input.combine(ch_cparams)
 
