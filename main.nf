@@ -198,7 +198,7 @@ process COGAPS_PREPROCESS {
   """
   mkdir -p "${prefix}"
   Rscript -e 'library("Matrix");
-      library(sparseMatrixStats)
+      library("sparseMatrixStats")
       sparse <- readRDS("$dgCMatrix");
 
       #sparsity is
