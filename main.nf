@@ -174,7 +174,7 @@ process COGAPS_ADATA2DGC {
   touch "${prefix}/dgCMatrix.rds"
   cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        hdf5r: \$(Rscript -e 'print(packageVersion("Seurat"))' | awk '{print \$2}')
+        hdf5r: \$(Rscript -e 'print(packageVersion("hdf5r"))' | awk '{print \$2}')
         R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
   END_VERSIONS
   """
