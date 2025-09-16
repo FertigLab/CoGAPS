@@ -11,19 +11,6 @@ process COGAPS {
     tuple val(meta), path("${prefix}/cogapsResult.rds"), emit: cogapsResult
     path  "versions.yml",                                emit: versions
 
-  stub:
-  def args = task.ext.args ?: ''
-  prefix = task.ext.prefix ?: "${meta.id}/${cparams.niterations}-${cparams.npatterns}-${cparams.sparse}-${cparams.distributed}"
-  """
-  mkdir "${prefix}"
-  touch "${prefix}/cogapsResult.rds"
-  cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        CoGAPS: \$(Rscript -e 'print(packageVersion("CoGAPS"))' | awk '{print \$2}')
-        R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
-  END_VERSIONS
-  """
-
   script:
   def args = task.ext.args ?: ''
   prefix = task.ext.prefix ?: "${meta.id}/${cparams.niterations}-${cparams.npatterns}-${cparams.sparse}-${cparams.distributed}"
@@ -31,14 +18,6 @@ process COGAPS {
   mkdir -p "${prefix}"
   Rscript -e 'library("CoGAPS");
       sparse <- readRDS("$dgCMatrix");
-      #select top 5K genes
-      message("finding top ", ${params.n_top_genes}, " genes");
-      vars <- apply(sparse, 1, var);
-      ngenes <- min(length(vars),${params.n_top_genes});
-      top_genes <- order(vars, decreasing=TRUE)[1:ngenes];
-      sparse <- sparse[top_genes,];
-      message("selected top ", length(top_genes), " genes of ", length(vars));
-   
       data <- as.matrix(sparse);
       #avoid errors with distributed params
       dist_param <- NULL;
@@ -70,6 +49,20 @@ process COGAPS {
         R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
   END_VERSIONS
   """
+
+  stub:
+  def args = task.ext.args ?: ''
+  prefix = task.ext.prefix ?: "${meta.id}/${cparams.niterations}-${cparams.npatterns}-${cparams.sparse}-${cparams.distributed}"
+  """
+  mkdir "${prefix}"
+  touch "${prefix}/cogapsResult.rds"
+  cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        CoGAPS: \$(Rscript -e 'print(packageVersion("CoGAPS"))' | awk '{print \$2}')
+        R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
+  END_VERSIONS
+  """
+
 }
 
 process COGAPS_TENX2DGC {
@@ -83,19 +76,6 @@ process COGAPS_TENX2DGC {
       tuple val(meta), path("${prefix}/dgCMatrix.rds"), emit: dgCMatrix
       path "versions.yml"                             , emit: versions
 
-  stub:
-  def args = task.ext.args ?: ''
-  prefix = task.ext.prefix ?: "${meta.id}"
-
-  """
-  mkdir "${prefix}"
-  touch "${prefix}/dgCMatrix.rds"
-  cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        seurat: \$(Rscript -e 'print(packageVersion("Seurat"))' | awk '{print \$2}')
-        R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
-  END_VERSIONS
-  """
 
   script:
   def args = task.ext.args ?: ''
@@ -105,6 +85,21 @@ process COGAPS_TENX2DGC {
 
   Rscript -e 'res <- Seurat::Read10X("$data/filtered_feature_bc_matrix/");
               saveRDS(res, file="${prefix}/dgCMatrix.rds")';
+
+  cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        seurat: \$(Rscript -e 'print(packageVersion("Seurat"))' | awk '{print \$2}')
+        R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
+  END_VERSIONS
+  """
+
+  stub:
+  def args = task.ext.args ?: ''
+  prefix = task.ext.prefix ?: "${meta.id}"
+
+  """
+  mkdir "${prefix}"
+  touch "${prefix}/dgCMatrix.rds"
 
   cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -124,20 +119,6 @@ process COGAPS_ADATA2DGC {
   output:
       tuple val(meta), path("${prefix}/dgCMatrix.rds"), emit: dgCMatrix
       path "versions.yml"                             , emit: versions
-
-  stub:
-  def args = task.ext.args ?: ''
-  prefix = task.ext.prefix ?: "${meta.id}"
-
-  """
-  mkdir "${prefix}"
-  touch "${prefix}/dgCMatrix.rds"
-  cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        hdf5r: \$(Rscript -e 'print(packageVersion("Seurat"))' | awk '{print \$2}')
-        R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
-  END_VERSIONS
-  """
 
   script:
   def args = task.ext.args ?: ''
@@ -183,6 +164,88 @@ process COGAPS_ADATA2DGC {
         R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
   END_VERSIONS
   """
+
+  stub:
+  def args = task.ext.args ?: ''
+  prefix = task.ext.prefix ?: "${meta.id}"
+
+  """
+  mkdir "${prefix}"
+  touch "${prefix}/dgCMatrix.rds"
+  cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        hdf5r: \$(Rscript -e 'print(packageVersion("hdf5r"))' | awk '{print \$2}')
+        R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
+  END_VERSIONS
+  """
+}
+
+process COGAPS_PREPROCESS {
+  tag "$prefix"
+  label 'process_medium'
+  container 'ghcr.io/fertiglab/cogaps:master'
+
+  input:
+    tuple val(meta), path(dgCMatrix)
+
+  output:
+    tuple val(meta), path("${prefix}/dgCMatrix.rds"),    emit: dgCMatrix
+    path  "versions.yml",                                emit: versions
+
+  script:
+  def args = task.ext.args ?: ''
+  prefix = task.ext.prefix ?: "${meta.id}"
+  """
+  mkdir -p "${prefix}"
+  Rscript -e 'library("Matrix");
+      library("sparseMatrixStats")
+      sparse <- readRDS("$dgCMatrix");
+
+      #sparsity is
+      message("sparsity: ", sum(sparse==0)/ (nrow(sparse)*ncol(sparse)));
+
+      #drop rows with > 95% zero counts
+      message("filtering rows with >95% zeros");
+      nz <- rowSums(sparse != 0);
+      sparse <- sparse[nz > 0.05 * ncol(sparse),];
+      message("filtered to ", nrow(sparse), " columns of ", length(nz));
+
+      #drop columns with > 95% zero counts
+      message("filtering columns with >95% zeros");
+      nz <- colSums(sparse != 0);
+      sparse <- sparse[,nz > 0.05 * nrow(sparse)];
+      message("filtered to ", ncol(sparse), " rows of ", length(nz));
+
+      #resulting sparsity is
+      message("sparsity: ", sum(sparse==0)/ (nrow(sparse)*ncol(sparse)));
+
+      #select top N genes
+      message("finding top ", ${params.n_top_genes}, " genes");
+      vars <- rowVars(sparse);
+      ngenes <- min(length(vars),${params.n_top_genes});
+      top_genes <- order(vars, decreasing=TRUE)[1:ngenes];
+      sparse <- sparse[top_genes,];
+      message("selected top ", length(top_genes), " genes of ", length(vars));
+
+      saveRDS(sparse, file = "${prefix}/dgCMatrix.rds")'
+
+  cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
+  END_VERSIONS
+  """
+
+  stub:
+  def args = task.ext.args ?: ''
+  prefix = task.ext.prefix ?: "${meta.id}"
+  """
+  mkdir "${prefix}"
+  touch "${prefix}/dgCMatrix.rds"
+  cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
+  END_VERSIONS
+  """
 }
 
 
@@ -209,9 +272,17 @@ workflow {
   // convert adata to dgCMatrix
   COGAPS_ADATA2DGC(ch_adata)
 
+  // preprocess dgCMatrix
+  ch_preprocess = COGAPS_ADATA2DGC.out.dgCMatrix
+    .map { tuple(it[0], it[1]) }
+
+  ch_preprocess = ch_preprocess.mix(ch_rds)
+  
+  COGAPS_PREPROCESS(ch_preprocess)
+
   // ch_cogaps_input of converted adatas and rdses
-  ch_input = COGAPS_ADATA2DGC.out.dgCMatrix
-  ch_input = ch_input.mix(ch_rds)
+  ch_input = COGAPS_PREPROCESS.out.dgCMatrix
+    .map { tuple(it[0], it[1]) }
 
   // combine the two channels as input to CoGAPS
   ch_input = ch_input.combine(ch_cparams)
@@ -220,4 +291,5 @@ workflow {
 }
 
 //example:
-//nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -profile docker 
+//nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -profile docker --max_memory 10GB --max_cpus 8
+
