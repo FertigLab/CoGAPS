@@ -15,4 +15,4 @@ RUN autoreconf -fi
 RUN Rscript -e 'install.packages("pak")' && \
     Rscript -e 'pak::local_install_deps(".")'
 
-RUN Rscript -e 'devtools::install(".", dependencies=TRUE)'
+RUN R CMD INSTALL .
