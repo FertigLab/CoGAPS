@@ -107,8 +107,12 @@ CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
     # check OpenMP support
     if (!compiledWithOpenMPSupport())
     {
-        if (asynchronousUpdates & nThreads > 1)
-            warning("requesting multi-threaded version of CoGAPS but compiler did not support OpenMP")
+        if (asynchronousUpdates | nThreads > 1)
+            warning(paste(
+                "OpenMP is not available in this CoGAPS build;",
+                "running with asynchronousUpdates=FALSE and nThreads=1;",
+                "this may change results in a platform-dependent manner."
+            ))
         asynchronousUpdates = FALSE
         nThreads = 1
     }
