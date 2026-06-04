@@ -1,0 +1,30 @@
+#inspired by https://docs.cirro.bio/pipelines/development/#automated-testing
+name: nextflow-test
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+      - 'dev'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+  
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: install nextflow
+        run: |
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+
+      - name: run nextflow
+        run: nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -profile docker --max_memory 8GB --max_cpus 2

@@ -252,29 +252,29 @@ process COGAPS_PREPROCESS {
 //example workflow
 workflow {
   //example channel with data folders, for example
-  ch_adata = Channel.fromPath("${params.input}/**.h5ad")
-    .map { tuple([id:it.getName().replace('.', '-')], it)}
+  ch_adata = channel.fromPath("${params.input}/**.h5ad")
+    .map {it -> tuple([id:it.getName().replace('.', '-')], it)}
 
-  ch_rds = Channel.fromPath("${params.input}/**.rds")
-    .map { tuple([id:it.getName().replace('.', '-')], it)}
+  ch_rds = channel.fromPath("${params.input}/**.rds")
+    .map {it -> tuple([id:it.getName().replace('.', '-')], it)}
 
   //make a channel with desired pattern number
-  def patterns = params.npatterns.split(',').collect { it.toInteger() }
-  ch_patterns = Channel.from(patterns)
+  def patterns = params.npatterns.split(',').collect {it -> it.toInteger() }
+  ch_patterns = channel.from(patterns)
 
   //example channel with cparams
-  ch_fixed_params = Channel.of([niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1])
+  ch_fixed_params = channel.of([niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1])
 
   ch_cparams = ch_patterns
     .combine(ch_fixed_params)
-    .map { tuple([id:it[0].toString(), npatterns:it[0], niterations:it[1].niterations, sparse:it[1].sparse, distributed:it[1].distributed, nsets:it[1].nsets, nthreads:it[1].nthreads]) }
+    .map {it -> tuple([id:it[0].toString(), npatterns:it[0], niterations:it[1].niterations, sparse:it[1].sparse, distributed:it[1].distributed, nsets:it[1].nsets, nthreads:it[1].nthreads]) }
 
   // convert adata to dgCMatrix
   COGAPS_ADATA2DGC(ch_adata)
 
   // preprocess dgCMatrix
   ch_preprocess = COGAPS_ADATA2DGC.out.dgCMatrix
-    .map { tuple(it[0], it[1]) }
+    .map {it -> tuple(it[0], it[1]) }
 
   ch_preprocess = ch_preprocess.mix(ch_rds)
   
@@ -282,7 +282,7 @@ workflow {
 
   // ch_cogaps_input of converted adatas and rdses
   ch_input = COGAPS_PREPROCESS.out.dgCMatrix
-    .map { tuple(it[0], it[1]) }
+    .map {it -> tuple(it[0], it[1]) }
 
   // combine the two channels as input to CoGAPS
   ch_input = ch_input.combine(ch_cparams)
@@ -292,4 +292,3 @@ workflow {
 
 //example:
 //nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -profile docker --max_memory 10GB --max_cpus 8
-
