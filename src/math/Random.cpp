@@ -34,6 +34,8 @@ GapsRng::GapsRng(GapsRandomState *randState)
 mRandState(randState),
 mState(randState->nextSeed())
 {
+    // Pull exactly one seed from the run-level seeder, then advance once so a
+    // new GapsRng does not begin by returning its seed state.
     advance();
 }
 
@@ -296,11 +298,15 @@ void GapsRandomState::initLookupTables()
 
 uint64_t GapsRandomState::nextSeed()
 {
+    // Hands out deterministic seeds for local GapsRng streams. The order in
+    // which callers request seeds determines the downstream RNG streams.
     return mSeeder.next();
 }
 
 void GapsRandomState::rollBackOnce()
 {
+    // Used when a just-created local RNG cannot be used, so the same seed can
+    // be retried during the next proposal attempt.
     mSeeder.rollBackOnce();
 }
 

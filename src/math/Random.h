@@ -26,9 +26,8 @@ private :
     bool mHasValue;
 };
 
-// TODO allow this to be rolled back
-// PCG random number generator
-// This is constructed with a seed pulled from the global state
+// PCG random number generator. Each GapsRng is constructed with a seed pulled
+// from GapsRandomState, then advances independently from that run-level seeder.
 class GapsRng
 {
 public:
@@ -70,10 +69,10 @@ private:
     uint64_t mPreviousState[2];
 };
 
-// manages random seed and lookup tables for distribution functions, need to
-// avoid global variables for multi-threading issues - this random state
-// is created at the beginning of execution and passed down to the classes
-// that need it
+// Manages the run-level seed stream and lookup tables for distribution
+// functions. This object is created once at the beginning of execution and
+// passed down to classes that need local GapsRng streams, avoiding global RNG
+// state during multi-threaded execution.
 class GapsRandomState
 {
 public:

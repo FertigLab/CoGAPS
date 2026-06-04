@@ -94,11 +94,16 @@ float SingleThreadedGibbsSampler<DataModel>::getAverageQueueLength() const
 template <class DataModel>
 char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
 {
+    // Move and exchange require existing atoms and neighboring atom positions.
+    // With fewer than two atoms, force birth so early model-fitting states do
+    // not create degenerate proposals with undefined conditional distributions.
     if (mDomain.size() < 2)
     {
         return 'B'; // always birth when no atoms exist
     }
 
+    // Choose among the four reversible-jump moves used by the atomic prior.
+    // Birth/death change the number of atoms; move/exchange preserve it.
     float u1 = mRng.uniform();
     if (u1 < 0.5f)
     {
@@ -113,6 +118,8 @@ char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
 template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThreads) // NOLINT
 {
+    // Sequential sampler path: each proposal is generated, evaluated, and
+    // applied before the next proposal is drawn.
     for (unsigned i = 0; i < nSteps; ++i)
     {
         switch (getUpdateType())
@@ -125,22 +132,26 @@ void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nTh
     }
 }
 
-// add an atom at a random position, calculate mass either with an
-// exponential distribution or with the gibbs mass distribution
+// Birth adds an atom at a random free position in the atomic domain. Early in
+// model fitting, the conditional Gibbs distribution may be undefined because
+// its variance term would require division by zero. In those cases, the atom
+// mass is sampled from the exponential prior so the full proposal can still be
+// evaluated.
 template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::birth()
 {
-    // get random open position in atomic domain, calculate row and col of the position
+    // Map the atomic position to the matrix row and pattern column it updates.
     uint64_t pos = mDomain.randomFreePosition(&mRng);
     unsigned row = (pos / mBinLength) / mNumPatterns;
     unsigned col = (pos / mBinLength) % mNumPatterns;
 
-    // try to get mass using gibbs, resort to exponential if needed
+    // Sample mass using Gibbs when the conditional distribution is defined;
+    // fall back to the prior when the conditional variance would be degenerate.
     OptionalFloat mass = DataModel::canUseGibbs(col)
         ? DataModel::sampleBirth(row, col, &mRng)
         : mRng.exponential(DataModel::lambda());
 
-    // accept mass as long as gibbs succeded or it's non-zero
+    // Accept the birth when the proposed mass is valid and nonzero.
     if (mass.hasValue() && mass.value() > gaps::epsilon)
     {
         mDomain.insert(pos, mass.value());
@@ -148,16 +159,18 @@ void SingleThreadedGibbsSampler<DataModel>::birth()
     }
 }
 
-// automatically accept death, attempt a rebirth at the same position, using
-// the original mass or the gibbs mass distribution
+// Death removes an atom by first subtracting its mass from the matrix, then
+// attempting a rebirth at the same matrix element. When the conditional Gibbs
+// distribution is defined, it proposes the rebirth mass; otherwise the original
+// mass is retained so the full death/rebirth proposal can still be evaluated.
 template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::death()
 {
-    // select atom at random and calculate it's row and col
+    // Select an atom and map its position to the matrix row and pattern column.
     AtomType *atom = mDomain.randomAtom(&mRng);
     unsigned row = (atom->pos() / mBinLength) / mNumPatterns;
     unsigned col = (atom->pos() / mBinLength) % mNumPatterns;
-    // determine mass to attempt rebirth with
+    // Determine the mass to attempt rebirth with.
     float rebirthMass = atom->mass(); // default rebirth mass == no change to atom
     AlphaParameters alpha = DataModel::alphaParametersWithChange(row, col, -1.f * atom->mass())
         * DataModel::annealingTemp();
@@ -170,7 +183,7 @@ void SingleThreadedGibbsSampler<DataModel>::death()
             rebirthMass = gMass.value();
         }
     }
-    // handle accept/reject of the rebirth
+    // Handle accept/reject of the rebirth step.
     float deltaLL = rebirthMass * (alpha.s_mu - alpha.s * rebirthMass / 2.f);
     if (std::log(mRng.uniform()) < deltaLL) // accept
     {
@@ -187,18 +200,20 @@ void SingleThreadedGibbsSampler<DataModel>::death()
     }
 }
 
-// move mass from src to dest in the atomic domain
+// Move shifts an existing atom to a new position between its neighboring atoms.
+// If the move crosses matrix elements, accept/reject is based on the resulting
+// change in likelihood.
 template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::move()
 {
-    // select atom at random and get it's right and left neighbors
+    // Select an atom and its left/right neighbors to preserve atomic ordering.
     AtomNeighborhoodType hood = mDomain.randomAtomWithNeighbors(&mRng);
     AtomType *atom = hood.center;
     uint64_t lbound = hood.hasLeft() ? hood.left->pos() : 0;
     uint64_t rbound = hood.hasRight() ? hood.right->pos() :
         static_cast<uint64_t>(mDomainLength);
 
-    // randomly select new position to move to and calculation the row and col of it
+    // Select the new atomic position and map old/new positions to matrix indices.
     uint64_t pos = mRng.uniform64(lbound + 1, rbound - 1);
     unsigned r1 = (atom->pos() / mBinLength) / mNumPatterns;
     unsigned c1 = (atom->pos() / mBinLength) % mNumPatterns;
@@ -212,7 +227,7 @@ void SingleThreadedGibbsSampler<DataModel>::move()
         return;
     }
     
-    // conditionally accept move based on change to likelihood
+    // Conditionally accept moves that change matrix elements.
     float deltaLL = DataModel::deltaLogLikelihood(r1, c1, r2, c2, atom->mass());
     if (std::log(mRng.uniform()) < deltaLL)
     {
@@ -222,23 +237,25 @@ void SingleThreadedGibbsSampler<DataModel>::move()
     }
 }
 
-// exchange some amount of mass between two positions, note it is possible
-// for one of the atoms to be deleted if it's mass becomes too small
+// Exchange transfers mass between neighboring atoms. When the two atoms affect
+// different matrix elements and the conditional Gibbs distribution is defined,
+// that distribution proposes the amount of mass to exchange; otherwise the
+// exchange is skipped because its conditional variance would be degenerate.
 template <class DataModel>
 void SingleThreadedGibbsSampler<DataModel>::exchange()
 {
-    // select atom at random and get it's right neighbor
+    // Select an atom and its right neighbor, wrapping at the end of the domain.
     AtomNeighborhoodType hood = mDomain.randomAtomWithNeighbors(&mRng);
     AtomType *atom1 = hood.center;
     AtomType *atom2 = hood.hasRight() ? hood.right : mDomain.front();
 
-    // calculate row and col of the atom and it's neighbor
+    // Map both atom positions to matrix indices.
     unsigned r1 = (atom1->pos() / mBinLength) / mNumPatterns;
     unsigned c1 = (atom1->pos() / mBinLength) % mNumPatterns;
     unsigned r2 = (atom2->pos() / mBinLength) / mNumPatterns;
     unsigned c2 = (atom2->pos() / mBinLength) % mNumPatterns;
 
-    // ignore exchanges in the same bin
+    // Same-bin exchanges only redistribute atomic mass and do not update matrix entries.
     if ((r1 != r2 || c1 != c2) && DataModel::canUseGibbs(c1, c2))
     {
         OptionalFloat mass = DataModel::sampleExchange(r1, c1, atom1->mass(),

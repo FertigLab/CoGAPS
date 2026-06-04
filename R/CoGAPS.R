@@ -104,7 +104,8 @@ CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
     params <- getValueOrRds(params)
     validObject(params)
 
-    # check OpenMP support
+    # OpenMP availability determines whether the asynchronous sampler can run.
+    # Without OpenMP, CoGAPS falls back to the sequential sampler path.
     if (!compiledWithOpenMPSupport())
     {
         if (asynchronousUpdates | nThreads > 1)
