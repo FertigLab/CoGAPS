@@ -53,7 +53,7 @@ biocViews: GeneExpression, Transcription, GeneSetEnrichment,
     DifferentialExpression, Bayesian, Clustering, TimeCourse, RNASeq, Microarray,
     MultipleComparison, DimensionReduction, ImmunoOncology
 NeedsCompilation: yes
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Encoding: UTF-8
 Collate:
     'class-CogapsParams.R'
