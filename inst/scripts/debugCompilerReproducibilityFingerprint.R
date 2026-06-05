@@ -1,5 +1,9 @@
 #!/usr/bin/env Rscript
 
+# this script is not used anywhere in the CoGAPS package, it has been written 
+# by codex AI to debug reproducibility in CoGAPS results across different
+# compiler versions and platforms.
+
 suppressPackageStartupMessages(library(CoGAPS))
 
 parseArgs <- function(args)
