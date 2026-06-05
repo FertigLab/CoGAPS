@@ -110,8 +110,11 @@ char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
         double nAtoms = static_cast<double>(mDomain.size());
         double numer = nAtoms * mDomainLength;
         float deathProb = numer / (numer + mAlpha * mNumBins * (mDomainLength - nAtoms));
+        // Within the birth/death branch, choose death with probability implied
+        // by the atom-count prior; otherwise propose birth.
         return mRng.uniform() < deathProb ? 'D' : 'B';
     }
+    // Split the remaining proposal interval between move and exchange.
     return u1 < 0.75f ? 'M' : 'E';
 }
 
@@ -209,6 +212,8 @@ void SingleThreadedGibbsSampler<DataModel>::move()
     // Select an atom and its left/right neighbors to preserve atomic ordering.
     AtomNeighborhoodType hood = mDomain.randomAtomWithNeighbors(&mRng);
     AtomType *atom = hood.center;
+    // Bound the move by neighboring atom positions; use domain endpoints for
+    // edge atoms.
     uint64_t lbound = hood.hasLeft() ? hood.left->pos() : 0;
     uint64_t rbound = hood.hasRight() ? hood.right->pos() :
         static_cast<uint64_t>(mDomainLength);
@@ -247,6 +252,7 @@ void SingleThreadedGibbsSampler<DataModel>::exchange()
     // Select an atom and its right neighbor, wrapping at the end of the domain.
     AtomNeighborhoodType hood = mDomain.randomAtomWithNeighbors(&mRng);
     AtomType *atom1 = hood.center;
+    // Exchange with the right neighbor, wrapping the last atom to the first.
     AtomType *atom2 = hood.hasRight() ? hood.right : mDomain.front();
 
     // Map both atom positions to matrix indices.

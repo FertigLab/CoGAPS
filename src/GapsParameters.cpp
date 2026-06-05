@@ -7,6 +7,7 @@
 void GapsParameters::print() const
 {
     gaps_printf("\n---- C++ Parameters ----\n\n");
+    // Print boolean parameters as TRUE/FALSE strings for readable run logs.
     gaps_printf("transposeData: %s\n", transposeData ? "TRUE" : "FALSE");
     gaps_printf("nGenes: %d\n", nGenes);
     gaps_printf("nSamples: %d\n", nSamples);
@@ -53,6 +54,7 @@ GapsParameters::GapsParameters(){}
 void GapsParameters::calculateDataDimensions(const std::string &file)
 {
     FileParser fp(file);
+    // Respect the requested data orientation when deriving gene and sample counts.
     nGenes = transposeData ? fp.nCol() : fp.nRow();
     nSamples = transposeData ? fp.nRow() : fp.nCol();
     if (subsetData && subsetGenes)
@@ -67,6 +69,7 @@ void GapsParameters::calculateDataDimensions(const std::string &file)
 
 void GapsParameters::calculateDataDimensions(const Matrix &mat)
 {
+    // Respect the requested data orientation when deriving gene and sample counts.
     nGenes = transposeData ? mat.nCol() : mat.nRow();
     nSamples = transposeData ? mat.nRow() : mat.nCol();
     if (subsetData && subsetGenes)

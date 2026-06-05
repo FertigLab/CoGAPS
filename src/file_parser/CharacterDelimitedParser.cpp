@@ -10,12 +10,14 @@ static const std::string trimChars = " \r\n\"";
 static std::string ltrim(const std::string &s)
 {
     std::size_t start = s.find_first_not_of(trimChars);
+    // If there is no non-whitespace character, return an empty trimmed string.
     return (start == std::string::npos) ? "" : s.substr(start);
 }
 
 static std::string rtrim(const std::string &s)
 {
     std::size_t end = s.find_last_not_of(trimChars);
+    // If there is no trailing non-whitespace character, return an empty string.
     return (end == std::string::npos) ? "" : s.substr(0, end + 1);
 }
 

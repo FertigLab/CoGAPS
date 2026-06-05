@@ -126,6 +126,8 @@ uint64_t GapsRng::uniform64(uint64_t a, uint64_t b)
 
 int GapsRng::poisson(double lambda)
 {
+    // Use inversion for small Poisson means; otherwise use the large-mean
+    // rejection sampler.
     return lambda <= 5.0 ? poissonSmall(lambda) : poissonLarge(lambda);
 }
 

@@ -49,6 +49,8 @@ TEST_CASE("Test SparseGibbsSampler")
         {
             for (unsigned j = 0; j < data.nCol(); ++j)
             {
+                // Generate sparse test data by randomly zeroing about half of
+                // the entries.
                 data(i,j) = rng.uniform32(1,14) * (rng.uniform() < 0.5f ? 0.f : 1.f);
             }
         }
@@ -75,6 +77,8 @@ TEST_CASE("Test SparseGibbsSampler")
         {
             for (unsigned k = 0; k < params.nPatterns; ++k)
             {
+                // Populate matching dense/sparse test matrices with mostly
+                // nonzero values and occasional zeros.
                 float val = rng.uniform(0.f, 10.f) * (rng.uniform() < 0.2f ? 0.f : 1.f);
                 dense_ASampler.mMatrix(i,k) = val;
                 sparse_ASampler.mMatrix.add(i, k, val);
@@ -86,6 +90,8 @@ TEST_CASE("Test SparseGibbsSampler")
         {
             for (unsigned k = 0; k < params.nPatterns; ++k)
             {
+                // Populate matching dense/sparse test matrices with mostly
+                // nonzero values and occasional zeros.
                 float val = rng.uniform(0.f, 10.f) * (rng.uniform() < 0.2f ? 0.f : 1.f);
                 dense_PSampler.mMatrix(j,k) = val;
                 sparse_PSampler.mMatrix.add(j, k, val);

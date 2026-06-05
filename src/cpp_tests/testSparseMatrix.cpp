@@ -67,6 +67,8 @@ TEST_CASE("Test Writing/Reading Sparse Matrices from File")
     {
         for (unsigned j = 0; j < ref.nCol(); ++j)
         {
+            // Build toy sparse test data by randomly zeroing half of the
+            // candidate entries.
             ref(i,j) = (i + j) * (rng.uniform() < 0.5f ? 0.f : 1.f);
         }
     }

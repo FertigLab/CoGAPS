@@ -32,6 +32,7 @@ int run_catch_unit_tests(Rcpp::String reporter="console")
   //the next line does not work here.. actually, works only one time
   //session.configData().reporterNames.push_back(reporter);
   int numFailed = session.run();
+  // Cap the process exit code at 255, the largest portable single-byte status.
   return (numFailed < 0xFF ? numFailed : 0xFF);
 }
 
@@ -54,5 +55,6 @@ int run_catch_unit_tests_by_tag(Rcpp::String tag="",Rcpp::String reporter="conso
   cfg.reporterNames.push_back(reporter);
   session.useConfigData(cfg);
   int numFailed = session.run();
+  // Cap the process exit code at 255, the largest portable single-byte status.
   return (numFailed < 0xFF ? numFailed : 0xFF);
 }
