@@ -19,7 +19,7 @@ Matrix getDummyData(unsigned nrow, unsigned ncol)
     {
         for (unsigned j = 0; j < data.nCol(); ++j)
         {
-            // Build a simple checkerboard-like test matrix with zeros on
+            // [AI-generated] Build a simple checkerboard-like test matrix with zeros on
             // alternating entries.
             data(i,j) = i * j % 2 == 1 ? 0.f : static_cast<float>(i * j);
         }

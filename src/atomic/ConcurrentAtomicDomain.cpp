@@ -125,7 +125,7 @@ void ConcurrentAtomicDomain::erase(ConcurrentAtom *atom)
 // safe to call concurrently from OpenMP threads
 void ConcurrentAtomicDomain::move(ConcurrentAtom *atom, uint64_t newPos)
 {
-    // Validate the move stays between neighboring atoms; domain endpoints stand
+    // [AI-generated] Validate the move stays between neighboring atoms; domain endpoints stand
     // in for missing neighbors at the edges.
     GAPS_ASSERT(newPos > (atom->hasLeft() ? atom->left()->pos() : 0));
     GAPS_ASSERT(newPos < (atom->hasRight() ? atom->right()->pos() : mDomainLength));

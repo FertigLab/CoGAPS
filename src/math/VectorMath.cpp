@@ -7,7 +7,7 @@ float gaps::min(const Vector &v)
     float mn = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        // Keep the smaller value seen so far.
+        // [AI-generated] Keep the smaller value seen so far.
         mn = (v[i] < mn) ? v[i] : mn;
     }
     return mn;
@@ -18,7 +18,7 @@ float gaps::min(const HybridVector &v)
     float mn = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        // Keep the smaller value seen so far.
+        // [AI-generated] Keep the smaller value seen so far.
         mn = (v[i] < mn) ? v[i] : mn;
     }
     return mn;
@@ -30,7 +30,7 @@ float gaps::min(const SparseVector &v)
     SparseIterator<1> it(v);
     while (!it.atEnd())
     {
-        // Keep the smaller nonzero sparse value seen so far.
+        // [AI-generated] Keep the smaller nonzero sparse value seen so far.
         mn = (get<1>(it) < mn) ? get<1>(it) : mn;
         it.next();
     }
@@ -42,7 +42,7 @@ float gaps::max(const Vector &v)
     float mx = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        // Keep the larger value seen so far.
+        // [AI-generated] Keep the larger value seen so far.
         mx = (v[i] > mx) ? v[i] : mx;
     }
     return mx;
@@ -53,7 +53,7 @@ float gaps::max(const HybridVector &v)
     float mx = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        // Keep the larger value seen so far.
+        // [AI-generated] Keep the larger value seen so far.
         mx = (v[i] > mx) ? v[i] : mx;
     }
     return mx;
@@ -65,7 +65,7 @@ float gaps::max(const SparseVector &v)
     SparseIterator<1> it(v);
     while (!it.atEnd())
     {
-        // Keep the larger nonzero sparse value seen so far.
+        // [AI-generated] Keep the larger nonzero sparse value seen so far.
         mx = (get<1>(it) > mx) ? get<1>(it) : mx;
         it.next();
     }
@@ -78,7 +78,7 @@ unsigned gaps::whichMax(const Vector &v)
     float mx = 0.f;
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        // Track the index and value of the largest entry seen so far.
+        // [AI-generated] Track the index and value of the largest entry seen so far.
         ndx = (v[i] > mx) ? i : ndx;
         mx = (v[i] > mx) ? v[i] : mx;
     }

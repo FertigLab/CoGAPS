@@ -10,7 +10,7 @@
 #define GAPS_SQ(x) ((x) * (x))
 
 #define COUNT_LOWER_BITS(u, pos) __builtin_popcountll((u) & ((1ull << (pos)) - 1ull))
-// Clear all bits up to and including pos; shifting by 64 is undefined, so pos
+// [AI-generated] Clear all bits up to and including pos; shifting by 64 is undefined, so pos
 // 63 is handled explicitly.
 #define CLEAR_LOWER_BITS(u, pos) (((pos) == 63) ? 0 : (u) & ~((1ull << ((pos) + 1ull)) - 1ull))
 #define COUNT_BITS(u) __builtin_popcountll(u)
@@ -323,4 +323,3 @@ Archive& operator>>(Archive &ar, SparseNormalModel &m)
     ar >> m.mMatrix >> m.mBeta;
     return ar;
 }
-

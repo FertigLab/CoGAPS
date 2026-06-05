@@ -126,7 +126,7 @@ void AsynchronousGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThre
 template <class DataModel>
 void AsynchronousGibbsSampler<DataModel>::birth(const AtomicProposal &prop)
 {
-    // If the conditional Gibbs distribution is defined, sample from it;
+    // [AI-generated] If the conditional Gibbs distribution is defined, sample from it;
     // otherwise use the exponential prior so the birth proposal remains valid.
     OptionalFloat mass = DataModel::canUseGibbs(prop.c1)
         ? DataModel::sampleBirth(prop.r1, prop.c1, &(prop.rng))
@@ -261,7 +261,7 @@ float AsynchronousGibbsSampler<DataModel>::maximumDrift() const
             float actual = DataModel::mMatrix(row, col);
             //float drift = (actual > 1.f) ? std::abs(actual - mass) / actual : actual;
             float drift = std::abs(actual - mass);
-            // Track the largest mismatch between atomic and matrix mass.
+            // [AI-generated] Track the largest mismatch between atomic and matrix mass.
             maxDrift = (drift > maxDrift) ? drift : maxDrift;
             mass = atom->mass();
             row = newRow;

@@ -21,7 +21,7 @@ bool subsetGenes, std::vector<unsigned> indices)
 
     bool subsetData = !indices.empty();
 
-    // When subsetting, the selected index count determines the active
+    // [AI-generated] When subsetting, the selected index count determines the active
     // dimension; otherwise derive dimensions from the input orientation.
     unsigned nGenes = (subsetData && subsetGenes)
         ? indices.size()
@@ -35,13 +35,13 @@ bool subsetGenes, std::vector<unsigned> indices)
         std::vector<float> values;
         for (unsigned i = 0; i < nGenes; ++i)
         {
-            // Map output coordinates back to input rows, using subset indices
+            // [AI-generated] Map output coordinates back to input rows, using subset indices
             // when the subset applies to the row-like axis in the source data.
             unsigned dataRow = (subsetData && (subsetGenes != genesInCols))
                 ? indices[genesInCols ? j : i] - 1
                 : genesInCols ? j : i;
 
-            // Map output coordinates back to input columns, using subset
+            // [AI-generated] Map output coordinates back to input columns, using subset
             // indices when the subset applies to the column-like source axis.
             unsigned dataCol = (subsetData && (subsetGenes == genesInCols))
                 ? indices[genesInCols ? i : j] - 1
@@ -71,7 +71,7 @@ bool subsetGenes, std::vector<unsigned> indices)
 
     // calculate the number of rows and columns
     bool subsetData = !indices.empty();
-    // When subsetting, the selected index count determines the active
+    // [AI-generated] When subsetting, the selected index count determines the active
     // dimension; otherwise derive dimensions from the file orientation.
     mNumRows = (subsetData && subsetGenes) // nGenes
         ? indices.size()
@@ -92,7 +92,7 @@ bool subsetGenes, std::vector<unsigned> indices)
         while (fp.hasNext())
         {
             MatrixElement e(fp.getNext());
-            // Convert file row/column coordinates to internal matrix
+            // [AI-generated] Convert file row/column coordinates to internal matrix
             // coordinates based on whether genes are stored in columns.
             unsigned row = genesInCols ? e.col : e.row;
             unsigned col = genesInCols ? e.row : e.col;
@@ -110,7 +110,7 @@ bool subsetGenes, std::vector<unsigned> indices)
             MatrixElement e(fp.getNext());
             if (e.value > 0.f)
             {
-                // Pick the source coordinate that corresponds to the subsetted axis.
+                // [AI-generated] Pick the source coordinate that corresponds to the subsetted axis.
                 unsigned searchIndex = 1 + ((subsetGenes != genesInCols) ? e.row : e.col);
                 std::vector<unsigned>::iterator pos = 
                     std::lower_bound(indices.begin(), indices.end(), searchIndex);
@@ -118,7 +118,7 @@ bool subsetGenes, std::vector<unsigned> indices)
                 // this index is included in the subset
                 if (pos != indices.end() && *pos == searchIndex)
                 {
-                    // Use the subset position for the subsetted dimension and
+                    // [AI-generated] Use the subset position for the subsetted dimension and
                     // the file coordinate for the other dimension.
                     unsigned row = subsetGenes
                         ? std::distance(indices.begin(), pos)

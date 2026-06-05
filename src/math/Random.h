@@ -26,7 +26,7 @@ private :
     bool mHasValue;
 };
 
-// PCG random number generator. Each GapsRng is constructed with a seed pulled
+// [AI-generated] PCG random number generator. Each GapsRng is constructed with a seed pulled
 // from GapsRandomState, then advances independently from that run-level seeder.
 class GapsRng
 {
@@ -69,7 +69,7 @@ private:
     uint64_t mPreviousState[2];
 };
 
-// Manages the run-level seed stream and lookup tables for distribution
+// [AI-generated] Manages the run-level seed stream and lookup tables for distribution
 // functions. This object is created once at the beginning of execution and
 // passed down to classes that need local GapsRng streams, avoiding global RNG
 // state during multi-threaded execution.
@@ -95,4 +95,4 @@ private:
     GapsRandomState& operator=(const GapsRandomState&); // = delete (no c++11)
 };
 
-#endif // __COGAPS_RANDOM_H__
+#endif // [AI-generated] __COGAPS_RANDOM_H__

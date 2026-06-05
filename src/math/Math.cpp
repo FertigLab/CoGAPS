@@ -12,37 +12,37 @@
 
 float gaps::min(float a, float b)
 {
-    // Return the smaller value: if a is less than b choose a, otherwise choose b.
+    // [AI-generated] Return the smaller value: if a is less than b choose a, otherwise choose b.
     return a < b ? a : b;
 }
 
 unsigned gaps::min(unsigned a, unsigned b)
 {
-    // Return the smaller value: if a is less than b choose a, otherwise choose b.
+    // [AI-generated] Return the smaller value: if a is less than b choose a, otherwise choose b.
     return a < b ? a : b;
 }
 
 uint64_t gaps::min(uint64_t a, uint64_t b)
 {
-    // Return the smaller value: if a is less than b choose a, otherwise choose b.
+    // [AI-generated] Return the smaller value: if a is less than b choose a, otherwise choose b.
     return a < b ? a : b;
 }
 
 float gaps::max(float a, float b)
 {
-    // Return the larger value: if a is less than b choose b, otherwise choose a.
+    // [AI-generated] Return the larger value: if a is less than b choose b, otherwise choose a.
     return a < b ? b : a;
 }
 
 unsigned gaps::max(unsigned a, unsigned b)
 {
-    // Return the larger value: if a is less than b choose b, otherwise choose a.
+    // [AI-generated] Return the larger value: if a is less than b choose b, otherwise choose a.
     return a < b ? b : a;
 }
 
 uint64_t gaps::max(uint64_t a, uint64_t b)
 {
-    // Return the larger value: if a is less than b choose b, otherwise choose a.
+    // [AI-generated] Return the larger value: if a is less than b choose b, otherwise choose a.
     return a < b ? b : a;
 }
 
