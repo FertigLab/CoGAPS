@@ -232,8 +232,12 @@ checkInputs <- function(data, uncertainty, allParams)
 
     if (!is.null(allParams$gaps@distributed))
     {
-        if (allParams$nThreads > 1)
-            warning("can't run multi-threaded and distributed CoGAPS at the same time, ignoring nThreads")
+        if (allParams$asynchronousUpdates | allParams$nThreads > 1)
+            warning(paste(
+                "Distributed CoGAPS parallelizes across data subsets and does",
+                "not use OpenMP asynchronous updates within each worker;",
+                "running workers with asynchronousUpdates=FALSE and nThreads=1."
+            ))
         if (!is.null(allParams$checkpointInFile))
             stop("checkpoints not supported for distributed cogaps")
         if (!is(data, "character"))
