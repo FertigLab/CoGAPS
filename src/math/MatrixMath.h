@@ -37,6 +37,7 @@ float gaps::min(const MatrixType &mat)
     for (unsigned i = 0; i < mat.nCol(); ++i)
     {
         float cmin = gaps::min(mat.getCol(i));
+        // [AI-generated] Keep the smallest column minimum seen so far.
         mn = (cmin < mn) ? cmin : mn;
     }
     return mn;
@@ -49,6 +50,7 @@ float gaps::max(const MatrixType &mat)
     for (unsigned i = 0; i < mat.nCol(); ++i)
     {
         float cmax = gaps::max(mat.getCol(i));
+        // [AI-generated] Keep the largest column maximum seen so far.
         mx = (cmax > mx) ? cmax : mx;
     }
     return mx;

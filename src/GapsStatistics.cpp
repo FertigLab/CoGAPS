@@ -112,6 +112,7 @@ float GapsStatistics::meanChiSq(const SparseNormalModel &model) const
 
 Matrix GapsStatistics::pumpMatrix() const
 {
+    // [AI-generated] Avoid division by zero before any pump samples have been accumulated.
     float denom = mPumpUpdates != 0 ? static_cast<float>(mPumpUpdates) : 1.f;
     return mPumpMatrix / denom;
 }
@@ -148,16 +149,19 @@ std::vector<float> GapsStatistics::chisqHistory() const
 
 std::vector<unsigned> GapsStatistics::atomHistory(char m) const
 {
+    // [AI-generated] Select the stored atom-count history for the requested factor matrix.
     return m == 'A' ? mAtomHistoryA : mAtomHistoryP;
 }
 
 const std::vector<Matrix>& GapsStatistics::getEquilibrationSnapshots(char whichMatrix) const
 {
+    // [AI-generated] Select equilibration snapshots for the requested factor matrix.
     return (whichMatrix == 'A') ? mEquilibrationSnapshotsA : mEquilibrationSnapshotsP;
 }
 
 const std::vector<Matrix>& GapsStatistics::getSamplingSnapshots(char whichMatrix) const
 {
+    // [AI-generated] Select sampling snapshots for the requested factor matrix.
     return (whichMatrix == 'A') ? mSamplingSnapshotsA : mSamplingSnapshotsP;
 }
 
@@ -174,4 +178,3 @@ Archive& operator>>(Archive &ar, GapsStatistics &stat)
         >> stat.mPStdMatrix >> stat.mStatUpdates >> stat.mNumPatterns;
     return ar;
 }
-

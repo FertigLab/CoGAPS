@@ -34,6 +34,8 @@ GapsRng::GapsRng(GapsRandomState *randState)
 mRandState(randState),
 mState(randState->nextSeed())
 {
+    // [AI-generated] Pull exactly one seed from the run-level seeder, then advance once so a
+    // new GapsRng does not begin by returning its seed state.
     advance();
 }
 
@@ -124,6 +126,8 @@ uint64_t GapsRng::uniform64(uint64_t a, uint64_t b)
 
 int GapsRng::poisson(double lambda)
 {
+    // [AI-generated] Use inversion for small Poisson means; otherwise use the large-mean
+    // rejection sampler.
     return lambda <= 5.0 ? poissonSmall(lambda) : poissonLarge(lambda);
 }
 
@@ -296,11 +300,15 @@ void GapsRandomState::initLookupTables()
 
 uint64_t GapsRandomState::nextSeed()
 {
+    // [AI-generated] Hands out deterministic seeds for local GapsRng streams. The order in
+    // which callers request seeds determines the downstream RNG streams.
     return mSeeder.next();
 }
 
 void GapsRandomState::rollBackOnce()
 {
+    // [AI-generated] Used when a just-created local RNG cannot be used, so the same seed can
+    // be retried during the next proposal attempt.
     mSeeder.rollBackOnce();
 }
 

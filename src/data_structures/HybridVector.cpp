@@ -88,6 +88,8 @@ bool HybridVector::set(unsigned i, float v)
 float HybridVector::operator[](unsigned i) const
 {
     GAPS_ASSERT(i < mSize);
+    // [AI-generated] In sparse mode, zero entries should not have an index flag; nonzero
+    // entries should have the corresponding bit set.
     GAPS_ASSERT((mData[i] == 0.f)
         ? !(mIndexBitFlags[i / 64] & (1ull << (i % 64)))
         : (mIndexBitFlags[i / 64] & (1ull << (i % 64)))
@@ -129,5 +131,4 @@ Archive& operator>>(Archive &ar, HybridVector &vec)
     }
     return ar;
 }
-
 

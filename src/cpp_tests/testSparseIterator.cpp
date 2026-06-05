@@ -43,6 +43,8 @@ TEST_CASE("Test SparseIterator.h - One Dimensional","[sparseiterator][1D]")
         {
             for (unsigned j = 0; j < ref.nCol(); ++j)
             {
+                // [AI-generated] Build toy sparse test data by randomly zeroing half of the
+                // candidate entries.
                 ref(i,j) = (i + j) * (rng.uniform() < 0.5f ? 0.f : 1.f);
             }
         }
@@ -208,6 +210,8 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional","[sparseiterator][2D]")
         {
             for (unsigned j = 0; j < ref.nCol(); ++j)
             {
+                // [AI-generated] Build toy sparse test data by randomly zeroing half of the
+                // candidate entries.
                 ref(i,j) = (i + j) * (rng.uniform() < 0.5f ? 0.f : 1.f);
                 hMat.add(i, j, ref(i,j));
             }
@@ -290,6 +294,8 @@ TEST_CASE("Test SparseIterator.h - Three Dimensional","[sparseiterator][3D]")
         {
             for (unsigned j = 0; j < ref.nCol(); ++j)
             {
+                // [AI-generated] Build toy sparse test data by randomly zeroing half of the
+                // candidate entries.
                 ref(i,j) = (i + j) * (rng.uniform() < 0.5f ? 0.f : 1.f);
                 hMat.add(i, j, ref(i,j));
             }
