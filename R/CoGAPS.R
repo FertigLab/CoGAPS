@@ -91,7 +91,7 @@ CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
                    nPatterns, nThreads=1, messages=TRUE, outputFrequency=1000,
                    uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
                    checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
-                   BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, nSnapshots=0,
+                   BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, nSnapshots=0,
                    snapshotPhase='sampling', ...)
 {
     # pre-process inputs
