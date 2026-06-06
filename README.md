@@ -48,3 +48,6 @@ Supported CLI params and their defaults are:
     max_cpus = 8
     max_time = '72.h'
     n_top_genes = 5000
+    container = 'ghcr.io/fertiglab/cogaps:master'
+
+The `--container` parameter controls which CoGAPS Docker image is used for the `COGAPS` and `COGAPS_PREPROCESS` processes. Override it to pin a specific version, e.g. `--container ghcr.io/fertiglab/cogaps:sha-abc1234`.
