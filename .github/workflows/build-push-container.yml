@@ -1,52 +1,100 @@
-#
 name: build-push-container
 
-# Configures this workflow to run every time a change is pushed to the branch called `release`.
+# Triggered automatically after r-build-check succeeds (push or PR), or manually.
+# Always builds the image to validate the Dockerfile.
+# Only pushes to GHCR on master branch pushes, tagged as both `master` and `sha-<short>`.
+# Saves the resolved image reference as an artifact for the downstream nextflow-test workflow.
 on:
-  push:
-    branches: ['master']
+  workflow_run:
+    workflows: ['r-build-check']
+    types: [completed]
   workflow_dispatch:
 
-# Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
-# There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
 jobs:
   build-and-push-image:
+    # Only proceed when r-build-check succeeded (no-op for manual triggers).
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
       contents: read
       packages: write
       attestations: write
       id-token: write
-      # 
+
     steps:
+      # Resolve the commit SHA and whether this is a master push (i.e. should we push the image).
+      - name: Resolve commit SHA and push context
+        id: context
+        run: |
+          head_sha="${{ github.event.workflow_run.head_sha }}"
+          [ -z "$head_sha" ] && head_sha="${{ github.sha }}"
+          echo "head_sha=${head_sha}" >> $GITHUB_OUTPUT
+          echo "short_sha=${head_sha:0:7}" >> $GITHUB_OUTPUT
+
+          is_master_push="false"
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            if [ "${{ github.event.workflow_run.event }}" = "push" ] && \
+               [ "${{ github.event.workflow_run.head_branch }}" = "master" ]; then
+              is_master_push="true"
+            fi
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && \
+               [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            is_master_push="true"
+          fi
+          echo "is_master_push=${is_master_push}" >> $GITHUB_OUTPUT
+
       - name: Checkout repository
         uses: actions/checkout@v4
-      # Uses the `docker/login-action` action to log in to the Container registry registry using the account and password that will publish the packages. Once published, the packages are scoped to the account defined here.
+        with:
+          ref: ${{ steps.context.outputs.head_sha }}
+
+      # Login is only needed when we intend to push.
       - name: Log in to the Container registry
+        if: steps.context.outputs.is_master_push == 'true'
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-      # This step uses [docker/metadata-action](https://github.com/docker/metadata-action#about) to extract tags and labels that will be applied to the specified image. The `id` "meta" allows the output of this step to be referenced in a subsequent step. The `images` value provides the base name for the tags and labels.
+
+      # On master pushes: tag as `master` and `sha-<short>`.
+      # On PRs / non-master: still build (validates Dockerfile) but do not push.
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
-      # It uses the `context` parameter to define the build's context as the set of files located in the specified path. For more information, see "[Usage](https://github.com/docker/build-push-action#usage)" in the README of the `docker/build-push-action` repository.
-      # It uses the `tags` and `labels` parameters to tag and label the image with the output from the "meta" step.
+          tags: |
+            type=raw,value=master,enable=${{ steps.context.outputs.is_master_push == 'true' }}
+            type=raw,value=sha-${{ steps.context.outputs.short_sha }},enable=${{ steps.context.outputs.is_master_push == 'true' }}
+
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: .
-          push: true
+          push: ${{ steps.context.outputs.is_master_push == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      # Save the precise image reference for the downstream nextflow-test workflow.
+      # On master pushes: use the sha-tagged image (exact build).
+      # On PRs / non-master: fall back to the existing `master` image.
+      - name: Save image reference artifact
+        run: |
+          if [ "${{ steps.context.outputs.is_master_push }}" = "true" ]; then
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ steps.context.outputs.short_sha }}" > image-ref.txt
+          else
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master" > image-ref.txt
+          fi
+          echo "Image reference: $(cat image-ref.txt)"
+
+      - name: Upload image reference artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-ref
+          path: image-ref.txt
