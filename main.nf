@@ -10,10 +10,13 @@ process COGAPS {
   output:
     tuple val(meta), path("${prefix}/cogapsResult.rds"), emit: cogapsResult
     path  "versions.yml",                                emit: versions
+    path  "${prefix}/params.yml",                        emit: cogaps_params
 
   script:
-  def args = task.ext.args ?: ''
-  prefix = task.ext.prefix ?: "${meta.id}/${cparams.niterations}-${cparams.npatterns}-${cparams.sparse}-${cparams.distributed}"
+  mode = [cparams.sparse, cparams.distributed, cparams.nsets,
+          cparams.nthreads, cparams.asynchronous_updates].join('').md5().substring(0,6)
+  prefix = task.ext.prefix ?: "${meta.id}/${cparams.niterations}-${cparams.npatterns}-${mode}"
+  all_params = groovy.json.JsonOutput.toJson(cparams)
   """
   mkdir -p "${prefix}"
   Rscript -e 'library("CoGAPS");
@@ -23,7 +26,7 @@ process COGAPS {
       dist_param <- NULL;
       if(!("$cparams.distributed"=="null")){
         dist_param <- "$cparams.distributed"};
-      params <- CogapsParams(seed=42,
+      params <- CogapsParams(seed=$cparams.seed,
                              nIterations = $cparams.niterations,
                              nPatterns = $cparams.npatterns,
                              sparseOptimization = as.logical($cparams.sparse),
@@ -39,7 +42,9 @@ process COGAPS {
         } 
         params <- setDistributedParams(params, nSets = min(nsets,allow_cpus));
       };
-      cogapsResult <- CoGAPS(data = data, params = params, nThreads = $cparams.nthreads,
+      cogapsResult <- CoGAPS(data = data, params = params,
+                             nThreads = $cparams.nthreads,
+                             asynchronousUpdates = as.logical($cparams.asynchronous_updates),
                              outputFrequency = 100);
       saveRDS(cogapsResult, file = "${prefix}/cogapsResult.rds")'
 
@@ -48,11 +53,14 @@ process COGAPS {
         CoGAPS: \$(Rscript -e 'print(packageVersion("CoGAPS"))' | awk '{print \$2}')
         R: \$(Rscript -e 'print(packageVersion("base"))' | awk '{print \$2}')
   END_VERSIONS
+
+  echo "${all_params}" > "${prefix}/params.yml"
   """
 
   stub:
-  def args = task.ext.args ?: ''
-  prefix = task.ext.prefix ?: "${meta.id}/${cparams.niterations}-${cparams.npatterns}-${cparams.sparse}-${cparams.distributed}"
+  mode = [cparams.sparse, cparams.distributed, cparams.nsets,
+          cparams.nthreads, cparams.asynchronous_updates].join('').md5().substring(0,6)
+  prefix = task.ext.prefix ?: "${meta.id}/${cparams.niterations}-${cparams.npatterns}-${mode}"
   """
   mkdir "${prefix}"
   touch "${prefix}/cogapsResult.rds"
@@ -78,7 +86,6 @@ process COGAPS_TENX2DGC {
 
 
   script:
-  def args = task.ext.args ?: ''
   prefix = task.ext.prefix ?: "${meta.id}"
   """
   mkdir "${prefix}"
@@ -94,7 +101,6 @@ process COGAPS_TENX2DGC {
   """
 
   stub:
-  def args = task.ext.args ?: ''
   prefix = task.ext.prefix ?: "${meta.id}"
 
   """
@@ -121,7 +127,6 @@ process COGAPS_ADATA2DGC {
       path "versions.yml"                             , emit: versions
 
   script:
-  def args = task.ext.args ?: ''
   prefix = task.ext.prefix ?: "${meta.id}"
   """
   mkdir "${prefix}"
@@ -252,29 +257,42 @@ process COGAPS_PREPROCESS {
 //example workflow
 workflow {
   //example channel with data folders, for example
-  ch_adata = Channel.fromPath("${params.input}/**.h5ad")
-    .map { tuple([id:it.getName().replace('.', '-')], it)}
+  ch_adata = channel.fromPath("${params.input}/**.h5ad")
+    .map {it -> tuple([id:it.getName().replace('.', '-')], it)}
 
-  ch_rds = Channel.fromPath("${params.input}/**.rds")
-    .map { tuple([id:it.getName().replace('.', '-')], it)}
+  ch_rds = channel.fromPath("${params.input}/**.rds")
+    .map {it -> tuple([id:it.getName().replace('.', '-')], it)}
 
   //make a channel with desired pattern number
-  def patterns = params.npatterns.split(',').collect { it.toInteger() }
-  ch_patterns = Channel.from(patterns)
+  def patterns = params.npatterns.split(',').collect {it -> it.toInteger() }
+  ch_patterns = channel.from(patterns)
 
   //example channel with cparams
-  ch_fixed_params = Channel.of([niterations: params.niterations, sparse: params.sparse, distributed: params.distributed, nsets:params.nsets, nthreads:1])
+  ch_fixed_params = channel.of([seed: params.seed,
+                                niterations: params.niterations, 
+                                sparse: params.sparse, 
+                                distributed: params.distributed, 
+                                nsets:params.nsets, 
+                                nthreads: params.nthreads, 
+                                asynchronous_updates: params.asynchronous_updates])
 
   ch_cparams = ch_patterns
     .combine(ch_fixed_params)
-    .map { tuple([id:it[0].toString(), npatterns:it[0], niterations:it[1].niterations, sparse:it[1].sparse, distributed:it[1].distributed, nsets:it[1].nsets, nthreads:it[1].nthreads]) }
+    .map {it -> tuple([npatterns:it[0],
+                       seed:it[1].seed,
+                       niterations:it[1].niterations,
+                       sparse:it[1].sparse,
+                       distributed:it[1].distributed,
+                       nsets:it[1].nsets,
+                       nthreads:it[1].nthreads,
+                       asynchronous_updates:it[1].asynchronous_updates]) }
 
   // convert adata to dgCMatrix
   COGAPS_ADATA2DGC(ch_adata)
 
   // preprocess dgCMatrix
   ch_preprocess = COGAPS_ADATA2DGC.out.dgCMatrix
-    .map { tuple(it[0], it[1]) }
+    .map {it -> tuple(it[0], it[1]) }
 
   ch_preprocess = ch_preprocess.mix(ch_rds)
   
@@ -282,7 +300,7 @@ workflow {
 
   // ch_cogaps_input of converted adatas and rdses
   ch_input = COGAPS_PREPROCESS.out.dgCMatrix
-    .map { tuple(it[0], it[1]) }
+    .map {it -> tuple(it[0], it[1]) }
 
   // combine the two channels as input to CoGAPS
   ch_input = ch_input.combine(ch_cparams)
@@ -292,4 +310,3 @@ workflow {
 
 //example:
 //nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -profile docker --max_memory 10GB --max_cpus 8
-
