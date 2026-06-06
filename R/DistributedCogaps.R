@@ -25,6 +25,10 @@ workerID)
     allParams$gaps@subsetIndices <- subsetIndices
     allParams$gaps@subsetDim <- ifelse(genomeWide, 1, 2)
     allParams$workerID <- workerID
+
+    # Distributed CoGAPS parallelizes across data subsets instead of using the
+    # OpenMP asynchronous sampler within each worker. Each worker is therefore
+    # run with asynchronousUpdates=FALSE and nThreads=1.
     allParams$asynchronousUpdates <- FALSE
     allParams$nThreads <- 1
 

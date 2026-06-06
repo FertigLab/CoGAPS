@@ -128,6 +128,8 @@ float ProposalQueue::deathProb(double nAtoms) const
 
 bool ProposalQueue::makeProposal(ConcurrentAtomicDomain &domain)
 {
+    // [AI-generated] Reuse cached uniforms when a failed proposal is retried; otherwise draw
+    // fresh uniforms for this proposal decision.
     mU1 = mUseCachedRng ? mU1 : mRng.uniform();
     mU2 = mUseCachedRng ? mU2: mRng.uniform();
     mUseCachedRng = false;
@@ -156,6 +158,7 @@ bool ProposalQueue::makeProposal(ConcurrentAtomicDomain &domain)
         }
         return false; // can't determine B/D since range is too wide
     }
+    // [AI-generated] Split the upper half of the proposal interval between move and exchange.
     return (mU1 < 0.75f) ? move(domain) : exchange(domain);
 }
 
@@ -212,6 +215,8 @@ bool ProposalQueue::move(ConcurrentAtomicDomain &domain)
     ConcurrentAtomNeighborhood hood = domain.randomAtomWithNeighbors(&(prop.rng));
     prop.atom1 = hood.center;
 
+    // [AI-generated] Bound the move by neighboring atom positions; use domain endpoints for
+    // edge atoms.
     uint64_t lbound = hood.hasLeft() ? hood.left->pos() : 0;
     uint64_t rbound = hood.hasRight() ? hood.right->pos() : static_cast<uint64_t>(mDomainLength);
 
@@ -252,6 +257,7 @@ bool ProposalQueue::exchange(ConcurrentAtomicDomain &domain)
     AtomicProposal prop('E', mRandState);
     ConcurrentAtomNeighborhood hood = domain.randomAtomWithNeighbors(&(prop.rng));
     prop.atom1 = hood.center;
+    // [AI-generated] Exchange with the right neighbor, wrapping the last atom to the first.
     prop.atom2 = hood.hasRight() ? hood.right : domain.front();
     prop.r1 = (prop.atom1->pos() / mBinLength) / mNumCols;
     prop.c1 = (prop.atom1->pos() / mBinLength) % mNumCols;
@@ -267,6 +273,7 @@ bool ProposalQueue::exchange(ConcurrentAtomicDomain &domain)
     if (prop.r1 == prop.r2 && prop.c1 == prop.c2)
     {
         float newMass = prop.rng.truncGammaUpper(prop.atom1->mass() + prop.atom2->mass(), 1.f / mLambda);
+        // [AI-generated] Keep the larger atom as the reference for the mass-transfer direction.
         float delta = (prop.atom1->mass() > prop.atom2->mass()) ? newMass - prop.atom1->mass() : prop.atom2->mass() - newMass;
         if (prop.atom1->mass() + delta > gaps::epsilon && prop.atom2->mass() - delta > gaps::epsilon)
         {

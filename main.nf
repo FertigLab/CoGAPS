@@ -2,7 +2,7 @@ process COGAPS {
   tag "$prefix"
   label 'process_high'
   label 'process_long'
-  container 'ghcr.io/fertiglab/cogaps:master'
+  container params.container
 
   input:
     tuple val(meta), path(dgCMatrix), val(cparams)
@@ -188,7 +188,7 @@ process COGAPS_ADATA2DGC {
 process COGAPS_PREPROCESS {
   tag "$prefix"
   label 'process_medium'
-  container 'ghcr.io/fertiglab/cogaps:master'
+  container params.container
 
   input:
     tuple val(meta), path(dgCMatrix)

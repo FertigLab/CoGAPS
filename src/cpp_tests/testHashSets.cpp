@@ -67,12 +67,15 @@ TEST_CASE("Test HashSets.h - SmallPairedHashSetU64","[hashset][pairedU64]")
             hSet.insert(u1, u2);
             REQUIRE(hSet.contains(u1));
             REQUIRE(hSet.contains(u2));
+            // [AI-generated] Compute the unsigned distance between two positions without
+            // assuming which position is larger.
             uint64_t d = u1 > u2 ? u1 - u2 : u2 - u1;
+            // [AI-generated] Check an interior point between the two positions, choosing the
+            // lower endpoint as the start of the interval.
             REQUIRE(hSet.overlap(u1 > u2 ? u2 + d/2 : u1 + d/2));
         }
         hSet.clear();
+
         REQUIRE(hSet.isEmpty());
     }
 }
-
-

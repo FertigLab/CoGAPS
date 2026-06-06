@@ -18,7 +18,7 @@ CoGAPS(
   transposeData = FALSE,
   BPPARAM = NULL,
   workerID = 1,
-  asynchronousUpdates = TRUE,
+  asynchronousUpdates = FALSE,
   nSnapshots = 0,
   snapshotPhase = "sampling",
   ...

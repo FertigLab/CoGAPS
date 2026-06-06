@@ -91,7 +91,7 @@ CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
                    nPatterns, nThreads=1, messages=TRUE, outputFrequency=1000,
                    uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
                    checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
-                   BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, nSnapshots=0,
+                   BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, nSnapshots=0,
                    snapshotPhase='sampling', ...)
 {
     # pre-process inputs
@@ -104,11 +104,16 @@ CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
     params <- getValueOrRds(params)
     validObject(params)
 
-    # check OpenMP support
+    # OpenMP availability determines whether the asynchronous sampler can run.
+    # Without OpenMP, CoGAPS falls back to the sequential sampler path.
     if (!compiledWithOpenMPSupport())
     {
-        if (asynchronousUpdates & nThreads > 1)
-            warning("requesting multi-threaded version of CoGAPS but compiler did not support OpenMP")
+        if (asynchronousUpdates | nThreads > 1)
+            warning(paste(
+                "OpenMP is not available in this CoGAPS build;",
+                "running with asynchronousUpdates=FALSE and nThreads=1;",
+                "this may change results in a platform-dependent manner."
+            ))
         asynchronousUpdates = FALSE
         nThreads = 1
     }
