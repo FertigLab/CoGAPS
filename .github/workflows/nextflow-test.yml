@@ -4,8 +4,7 @@ name: nextflow-test
 on:
   pull_request:
     branches:
-      - 'main'
-      - 'dev'
+      - 'master'
   workflow_dispatch:
 jobs:
   test:
