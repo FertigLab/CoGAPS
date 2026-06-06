@@ -38,13 +38,14 @@ nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -pro
 Supported CLI params and their defaults are:
 
     npatterns = "5"
-    nsets = 1
     niterations = 100
-    sparse = 0
     seed = 42
+    sparse = 0
     distributed = "null"
-    nthreads = 1
+    nsets = 1
     max_memory = '128.GB'
     max_cpus = 8
     max_time = '72.h'
     n_top_genes = 5000
+    nthreads = 1
+    asynchronous_updates = 0
