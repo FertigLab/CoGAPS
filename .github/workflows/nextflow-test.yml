@@ -51,6 +51,7 @@ jobs:
           else
             image="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master"
           fi
+          image=$(echo "$image" | tr '[:upper:]' '[:lower:]')
           echo "image=${image}" >> $GITHUB_OUTPUT
           echo "Using container: ${image}"
 
