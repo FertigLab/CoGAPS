@@ -4,7 +4,8 @@ name: nextflow-test
 # Downloads the image reference artifact produced by build-push-container and
 # passes it as --container so the pipeline runs against the correct image:
 #   - master push: the freshly-pushed sha-tagged image
-#   - PR / non-master: the existing `master` image (fallback)
+#   - same-repo PRs and manual dispatches: the freshly-pushed sha-tagged image
+#   - fork PRs / missing artifact: the existing `master` image (fallback)
 on:
   workflow_run:
     workflows: ['build-push-container']

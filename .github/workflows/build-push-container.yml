@@ -1,11 +1,13 @@
 name: build-push-container
 
-# Triggered automatically after r-build-check succeeds (push or PR), or manually.
+# Triggered automatically after r-build-check succeeds, or manually.
 # Always builds the image to validate the Dockerfile.
 # Pushes to GHCR when the run is in a trusted (same-repo) context:
 #   - same-repo branch pushes: push sha tag; master branch also gets the `master` tag
 #   - same-repo PRs: push sha tag only
-#   - workflow_dispatch: push sha tag; master branch also gets the `master` tag
+#   - manual `r-build-check` runs (`workflow_run.event == workflow_dispatch`): push sha tag;
+#     master branch also gets the `master` tag
+#   - direct `workflow_dispatch`: push sha tag; master branch also gets the `master` tag
 #   - fork PRs: build only (no push; secrets unavailable)
 # Saves the resolved image reference as an artifact for the downstream nextflow-test workflow.
 on:
@@ -31,7 +33,7 @@ jobs:
 
     steps:
       # Resolve the commit SHA and whether this run is in a trusted context (can push).
-      # Trusted: same-repo push events, same-repo PR events, workflow_dispatch.
+      # Trusted: same-repo push events, same-repo PR events, and manual dispatches.
       # Untrusted: fork PR events (no access to secrets).
       - name: Resolve commit SHA and push context
         id: context
@@ -53,7 +55,7 @@ jobs:
             run_event="${{ github.event.workflow_run.event }}"
             head_repo="${{ github.event.workflow_run.head_repository.full_name }}"
             this_repo="${{ github.repository }}"
-            if [ "$run_event" = "push" ]; then
+            if [ "$run_event" = "push" ] || [ "$run_event" = "workflow_dispatch" ]; then
               can_push="true"
               if [ "${{ github.event.workflow_run.head_branch }}" = "master" ]; then
                 is_master_push="true"
