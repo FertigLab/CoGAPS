@@ -2,7 +2,11 @@ name: build-push-container
 
 # Triggered automatically after r-build-check succeeds (push or PR), or manually.
 # Always builds the image to validate the Dockerfile.
-# Only pushes to GHCR on master branch pushes, tagged as both `master` and `sha-<short>`.
+# Pushes to GHCR when the run is in a trusted (same-repo) context:
+#   - same-repo branch pushes: push sha tag; master branch also gets the `master` tag
+#   - same-repo PRs: push sha tag only
+#   - workflow_dispatch: push sha tag; master branch also gets the `master` tag
+#   - fork PRs: build only (no push; secrets unavailable)
 # Saves the resolved image reference as an artifact for the downstream nextflow-test workflow.
 on:
   workflow_run:
@@ -12,7 +16,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: fertiglab/cogaps
 
 jobs:
   build-and-push-image:
@@ -26,7 +30,9 @@ jobs:
       id-token: write
 
     steps:
-      # Resolve the commit SHA and whether this is a master push (i.e. should we push the image).
+      # Resolve the commit SHA and whether this run is in a trusted context (can push).
+      # Trusted: same-repo push events, same-repo PR events, workflow_dispatch.
+      # Untrusted: fork PR events (no access to secrets).
       - name: Resolve commit SHA and push context
         id: context
         run: |
@@ -35,16 +41,29 @@ jobs:
           echo "head_sha=${head_sha}" >> $GITHUB_OUTPUT
           echo "short_sha=${head_sha:0:7}" >> $GITHUB_OUTPUT
 
+          can_push="false"
           is_master_push="false"
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            if [ "${{ github.event.workflow_run.event }}" = "push" ] && \
-               [ "${{ github.event.workflow_run.head_branch }}" = "master" ]; then
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            can_push="true"
+            if [ "${{ github.ref }}" = "refs/heads/master" ]; then
               is_master_push="true"
             fi
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && \
-               [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            is_master_push="true"
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
+            run_event="${{ github.event.workflow_run.event }}"
+            head_repo="${{ github.event.workflow_run.head_repository.full_name }}"
+            this_repo="${{ github.repository }}"
+            if [ "$run_event" = "push" ]; then
+              can_push="true"
+              if [ "${{ github.event.workflow_run.head_branch }}" = "master" ]; then
+                is_master_push="true"
+              fi
+            elif [ "$run_event" = "pull_request" ] && [ "$head_repo" = "$this_repo" ]; then
+              can_push="true"
+            fi
           fi
+
+          echo "can_push=${can_push}" >> $GITHUB_OUTPUT
           echo "is_master_push=${is_master_push}" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
@@ -54,39 +73,39 @@ jobs:
 
       # Login is only needed when we intend to push.
       - name: Log in to the Container registry
-        if: steps.context.outputs.is_master_push == 'true'
+        if: steps.context.outputs.can_push == 'true'
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      # On master pushes: tag as `master` and `sha-<short>`.
-      # On PRs / non-master: still build (validates Dockerfile) but do not push.
+      # Trusted runs: always tag with sha-<short>; master runs also get the `master` tag.
+      # Untrusted (fork PRs): build only, no tags pushed.
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
+            type=raw,value=sha-${{ steps.context.outputs.short_sha }},enable=${{ steps.context.outputs.can_push == 'true' }}
             type=raw,value=master,enable=${{ steps.context.outputs.is_master_push == 'true' }}
-            type=raw,value=sha-${{ steps.context.outputs.short_sha }},enable=${{ steps.context.outputs.is_master_push == 'true' }}
 
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: .
-          push: ${{ steps.context.outputs.is_master_push == 'true' }}
+          push: ${{ steps.context.outputs.can_push == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       # Save the precise image reference for the downstream nextflow-test workflow.
-      # On master pushes: use the sha-tagged image (exact build).
-      # On PRs / non-master: fall back to the existing `master` image.
+      # Trusted runs: use the exact sha-tagged image that was just pushed.
+      # Untrusted (fork PRs): fall back to the existing `master` image.
       - name: Save image reference artifact
         run: |
-          if [ "${{ steps.context.outputs.is_master_push }}" = "true" ]; then
+          if [ "${{ steps.context.outputs.can_push }}" = "true" ]; then
             echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ steps.context.outputs.short_sha }}" > image-ref.txt
           else
             echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master" > image-ref.txt
