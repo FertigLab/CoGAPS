@@ -14,5 +14,6 @@ RUN autoreconf -fi
 
 RUN Rscript -e 'install.packages("pak")' && \
     Rscript -e 'pak::local_install_deps(".")'
+    Rscript -e 'pak::pkg_install("sparseMatrixStats")' # sparseMatrixStats is for the nextflow module
 
 RUN R CMD INSTALL .
