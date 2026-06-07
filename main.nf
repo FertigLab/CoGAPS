@@ -227,7 +227,7 @@ process COGAPS_PREPROCESS {
       message("finding top ", ${params.n_top_genes}, " genes");
       ncols <- ncol(sparse);
       means <- Matrix::rowMeans(sparse);
-      means_sq <- Matrix::rowSums(sparse * sparse) / ncols;
+      means_sq <- Matrix::rowSums(sparse^2) / ncols;
       vars <- if (ncols > 1) (means_sq - means^2) * ncols / (ncols - 1) else rep(0, nrow(sparse));
       ngenes <- min(length(vars),${params.n_top_genes});
       top_genes <- order(vars, decreasing=TRUE)[1:ngenes];
