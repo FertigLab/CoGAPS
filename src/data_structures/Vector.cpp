@@ -35,6 +35,16 @@ void Vector::pad(float val)
     }
 }
 
+// fill only the SIMD overflow positions beyond mSize with val
+// to prevent 0/0 = NaN when SIMD reads past the real data
+void Vector::padSIMD(float val)
+{
+    for (unsigned i = mSize; i < mData.size(); ++i)
+    {
+        mData[i] = val;
+    }
+}
+
 float Vector::operator[](unsigned i) const
 {
     GAPS_ASSERT(i < mSize);

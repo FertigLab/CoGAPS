@@ -176,6 +176,7 @@ Vector gaps::pmax(const Vector & v, float f, float min_thr)
     {
         res[i] = std::max(v[i] * f, min_thr);
     }
+    res.padSIMD(min_thr);
     return res;
 }
 

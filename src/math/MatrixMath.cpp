@@ -81,6 +81,10 @@ Matrix gaps::pmax(const Matrix & mat, float factor, float min_threshold)
             rmat(i,j) = std::max(mat(i,j) * factor, min_threshold);
         }   
     }
+    // SIMD loops in alphaParameters read past mSize into padding positions;
+    // set them to a positive value so that the denominator (S^2) is never
+    // zero there, preventing 0/0 = NaN that silences all sampleBirth() calls
+    rmat.padSIMD(min_threshold);
     return rmat;
 }
 
