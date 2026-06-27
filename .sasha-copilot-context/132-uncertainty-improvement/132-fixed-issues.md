@@ -249,11 +249,30 @@ Commits: `7f469a30`, `ac8a2e1a`
 
 ## 9. SIMD NaN in `alphaParameters` on Mac Intel (SSE4/AVX)
 
-Already documented in detail in `.sasha-copilot-context/simd-issue.md`.
+Full root-cause analysis is in `.sasha-copilot-context/simd-issue.md`.
 
-**Short summary:** `gaps::pmax` left SIMD padding positions at zero.  When
-`alphaParameters()` read padding lanes, it computed `0/0 = NaN`, which
-poisoned `gibbsMass()` and caused `PSampler` to never accumulate atoms.
-Fixed by `padSIMD(min_threshold)` called at the end of both `pmax` overloads.
+The bug manifested only on Mac Intel, where Apple Clang enables SSE4.1 (or AVX)
+by default.  On this platform the SIMD loop in `alphaParameters()` increments
+its index by 4 (or 8) per step, so the last iteration reads past the last real
+data element into the alignment-padding positions that `Vector` allocates but
+does not initialise to anything meaningful.
+
+The uncertainty matrix `mSMatrix` is computed by `gaps::pmax(mDMatrix, factor,
+mLambda)`, which before the fix filled only the real elements.  The padding
+positions were left at zero — the default from the `Vector` constructor.  When
+the SIMD loop read one of those padding positions, both the numerator (`pMat`)
+and the denominator (`pS * pS`) were zero, giving `0/0 = NaN`.  That NaN
+propagated through the horizontal sum of the SIMD register and poisoned the
+returned `AlphaParameters`.  A poisoned `AlphaParameters` causes `gibbsMass()`
+to return an empty result, so every `sampleBirth()` call was silently rejected.
+Consequently PSampler never accumulated atoms: `MyMatrix` stayed all-zero, the
+AP product stayed all-zero, and chi-square never decreased no matter how many
+iterations were run.
+
+The fix adds `padSIMD(float val)` to `Vector` and `Matrix`, which fills only the
+padding positions (beyond `mSize`) with the given value.  Both `gaps::pmax`
+overloads call `padSIMD(min_threshold)` before returning.  Padding lanes now
+hold `mLambda > 0`, so the ratio there is `0 / mLambda^2 = 0` — no NaN, no
+contribution to the accumulator.
 
 Fix commit: `bfd5e09d`

@@ -3,8 +3,12 @@
 #include "../utils/Archive.h"
 #include "../utils/GapsAssert.h"
 
-#define SIMD_PAD(x) (gaps::simd::Index::increment() + \
-    gaps::simd::Index::increment() * ((x) / gaps::simd::Index::increment())) 
+// Minimum effective SIMD width for padding purposes.
+// When explicit SIMD is disabled (SIMD_INC == 1), the compiler may still
+// auto-vectorize loops with 4-wide NEON on ARM or 4-wide SSE on x86.
+// Use 8 to cover AVX2 as well.
+#define SIMD_PAD_INC 8
+#define SIMD_PAD(x) (SIMD_PAD_INC + SIMD_PAD_INC * ((x) / SIMD_PAD_INC))
 
 Vector::Vector(unsigned sz)
     :
