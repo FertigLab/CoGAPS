@@ -25,8 +25,7 @@ Matrix getDummyData(unsigned nrow, unsigned ncol)
     return data;
 }
 
-template <class GibbsSampler>
-template <class DataModel>
+template <template<class> class GibbsSampler, class DataModel>
 GibbsSampler<DataModel> initGibbsSampler()
 {
     // initialization parameters
@@ -36,8 +35,10 @@ GibbsSampler<DataModel> initGibbsSampler()
     return GibbsSampler<DataModel>(data, false, false, 0.01f, 100.f, params, randState);
 }
 
-TEST_CASE("Sampler Construction")
+TEST_CASE("Sampler Construction", "[samplerhighlevel][construction]")
 {
+    SECTION("Build all sampler variants with default uncertainty")
+    {
     // construct samplers using default uncertainty
     INIT_SAMPLER(sampler1, SingleThreadedGibbsSampler, DenseNormalModel);
     INIT_SAMPLER(sampler2, SingleThreadedGibbsSampler, SparseNormalModel);
@@ -47,13 +48,17 @@ TEST_CASE("Sampler Construction")
     REQUIRE(sampler1.dataSparsity() == sampler2.dataSparsity());
     REQUIRE(sampler2.dataSparsity() == sampler3.dataSparsity());
     REQUIRE(sampler3.dataSparsity() == sampler4.dataSparsity());
+    } // closes SECTION
 }
 
-TEST_CASE("Sampler Update")
+TEST_CASE("Sampler Update", "[samplerhighlevel][update]")
 {
+    SECTION("Run update on all sampler variants")
+    {
     // construct samplers using default uncertainty
     INIT_SAMPLER(sampler1, SingleThreadedGibbsSampler, DenseNormalModel);
     INIT_SAMPLER(sampler2, SingleThreadedGibbsSampler, SparseNormalModel);
     INIT_SAMPLER(sampler3, AsynchronousGibbsSampler, DenseNormalModel);
     INIT_SAMPLER(sampler4, AsynchronousGibbsSampler, SparseNormalModel);
+    } // closes SECTION
 }

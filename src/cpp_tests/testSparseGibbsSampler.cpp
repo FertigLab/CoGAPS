@@ -1,12 +1,11 @@
 #include <testthat.h>
 #include "../testthat-tweak.h"
-#include "../gibbs_sampler/AsynchronousGibbsSampler.h"
-#include "../gibbs_sampler/DenseStoragePolicy.h"
-#include "../gibbs_sampler/SparseStoragePolicy.h"
+#include "../gibbs_sampler/SingleThreadedGibbsSampler.h"
+#include "../gibbs_sampler/SparseNormalModel.h"
 
 #define TEST_APPROX(x) Approx(x).epsilon(0.001f)
 
-TEST_CASE("Test SparseGibbsSampler")
+TEST_CASE("Test SparseGibbsSampler", "[sparsegibbs]")
 {
     SECTION("Construct from data matrix")
     {
@@ -21,9 +20,9 @@ TEST_CASE("Test SparseGibbsSampler")
 
         GapsRandomState randState(123);
         GapsParameters params(data);
-        GibbsSampler<SparseStorage> ASampler(data, true, false, params.alphaA,
+        SingleThreadedGibbsSampler<SparseNormalModel> ASampler(data, true, false, params.alphaA,
             params.maxGibbsMassA, params, &randState);
-        GibbsSampler<SparseStorage> PSampler(data, false, false, params.alphaP,
+        SingleThreadedGibbsSampler<SparseNormalModel> PSampler(data, false, false, params.alphaP,
             params.maxGibbsMassP, params, &randState);
     
         ASampler.sync(PSampler);

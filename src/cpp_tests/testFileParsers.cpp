@@ -1,15 +1,13 @@
 #include <testthat.h>
 #include "../testthat-tweak.h"
-#include "../file_parser/CsvParser.h"
-#include "../file_parser/TsvParser.h"
+#include "../file_parser/CharacterDelimitedParser.h"
 #include "../file_parser/MtxParser.h"
-#include "../file_parser/GctParser.h"
 
 #include "../data_structures/Matrix.h"
 
 #include <Rcpp.h>
 
-TEST_CASE("Test Parsers")
+TEST_CASE("Test Parsers", "[fileparsers]")
 {
     Rcpp::Environment env = Rcpp::Environment::global_env();
     std::string csvPath = Rcpp::as<std::string>(env["gistCsvPath"]);
@@ -19,7 +17,7 @@ TEST_CASE("Test Parsers")
 
     SECTION("Test CsvParser")
     {
-        CsvParser p(csvPath);
+        CharacterDelimitedParser p(csvPath, ',');
         REQUIRE(p.nRow() == 1363);
         REQUIRE(p.nCol() == 9);
 
@@ -45,7 +43,7 @@ TEST_CASE("Test Parsers")
 
     SECTION("Test TsvParser")
     {
-        TsvParser p(tsvPath);
+        CharacterDelimitedParser p(tsvPath, '\t');
         REQUIRE(p.nRow() == 1363);
         REQUIRE(p.nCol() == 9);
 
@@ -89,7 +87,7 @@ TEST_CASE("Test Parsers")
 
     SECTION("Test GctParser")
     {
-        GctParser p(gctPath);
+        CharacterDelimitedParser p(gctPath, '\t', true);
         REQUIRE(p.nRow() == 1363);
         REQUIRE(p.nCol() == 9);
 

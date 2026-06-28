@@ -3,8 +3,10 @@
 #include "../data_structures/HashSets.h"
 #include "../math/Random.h"
 
-TEST_CASE("Test HashSets.h - FixedHashSetU32")
+TEST_CASE("Test HashSets.h - FixedHashSetU32", "[hashsets][fixedhashsetu32]")
 {
+    SECTION("Basic insert/contains/clear")
+    {
     GapsRandomState randState(123);
 
     FixedHashSetU32 hSet(1000);
@@ -25,10 +27,13 @@ TEST_CASE("Test HashSets.h - FixedHashSetU32")
         REQUIRE(!hSet.contains(u));
         REQUIRE(hSet.isEmpty());
     }
+    } // closes SECTION
 }
 
-TEST_CASE("Test HashSets.h - SmallHashSetU64")
+TEST_CASE("Test HashSets.h - SmallHashSetU64", "[hashsets][smallhashsetu64]")
 {
+    SECTION("Basic insert/contains/clear")
+    {
     GapsRandomState randState(123);
 
     SmallHashSetU64 hSet;
@@ -49,10 +54,13 @@ TEST_CASE("Test HashSets.h - SmallHashSetU64")
         REQUIRE(!hSet.contains(u));
         REQUIRE(hSet.isEmpty());
     }
+    } // closes SECTION
 }
 
-TEST_CASE("Test HashSets.h - SmallPairedHashSetU64")
+TEST_CASE("Test HashSets.h - SmallPairedHashSetU64", "[hashsets][smallpairedhashsetu64]")
 {
+    SECTION("Basic insert/contains/clear")
+    {
     SmallPairedHashSetU64 hSet;
     REQUIRE(hSet.isEmpty());
 
@@ -73,6 +81,6 @@ TEST_CASE("Test HashSets.h - SmallPairedHashSetU64")
         hSet.clear();
         REQUIRE(hSet.isEmpty());
     }
+    } // closes SECTION
 }
-
 

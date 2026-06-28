@@ -8,8 +8,10 @@
 
 // put Archive in it's own scope so it gets destructed (file stream closed)
 
-TEST_CASE("Reading/Writing to an Archive")
+TEST_CASE("Reading/Writing to an Archive", "[serialization][archive]")
 {
+    SECTION("Write an integer and read it back")
+    {
     {
         Archive ar1("test_ar.temp", ARCHIVE_WRITE);
         ar1 << 3;
@@ -24,10 +26,13 @@ TEST_CASE("Reading/Writing to an Archive")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
 
-TEST_CASE("Serialization of primitive types")
+TEST_CASE("Serialization of primitive types", "[serialization][primitives]")
 {
+    SECTION("Round-trip read/write of all primitive types")
+    {
     // test values
     unsigned u_read = 0, u_write = 456;
     uint32_t u32_read = 0, u32_write = 512;
@@ -68,10 +73,13 @@ TEST_CASE("Serialization of primitive types")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
 
-TEST_CASE("Vector Serialization")
+TEST_CASE("Vector Serialization", "[serialization][vector]")
 {
+    SECTION("Round-trip read/write of Vector")
+    {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
 
@@ -101,20 +109,21 @@ TEST_CASE("Vector Serialization")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
 
-TEST_CASE("HybridVector Serialization")
+TEST_CASE("HybridVector Serialization", "[serialization][hybridvector]")
 {
-
 }
 
-TEST_CASE("SparseVector Serialization")
+TEST_CASE("SparseVector Serialization", "[serialization][sparsevector]")
 {
-
 }
 
-TEST_CASE("Matrix Serialization")
+TEST_CASE("Matrix Serialization", "[serialization][matrix]")
 {
+    SECTION("Round-trip read/write of Matrix")
+    {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
 
@@ -151,20 +160,21 @@ TEST_CASE("Matrix Serialization")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
 
-TEST_CASE("HybridMatrix Serialization")
+TEST_CASE("HybridMatrix Serialization", "[serialization][hybridmatrix]")
 {
-
 }
 
-TEST_CASE("SparseMatrix Serialization")
+TEST_CASE("SparseMatrix Serialization", "[serialization][sparsematrix]")
 {
-
 }
 
-TEST_CASE("Random Generator Serialization")
+TEST_CASE("Random Generator Serialization", "[serialization][random]")
 {
+    SECTION("Round-trip read/write of GapsRandomState")
+    {
     std::vector<float> randSequence;
 
     GapsRandomState randStateWrite(123);
@@ -206,9 +216,10 @@ TEST_CASE("Random Generator Serialization")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
 
-TEST_CASE("GibbsSampler Serialization")
+TEST_CASE("GibbsSampler Serialization", "[serialization][gibbssampler]")
 {
 #if 0
     Rcpp::Environment env = Rcpp::Environment::global_env();
@@ -235,18 +246,16 @@ TEST_CASE("GibbsSampler Serialization")
 #endif
 }
 
-TEST_CASE("GapsParameters Serialization")
+TEST_CASE("GapsParameters Serialization", "[serialization][gapsparameters]")
 {
-
 }
 
-TEST_CASE("GapsStatistics Serialization")
+TEST_CASE("GapsStatistics Serialization", "[serialization][gapsstatistics]")
 {
-
 }
 
 #if 0
-TEST_CASE("AtomicDomain Serialization")
+TEST_CASE("AtomicDomain Serialization", "[serialization][atomicdomain]")
 {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
@@ -286,8 +295,10 @@ TEST_CASE("AtomicDomain Serialization")
 }
 #endif
 
-TEST_CASE("ProposalQueue Serialization")
+TEST_CASE("ProposalQueue Serialization", "[serialization][proposalqueue]")
 {
+    SECTION("Round-trip read/write of ProposalQueue and AtomicDomain")
+    {
     const unsigned nGenes = 10000;
     const unsigned nPatterns = 100;
     const unsigned nIterations = 1000;
@@ -445,6 +456,5 @@ TEST_CASE("ProposalQueue Serialization")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
-
-

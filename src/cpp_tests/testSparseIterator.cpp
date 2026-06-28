@@ -10,7 +10,7 @@
 
 #include <bitset>
 
-TEST_CASE("Test SparseIterator.h - One Dimensional")
+TEST_CASE("Test SparseIterator.h - One Dimensional", "[sparseiterator][1d]")
 {
 #if 0
     SECTION("Simple Case")
@@ -63,7 +63,7 @@ TEST_CASE("Test SparseIterator.h - One Dimensional")
     }
 }
 
-TEST_CASE("Test SparseIterator.h - Two Dimensional")
+TEST_CASE("Test SparseIterator.h - Two Dimensional", "[sparseiterator][2d]")
 {
 #if 0
    SECTION("Simple Case")
@@ -241,7 +241,7 @@ static float tripleProduct(const Vector &v1, const Vector &v2, const Vector &v3)
     return prod;
 }   
 
-TEST_CASE("Test SparseIterator.h - Three Dimensional")
+TEST_CASE("Test SparseIterator.h - Three Dimensional", "[sparseiterator][3d]")
 {
 #if 0
    SECTION("Simple Case")
