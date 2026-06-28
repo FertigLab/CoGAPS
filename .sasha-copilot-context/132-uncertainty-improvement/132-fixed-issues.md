@@ -276,3 +276,67 @@ hold `mLambda > 0`, so the ratio there is `0 / mLambda^2 = 0` — no NaN, no
 contribution to the accumulator.
 
 Fix commit: `bfd5e09d`
+
+---
+
+## 10. `SIMD_PAD` insufficient on ARM — compiler auto-vectorization heap corruption
+
+### Affected platform
+
+Apple Silicon (M1/M2/M3/M4).  Does **not** affect Intel Mac or Linux.
+
+### Root cause
+
+On ARM there is no SSE/AVX, so `SIMD_INC = 1` and the `SIMD_PAD` macro
+allocated only one extra element per `Vector`:
+
+```c
+SIMD_PAD(n) = 1 + 1*(n/1) = n + 1
+```
+
+The hand-written SIMD loops in `alphaParameters()` and `updateAPMatrix()` were
+safe with `SIMD_INC = 1` — they iterate one float at a time, exactly `n` times.
+However, when the package was built with optimisation (`-O2` / `-O3`, the R
+default in `install_local`), Clang's auto-vectoriser replaced those scalar loops
+with 4-wide ARM NEON instructions.  The auto-vectorised code processes floats in
+batches of 4, so the last batch for a vector of 25 elements starts at index 24
+and reads (or writes) indices 24, 25, 26, 27 — but only 26 elements were
+allocated.  Indices 26 and 27 are past the end of the `std::vector` storage.
+
+The writes in `updateAPMatrix` (`pAP.store(ap + i)`) were particularly
+destructive: they silently overwrote adjacent heap memory, which could corrupt
+the data of a neighbouring `Vector` — for example a column of `mSMatrix`.  When
+`chiSq()` subsequently checked `GAPS_ASSERT(mSMatrix(i,j) > 0.f)`, the
+corrupted value failed the assert and the sampler terminated with "CoGAPS
+terminated".
+
+The bug was invisible with `devtools::load_all()` because that build retains
+the existing `src/Makevars` which had `-g -O0` (debug flags from a previous
+configure run), suppressing all auto-vectorisation.  `devtools::install_local()`
+runs `configure` from scratch, produces a release `Makevars` without `-O0`, and
+the bug manifested immediately.
+
+### Relationship to the SSE4/AVX fix (issue 9)
+
+Issue 9 addressed padding values (zeros → `mLambda`).  This issue addresses
+padding size: even with correct values in padding, there was simply not enough
+padding for the auto-vectoriser to stay within bounds.  Both fixes are required
+for correctness across all platforms.
+
+### Fix
+
+Changed `SIMD_PAD` in `Vector.cpp` to always use an effective width of 8,
+regardless of `SIMD_INC`:
+
+```c
+#define SIMD_PAD_INC 8
+#define SIMD_PAD(x) (SIMD_PAD_INC + SIMD_PAD_INC * ((x) / SIMD_PAD_INC))
+```
+
+`SIMD_PAD(25)` now allocates 32 elements on every platform, leaving 7 padding
+positions (indices 25–31).  The auto-vectoriser on ARM reads/writes at most up
+to index 27 — safely within bounds.  The `padSIMD(mLambda)` calls already
+present in `gaps::pmax` fill all padding positions with a positive value, so
+no NaN can arise there either.
+
+Fix commit: `60f94063`
