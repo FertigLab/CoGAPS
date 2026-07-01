@@ -1,19 +1,17 @@
 #include <testthat.h>
+#include <Rcpp.h>
 #include "../testthat-tweak.h"
 #include "../file_parser/CharacterDelimitedParser.h"
 #include "../file_parser/MtxParser.h"
-
 #include "../data_structures/Matrix.h"
-
-#include <Rcpp.h>
 
 TEST_CASE("Test Parsers", "[fileparsers]")
 {
-    Rcpp::Environment env = Rcpp::Environment::global_env();
-    std::string csvPath = Rcpp::as<std::string>(env["gistCsvPath"]);
-    std::string tsvPath = Rcpp::as<std::string>(env["gistTsvPath"]);
-    std::string mtxPath = Rcpp::as<std::string>(env["gistMtxPath"]);
-    std::string gctPath = Rcpp::as<std::string>(env["gistGctPath"]);
+    Rcpp::Function sysfile("system.file");
+    std::string csvPath = Rcpp::as<std::string>(sysfile("extdata/GIST.csv", Rcpp::Named("package", "CoGAPS")));
+    std::string tsvPath = Rcpp::as<std::string>(sysfile("extdata/GIST.tsv", Rcpp::Named("package", "CoGAPS")));
+    std::string mtxPath = Rcpp::as<std::string>(sysfile("extdata/GIST.mtx", Rcpp::Named("package", "CoGAPS")));
+    std::string gctPath = Rcpp::as<std::string>(sysfile("extdata/GIST.gct", Rcpp::Named("package", "CoGAPS")));
 
     SECTION("Test CsvParser")
     {
