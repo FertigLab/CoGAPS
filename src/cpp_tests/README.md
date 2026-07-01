@@ -49,9 +49,10 @@ TEST_CASE("Mt test case -- what is it","[tag1][tag2]")
 }
 ```
 
-
 ## adding cpp tests to compilation / making changes
+
 To ask for the cpp tests to be compiled, each `test.cpp` needs to be added to the `configure.ac`. Example from `configure.ac`:
+
 ```
 # add c++ tests to source list
 if test "x$cpp_tests_disable" != "xyes" ; then
@@ -60,15 +61,17 @@ if test "x$cpp_tests_disable" != "xyes" ; then
     GAPS_SOURCE_FILES+=" cpp_tests/testVector.o"
 fi
 ```
+
 In the above example, the `testVector.o` is being added and will be compiled (if test compilation is not disabled).
 
-After changes are done, update `configure.ac` by running 
+After changes are done, update configure from `configure.ac` by running autoconf in terminal:
 
-in terminal:
 ```
 autoconf
 ```
+
 in R session:
+
 ```
 Rcpp::compileAttributes()
 ```
@@ -76,6 +79,7 @@ Rcpp::compileAttributes()
 ## disabling cpp test compilation
 It may be needed to disable the compilation of tests. There is a specific compilation parameter that controls it. Again, this parameter is set in `configure.ac` (see above). 
 Usage:
+
 ```
 #install with tests disabled
 options(configure.args = list(CoGAPS = "--disable-cpp-tests"))
