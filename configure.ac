@@ -128,10 +128,11 @@ GAPS_SOURCE_FILES+=" math/VectorMath.o"
 # add c++ tests to source list
 if test "x$cpp_tests_disable" != "xyes" ; then
     echo "Enabling C++ Unit Tests"
-    GAPS_CPP_FLAGS+=" -DGAPS_CPP_UNIT_TESTS "
+    GAPS_CPP_FLAGS+=" -DGAPS_VCPP_UNIT_TESTS "
     GAPS_SOURCE_FILES+=" cpp_tests/testAtomicDomain.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testDenseGibbsSampler.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testFileParsers.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testHashSets.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testMatrix.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testRandom.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testSparseMatrix.o"
