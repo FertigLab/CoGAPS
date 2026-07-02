@@ -5,7 +5,7 @@
 #include "../math/Math.h"
 #include "../math/VectorMath.h"
 
-TEST_CASE("Test HybridVector.h", "[hybridvector]")
+TEST_CASE("Test HybridVector", "[hybridvector]")
 {
     GapsRandomState randState(123);
 

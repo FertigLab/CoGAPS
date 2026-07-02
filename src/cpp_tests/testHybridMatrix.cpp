@@ -5,7 +5,7 @@
 #include "../math/VectorMath.h"
 #include "../math/MatrixMath.h"
 
-TEST_CASE("Test HybridMatrix.h", "[hybridmatrix]")
+TEST_CASE("Test HybridMatrix", "[hybridmatrix]")
 {
     SECTION("Basic operations")
     {
