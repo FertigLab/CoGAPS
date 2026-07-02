@@ -7,11 +7,11 @@
 
 TEST_CASE("Test Parsers", "[fileparsers]")
 {
-    Rcpp::Function sysfile("system.file");
-    std::string csvPath = Rcpp::as<std::string>(sysfile("extdata/GIST.csv", Rcpp::Named("package", "CoGAPS")));
-    std::string tsvPath = Rcpp::as<std::string>(sysfile("extdata/GIST.tsv", Rcpp::Named("package", "CoGAPS")));
-    std::string mtxPath = Rcpp::as<std::string>(sysfile("extdata/GIST.mtx", Rcpp::Named("package", "CoGAPS")));
-    std::string gctPath = Rcpp::as<std::string>(sysfile("extdata/GIST.gct", Rcpp::Named("package", "CoGAPS")));
+    Rcpp::Function systemfile("system.file");
+    std::string csvPath = Rcpp::as<std::string>(systemfile("extdata", "GIST.csv", Rcpp::Named("package") = "CoGAPS"));
+    std::string tsvPath = Rcpp::as<std::string>(systemfile("extdata", "GIST.tsv", Rcpp::Named("package") = "CoGAPS"));
+    std::string mtxPath = Rcpp::as<std::string>(systemfile("extdata", "GIST.mtx", Rcpp::Named("package") = "CoGAPS"));
+    std::string gctPath = Rcpp::as<std::string>(systemfile("extdata", "GIST.gct", Rcpp::Named("package") = "CoGAPS"));
 
     SECTION("Test CsvParser")
     {
