@@ -215,6 +215,36 @@ TEST_CASE("AtomicDomain depopulate","[atomicdomain][depopulate]") {
     }
 }
 
+TEST_CASE("AtomicDomain move then erase", "[atomicdomain][movethenerase]")
+{
+    // Regression test: after move(), the atom's internal map iterator must be
+    // updated so that a subsequent erase() on the same atom does not use a
+    // stale iterator (stale iterator caused UB / map corruption).
+    AtomicDomain domain(100);
+    domain.insert((uint64_t)200000, 0.01); // storedAtom(0)
+    domain.insert((uint64_t)100000, 0.02); // storedAtom(1)
+    domain.insert((uint64_t)400000, 0.03); // storedAtom(2)
+    domain.insert((uint64_t)300000, 0.04); // storedAtom(3)
+    REQUIRE(domain.size() == 4);
+
+    Atom *atom = domain.storedAtom(3); // atom at 300000
+    REQUIRE(atom->pos() == 300000);
+    domain.move(atom, 310000);
+    REQUIRE(atom->pos() == 310000);
+
+    // Erase the moved atom — must use the updated iterator, not the stale one
+    domain.erase(atom);
+    REQUIRE(domain.size() == 3);
+
+    // 310000 must be absent; map must contain exactly 100000, 200000, 400000
+    auto iter = domain.front_it();
+    REQUIRE(iter->first == 100000);
+    iter++;
+    REQUIRE(iter->first == 200000);
+    iter++;
+    REQUIRE(iter->first == 400000);
+}
+
 TEST_CASE("AtomicDomain randompick","[atomicdomain][randompick]") {
     SECTION("RandomAtomChoose")
     {

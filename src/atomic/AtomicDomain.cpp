@@ -159,16 +159,14 @@ void AtomicDomain::erase(Atom *atom)
 
 void AtomicDomain::move(Atom *atom, uint64_t newPos)
 {
-
     GAPS_ASSERT(newPos > (atom->hasLeft() ? mAtoms[atom->leftIndex()].pos() : 0));
     GAPS_ASSERT(newPos < (atom->hasRight() ? mAtoms[atom->rightIndex()].pos() : mDomainLength));
     //we do not jump over neighbour
 
-    std::pair<uint64_t, size_t> newpair(newPos,atom->iterator()->second);
+    size_t storageIdx = atom->iterator()->second;
     mAtomMap.erase(atom->pos());
     atom->updatePos(newPos);
-    mAtomMap.insert(newpair);
-
+    atom->setIterator(mAtomMap.insert(std::pair<uint64_t, size_t>(newPos, storageIdx)).first);
 }
 
 Archive& operator<<(Archive &ar, const AtomicDomain &domain)

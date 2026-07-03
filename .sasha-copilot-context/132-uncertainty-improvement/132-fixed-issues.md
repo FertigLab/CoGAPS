@@ -340,3 +340,67 @@ present in `gaps::pmax` fill all padding positions with a positive value, so
 no NaN can arise there either.
 
 Fix commit: `60f94063`
+
+---
+
+## 11. `AtomicDomain::move()` leaves a stale map iterator in the atom
+
+### Problem
+
+`AtomicDomain::move()` replaced the map entry for an atom (erase old key, insert new key) but never updated `atom->mIterator` to point to the new map node:
+
+```cpp
+std::pair<uint64_t, size_t> newpair(newPos, atom->iterator()->second);
+mAtomMap.erase(atom->pos());   // atom->mIterator is now dangling
+atom->updatePos(newPos);
+mAtomMap.insert(newpair);      // atom->mIterator NOT updated — still dangling
+```
+
+After `move()`, `atom->mIterator` pointed to a deleted `std::map` node.  If the
+same atom was subsequently passed to `erase()`, the line
+
+```cpp
+mAtomMap.erase(atom->iterator());   // UB: dangling iterator
+```
+
+caused undefined behaviour.  In practice this corrupted the red-black tree,
+which meant the next `insert()` placed the atom at a wrong position in the
+ordering.  Corrupted neighbour links eventually caused
+
+```
+GAPS_ASSERT(a <= b)   // lbound+1 > rbound-1
+```
+
+to fire inside `uniform64()` in `SingleThreadedGibbsSampler::move()`, terminating
+with "CoGAPS terminated".
+
+The bug triggered reliably with GIST data (1363 × 9, 9 patterns) but not with
+the smaller random-matrix test, because only the GIST run produced a `move()`
+followed immediately by an `erase()` on the same atom within the first few
+thousand iterations.
+
+### Fix
+
+Capture the iterator returned by `mAtomMap.insert()` and store it in the atom:
+
+```cpp
+size_t storageIdx = atom->iterator()->second;
+mAtomMap.erase(atom->pos());
+atom->updatePos(newPos);
+atom->setIterator(
+    mAtomMap.insert(std::pair<uint64_t, size_t>(newPos, storageIdx)).first);
+```
+
+`AtomicDomain` is a friend of `Atom`, so it may call the private `setIterator()`.
+
+A regression test `[atomicdomain][movethenerase]` was added to
+`src/cpp_tests/testAtomicDomain.cpp`: it inserts four atoms, moves one, erases
+the same atom, and verifies the map contains exactly the expected three keys.
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/atomic/AtomicDomain.cpp` | `move()` calls `atom->setIterator()` after insert |
+| `src/cpp_tests/testAtomicDomain.cpp` | regression test `[atomicdomain][movethenerase]` |
+
