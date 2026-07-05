@@ -163,3 +163,68 @@ the same atom, and verifies the map contains exactly the expected three keys.
 |---|---|
 | `src/atomic/AtomicDomain.cpp` | `move()` calls `atom->setIterator()` after insert |
 | `src/cpp_tests/testAtomicDomain.cpp` | regression test `[atomicdomain][movethenerase]` |
+
+---
+
+## 12. `gaps::min/max(SparseVector)` segfault on an empty (all-zero) sparse vector
+
+### Problem
+
+`gaps::min(const SparseVector&)` and `gaps::max(const SparseVector&)` read the
+first element through the iterator **before** checking `atEnd()`:
+
+```cpp
+float gaps::max(const SparseVector &v)
+{
+    SparseIterator<1> it(v);
+    float mx = get<1>(it);   // reads mData[0] with no bounds check
+    while (!it.atEnd()) { ... }
+    return mx;
+}
+```
+
+For an **empty** sparse vector (one with no stored non-zero elements — i.e. an
+all-zero row or column), the iterator is immediately `atEnd()` and `get<1>(it)`
+dereferences `mData[0]` of an empty backing array → read at address `0x0`
+(`SparseVector::getIthElement`), segfault.
+
+This is reachable in normal use, not just tests: `SparseNormalModel`'s constructor
+runs `if (gaps::max(mDMatrix) > 50.f)` (`SparseNormalModel.h:86`) on **every**
+`sparseOptimization=TRUE` run. Any all-zero gene (row) or sample (column) in the
+data — common in sparse single-cell matrices — yields an empty `SparseVector` and
+crashes construction before sampling starts.
+
+Related to issue 4 (`min`/`max` initialisation), whose fix did not cover the
+empty-`SparseVector` case.
+
+### Diagnosis
+
+The crash surfaced only after `testSamplerHighLevel` was added to the build (it
+constructs a `SparseNormalModel` on dummy data whose row 0 / column 0 are all
+zero). Root-caused with a standalone AddressSanitizer harness compiled at `-O2`:
+the backtrace pointed at `SparseVector::getIthElement` ← `gaps::max(SparseVector)`
+← `SparseNormalModel` constructor.
+
+### Fix
+
+Guard the empty case — a sparse vector's absent elements are `0`, and CoGAPS data
+is non-negative, so the min/max of an all-zero vector is `0.f`:
+
+```cpp
+SparseIterator<1> it(v);
+if (it.atEnd()) return 0.f; // empty (all-zero) sparse vector
+float mx = get<1>(it);
+```
+
+Applied to both `gaps::min` and `gaps::max`. Non-empty behaviour is unchanged.
+
+A regression test `[sparsevector][emptyminmax]` was added to
+`src/cpp_tests/testSparseVector.cpp`: it checks `min`/`max` return `0.f` on an
+empty `SparseVector` (no crash) and are unaffected for a non-empty one.
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/math/VectorMath.cpp` | `atEnd()` guard in `gaps::min`/`gaps::max` for `SparseVector` |
+| `src/cpp_tests/testSparseVector.cpp` | regression test `[sparsevector][emptyminmax]` |

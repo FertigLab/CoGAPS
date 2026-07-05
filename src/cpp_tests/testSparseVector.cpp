@@ -87,3 +87,27 @@ TEST_CASE("Test SparseVector","[sparsevector]")
     }
 #endif
 }
+
+// Regression: gaps::min/max(SparseVector) used to read the first element before
+// checking atEnd(), segfaulting on an empty (all-zero) sparse vector. This arises
+// for any all-zero row/column of the data matrix in SparseNormalModel construction.
+TEST_CASE("gaps::min/max on empty SparseVector","[sparsevector][emptyminmax]")
+{
+    SECTION("empty (all-zero) sparse vector returns 0, no crash")
+    {
+        SparseVector sv(100); // no non-zero elements stored
+        REQUIRE(gaps::max(sv) == 0.f);
+        REQUIRE(gaps::min(sv) == 0.f);
+    }
+
+    SECTION("non-empty sparse vector is unaffected by the guard")
+    {
+        std::vector<float> in_v(50, 0.f);
+        in_v[10] = 3.f;
+        in_v[20] = 1.f;
+        in_v[30] = 7.f;
+        SparseVector sv(in_v);
+        REQUIRE(gaps::max(sv) == 7.f);
+        REQUIRE(gaps::min(sv) == 1.f); // min over stored non-zero values
+    }
+}

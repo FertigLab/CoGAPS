@@ -25,6 +25,7 @@ float gaps::min(const HybridVector &v)
 float gaps::min(const SparseVector &v)
 {
     SparseIterator<1> it(v);
+    if (it.atEnd()) return 0.f; // empty (all-zero) sparse vector
     float mn = get<1>(it);
     while (!it.atEnd())
     {
@@ -57,6 +58,7 @@ float gaps::max(const HybridVector &v)
 float gaps::max(const SparseVector &v)
 {
     SparseIterator<1> it(v);
+    if (it.atEnd()) return 0.f; // empty (all-zero) sparse vector
     float mx = get<1>(it);
     while (!it.atEnd())
     {
