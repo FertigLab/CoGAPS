@@ -4,7 +4,9 @@
 #include "../GapsParameters.h"
 #include "../math/Random.h"
 
-#include "../gibbs_sampler/AsynchronousGibbsSampler.h"
+// TODO(async-removal §4.7): AsynchronousGibbsSampler is being removed; async
+// variants below are temporarily disabled (the header does not compile).
+//#include "../gibbs_sampler/AsynchronousGibbsSampler.h"
 #include "../gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "../gibbs_sampler/DenseNormalModel.h"
 #include "../gibbs_sampler/SparseNormalModel.h"
@@ -31,8 +33,12 @@ GibbsSampler<DataModel> initGibbsSampler()
     // initialization parameters
     Matrix data(getDummyData(25, 50));
     GapsParameters params(data);
-    GapsRandomState randState(params.seed);
-    return GibbsSampler<DataModel>(data, false, false, 0.01f, 100.f, params, randState);
+    // GapsRng stores a pointer to GapsRandomState (const GapsRandomState *mRandState),
+    // so randState must outlive the sampler returned by value. Make it static: one
+    // instance per template instantiation, alive for the program's lifetime.
+    // (data/params are copied into the model, only randState is held by pointer.)
+    static GapsRandomState randState(params.seed);
+    return GibbsSampler<DataModel>(data, false, false, 0.01f, 100.f, params, &randState);
 }
 
 TEST_CASE("Sampler Construction", "[samplerhighlevel][construction]")
@@ -42,12 +48,13 @@ TEST_CASE("Sampler Construction", "[samplerhighlevel][construction]")
     // construct samplers using default uncertainty
     INIT_SAMPLER(sampler1, SingleThreadedGibbsSampler, DenseNormalModel);
     INIT_SAMPLER(sampler2, SingleThreadedGibbsSampler, SparseNormalModel);
-    INIT_SAMPLER(sampler3, AsynchronousGibbsSampler, DenseNormalModel);
-    INIT_SAMPLER(sampler4, AsynchronousGibbsSampler, SparseNormalModel);
+    // TODO(async-removal §4.7): async variants disabled
+    //INIT_SAMPLER(sampler3, AsynchronousGibbsSampler, DenseNormalModel);
+    //INIT_SAMPLER(sampler4, AsynchronousGibbsSampler, SparseNormalModel);
 
     REQUIRE(sampler1.dataSparsity() == sampler2.dataSparsity());
-    REQUIRE(sampler2.dataSparsity() == sampler3.dataSparsity());
-    REQUIRE(sampler3.dataSparsity() == sampler4.dataSparsity());
+    //REQUIRE(sampler2.dataSparsity() == sampler3.dataSparsity());
+    //REQUIRE(sampler3.dataSparsity() == sampler4.dataSparsity());
     } // closes SECTION
 }
 
@@ -58,7 +65,8 @@ TEST_CASE("Sampler Update", "[samplerhighlevel][update]")
     // construct samplers using default uncertainty
     INIT_SAMPLER(sampler1, SingleThreadedGibbsSampler, DenseNormalModel);
     INIT_SAMPLER(sampler2, SingleThreadedGibbsSampler, SparseNormalModel);
-    INIT_SAMPLER(sampler3, AsynchronousGibbsSampler, DenseNormalModel);
-    INIT_SAMPLER(sampler4, AsynchronousGibbsSampler, SparseNormalModel);
+    // TODO(async-removal §4.7): async variants disabled
+    //INIT_SAMPLER(sampler3, AsynchronousGibbsSampler, DenseNormalModel);
+    //INIT_SAMPLER(sampler4, AsynchronousGibbsSampler, SparseNormalModel);
     } // closes SECTION
 }

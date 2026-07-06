@@ -4,7 +4,8 @@
 #include "../data_structures/Matrix.h"
 #include "../math/Random.h"
 #include "../atomic/AtomicDomain.h"
-#include "../atomic/ProposalQueue.h"
+// TODO(async-removal §4.7): ProposalQueue is async-only and being removed
+//#include "../atomic/ProposalQueue.h"
 
 // put Archive in it's own scope so it gets destructed (file stream closed)
 
@@ -295,6 +296,10 @@ TEST_CASE("AtomicDomain Serialization", "[serialization][atomicdomain]")
 }
 #endif
 
+// TODO(async-removal §4.7): ProposalQueue is async-only and being removed; this
+// test also references a stale API (populate() now takes ConcurrentAtomicDomain).
+// Disabled until §4.7 deletes it.
+#if 0
 TEST_CASE("ProposalQueue Serialization", "[serialization][proposalqueue]")
 {
     SECTION("Round-trip read/write of ProposalQueue and AtomicDomain")
@@ -458,3 +463,4 @@ TEST_CASE("ProposalQueue Serialization", "[serialization][proposalqueue]")
     std::remove("test_ar.temp");
     } // closes SECTION
 }
+#endif // async-removal §4.7: ProposalQueue Serialization test

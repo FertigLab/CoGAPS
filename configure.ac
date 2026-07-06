@@ -131,6 +131,8 @@ if test "x$cpp_tests_disable" != "xyes" ; then
     GAPS_CPP_FLAGS+=" -DGAPS_VCPP_UNIT_TESTS "
     GAPS_SOURCE_FILES+=" cpp_tests/testAtomicDomain.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testDenseGibbsSampler.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSparseGibbsSampler.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSamplerHighLevel.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testFileParsers.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testHashSets.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testHybridMatrix.o"
@@ -139,6 +141,8 @@ if test "x$cpp_tests_disable" != "xyes" ; then
     GAPS_SOURCE_FILES+=" cpp_tests/testRandom.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testSparseMatrix.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testSparseVector.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSparseIterator.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSerialization.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testVector.o"
 fi
 # commented files in the if above are to be reviwed
