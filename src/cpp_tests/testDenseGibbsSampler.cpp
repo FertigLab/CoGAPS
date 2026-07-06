@@ -120,8 +120,8 @@ TEST_CASE("Test DenseGibbsSampler on random matrix","[densesinglesampler][random
         float A_SumInit=gaps::sum(ASampler.MyMatrix());
         float P_SumInit=gaps::sum(PSampler.MyMatrix());
 
-        ASampler.update(100, 1);
-        PSampler.update(100, 1);
+        ASampler.update(100);
+        PSampler.update(100);
 
         ASampler.sync(PSampler);
         PSampler.sync(ASampler);
@@ -179,8 +179,8 @@ TEST_CASE("Test DenseGibbsSampler on gist matrix","[densesinglesampler][gistmat]
         float A_SumInit=gaps::sum(ASampler.MyMatrix());
         float P_SumInit=gaps::sum(PSampler.MyMatrix());
 
-        ASampler.update(100, 1);
-        PSampler.update(100, 1);
+        ASampler.update(100);
+        PSampler.update(100);
 
         ASampler.sync(PSampler);
         PSampler.sync(ASampler);

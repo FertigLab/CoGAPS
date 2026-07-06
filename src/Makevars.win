@@ -10,10 +10,7 @@ OBJECTS =	Cogaps.o \
 		RcppExports.o \
 		test-runner.o \
 		atomic/Atom.o \
-		atomic/ConcurrentAtom.o \
 		atomic/AtomicDomain.o \
-		atomic/ConcurrentAtomicDomain.o \
-		atomic/ProposalQueue.o \
 		data_structures/HashSets.o \
 		data_structures/HybridMatrix.o \
 		data_structures/HybridVector.o \

@@ -26,7 +26,7 @@ GWCoGAPS(
 
 \item{params}{CogapsParams object}
 
-\item{nThreads}{maximum number of threads to run on}
+\item{nThreads}{deprecated and ignored; CoGAPS now always runs single-threaded}
 
 \item{messages}{T/F for displaying output}
 
@@ -55,7 +55,8 @@ only worker 1 prints output and each worker outputs when it finishes, this
 is not neccesary when using the default parallel methods (i.e. distributed
 CoGAPS) but only when the user is manually calling CoGAPS in parallel}
 
-\item{asynchronousUpdates}{enable asynchronous updating which allows for multi-threaded runs}
+\item{asynchronousUpdates}{deprecated and ignored; the asynchronous sampler was
+removed because it broke MCMC detailed balance}
 
 \item{...}{allows for overwriting parameters in params}
 }

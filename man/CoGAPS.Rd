@@ -17,7 +17,7 @@ CoGAPS(
   transposeData = FALSE,
   BPPARAM = NULL,
   workerID = 1,
-  asynchronousUpdates = TRUE,
+  asynchronousUpdates = FALSE,
   nSnapshots = 0,
   snapshotPhase = "sampling",
   ...
@@ -28,7 +28,7 @@ CoGAPS(
 
 \item{params}{CogapsParams object}
 
-\item{nThreads}{maximum number of threads to run on}
+\item{nThreads}{deprecated and ignored; CoGAPS now always runs single-threaded}
 
 \item{messages}{T/F for displaying output}
 
@@ -57,7 +57,8 @@ only worker 1 prints output and each worker outputs when it finishes, this
 is not neccesary when using the default parallel methods (i.e. distributed
 CoGAPS) but only when the user is manually calling CoGAPS in parallel}
 
-\item{asynchronousUpdates}{enable asynchronous updating which allows for multi-threaded runs}
+\item{asynchronousUpdates}{deprecated and ignored; the asynchronous sampler was
+removed because it broke MCMC detailed balance}
 
 \item{nSnapshots}{how many snapshots to take in each phase, setting this to 0 disables
 snapshots}

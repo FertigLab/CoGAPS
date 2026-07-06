@@ -68,20 +68,7 @@ test_that("Valid Top-Level CoGAPS Calls",
         nIterations=100, outputFrequency=50, seed=1, messages=FALSE), NA)    
     expect_true(no_na_in_result(res))
 
-    # multiple threads
-    expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE, nThreads=2), NA)
-    expect_true(no_na_in_result(res))
-
-    expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE, nThreads=6), NA)
-    expect_true(no_na_in_result(res))
-
-    expect_error(res <- CoGAPS(testDataFrame, nIterations=100,
-        outputFrequency=50, seed=1, messages=FALSE, nThreads=12), NA)
-    expect_true(no_na_in_result(res))
-
-    # genome-wide CoGAPS 
+    # genome-wide CoGAPS
     expect_error(res <- CoGAPS(gistTsvPath, nIterations=100,
         outputFrequency=50, seed=1, messages=FALSE, distributed="genome-wide"), NA)
     expect_true(no_na_in_result(res))

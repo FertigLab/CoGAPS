@@ -4,9 +4,6 @@
 #include "../GapsParameters.h"
 #include "../math/Random.h"
 
-// TODO(async-removal §4.7): AsynchronousGibbsSampler is being removed; async
-// variants below are temporarily disabled (the header does not compile).
-//#include "../gibbs_sampler/AsynchronousGibbsSampler.h"
 #include "../gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "../gibbs_sampler/DenseNormalModel.h"
 #include "../gibbs_sampler/SparseNormalModel.h"
@@ -48,13 +45,8 @@ TEST_CASE("Sampler Construction", "[samplerhighlevel][construction]")
     // construct samplers using default uncertainty
     INIT_SAMPLER(sampler1, SingleThreadedGibbsSampler, DenseNormalModel);
     INIT_SAMPLER(sampler2, SingleThreadedGibbsSampler, SparseNormalModel);
-    // TODO(async-removal §4.7): async variants disabled
-    //INIT_SAMPLER(sampler3, AsynchronousGibbsSampler, DenseNormalModel);
-    //INIT_SAMPLER(sampler4, AsynchronousGibbsSampler, SparseNormalModel);
 
     REQUIRE(sampler1.dataSparsity() == sampler2.dataSparsity());
-    //REQUIRE(sampler2.dataSparsity() == sampler3.dataSparsity());
-    //REQUIRE(sampler3.dataSparsity() == sampler4.dataSparsity());
     } // closes SECTION
 }
 
@@ -65,8 +57,7 @@ TEST_CASE("Sampler Update", "[samplerhighlevel][update]")
     // construct samplers using default uncertainty
     INIT_SAMPLER(sampler1, SingleThreadedGibbsSampler, DenseNormalModel);
     INIT_SAMPLER(sampler2, SingleThreadedGibbsSampler, SparseNormalModel);
-    // TODO(async-removal §4.7): async variants disabled
-    //INIT_SAMPLER(sampler3, AsynchronousGibbsSampler, DenseNormalModel);
-    //INIT_SAMPLER(sampler4, AsynchronousGibbsSampler, SparseNormalModel);
+    // NOTE: calling update() here would require sync()+extraInitialization()
+    // first (otherwise mOtherMatrix is NULL); left as a construction smoke test.
     } // closes SECTION
 }

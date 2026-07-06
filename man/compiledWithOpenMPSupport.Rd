@@ -7,7 +7,8 @@
 compiledWithOpenMPSupport()
 }
 \value{
-true/false if OpenMP was supported
+FALSE (OpenMP support was removed together with the asynchronous
+sampler; CoGAPS now always runs single-threaded)
 }
 \description{
 Check if compiler supported OpenMP

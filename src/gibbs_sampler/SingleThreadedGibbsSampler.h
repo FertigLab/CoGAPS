@@ -41,8 +41,7 @@ public:
         float alpha, float maxGibbsMass, const GapsParameters &params,
         GapsRandomState *randState);
     unsigned nAtoms() const;
-    float getAverageQueueLength() const;
-    void update(unsigned nSteps, unsigned nThreads);
+    void update(unsigned nSteps);
     friend Archive& operator<< <DataModel> (Archive &ar, const SingleThreadedGibbsSampler &s);
     friend Archive& operator>> <DataModel> (Archive &ar, SingleThreadedGibbsSampler &s);
 private:
@@ -90,12 +89,6 @@ unsigned SingleThreadedGibbsSampler<DataModel>::nAtoms() const
 }
 
 template <class DataModel>
-float SingleThreadedGibbsSampler<DataModel>::getAverageQueueLength() const
-{
-    return 0.f;
-}
-
-template <class DataModel>
 char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
 {
     if (mDomain.size() < 2)
@@ -115,7 +108,7 @@ char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
 }
 
 template <class DataModel>
-void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThreads) // NOLINT
+void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps)
 {
     for (unsigned i = 0; i < nSteps; ++i)
     {

@@ -9,10 +9,6 @@
     #define __x86_64__ 1
 #endif
 
-#ifdef _OPENMP
-    #define __GAPS_OPENMP__
-#endif
-
 #ifdef __GAPS_R_BUILD__
     #define gaps_check_interrupt(x) Rcpp::checkUserInterrupt(x)
 #else
@@ -44,11 +40,7 @@ inline std::string buildReport()
     std::string simd = "SIMD not enabled\n";
 #endif
 
-#ifdef __GAPS_OPENMP__
-    std::string openmp = "Compiled with OpenMP\n";
-#else
-    std::string openmp = "Compiler did not support OpenMP\n";
-#endif
+    std::string openmp = "OpenMP: disabled (async sampler removed)\n";
 
     return compiler + simd + openmp;
 }

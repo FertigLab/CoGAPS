@@ -53,15 +53,7 @@ GAPS_LIBS=
 AX_COMPILER_VENDOR
 AX_COMPILER_VERSION
 
-# set openmp flags, disable only if requested
-AC_ARG_ENABLE(openmp, [AS_HELP_STRING([--enable-openmp],[compile with openMP support if available])],
-    [use_openmp=$enableval], [use_openmp=yes])
-
-AX_OPENMP
-if test "x$use_openmp" != "xno" ; then
-    GAPS_CXX_FLAGS+=" $OPENMP_CXXFLAGS "
-    GAPS_LIBS+=" $OPENMP_CXXFLAGS "
-fi
+# OpenMP removed together with the asynchronous sampler (it broke MCMC balance).
 
 echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compiler_version"
 
@@ -101,10 +93,7 @@ GAPS_SOURCE_FILES+=" GapsStatistics.o"
 GAPS_SOURCE_FILES+=" RcppExports.o"
 GAPS_SOURCE_FILES+=" test-runner.o"
 GAPS_SOURCE_FILES+=" atomic/Atom.o"
-GAPS_SOURCE_FILES+=" atomic/ConcurrentAtom.o"
 GAPS_SOURCE_FILES+=" atomic/AtomicDomain.o"
-GAPS_SOURCE_FILES+=" atomic/ConcurrentAtomicDomain.o"
-GAPS_SOURCE_FILES+=" atomic/ProposalQueue.o"
 GAPS_SOURCE_FILES+=" data_structures/HashSets.o"
 GAPS_SOURCE_FILES+=" data_structures/HybridMatrix.o"
 GAPS_SOURCE_FILES+=" data_structures/HybridVector.o"

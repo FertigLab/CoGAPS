@@ -24,7 +24,7 @@ void SparseNormalModel::setAnnealingTemp(float temp)
     mAnnealingTemp = temp;
 }
 
-void SparseNormalModel::sync(const SparseNormalModel &model, unsigned nThreads) // NOLINT
+void SparseNormalModel::sync(const SparseNormalModel &model)
 {
     mOtherMatrix = &(model.mMatrix);
     generateLookupTables();

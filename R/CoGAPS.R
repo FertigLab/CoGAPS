@@ -28,12 +28,13 @@ checkpointsEnabled <- function()
 #' Check if compiler supported OpenMP
 #' @export
 #'
-#' @return true/false if OpenMP was supported
+#' @return FALSE (OpenMP support was removed together with the asynchronous
+#' sampler; CoGAPS now always runs single-threaded)
 #' @examples
 #' CoGAPS::compiledWithOpenMPSupport()
 compiledWithOpenMPSupport <- function()
 {
-    compiledWithOpenMPSupport_cpp()
+    FALSE
 }
 
 #' CoGAPS Matrix Factorization Algorithm
@@ -46,7 +47,7 @@ compiledWithOpenMPSupport <- function()
 #' SingleCellExperiment. The supported file types are csv, tsv, and mtx.
 #' @param data File name or R object (see details for supported types)
 #' @param params CogapsParams object
-#' @param nThreads maximum number of threads to run on
+#' @param nThreads deprecated and ignored; CoGAPS now always runs single-threaded
 #' @param messages T/F for displaying output
 #' @param outputFrequency number of iterations between each output (set to 0 to
 #' disable status updates, other output is controlled by @code messages)
@@ -65,7 +66,8 @@ compiledWithOpenMPSupport <- function()
 #' only worker 1 prints output and each worker outputs when it finishes, this
 #' is not neccesary when using the default parallel methods (i.e. distributed
 #' CoGAPS) but only when the user is manually calling CoGAPS in parallel
-#' @param asynchronousUpdates enable asynchronous updating which allows for multi-threaded runs
+#' @param asynchronousUpdates deprecated and ignored; the asynchronous sampler was
+#' removed because it broke MCMC detailed balance
 #' @param nSnapshots how many snapshots to take in each phase, setting this to 0 disables
 #' snapshots
 #' @param snapshotPhase which phase to take snapsjots in e.g. "equilibration", "sampling",
@@ -89,7 +91,7 @@ compiledWithOpenMPSupport <- function()
 CoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
 outputFrequency=1000, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=0, checkpointInFile=NULL, transposeData=FALSE,
-BPPARAM=NULL, workerID=1, asynchronousUpdates=TRUE, nSnapshots=0,
+BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, nSnapshots=0,
 snapshotPhase='sampling', ...)
 {
     # pre-process inputs
@@ -102,14 +104,15 @@ snapshotPhase='sampling', ...)
     params <- getValueOrRds(params)
     validObject(params)
 
-    # check OpenMP support
-    if (!compiledWithOpenMPSupport())
-    {
-        if (asynchronousUpdates & nThreads > 1)
-            warning("requesting multi-threaded version of CoGAPS but compiler did not support OpenMP")
-        asynchronousUpdates = FALSE
-        nThreads = 1
-    }
+    # The asynchronous multi-threaded sampler was removed (it broke MCMC detailed
+    # balance); CoGAPS now always runs single-threaded. The 'nThreads' and
+    # 'asynchronousUpdates' arguments are kept for backward compatibility but are
+    # ignored. Warn only when a non-default value is requested.
+    if (!identical(as.numeric(nThreads), 1) || isTRUE(asynchronousUpdates))
+        warning("'nThreads' and 'asynchronousUpdates' are deprecated and ignored; ",
+                "CoGAPS now always runs single-threaded (async broke MCMC balance)")
+    asynchronousUpdates <- FALSE
+    nThreads <- 1
 
     # store all parameters in a list and parse parameters from ...
     allParams <- list("gaps"=params,

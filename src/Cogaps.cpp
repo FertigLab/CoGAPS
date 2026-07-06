@@ -82,7 +82,7 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.printThreadUsage = !params.runningDistributed;
 
     // get configuration parameters
-    params.maxThreads = Rcpp::as<int>(allParams["nThreads"]);
+    params.maxThreads = 1; // async sampler removed - always single-threaded
     params.workerID = Rcpp::as<int>(allParams["workerID"]);
     params.printMessages = Rcpp::as<bool>(allParams["messages"]) && (params.workerID == 1);
     params.outputFrequency = Rcpp::as<int>(allParams["outputFrequency"]);
@@ -99,7 +99,7 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.maxGibbsMassA = Rcpp::as<float>(gapsParams.slot("maxGibbsMassA"));
     params.maxGibbsMassP = Rcpp::as<float>(gapsParams.slot("maxGibbsMassP"));
     params.useSparseOptimization = Rcpp::as<bool>(gapsParams.slot("sparseOptimization"));
-    params.asynchronousUpdates = Rcpp::as<bool>(allParams["asynchronousUpdates"]);
+    params.asynchronousUpdates = false; // async sampler removed
 
     // calculate snapshot frequency
     int nSnapshots = Rcpp::as<int>(allParams["nSnapshots"]);
@@ -174,8 +174,6 @@ const DataType &uncertainty)
             Rcpp::Named("atomsP") = Rcpp::wrap(result.atomHistoryP),
             Rcpp::Named("pumpStat") = createRMatrix(result.pumpMatrix),
             Rcpp::Named("meanPatternAssignment") = createRMatrix(result.meanPatternAssignment),
-            Rcpp::Named("averageQueueLengthA") = result.averageQueueLengthA,
-            Rcpp::Named("averageQueueLengthP") = result.averageQueueLengthP,
             Rcpp::Named("totalUpdates") = result.totalUpdates,
             Rcpp::Named("totalRunningTime") = result.totalRunningTime,
             Rcpp::Named("equilibrationSnapshotsA") = createListOfRMatrices(result.equilibrationSnapshotsA),
@@ -230,15 +228,6 @@ bool checkpointsEnabled_cpp()
 #endif
 }
 
-// [[Rcpp::export]]
-bool compiledWithOpenMPSupport_cpp()
-{
-#ifdef __GAPS_OPENMP__
-    return true;
-#else
-    return false;
-#endif
-}
 
 // [[Rcpp::export]]
 Rcpp::List getFileInfo_cpp(const std::string &path)
