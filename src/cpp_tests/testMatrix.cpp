@@ -199,3 +199,12 @@ TEST_CASE("nonZeroMean of an all-zero matrix is 0, not NaN","[matrix][nonzeromea
     Matrix mat(10, 10); // default-constructed: all zero
     REQUIRE(gaps::nonZeroMean(mat) == 0.f); // NaN would fail this comparison
 }
+
+// Regression: gaps::min/max(Matrix) dereferenced getCol(0) on a zero-column matrix.
+TEST_CASE("min/max of a zero-column matrix return 0","[matrix][minmax-empty]")
+{
+    Matrix mat(5, 0);
+    REQUIRE(mat.nCol() == 0);
+    REQUIRE(gaps::min(mat) == 0.f);
+    REQUIRE(gaps::max(mat) == 0.f);
+}

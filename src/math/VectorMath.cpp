@@ -4,6 +4,7 @@
 
 float gaps::min(const Vector &v)
 {
+    if (v.size() == 0) return 0.f; // empty vector
     float mn = v[0];
     for (unsigned i = 0; i < v.size(); ++i)
     {
@@ -14,6 +15,7 @@ float gaps::min(const Vector &v)
 
 float gaps::min(const HybridVector &v)
 {
+    if (v.size() == 0) return 0.f; // empty vector
     float mn = v[0];
     for (unsigned i = 0; i < v.size(); ++i)
     {
@@ -37,6 +39,7 @@ float gaps::min(const SparseVector &v)
 
 float gaps::max(const Vector &v)
 {
+    if (v.size() == 0) return 0.f; // empty vector
     float mx = v[0];
     for (unsigned i = 1; i < v.size(); ++i)
     {
@@ -47,6 +50,7 @@ float gaps::max(const Vector &v)
 
 float gaps::max(const HybridVector &v)
 {
+    if (v.size() == 0) return 0.f; // empty vector
     float mx = v[0];
     for (unsigned i = 1; i < v.size(); ++i)
     {
@@ -70,6 +74,7 @@ float gaps::max(const SparseVector &v)
 
 unsigned gaps::whichMax(const Vector &v)
 {
+    if (v.size() == 0) return 0; // empty vector
     unsigned ndx = 0;
     float mx = v[0];
     for (unsigned i = 0; i < v.size(); ++i)

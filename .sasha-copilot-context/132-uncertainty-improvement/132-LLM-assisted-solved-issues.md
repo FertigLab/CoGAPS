@@ -315,3 +315,44 @@ Applied to both the dense and sparse overloads. Regression test
 | `src/math/MatrixMath.cpp` | `nNonZeroes == 0` guard in both `nonZeroMean` overloads |
 | `src/cpp_tests/testMatrix.cpp` | regression test `[matrix][nonzeromean-empty]` |
 
+---
+
+## 15. Dense/hybrid `gaps::min`/`max`/`whichMax` read element 0 on an empty container
+
+### Problem
+
+The dense and hybrid reductions `gaps::min`/`max(Vector)`,
+`gaps::min`/`max(HybridVector)`, `gaps::whichMax(Vector)`
+(`src/math/VectorMath.cpp`) initialised the accumulator with `v[0]` with no size
+check, and the templated `gaps::min`/`max(MatrixType)` (`src/math/MatrixMath.h`)
+called `getCol(0)` with no `nCol() > 0` check. On an empty vector / zero-column
+matrix this is an out-of-bounds read.
+
+This is the same empty-container class fixed for the `SparseVector` overloads in
+issue 12; the dense/hybrid/matrix siblings were left unguarded (and issue 4, which
+changed the accumulator init from `0` to `v[0]`, is what introduced the
+empty-vector deref). `v[0]` currently reads SIMD padding rather than crashing on
+this platform, but it is a genuine OOB on a vector with no padding.
+
+### Fix
+
+Return `0.f` (index `0` for `whichMax`) for empty input, before any indexing:
+
+```cpp
+if (v.size() == 0) return 0.f;      // Vector / HybridVector min/max
+if (v.size() == 0) return 0;        // whichMax
+if (mat.nCol() == 0) return 0.f;    // min/max(MatrixType)
+```
+
+Regression tests: `[vector][emptyminmax]` in `testVector.cpp` (empty `Vector`
+min/max/whichMax → 0) and the "zero-column matrix" section of `[matrix][minmax-empty]`
+in `testMatrix.cpp`.
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/math/VectorMath.cpp` | empty-size guard in dense/hybrid `min`/`max`/`whichMax` |
+| `src/math/MatrixMath.h` | `nCol() == 0` guard in `min`/`max(MatrixType)` |
+| `src/cpp_tests/testVector.cpp` | regression test `[vector][emptyminmax]` |
+| `src/cpp_tests/testMatrix.cpp` | regression test `[matrix][minmax-empty]` (zero-column section) |

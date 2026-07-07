@@ -34,6 +34,7 @@ Matrix operator/(const Matrix & mat, float f);
 template <class MatrixType>
 float gaps::min(const MatrixType &mat)
 {
+    if (mat.nCol() == 0) return 0.f; // empty matrix
     float mn = gaps::min(mat.getCol(0));
     for (unsigned i = 1; i < mat.nCol(); ++i)
     {
@@ -46,6 +47,7 @@ float gaps::min(const MatrixType &mat)
 template <class MatrixType>
 float gaps::max(const MatrixType &mat)
 {
+    if (mat.nCol() == 0) return 0.f; // empty matrix
     float mx = gaps::max(mat.getCol(0));
     for (unsigned i = 1; i < mat.nCol(); ++i)
     {
