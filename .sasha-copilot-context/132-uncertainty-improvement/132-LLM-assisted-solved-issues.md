@@ -279,3 +279,39 @@ Before the fix the restored domain stayed empty (`nAtoms() == 0`).
 |---|---|
 | `src/gibbs_sampler/SingleThreadedGibbsSampler.h` | `operator>>` chain `<<` → `>>` |
 | `src/cpp_tests/testSerialization.cpp` | regression test `[serialization][gibbssampler-roundtrip]` |
+---
+
+## 14. `gaps::nonZeroMean` divided by zero (NaN) on an all-zero matrix
+
+### Problem
+
+`gaps::nonZeroMean(const Matrix&)` and `(const SparseMatrix&)`
+(`src/math/MatrixMath.cpp`) returned `sum / nNonZeroes` with no guard for
+`nNonZeroes == 0`. For an all-zero data matrix (or a subset that contains no
+positive entries) this is `0 / 0 = NaN`.
+
+It feeds model initialization directly: `DenseNormalModel.h` / `SparseNormalModel.h`
+compute `meanD = nonZeroMean(mDMatrix)` then
+`mLambda = alpha * sqrt(nPatterns() / meanD)` and `mMaxGibbsMass /= mLambda`. A NaN
+`meanD` poisons `mLambda`, `mMaxGibbsMass`, and every subsequent sample.
+
+### Fix
+
+Guard the empty case (a matrix with no positive entries has non-zero mean `0`):
+
+```cpp
+if (nNonZeroes == 0) return 0.f; // all-zero matrix: avoid 0/0 = NaN
+return sum / static_cast<float>(nNonZeroes);
+```
+
+Applied to both the dense and sparse overloads. Regression test
+`[matrix][nonzeromean-empty]` in `testMatrix.cpp` checks `nonZeroMean` of an all-zero
+`Matrix` returns `0.f` (a NaN would fail the equality).
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/math/MatrixMath.cpp` | `nNonZeroes == 0` guard in both `nonZeroMean` overloads |
+| `src/cpp_tests/testMatrix.cpp` | regression test `[matrix][nonzeromean-empty]` |
+

@@ -191,3 +191,11 @@ TEST_CASE("Test gap Matrix pmax","[matrix][matrixpmax]")
         REQUIRE(minfoam == gaps::min(cpmat));
     }
 }
+
+// Regression: gaps::nonZeroMean returned sum/0 = NaN on an all-zero matrix,
+// poisoning mLambda in the models.
+TEST_CASE("nonZeroMean of an all-zero matrix is 0, not NaN","[matrix][nonzeromean-empty]")
+{
+    Matrix mat(10, 10); // default-constructed: all zero
+    REQUIRE(gaps::nonZeroMean(mat) == 0.f); // NaN would fail this comparison
+}

@@ -51,6 +51,7 @@ float gaps::nonZeroMean(const Matrix &mat)
             }
         }
     }
+    if (nNonZeroes == 0) return 0.f; // all-zero matrix: avoid 0/0 = NaN
     return sum / static_cast<float>(nNonZeroes);
 }
 
@@ -68,6 +69,7 @@ float gaps::nonZeroMean(const SparseMatrix &mat)
             it.next();
         }
     }
+    if (nNonZeroes == 0) return 0.f; // all-zero matrix: avoid 0/0 = NaN
     return sum / static_cast<float>(nNonZeroes);
 }
 
