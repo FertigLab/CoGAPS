@@ -228,3 +228,54 @@ empty `SparseVector` (no crash) and are unaffected for a non-empty one.
 |---|---|
 | `src/math/VectorMath.cpp` | `atEnd()` guard in `gaps::min`/`gaps::max` for `SparseVector` |
 | `src/cpp_tests/testSparseVector.cpp` | regression test `[sparsevector][emptyminmax]` |
+
+---
+
+## 13. `SingleThreadedGibbsSampler` deserialization used `<<` (write) instead of `>>` (read)
+
+### Problem
+
+The sampler's `operator>>` (`src/gibbs_sampler/SingleThreadedGibbsSampler.h`) read
+the `DataModel` base with `>>` but then **chained `<<` (write)** for the sampler's
+own members:
+
+```cpp
+Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<DataModel> &s)
+{
+    operator>>(ar, static_cast<DataModel&>(s)) << s.mDomain << s.mNumBins
+        << s.mBinLength << s.mNumPatterns << s.mdDomainLength << s.mAlpha;   // BUG: <<
+    return ar;
+}
+```
+
+So restoring a sampler from a checkpoint did **not** reload the atomic domain or the
+bin geometry — those fields were written back into the read archive instead. A run
+resumed from a checkpoint started with an empty atomic domain and diverged from an
+uninterrupted run.
+
+Found while auditing the code after the async removal. It is a latent bug in the
+shipped package because checkpoints are disabled by default
+(`-DGAPS_DISABLE_CHECKPOINTS`, `checkpointsEnabled() == FALSE`), but it is a genuine
+correctness bug and would bite anyone building with checkpoints enabled.
+
+### Fix
+
+Use `>>` for the whole chain, matching the write path:
+
+```cpp
+operator>>(ar, static_cast<DataModel&>(s)) >> s.mDomain >> s.mNumBins
+    >> s.mBinLength >> s.mNumPatterns >> s.mdDomainLength >> s.mAlpha;
+```
+
+Regression test `[serialization][gibbssampler-roundtrip]` in
+`testSerialization.cpp`: build a dense sampler, `sync` + `extraInitialization` +
+`update(500)` to populate the domain, serialize, deserialize into a fresh sampler,
+and require the restored `nAtoms()` (and `MyMatrix` sum) to match the original.
+Before the fix the restored domain stayed empty (`nAtoms() == 0`).
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/gibbs_sampler/SingleThreadedGibbsSampler.h` | `operator>>` chain `<<` → `>>` |
+| `src/cpp_tests/testSerialization.cpp` | regression test `[serialization][gibbssampler-roundtrip]` |

@@ -262,8 +262,8 @@ Archive& operator<<(Archive &ar, const SingleThreadedGibbsSampler<DataModel> &s)
 template <class DataModel>
 Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<DataModel> &s)
 {
-    operator>>(ar, static_cast<DataModel&>(s)) << s.mDomain << s.mNumBins
-        << s.mBinLength << s.mNumPatterns << s.mdDomainLength << s.mAlpha;
+    operator>>(ar, static_cast<DataModel&>(s)) >> s.mDomain >> s.mNumBins
+        >> s.mBinLength >> s.mNumPatterns >> s.mdDomainLength >> s.mAlpha;
     return ar;
 }
 

@@ -3,7 +3,10 @@
 #include "../utils/Archive.h"
 #include "../data_structures/Matrix.h"
 #include "../math/Random.h"
+#include "../math/MatrixMath.h"
 #include "../atomic/AtomicDomain.h"
+#include "../gibbs_sampler/SingleThreadedGibbsSampler.h"
+#include "../gibbs_sampler/DenseNormalModel.h"
 
 // put Archive in it's own scope so it gets destructed (file stream closed)
 
@@ -293,3 +296,45 @@ TEST_CASE("AtomicDomain Serialization", "[serialization][atomicdomain]")
     std::remove("test_ar.temp");
 }
 #endif
+
+// Regression: SingleThreadedGibbsSampler's operator>> read the DataModel with >>
+// but then chained << (write) for mDomain/mNumBins/.../mAlpha, so a checkpoint
+// restore did NOT reload the atomic domain (a resumed run diverged from a fresh
+// one). Fixed to use >>. This round-trip catches it: nAtoms() of the restored
+// sampler must match the saved one.
+TEST_CASE("GibbsSampler serialization round-trip","[serialization][gibbssampler-roundtrip]")
+{
+    Matrix data(12, 8);
+    data.pad(15.f);
+    GapsRandomState randState(42);
+    GapsParameters params(data);
+    params.nPatterns = 3;
+
+    SingleThreadedGibbsSampler<DenseNormalModel> A(data, true, false, params.alphaA,
+        params.maxGibbsMassA, params, &randState);
+    SingleThreadedGibbsSampler<DenseNormalModel> P(data, false, false, params.alphaP,
+        params.maxGibbsMassP, params, &randState);
+    A.sync(P); P.sync(A);
+    A.extraInitialization(); P.extraInitialization();
+    A.update(500);
+    REQUIRE(A.nAtoms() > 0); // there is domain state worth serializing
+
+    {
+        Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
+        arWrite << A;
+    }
+
+    SingleThreadedGibbsSampler<DenseNormalModel> Aread(data, true, false, params.alphaA,
+        params.maxGibbsMassA, params, &randState);
+    REQUIRE(Aread.nAtoms() == 0); // freshly constructed: empty domain
+    {
+        Archive arRead("test_ar.temp", ARCHIVE_READ);
+        arRead >> Aread;
+    }
+
+    // with the << bug the domain was never restored, so nAtoms() stayed 0
+    REQUIRE(Aread.nAtoms() == A.nAtoms());
+    REQUIRE(gaps::sum(Aread.MyMatrix()) == gaps::sum(A.MyMatrix()));
+
+    std::remove("test_ar.temp");
+}
