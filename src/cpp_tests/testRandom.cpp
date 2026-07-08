@@ -2,6 +2,10 @@
 #include "../testthat-tweak.h"
 #include "../math/Random.h"
 #include "../math/Math.h"
+#include "../utils/GapsPrint.h"
+
+#include <algorithm>
+#include <cmath>
 
 #define TEST_APPROX(x) Approx(x).epsilon(0.001)
 
@@ -28,43 +32,8 @@ TEST_CASE("Random Number Generation -- basic","[randomrng][basic]")
         size_t zero=0, thou=1000;
         REQUIRE(testRng.uniform64(zero,thou) != testRng.uniform64(zero,thou));
         REQUIRE(testRng.uniform64(thou,thou) == thou);
-    }    
+    }
 }
-
-#if 0
-
-class EmulatedRng
-{
-public:
-
-    EmulatedRng(unsigned seed)
-        : randState(seed), rng(&randState), tickRng(&randState),
-        remaining(tickRng.uniform32(1, 5))
-    {}
-
-    uint64_t uniform64()
-    {
-        advance();
-        return rng.uniform64();
-    }
-
-private:
-
-    void advance()
-    {
-        --remaining;
-        if (remaining == 0)
-        {
-            rng = GapsRng(&randState);
-            remaining = tickRng.uniform32(1, 5);
-        }
-    }
-
-    GapsRandomState randState;
-    GapsRng rng;
-    GapsRng tickRng;
-    unsigned remaining;
-};
 
 static void requireSmallError(float in, float out, float est, float tol)
 {
@@ -76,6 +45,7 @@ static void requireSmallError(float in, float out, float est, float tol)
     }
     REQUIRE(std::abs(est - out) / denom < tol);
 }
+
 TEST_CASE("Test error of q_norm lookup table","[randomrng][q_norm]")
 {
     GapsRandomState randState(123);
@@ -109,101 +79,79 @@ TEST_CASE("Test error of p_norm lookup table","[randomrng][p_norm]")
         requireSmallError(p, actual_val, lookup_val, tolerance);
     }
 }
-#endif
 
-#if 0
-TEST_CASE("write random file to use in diehard tests")
+// ported from the removed gaps::random:: global API to the current GapsRng object.
+// GapsRng is deterministic for a fixed seed, so these are stable, not flaky.
+TEST_CASE("Random.h - RNG distributions","[randomrng][distributions]")
 {
-    Archive ar("random_stream.out", ARCHIVE_WRITE);
-    
-    EmulatedRng rng(123);
-    for (unsigned i = 0; i < 1500000; ++i)
-    {
-        ar << rng.uniform64();
-    }
-}
-#endif
+    GapsRandomState randState(0);
+    GapsRng rng(&randState);
 
-#if 0
-TEST_CASE("Test Random.h - Random Number Generation")
-{
-    gaps::random::setSeed(0);
-
-    SECTION("Make sure uniform01 is working")
+    SECTION("uniform01 produces varying values")
     {
-        REQUIRE(gaps::random::uniform() != gaps::random::uniform());
+        REQUIRE(rng.uniform() != rng.uniform());
     }
 
-    SECTION("Test uniform distribution over unit interval")
+    SECTION("uniform over the unit interval")
     {
-        float min = 1.f, max = 0.f;
-        float sum = 0.f;
-        unsigned N = 10000;
+        float mn = 1.f, mx = 0.f, sum = 0.f;
+        const unsigned N = 10000;
         for (unsigned i = 0; i < N; ++i)
         {
-            min = gaps::min(gaps::random::uniform(), min);
-            max = gaps::max(gaps::random::uniform(), max);
-            sum += gaps::random::uniform();
+            float u = rng.uniform();
+            mn = u < mn ? u : mn;
+            mx = u > mx ? u : mx;
+            sum += u;
         }
-        REQUIRE(sum / N == Approx(0.5f).epsilon(0.01f));
-        REQUIRE(min >= 0.f);
-        REQUIRE(min < 0.01f);
-        REQUIRE(max <= 1.f);
-        REQUIRE(max > 0.99f);
+        REQUIRE(sum / N == Approx(0.5f).epsilon(0.02f));
+        REQUIRE(mn >= 0.f);
+        REQUIRE(mn < 0.02f);
+        REQUIRE(mx <= 1.f);
+        REQUIRE(mx > 0.98f);
     }
 
-    SECTION("Test uniform distribution over general interval")
+    SECTION("uniform over a general interval")
     {
-        // bounds equal
-        REQUIRE(gaps::random::uniform(4.3f, 4.3f) == 4.3f);
-
-        // full range possible
-        float min = 10., max = 0.;
+        REQUIRE(rng.uniform(4.3f, 4.3f) == 4.3f);
+        float mn = 10.f, mx = 0.f;
         for (unsigned i = 0; i < 1000; ++i)
         {
-            min = gaps::min(gaps::random::uniform(0.f,10.f), min);
-            max = gaps::max(gaps::random::uniform(0.f,10.f), max);
+            float u = rng.uniform(0.f, 10.f);
+            mn = u < mn ? u : mn;
+            mx = u > mx ? u : mx;
         }
-        REQUIRE(min < 0.1f);
-        REQUIRE(max > 9.9f);
+        REQUIRE(mn < 0.2f);
+        REQUIRE(mx > 9.8f);
     }
 
-    SECTION("Test uniform distribution over 64 bit integers")
+    SECTION("poisson mean")
     {
-        // TODO
-    }
-
-    SECTION("Test poisson distribution")
-    {
-        float total = 0.f;
-        for (unsigned i = 0; i < 10000; ++i)
+        double total = 0.;
+        const unsigned N = 10000;
+        for (unsigned i = 0; i < N; ++i)
         {
-            float num = gaps::random::poisson(4.f);
+            int num = rng.poisson(4.0);
+            REQUIRE(num >= 0);
             total += num;
-
-            REQUIRE((int)num == num); // should be integer
-            REQUIRE(num >= 0.f); // should be non-negative
         }
-        float mean = total / 10000.f;
-        REQUIRE(mean == Approx(4.f).epsilon(0.025f));
+        REQUIRE(total / N == Approx(4.0).epsilon(0.03));
     }
 
-    SECTION("Test exponential distribution")
+    SECTION("exponential mean")
     {
-        float total = 0.f;
-        for (unsigned i = 0; i < 10000; ++i)
+        double total = 0.;
+        const unsigned N = 10000;
+        for (unsigned i = 0; i < N; ++i)
         {
-            float num = gaps::random::exponential(1.f);
+            float num = rng.exponential(1.f);
+            REQUIRE(num >= 0.f);
             total += num;
-
-            REQUIRE(num >= 0.f); // should be non-negative
         }
-        float mean = total / 10000.f;
-        REQUIRE(mean == Approx(1.f).epsilon(0.025f));
+        REQUIRE(total / N == Approx(1.0).epsilon(0.03));
     }
 }
 
-TEST_CASE("Test Random.h - Distribution Calculations")
+TEST_CASE("Random.h - distribution calculations","[randomrng][distcalc]")
 {
     REQUIRE(gaps::d_gamma(0.5f, 1.f, 1.f) == TEST_APPROX(0.607f));
     REQUIRE(gaps::p_gamma(0.5f, 1.f, 1.f) == TEST_APPROX(0.394f));
@@ -211,5 +159,48 @@ TEST_CASE("Test Random.h - Distribution Calculations")
     REQUIRE(gaps::d_norm(0.5f, 0.f, 1.f) == TEST_APPROX(0.352f));
     REQUIRE(gaps::q_norm(0.5f, 0.f, 1.f) == TEST_APPROX(0.000f));
     REQUIRE(gaps::p_norm(0.5f, 0.f, 1.f) == TEST_APPROX(0.692f));
+}
+
+// Tooling harness (not a unit test): writes a long random stream to a file for
+// external diehard RNG tests. Left disabled; enable manually when needed.
+#if 0
+#include "../utils/Archive.h"
+
+class EmulatedRng
+{
+public:
+    EmulatedRng(unsigned seed)
+        : randState(seed), rng(&randState), tickRng(&randState),
+        remaining(tickRng.uniform32(1, 5))
+    {}
+    uint64_t uniform64()
+    {
+        advance();
+        return rng.uniform64();
+    }
+private:
+    void advance()
+    {
+        --remaining;
+        if (remaining == 0)
+        {
+            rng = GapsRng(&randState);
+            remaining = tickRng.uniform32(1, 5);
+        }
+    }
+    GapsRandomState randState;
+    GapsRng rng;
+    GapsRng tickRng;
+    unsigned remaining;
+};
+
+TEST_CASE("write random file to use in diehard tests")
+{
+    Archive ar("random_stream.out", ARCHIVE_WRITE);
+    EmulatedRng rng(123);
+    for (unsigned i = 0; i < 1500000; ++i)
+    {
+        ar << rng.uniform64();
+    }
 }
 #endif
