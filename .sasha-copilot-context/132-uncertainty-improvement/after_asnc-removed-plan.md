@@ -117,10 +117,20 @@ registered-but-empty test.
 - Make `testSamplerHighLevel`/`testSparseGibbsSampler` actually run `update()` and
   assert chiSq decreases.
 
-**Decision pending:** enable checkpoints? They are disabled by default
-(`-DGAPS_DISABLE_CHECKPOINTS`), so the whole serialization path (incl. the issue 13
-& 16 fixes) is inactive in the shipped package. The user indicated checkpoints
-should be a real feature; flipping the flag is a separate step that also needs the
-R-level `test_checkpoints.R` (currently gated by `checkpointsEnabled()`).
+**Checkpoints — RESOLVED (2026-07-08).** Policy: checkpoints stay **off by default**
+(they are an emergency/debug save-resume feature that serializes on every run), but
+must be correct and cleanly enableable. Previously `-DGAPS_DISABLE_CHECKPOINTS` was
+hard-coded in `configure.ac`; added a proper `--enable-checkpoints` toggle (variable
+`cpp_checkpoints_disable`, default `yes`) mirroring `--enable-cpp-tests`. The macro
+is now added only when checkpoints are disabled. Verified: default build →
+`checkpointsEnabled() == FALSE`; `--configure-args="--enable-checkpoints yes"` →
+`TRUE`, the (previously dead) checkpoint code compiles, and a `checkpointOutFile`
+→ `checkpointInFile` save/resume round-trip runs and returns a finite result
+(exercises the issue 13 `>>` fix). cpp unit tests stay **on by default**
+(`cpp_tests_disable=no`) — no runtime overhead, like testthat.
+
+Note: `src/Makevars.win` keeps `-DGAPS_DISABLE_CHECKPOINTS` hard-coded (Windows has
+no `configure`), so Windows defaults to checkpoints-off too; a Windows dev enables
+them by editing `Makevars.win`.
 
 **Phase 3 (cleanup): decide the fate of `SparseNegativeBinomialModel.{h,cpp}`.**

@@ -650,6 +650,7 @@ enable_option_checking
 enable_gaps_debug
 enable_debug
 enable_cpp_tests
+enable_checkpoints
 enable_warnings
 enable_simd
 '
@@ -1284,6 +1285,7 @@ Optional Features:
   --enable-gaps-debug     build debug version of CoGAPS
   --enables-debug         build CoGAPS with debug options
   --enable-cpp-tests      turn on C++ unit tests
+  --enable-checkpoints    turn on checkpoint (save/resume) support
   --enable-warnings       compile CoGAPS with warning messages
   --enable-simd           compile with SIMD support if available
 
@@ -3126,6 +3128,23 @@ esac
 fi
 
 
+# Check if checkpoint (save/resume) support should be compiled in. Checkpoints are
+# an emergency/debug feature that serialize state on every run; off by default,
+# enable with --enable-checkpoints for package debugging.
+# Check whether --enable-checkpoints was given.
+if test ${enable_checkpoints+y}
+then :
+  enableval=$enable_checkpoints; case "${enableval}" in
+        no)  cpp_checkpoints_disable=yes ;;
+        yes) cpp_checkpoints_disable=no ;;
+        *) as_fn_error $? "--enable-checkpoints understands only 'no' or 'yes' values" "$LINENO" 5 ;;
+     esac
+else case e in #(
+  e) cpp_checkpoints_disable=yes ;;
+esac
+fi
+
+
 # Check if compiler warnings should be turned on
 # Check whether --enable-warnings was given.
 if test ${enable_warnings+y}
@@ -3149,9 +3168,14 @@ fi
 
 
 # default CoGAPS specific flags
-GAPS_CPP_FLAGS=" -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -DGAPS_DISABLE_CHECKPOINTS -D__GAPS_R_BUILD__"
+GAPS_CPP_FLAGS=" -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__"
 GAPS_CXX_FLAGS=
 GAPS_LIBS=
+
+# checkpoints are off by default; define the disabling macro unless --enable-checkpoints
+if test "x$cpp_checkpoints_disable" != "xno" ; then
+    GAPS_CPP_FLAGS+=" -DGAPS_DISABLE_CHECKPOINTS "
+fi
 
 # get compiler info
     { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking for C++ compiler vendor" >&5
