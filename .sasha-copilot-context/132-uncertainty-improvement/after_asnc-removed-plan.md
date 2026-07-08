@@ -134,3 +134,19 @@ no `configure`), so Windows defaults to checkpoints-off too; a Windows dev enabl
 them by editing `Makevars.win`.
 
 **Phase 3 (cleanup): decide the fate of `SparseNegativeBinomialModel.{h,cpp}`.**
+
+**Phase 4 (R test infrastructure) — after the phases above.**
+- Sort out the native R `testthat` tests (`tests/testthat/test_*.R`): the suite is
+  currently a bit murky — review what's actually exercised, what's stale/skipped,
+  and tidy it into a coherent, informative set.
+- Wire the C++ Catch unit tests into `testthat`: make `run_catch_unit_tests()` run
+  as part of the R test suite (there is a `test_cpp.R` today — confirm/fix it so the
+  cpp tests are actually invoked and reported through testthat).
+
+**Tomorrow's starting point:** revive one of the High-value `#if 0` tests — the
+`testRandom` distribution tests (poisson/exponential/truncNormal/gamma/norm, port
+from the old `gaps::random::` global API to `GapsRng`) or the
+`testSparseGibbsSampler` dense-vs-sparse `alphaParameters` consistency test (port
+from `GibbsSampler<SparseStorage>`/`<DenseStorage>` to
+`SingleThreadedGibbsSampler<SparseNormalModel>`/`<DenseNormalModel>`). Reviving may
+surface real bugs, as filling the serialization stubs did (issue 16).
