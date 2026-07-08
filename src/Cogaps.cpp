@@ -82,7 +82,6 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.printThreadUsage = !params.runningDistributed;
 
     // get configuration parameters
-    params.maxThreads = 1; // async sampler removed - always single-threaded
     params.workerID = Rcpp::as<int>(allParams["workerID"]);
     params.printMessages = Rcpp::as<bool>(allParams["messages"]) && (params.workerID == 1);
     params.outputFrequency = Rcpp::as<int>(allParams["outputFrequency"]);
@@ -99,7 +98,6 @@ GapsParameters getGapsParameters(const DataType &data, const Rcpp::List &allPara
     params.maxGibbsMassA = Rcpp::as<float>(gapsParams.slot("maxGibbsMassA"));
     params.maxGibbsMassP = Rcpp::as<float>(gapsParams.slot("maxGibbsMassP"));
     params.useSparseOptimization = Rcpp::as<bool>(gapsParams.slot("sparseOptimization"));
-    params.asynchronousUpdates = false; // async sampler removed
 
     // calculate snapshot frequency
     int nSnapshots = Rcpp::as<int>(allParams["nSnapshots"]);

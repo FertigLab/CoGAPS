@@ -41,7 +41,6 @@ public:
     unsigned nSamples;
     unsigned nPatterns;
     unsigned nIterations;
-    unsigned maxThreads;
     unsigned outputFrequency;
     unsigned checkpointInterval;
     unsigned snapshotFrequency;
@@ -60,7 +59,6 @@ public:
     bool printThreadUsage;
     bool useSparseOptimization;
     bool takePumpSamples;
-    bool asynchronousUpdates;
     char whichMatrixFixed;
     unsigned workerID;
     bool runningDistributed;
@@ -86,7 +84,6 @@ nGenes(0),
 nSamples(0),
 nPatterns(3),
 nIterations(1000),
-maxThreads(1),
 outputFrequency(500),
 checkpointInterval(250),
 snapshotFrequency(0),
@@ -105,7 +102,6 @@ subsetGenes(t_subsetGenes),
 printThreadUsage(true),
 useSparseOptimization(false),
 takePumpSamples(false),
-asynchronousUpdates(false), // async sampler removed; field kept for checkpoint compat
 whichMatrixFixed('N'),
 workerID(1),
 runningDistributed(false)

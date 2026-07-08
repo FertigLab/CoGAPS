@@ -14,13 +14,11 @@ void GapsParameters::print() const
     gaps_printf("nIterations: %d\n", nIterations);
     gaps_printf("seed: %d\n", seed);
     gaps_printf("\n");
-    gaps_printf("maxThreads: %d\n", maxThreads);
     gaps_printf("printMessages: %s\n", printMessages ? "TRUE" : "FALSE");
     gaps_printf("outputFrequency: %d\n", outputFrequency);
     gaps_printf("snapshotFrequency: %d\n", snapshotFrequency);
     gaps_printf("\n");
     gaps_printf("useSparseOptimization: %s\n", useSparseOptimization ? "TRUE" : "FALSE");
-    gaps_printf("asynchronousUpdates: %s\n", asynchronousUpdates ? "TRUE" : "FALSE");
     gaps_printf("takePumpSamples: %s\n", takePumpSamples ? "TRUE" : "FALSE");
     gaps_printf("\n");
     gaps_printf("runningDistributed: %s\n", runningDistributed ? "TRUE" : "FALSE");

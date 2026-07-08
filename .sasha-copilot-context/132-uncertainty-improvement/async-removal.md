@@ -64,13 +64,18 @@ Kept (sequential structures, shared by the surviving sampler): `src/atomic/Atom.
 - Deleted `calculateNumberOfThreads()` (used `omp_get_max_threads()`) and its call.
 - Dropped `result.averageQueueLengthA/P = ...getAverageQueueLength()`.
 
-### 4.2 `GapsParameters` — struct intentionally NOT changed
-The fields `bool asynchronousUpdates` and `unsigned maxThreads` were **kept** so the
-binary serialization / checkpoint format is unchanged. They are now inert:
-- `maxThreads` default stays `1`;
-- `asynchronousUpdates` default flipped `true → false`;
-- `Cogaps.cpp` hard-sets both (`maxThreads = 1`, `asynchronousUpdates = false`),
-  ignoring whatever R passes.
+### 4.2 `GapsParameters` — fields removed
+
+> **Update (2026-07-07):** the fields `bool asynchronousUpdates` and
+> `unsigned maxThreads` were initially **kept** on the belief they were part of the
+> checkpoint serialization format. That was wrong: `GapsParameters::operator<</>>`
+> serialize only 11 fields (`seed, nGenes, nSamples, nPatterns, nIterations, alphaA,
+> alphaP, maxGibbsMassA, maxGibbsMassP, useSparseOptimization, checkpointInterval`)
+> and never touched `maxThreads`/`asynchronousUpdates`. So the format was never
+> affected, and both fields (plus their `print()` lines and the forced assignments
+> in `Cogaps.cpp`) were subsequently **removed** entirely. The R arguments
+> `nThreads`/`asynchronousUpdates` remain as deprecated no-ops (§4.8). Verified by
+> the new `[serialization][gapsparameters]` round-trip test and unchanged parity.
 
 ### 4.3 Samplers / data structures (§ "variant B" OpenMP strip)
 - `SingleThreadedGibbsSampler`: removed `getAverageQueueLength()`; `update(nSteps,
