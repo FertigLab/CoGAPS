@@ -356,3 +356,59 @@ in `testMatrix.cpp`.
 | `src/math/MatrixMath.h` | `nCol() == 0` guard in `min`/`max(MatrixType)` |
 | `src/cpp_tests/testVector.cpp` | regression test `[vector][emptyminmax]` |
 | `src/cpp_tests/testMatrix.cpp` | regression test `[matrix][minmax-empty]` (zero-column section) |
+
+---
+
+## 16. `SparseVector` deserialization dropped all stored values
+
+### Problem
+
+`operator>>(Archive&, SparseVector&)` read the stored (non-zero) values with a loop
+bounded by the **destination's** current size:
+
+```cpp
+for (unsigned i = 0; i < vec.mData.size(); ++i)   // BUG: destination's count
+    ar >> vec.mData[i];
+```
+
+`SparseVector` stores only its non-zero entries in `mData`; the count of non-zeros
+is not written to the archive. When deserializing into a freshly-constructed
+`SparseVector(size)` (empty `mData`), the loop ran zero times, so **none** of the
+serialized values were read back — the restored vector was all-zero (and the
+archive read pointer was left misaligned for whatever followed).
+
+`SparseMatrix` serialization delegates to this operator per column, so it inherited
+the same defect. Both are unused in the current checkpoint path (`SparseNormalModel`
+serializes its `HybridMatrix` `mMatrix`, not the `SparseMatrix` `mDMatrix`), which
+is why it was never noticed — the same "untested serialization operator" class as
+issue 13.
+
+Found while filling the empty `SparseVector`/`SparseMatrix` serialization test
+stubs: the round-trip into an empty destination failed. (The pre-existing
+`SparseMatrix` stub would have passed even unfixed, because a test that rebuilds the
+read target from the same data gives it the right `mData` sizes by accident.)
+
+### Fix
+
+The number of stored values equals the popcount of the bit flags, which are read
+first. Derive it and `resize` `mData` before reading (no archive-format change):
+
+```cpp
+unsigned nNonZeroes = 0;
+for (unsigned i = 0; i < vec.mIndexBitFlags.size(); ++i)
+    nNonZeroes += __builtin_popcountll(vec.mIndexBitFlags[i]);
+vec.mData.resize(nNonZeroes);
+for (unsigned i = 0; i < nNonZeroes; ++i)
+    ar >> vec.mData[i];
+```
+
+Regression tests `[serialization][sparsevector]` and `[serialization][sparsematrix]`
+in `testSerialization.cpp` round-trip into an empty / all-zero destination and
+compare the dense reconstruction element-wise.
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/data_structures/SparseVector.cpp` | derive non-zero count from bit flags, `resize` + read `mData` |
+| `src/cpp_tests/testSerialization.cpp` | filled `[serialization][sparsevector]` and `[serialization][sparsematrix]` (read into empty target) |

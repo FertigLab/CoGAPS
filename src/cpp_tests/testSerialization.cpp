@@ -2,9 +2,15 @@
 #include "../testthat-tweak.h"
 #include "../utils/Archive.h"
 #include "../data_structures/Matrix.h"
+#include "../data_structures/HybridVector.h"
+#include "../data_structures/SparseVector.h"
+#include "../data_structures/HybridMatrix.h"
+#include "../data_structures/SparseMatrix.h"
 #include "../math/Random.h"
 #include "../math/MatrixMath.h"
 #include "../atomic/AtomicDomain.h"
+#include "../GapsParameters.h"
+#include "../GapsStatistics.h"
 #include "../gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "../gibbs_sampler/DenseNormalModel.h"
 
@@ -116,10 +122,43 @@ TEST_CASE("Vector Serialization", "[serialization][vector]")
 
 TEST_CASE("HybridVector Serialization", "[serialization][hybridvector]")
 {
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
+
+    std::vector<float> in_v;
+    for (unsigned n = 0; n < 100; ++n)
+        in_v.push_back(n % 3 == 0 ? 0.f : rng.uniform(0.5f, 2.f));
+    HybridVector vecWrite(in_v), vecRead(100);
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << vecWrite; }
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> vecRead; }
+
+    REQUIRE(vecRead.size() == vecWrite.size());
+    for (unsigned i = 0; i < vecWrite.size(); ++i)
+        REQUIRE(vecRead[i] == vecWrite[i]);
+
+    std::remove("test_ar.temp");
 }
 
 TEST_CASE("SparseVector Serialization", "[serialization][sparsevector]")
 {
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
+
+    std::vector<float> in_v;
+    for (unsigned n = 0; n < 100; ++n)
+        in_v.push_back(n % 4 == 0 ? rng.uniform(0.5f, 2.f) : 0.f);
+    SparseVector vecWrite(in_v), vecRead(100);
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << vecWrite; }
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> vecRead; }
+
+    REQUIRE(vecRead.size() == vecWrite.size());
+    Vector denseWrite(vecWrite.getDense()), denseRead(vecRead.getDense());
+    for (unsigned i = 0; i < denseWrite.size(); ++i)
+        REQUIRE(denseRead[i] == denseWrite[i]);
+
+    std::remove("test_ar.temp");
 }
 
 TEST_CASE("Matrix Serialization", "[serialization][matrix]")
@@ -167,10 +206,56 @@ TEST_CASE("Matrix Serialization", "[serialization][matrix]")
 
 TEST_CASE("HybridMatrix Serialization", "[serialization][hybridmatrix]")
 {
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
+
+    HybridMatrix matWrite(20, 12), matRead(20, 12);
+    for (unsigned i = 0; i < 20; ++i)
+        for (unsigned j = 0; j < 12; ++j)
+            matWrite.set(i, j, (i + j) % 3 == 0 ? 0.f : rng.uniform(0.5f, 2.f));
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << matWrite; }
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> matRead; }
+
+    REQUIRE(matRead.nRow() == matWrite.nRow());
+    REQUIRE(matRead.nCol() == matWrite.nCol());
+    for (unsigned i = 0; i < 20; ++i)
+        for (unsigned j = 0; j < 12; ++j)
+            REQUIRE(matRead(i,j) == matWrite(i,j));
+
+    std::remove("test_ar.temp");
 }
 
 TEST_CASE("SparseMatrix Serialization", "[serialization][sparsematrix]")
 {
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
+
+    Matrix dense(30, 10);
+    for (unsigned i = 0; i < 30; ++i)
+        for (unsigned j = 0; j < 10; ++j)
+            dense(i,j) = (i % 3 == 0) ? rng.uniform(0.5f, 2.f) : 0.f;
+    SparseMatrix matWrite(dense, false, false, std::vector<unsigned>());
+    // build the read target from an all-zero matrix so its columns start empty:
+    // the round-trip must repopulate them (catches the SparseVector count bug)
+    Matrix zeros(30, 10);
+    SparseMatrix matRead(zeros, false, false, std::vector<unsigned>());
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << matWrite; }
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> matRead; }
+
+    REQUIRE(matRead.nRow() == matWrite.nRow());
+    REQUIRE(matRead.nCol() == matWrite.nCol());
+    for (unsigned j = 0; j < matWrite.nCol(); ++j)
+    {
+        Vector colWrite(matWrite.getCol(j).getDense());
+        Vector colRead(matRead.getCol(j).getDense());
+        REQUIRE(colRead.size() == colWrite.size());
+        for (unsigned i = 0; i < colWrite.size(); ++i)
+            REQUIRE(colRead[i] == colWrite[i]);
+    }
+
+    std::remove("test_ar.temp");
 }
 
 TEST_CASE("Random Generator Serialization", "[serialization][random]")
@@ -250,10 +335,80 @@ TEST_CASE("GibbsSampler Serialization", "[serialization][gibbssampler]")
 
 TEST_CASE("GapsParameters Serialization", "[serialization][gapsparameters]")
 {
+    Matrix data(40, 15);
+    GapsParameters pWrite(data);
+    pWrite.seed = 777;
+    pWrite.nGenes = 40;
+    pWrite.nSamples = 15;
+    pWrite.nPatterns = 5;
+    pWrite.nIterations = 321;
+    pWrite.alphaA = 0.02f;
+    pWrite.alphaP = 0.03f;
+    pWrite.maxGibbsMassA = 50.f;
+    pWrite.maxGibbsMassP = 60.f;
+    pWrite.useSparseOptimization = true;
+    pWrite.checkpointInterval = 42;
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << pWrite; }
+    GapsParameters pRead(data);
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> pRead; }
+
+    // these are exactly the fields the serialization operators read/write; a
+    // mismatch (or a << / >> field-order slip) fails here
+    REQUIRE(pRead.seed == pWrite.seed);
+    REQUIRE(pRead.nGenes == pWrite.nGenes);
+    REQUIRE(pRead.nSamples == pWrite.nSamples);
+    REQUIRE(pRead.nPatterns == pWrite.nPatterns);
+    REQUIRE(pRead.nIterations == pWrite.nIterations);
+    REQUIRE(pRead.alphaA == pWrite.alphaA);
+    REQUIRE(pRead.alphaP == pWrite.alphaP);
+    REQUIRE(pRead.maxGibbsMassA == pWrite.maxGibbsMassA);
+    REQUIRE(pRead.maxGibbsMassP == pWrite.maxGibbsMassP);
+    REQUIRE(pRead.useSparseOptimization == pWrite.useSparseOptimization);
+    REQUIRE(pRead.checkpointInterval == pWrite.checkpointInterval);
+
+    std::remove("test_ar.temp");
 }
 
 TEST_CASE("GapsStatistics Serialization", "[serialization][gapsstatistics]")
 {
+    // build two dense samplers with real state so the statistics matrices are
+    // non-trivial, then round-trip the accumulated statistics
+    Matrix data(12, 8);
+    data.pad(15.f);
+    GapsRandomState randState(42);
+    GapsParameters params(data);
+    params.nPatterns = 3;
+
+    SingleThreadedGibbsSampler<DenseNormalModel> A(data, true, false, params.alphaA,
+        params.maxGibbsMassA, params, &randState);
+    SingleThreadedGibbsSampler<DenseNormalModel> P(data, false, false, params.alphaP,
+        params.maxGibbsMassP, params, &randState);
+    A.sync(P); P.sync(A);
+    A.extraInitialization(); P.extraInitialization();
+    A.update(300); P.update(300);
+    A.sync(P); P.sync(A);
+
+    GapsStatistics statsWrite(data.nRow(), data.nCol(), params.nPatterns);
+    for (unsigned i = 0; i < 5; ++i) statsWrite.update(A, P);
+    Matrix ameanW(statsWrite.Amean()), pmeanW(statsWrite.Pmean());
+    REQUIRE(gaps::sum(ameanW) > 0.f); // there is real state to serialize
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << statsWrite; }
+    GapsStatistics statsRead(data.nRow(), data.nCol(), params.nPatterns);
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> statsRead; }
+
+    Matrix ameanR(statsRead.Amean()), pmeanR(statsRead.Pmean());
+    REQUIRE(ameanR.nRow() == ameanW.nRow());
+    REQUIRE(ameanR.nCol() == ameanW.nCol());
+    for (unsigned i = 0; i < ameanW.nRow(); ++i)
+        for (unsigned j = 0; j < ameanW.nCol(); ++j)
+            REQUIRE(ameanR(i,j) == ameanW(i,j));
+    for (unsigned i = 0; i < pmeanW.nRow(); ++i)
+        for (unsigned j = 0; j < pmeanW.nCol(); ++j)
+            REQUIRE(pmeanR(i,j) == pmeanW(i,j));
+
+    std::remove("test_ar.temp");
 }
 
 #if 0

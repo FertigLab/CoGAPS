@@ -106,11 +106,21 @@ registered-but-empty test.
   input; test size-0 vector / 0-column matrix.
 - Document each as an entry in `132-LLM-assisted-solved-issues.md` (fixed bugs).
 
-**Phase 2 (later): coverage.**
-- Fill the 6 empty serialization TEST_CASEs.
+**Phase 2 (coverage).**
+- ~~Fill the 6 empty serialization TEST_CASEs.~~ **DONE** (2026-07-07) — all 6 filled
+  with round-trip tests; uncovered and fixed issue 16 (`SparseVector` deserialize
+  dropped all stored values). Also removed the now-confirmed-unnecessary
+  `maxThreads`/`asynchronousUpdates` `GapsParameters` fields (they were never in the
+  serialized format — see `async-removal.md` §4.2).
 - Revive `testRandom` distribution tests and the `AlphaParameters` dense-vs-sparse
   consistency test against the current API.
 - Make `testSamplerHighLevel`/`testSparseGibbsSampler` actually run `update()` and
   assert chiSq decreases.
+
+**Decision pending:** enable checkpoints? They are disabled by default
+(`-DGAPS_DISABLE_CHECKPOINTS`), so the whole serialization path (incl. the issue 13
+& 16 fixes) is inactive in the shipped package. The user indicated checkpoints
+should be a real feature; flipping the flag is a separate step that also needs the
+R-level `test_checkpoints.R` (currently gated by `checkpointsEnabled()`).
 
 **Phase 3 (cleanup): decide the fate of `SparseNegativeBinomialModel.{h,cpp}`.**
