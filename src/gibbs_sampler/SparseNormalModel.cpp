@@ -180,11 +180,14 @@ AlphaParameters SparseNormalModel::alphaParameters(unsigned row, unsigned col)
             float v_val = V[v_ndx];
             float d_val = data[sparseIndex++];
 
-            // compute terms for s and s_mu
-            float term1 = v_val / d_val;
-            float term2 = v_val - term1 / d_val;
-            s += term1 * term1 - v_val * v_val;
-            s_mu += term1 + term2 * gaps::dot(mMatrix.getRow(row),
+            // floored uncertainty: S = max(d_val, 1) (effective factor*max(d,1)),
+            // matching the dense max(factor*D, factor); the data value d_val is
+            // kept in the residual term. invS2 = 1/S^2.
+            float sraw = gaps::max(d_val, 1.f);
+            float invS2 = 1.f / (sraw * sraw);
+            float term2 = v_val * (1.f - invS2);
+            s += v_val * v_val * (invS2 - 1.f);
+            s_mu += v_val * d_val * invS2 + term2 * gaps::dot(mMatrix.getRow(row),
                 mOtherMatrix->getRow(v_ndx));
         }
         sparseIndex += COUNT_BITS(d_flags); // skip over any remaining indices
@@ -225,11 +228,12 @@ unsigned col, float ch)
             float v_val = V[v_ndx];
             float d_val = data[sparseIndex++];
 
-            // compute terms for s and s_mu
-            float term1 = v_val / d_val;
-            float term2 = v_val - term1 / d_val;
-            s += term1 * term1 - v_val * v_val;
-            s_mu += term1 + term2 * gaps::dot(mMatrix.getRow(row),
+            // floored uncertainty (see alphaParameters(row,col))
+            float sraw = gaps::max(d_val, 1.f);
+            float invS2 = 1.f / (sraw * sraw);
+            float term2 = v_val * (1.f - invS2);
+            s += v_val * v_val * (invS2 - 1.f);
+            s_mu += v_val * d_val * invS2 + term2 * gaps::dot(mMatrix.getRow(row),
                 mOtherMatrix->getRow(v_ndx));
             s_mu += term2 * mOtherMatrix->operator()(v_ndx, col) * ch;
         }
@@ -276,13 +280,16 @@ unsigned r2, unsigned c2)
                 float v2_val = V2[v_ndx];
                 float d_val = data[sparseIndex++];
 
-                float d_recip = 1.f / d_val;
-                float term1 = 1.f - d_recip * d_recip;
+                // floored uncertainty: S = max(d_val, 1); term1 = 1 - 1/S^2,
+                // and the data term is D/S^2 = d_val/S^2 (kept from d_val)
+                float sraw = gaps::max(d_val, 1.f);
+                float invS2 = 1.f / (sraw * sraw);
+                float term1 = 1.f - invS2;
                 float v_diff = v1_val - v2_val;
                 float ap = gaps::dot(mMatrix.getRow(r1), mOtherMatrix->getRow(v_ndx));
 
                 s -= v_diff * v_diff * term1;
-                s_mu += v_diff * (ap * term1 + d_recip);
+                s_mu += v_diff * (ap * term1 + d_val * invS2);
             }
             sparseIndex += COUNT_BITS(d_flags);
         }

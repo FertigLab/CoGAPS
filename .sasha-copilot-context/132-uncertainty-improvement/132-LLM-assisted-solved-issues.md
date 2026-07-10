@@ -412,3 +412,90 @@ compare the dense reconstruction element-wise.
 |---|---|
 | `src/data_structures/SparseVector.cpp` | derive non-zero count from bit flags, `resize` + read `mData` |
 | `src/cpp_tests/testSerialization.cpp` | filled `[serialization][sparsevector]` and `[serialization][sparsematrix]` (read into empty target) |
+
+---
+
+## 17. `sparseOptimization` inconsistent with the dense sampler (uncertainty model)
+
+### Problem
+
+`sparseOptimization=TRUE` produced results inconsistent with the dense sampler:
+the two paths implement the **same** statistical model, so the sparse version is
+meant to be an optimization giving the same answer — but they had diverged.
+
+Both compute the same alpha statistics for the Gibbs update,
+`s = Σⱼ P²/S²`, `s_mu = Σⱼ P(D−AP)/S²`, differing only in the uncertainty `S`:
+
+- **Dense** stores `mSMatrix` explicitly and divides by `S²`.
+- **Sparse** never stores `S`; it bakes the assumption into the algebra
+  (`mZ1` base = the `S=1` sum, per-non-zero corrections replace `S=1` with `S=d`),
+  scaled by `mBeta = 100`. Since `1/factor² = 1/0.1² = 100 = mBeta`, the sparse
+  model's *effective* uncertainty is `S = factor·D` for observed data and
+  `factor` for zeros.
+
+Two independent defects made the effective `S` differ:
+
+1. **Dense zero-floor regression (this branch, from issue 2).** Issue 2 changed
+   the dense uncertainty from `pmax(mDMatrix, 0.1f)` (i.e. `max(0.1·D, 0.1)`, floor
+   `0.1`) to `pmax(mDMatrix, factor, mLambda)` (floor `mLambda ≈ 0.006`), intending
+   `mLambda` as an "atom-size" floor. But `mLambda` is the atom-mass scale
+   (used for `mMaxGibbsMass`), not an uncertainty. For zero data this made dense
+   `S = mLambda ≈ 0.006` (weight `1/S² ≈ 27000`) versus the sparse `S = 0.1`
+   (weight `100`) — a ~230× divergence on every zero entry.
+   (The issue 2 note also misdiagnosed master as "S = constant 1 via `pad(1.f)`";
+   in fact master's `Vector::pad` loops from `mSize`, so it only touches padding —
+   master's real `S` was already `max(0.1·D, 0.1)`.)
+
+2. **Missing floor in sparse (pre-existing, from master).** Sparse used `S = d`
+   for *every* non-zero entry with no floor, so `S = factor·d`. For fractional
+   data `0 < d < 1` this gives `S < factor`, i.e. a tiny measurement is treated as
+   more precise than a zero (weight `1/(factor·d)²` blows up). Master's dense
+   floored at `0.1` but master's sparse did not, so dense and sparse already
+   mismatched on fractional data even on master.
+
+Symptom on GIST (continuous data): dense-vs-sparse `A·P` reconstruction was
+uncorrelated; the alpha statistics diverged by ~230× (caught by the revived
+`[sparsegibbs]` consistency test, issue-independent).
+
+### Fix
+
+Use one uncertainty model in both — relative error floored at `factor`:
+```
+S[i,j] = max(factor · D[i,j], factor)     factor = 0.1
+```
+so zeros and any `D < 1` get `S = 0.1`, and `D ≥ 1` get `S = 0.1·D`.
+
+- **Dense** (`DenseNormalModel.h`): revert to `gaps::pmax(mDMatrix, factor, factor)`
+  (floor = `factor`, not `mLambda`).
+- **Sparse** (`SparseNormalModel.cpp`): floor the raw uncertainty at 1
+  (`S = max(d, 1)`, effective `factor·max(d,1)`) in all three `alphaParameters`
+  functions. `d` plays a dual role (it is both the data value `D` and, previously,
+  the uncertainty `S`); the floor lowers only the uncertainty while the data `d`
+  is kept in the residual term (`s_mu += v·d·invS2 + v(1−invS2)·AP`,
+  `invS2 = 1/max(d,1)²`).
+
+### Verification
+
+- `[sparsegibbs]` was revived (ported from the removed `GibbsSampler<Storage>` API
+  to `SingleThreadedGibbsSampler<...NormalModel>` via a test-only `ExposedSampler`
+  subclass that surfaces the protected `alphaParameters`) and its data extended to
+  **continuous values including `0 < D < 1`**. It asserts sparse and dense
+  `alphaParameters` (1D, 2D, symmetry, with-change) match to `TEST_APPROX`; now
+  passes (8404 assertions).
+- End-to-end on GIST, permutation-invariant metrics confirm equivalence: `A·P`
+  reconstruction correlation dense-vs-sparse = `0.999`, equal to the
+  dense-vs-dense (different-seed) control; `meanChiSq` for sparse lands within the
+  dense-run range. (Raw `featureLoadings` correlation is meaningless here — NMF is
+  only identifiable up to pattern permutation, so even two dense runs correlate at
+  ≈ `−0.1`.)
+
+Note: this deliberately changes dense/sparse numerics (the pre-fix behaviour was
+wrong), so the async-removal parity baseline no longer applies to these paths.
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/gibbs_sampler/DenseNormalModel.h` | uncertainty floor `mLambda` → `factor` (`pmax(mDMatrix, factor, factor)`) |
+| `src/gibbs_sampler/SparseNormalModel.cpp` | floor `S = max(d, 1)` in the three `alphaParameters` functions |
+| `src/cpp_tests/testSparseGibbsSampler.cpp` | revived `[sparsegibbs]` dense-vs-sparse consistency test; continuous (fractional) data |

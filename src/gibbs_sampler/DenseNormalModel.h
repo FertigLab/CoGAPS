@@ -102,12 +102,12 @@ mLambda(0.f)
     {
         gaps_printf("\nWarning: Large values detected, is data log transformed?\n");
     }
-    mSMatrix=gaps::pmax(mDMatrix, factor, mLambda); 
-    //we suppose that mLambda estimates an atom size expectation
-    //so msMatrix[i,j] is max(mDMatrix[i,j]*factor, atom size)
-    // it was Tom's mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
-    //std::cout << std::scientific<<std::setprecision(40);
-    //std::cout<<"mLambda "<<mLambda<<std::endl;
+    // uncertainty model: relative error S = factor*D, floored at factor so that
+    // zeros (and any D < 1) get S = factor. This matches the SparseNormalModel
+    // assumption (S = D for observed / 1 for zero, scaled by mBeta = 1/factor^2),
+    // so sparseOptimization gives the same result as the dense sampler.
+    // (mLambda is the atom-size scale used for mMaxGibbsMass only, NOT for S.)
+    mSMatrix = gaps::pmax(mDMatrix, factor, factor); // = max(factor*D, factor)
 }
 
 template <class DataType>
