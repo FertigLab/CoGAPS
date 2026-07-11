@@ -9,17 +9,15 @@
 #include "../data_structures/SparseIterator.h"
 
 #include <bitset>
+#include <vector>
 
 TEST_CASE("Test SparseIterator.h - One Dimensional", "[sparseiterator][1d]")
 {
-#if 0
     SECTION("Simple Case")
     {
-        SparseVector v(10);
-        v.insert(0, 1.f);
-        v.insert(4, 5.f);
-        v.insert(7, 8.f);
-        v.insert(9, 10.f);
+        std::vector<float> vin(10, 0.f);
+        vin[0] = 1.f; vin[4] = 5.f; vin[7] = 8.f; vin[9] = 10.f;
+        SparseVector v(vin);
 
         SparseIterator<1> it(v);
         REQUIRE(get<1>(it) == 1.f);
@@ -32,7 +30,6 @@ TEST_CASE("Test SparseIterator.h - One Dimensional", "[sparseiterator][1d]")
         it.next();
         REQUIRE(it.atEnd());
     }
-#endif
 
     SECTION("Test Identical Sums")
     {
@@ -65,14 +62,11 @@ TEST_CASE("Test SparseIterator.h - One Dimensional", "[sparseiterator][1d]")
 
 TEST_CASE("Test SparseIterator.h - Two Dimensional", "[sparseiterator][2d]")
 {
-#if 0
    SECTION("Simple Case")
     {
-        SparseVector sv(10);
-        sv.insert(0, 1.f);
-        sv.insert(4, 5.f);
-        sv.insert(7, 8.f);
-        sv.insert(9, 10.f);
+        std::vector<float> svin(10, 0.f);
+        svin[0] = 1.f; svin[4] = 5.f; svin[7] = 8.f; svin[9] = 10.f;
+        SparseVector sv(svin);
 
         HybridVector hv(10);
         hv.add(4, 3.f);
@@ -92,15 +86,10 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional", "[sparseiterator][2d]")
 
     SECTION("First overlap happens after 64 entries")
     {
-        SparseVector sv(100);
-        sv.insert(1, 1.f);
-        sv.insert(2, 2.f);
-        sv.insert(3, 3.f);
-        sv.insert(4, 4.f);
-        sv.insert(5, 5.f);
-        sv.insert(74, 74.f);
-        sv.insert(75, 75.f);
-        sv.insert(76, 76.f);
+        std::vector<float> svin(100, 0.f);
+        svin[1]=1.f; svin[2]=2.f; svin[3]=3.f; svin[4]=4.f; svin[5]=5.f;
+        svin[74]=74.f; svin[75]=75.f; svin[76]=76.f;
+        SparseVector sv(svin);
 
         HybridVector hv(100);
         hv.add(6, 7.f);
@@ -117,7 +106,6 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional", "[sparseiterator][2d]")
 
     SECTION("Test Dot Product with gap")
     {
-        SparseVector sv(300);
         HybridVector hv(300);
         Vector dv1(300), dv2(300);
     
@@ -128,7 +116,6 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional", "[sparseiterator][2d]")
         for (unsigned i = 0; i < 30; ++i)
         {
             float val = rng.uniform(50.f,500.f);
-            sv.insert(i, val);
             dv1[i] = val;
         }
 
@@ -142,7 +129,6 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional", "[sparseiterator][2d]")
         for (unsigned i = 70; i < 120; i+=3)
         {
             float v1 = rng.uniform(50.f,500.f);
-            sv.insert(i, v1);
             dv1[i] = v1;   
 
             float v2 = rng.uniform(50.f,500.f);
@@ -154,20 +140,21 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional", "[sparseiterator][2d]")
         for (unsigned i = 128; i < 196; ++i)
         {
             float val = rng.uniform(5.f,10.f);
-            sv.insert(i, val);
             dv1[i] = val;
         }
 
         for (unsigned i = 200; i < 300; ++i)
         {   
             float v1 = rng.uniform(50.f,500.f);
-            sv.insert(i, v1);
             dv1[i] = v1;   
 
             float v2 = rng.uniform(50.f,500.f);
             hv.add(i, v2);
             dv2[i] = v2;
         }
+
+        // build the sparse vector from its dense form, then iterate
+        SparseVector sv(dv1);
 
         // calculate dot product
         float sdot = 0.f, ddot = 0.f;
@@ -192,10 +179,11 @@ TEST_CASE("Test SparseIterator.h - Two Dimensional", "[sparseiterator][2d]")
 
             it.next();
         }
-        REQUIRE(ddot == gaps::dot(dv1, dv2));
-        REQUIRE(sdot == ddot);
+        // ddot accumulates in index order, gaps::dot uses SIMD (different order),
+        // so compare with Approx (float addition is not associative)
+        REQUIRE(ddot == Approx(gaps::dot(dv1, dv2)));
+        REQUIRE(sdot == ddot); // sparse iterator uses the same order as ddot -> exact
     }
-#endif
 
     // could this fail because of SIMD?
     SECTION("Test Identical Dot Products")
@@ -243,14 +231,11 @@ static float tripleProduct(const Vector &v1, const Vector &v2, const Vector &v3)
 
 TEST_CASE("Test SparseIterator.h - Three Dimensional", "[sparseiterator][3d]")
 {
-#if 0
    SECTION("Simple Case")
     {
-        SparseVector sv(10);
-        sv.insert(0, 1.f);
-        sv.insert(7, 8.f);
-        sv.insert(8, 9.f);
-        sv.insert(9, 10.f);
+        std::vector<float> svin(10, 0.f);
+        svin[0] = 1.f; svin[7] = 8.f; svin[8] = 9.f; svin[9] = 10.f;
+        SparseVector sv(svin);
 
         HybridVector hv1(10);
         hv1.add(4, 3.f);
@@ -278,7 +263,6 @@ TEST_CASE("Test SparseIterator.h - Three Dimensional", "[sparseiterator][3d]")
         it.next();
         REQUIRE(it.atEnd());
     }
-#endif
 
     SECTION("Test Identical Triple Products")
     {

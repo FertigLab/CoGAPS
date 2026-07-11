@@ -59,33 +59,6 @@ TEST_CASE("Test SparseVector","[sparsevector]")
             REQUIRE(v1[i] == v2[i]);
         }
     }
-
-#if 0
-    SECTION("bit flags set correctly")
-    {
-        SparseVector v(10);
-        v.insert(0, 1.f);
-        v.insert(4, 5.f);
-        v.insert(7, 8.f);
-        v.insert(9, 10.f);
-        REQUIRE(v.mIndexBitFlags[0] == 0b1010010001);
-    }
-
-    SECTION("values placed correctly")
-    {
-        SparseVector v(10);
-        v.insert(0, 1.f);
-        v.insert(4, 5.f);
-        v.insert(7, 8.f);
-        v.insert(9, 10.f);
-
-        REQUIRE(v.mData.size() == 4);
-        REQUIRE(v.mData[0] == 1.f);
-        REQUIRE(v.mData[1] == 5.f);
-        REQUIRE(v.mData[2] == 8.f);
-        REQUIRE(v.mData[3] == 10.f);
-    }
-#endif
 }
 
 // Regression: gaps::min/max(SparseVector) used to read the first element before
