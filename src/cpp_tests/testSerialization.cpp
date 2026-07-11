@@ -14,6 +14,10 @@
 #include "../gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "../gibbs_sampler/DenseNormalModel.h"
 
+#include <algorithm>
+#include <utility>
+#include <vector>
+
 // put Archive in it's own scope so it gets destructed (file stream closed)
 
 TEST_CASE("Reading/Writing to an Archive", "[serialization][archive]")
@@ -306,32 +310,9 @@ TEST_CASE("Random Generator Serialization", "[serialization][random]")
     } // closes SECTION
 }
 
-TEST_CASE("GibbsSampler Serialization", "[serialization][gibbssampler]")
-{
-#if 0
-    Rcpp::Environment env = Rcpp::Environment::global_env();
-    std::string csvPath = Rcpp::as<std::string>(env["gistCsvPath"]);
-
-    GibbsSampler Asampler(csvPath, false, 7, false, std::vector<unsigned>());
-    GibbsSampler Psampler(csvPath, true, 7, false, std::vector<unsigned>());
-    Asampler.sync(Psampler);
-    Psampler.sync(Asampler);
-    
-    Asampler.update(10000, 1);
-
-    Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
-    arWrite << Asampler;
-    arWrite.close();
-
-    GibbsSampler savedAsampler(csvPath, false, 7, false, std::vector<unsigned>());
-    Archive arRead("test_ar.temp", ARCHIVE_READ);
-    arRead >> savedAsampler;
-    arRead.close();
-
-    // cleanup directory
-    std::remove("test_ar.temp");
-#endif
-}
+// (the old CSV-based "GibbsSampler Serialization" test used the removed monolithic
+//  GibbsSampler API; it is superseded by [serialization][gibbssampler-roundtrip]
+//  below, which round-trips SingleThreadedGibbsSampler with the current API.)
 
 TEST_CASE("GapsParameters Serialization", "[serialization][gapsparameters]")
 {
@@ -411,46 +392,41 @@ TEST_CASE("GapsStatistics Serialization", "[serialization][gapsstatistics]")
     std::remove("test_ar.temp");
 }
 
-#if 0
 TEST_CASE("AtomicDomain Serialization", "[serialization][atomicdomain]")
 {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
-    
-    AtomicDomain domainWrite(100000);
 
+    AtomicDomain domainWrite(100000);
     for (unsigned i = 0; i < 1000; ++i)
     {
         domainWrite.insert(rng.uniform64(), rng.uniform(0.f, 100.f));
     }
 
-    {
-        Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
-        arWrite << domainWrite;
-    }
-
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << domainWrite; }
     AtomicDomain domainRead(1);
-    
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> domainRead; }
+
+    REQUIRE(domainRead.size() == domainWrite.size());
+    REQUIRE(domainRead.DomainLength() == domainWrite.DomainLength());
+    REQUIRE(domainRead.front()->pos()  == domainWrite.front()->pos());
+    REQUIRE(domainRead.front()->mass() == domainWrite.front()->mass());
+
+    // compare every atom as a (pos, mass) set (robust to storage order)
+    std::vector<std::pair<uint64_t, float> > want, got;
+    for (uint64_t i = 0; i < domainWrite.size(); ++i)
     {
-        Archive arRead("test_ar.temp", ARCHIVE_READ);
-        arRead >> domainRead;
+        want.push_back(std::make_pair(domainWrite.storedAtom(i)->pos(),
+            domainWrite.storedAtom(i)->mass()));
+        got.push_back(std::make_pair(domainRead.storedAtom(i)->pos(),
+            domainRead.storedAtom(i)->mass()));
     }
+    std::sort(want.begin(), want.end());
+    std::sort(got.begin(), got.end());
+    REQUIRE(want == got);
 
-    REQUIRE(domainWrite.front()->pos == domainRead.front()->pos);
-    REQUIRE(domainWrite.front()->mass == domainRead.front()->mass);
-    REQUIRE(domainWrite.size() == domainRead.size());
-    REQUIRE(domainWrite.mDomainLength == domainRead.mDomainLength);
-
-    for (unsigned i = 0; i < domainWrite.size(); ++i)
-    {
-        REQUIRE(domainWrite.mAtoms[i]->pos == domainRead.mAtoms[i]->pos);
-        REQUIRE(domainWrite.mAtoms[i]->mass == domainRead.mAtoms[i]->mass);
-    }
-
-    // cleanup directory
     std::remove("test_ar.temp");
 }
-#endif
 
 // Regression: SingleThreadedGibbsSampler's operator>> read the DataModel with >>
 // but then chained << (write) for mDomain/mNumBins/.../mAlpha, so a checkpoint
