@@ -77,6 +77,44 @@ TEST_CASE("Test SparseGibbsSampler", "[sparsegibbs]")
     #endif
     }
 
+    SECTION("Update decreases chiSq")
+    {
+        Matrix data(25, 50);
+        for (unsigned i = 0; i < data.nRow(); ++i)
+            for (unsigned j = 0; j < data.nCol(); ++j)
+                data(i,j) = i + j + 1.f;
+
+        GapsRandomState randState(42);
+        GapsParameters params(data);
+        SingleThreadedGibbsSampler<SparseNormalModel> ASampler(data, true, false, params.alphaA,
+            params.maxGibbsMassA, params, &randState);
+        SingleThreadedGibbsSampler<SparseNormalModel> PSampler(data, false, false, params.alphaP,
+            params.maxGibbsMassP, params, &randState);
+
+        // chiSq() uses mOtherMatrix, which is only valid after sync()
+        ASampler.sync(PSampler);
+        PSampler.sync(ASampler);
+        ASampler.extraInitialization();
+        PSampler.extraInitialization();
+
+        double AChiInit = ASampler.chiSq();
+        double PChiInit = PSampler.chiSq();
+
+        // interleave update+sync as the algorithm does: each sampler re-syncs to
+        // the other's updated matrix before updating (sparse rebuilds its lookup
+        // tables in sync(), so it must sync after the other matrix changes)
+        ASampler.update(100);
+        PSampler.sync(ASampler);
+        PSampler.update(100);
+        ASampler.sync(PSampler);
+        ASampler.extraInitialization();
+        PSampler.extraInitialization();
+
+        // sampling improved the fit
+        REQUIRE(ASampler.chiSq() < AChiInit);
+        REQUIRE(PSampler.chiSq() < PChiInit);
+    }
+
     SECTION("Test consistency between alpha parameters calculations")
     {
         // create the "data"

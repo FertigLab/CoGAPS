@@ -50,14 +50,44 @@ TEST_CASE("Sampler Construction", "[samplerhighlevel][construction]")
     } // closes SECTION
 }
 
+// construct an A/P sampler pair for the given DataModel, run sampling, and
+// require the fit (chiSq) to improve -- exercises the full update() path
+template <class DataModel>
+static void requireUpdateDecreasesChiSq()
+{
+    Matrix data(getDummyData(25, 50));
+    GapsRandomState randState(42);
+    GapsParameters params(data);
+    SingleThreadedGibbsSampler<DataModel> A(data, true, false, params.alphaA,
+        params.maxGibbsMassA, params, &randState);
+    SingleThreadedGibbsSampler<DataModel> P(data, false, false, params.alphaP,
+        params.maxGibbsMassP, params, &randState);
+
+    // chiSq() uses the other matrix, which is only valid after sync()
+    A.sync(P); P.sync(A);
+    A.extraInitialization(); P.extraInitialization();
+
+    double AChiInit = A.chiSq();
+    double PChiInit = P.chiSq();
+
+    // interleave update+sync as the algorithm does (sparse rebuilds its lookup
+    // tables in sync(), so each sampler must sync after the other matrix changes)
+    A.update(100); P.sync(A);
+    P.update(100); A.sync(P);
+    A.extraInitialization(); P.extraInitialization();
+
+    REQUIRE(A.chiSq() < AChiInit);
+    REQUIRE(P.chiSq() < PChiInit);
+}
+
 TEST_CASE("Sampler Update", "[samplerhighlevel][update]")
 {
-    SECTION("Run update on all sampler variants")
+    SECTION("update() improves the fit -- dense model")
     {
-    // construct samplers using default uncertainty
-    INIT_SAMPLER(sampler1, SingleThreadedGibbsSampler, DenseNormalModel);
-    INIT_SAMPLER(sampler2, SingleThreadedGibbsSampler, SparseNormalModel);
-    // NOTE: calling update() here would require sync()+extraInitialization()
-    // first (otherwise mOtherMatrix is NULL); left as a construction smoke test.
-    } // closes SECTION
+        requireUpdateDecreasesChiSq<DenseNormalModel>();
+    }
+    SECTION("update() improves the fit -- sparse model")
+    {
+        requireUpdateDecreasesChiSq<SparseNormalModel>();
+    }
 }
