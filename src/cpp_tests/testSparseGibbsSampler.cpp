@@ -7,6 +7,8 @@
 #include "../math/Math.h"
 #include "../math/MatrixMath.h"
 
+#include <cmath>
+
 #define TEST_APPROX(x) Approx(x).epsilon(0.001f)
 
 // Test-only subclass that exposes the protected alphaParameters()/mMatrix of the
@@ -113,6 +115,34 @@ TEST_CASE("Test SparseGibbsSampler", "[sparsegibbs]")
         // sampling improved the fit
         REQUIRE(ASampler.chiSq() < AChiInit);
         REQUIRE(PSampler.chiSq() < PChiInit);
+    }
+
+    SECTION("chiSq() before sync() does not crash and matches dense (regression)")
+    {
+        // Regression for issue #18: SparseNormalModel::chiSq() dereferenced the
+        // NULL mOtherMatrix when called before sync(), segfaulting -- whereas
+        // DenseNormalModel::chiSq() is safe in the same (un-synced) state. Both
+        // must return the "no fit" chiSq (A*P treated as 0), matching each other.
+        Matrix data(25, 50);
+        for (unsigned i = 0; i < data.nRow(); ++i)
+            for (unsigned j = 0; j < data.nCol(); ++j)
+                data(i,j) = i + j + 1.f; // all non-zero, all >= 1 -> S = 0.1*D
+
+        GapsRandomState randState(123);
+        GapsParameters params(data);
+        SingleThreadedGibbsSampler<SparseNormalModel> sparse(data, true, false,
+            params.alphaA, params.maxGibbsMassA, params, &randState);
+        SingleThreadedGibbsSampler<DenseNormalModel> dense(data, true, false,
+            params.alphaA, params.maxGibbsMassA, params, &randState);
+
+        // no sync() -> mOtherMatrix is NULL. Must not crash.
+        float sparseChi = sparse.chiSq();
+        float denseChi = dense.chiSq();
+
+        REQUIRE(std::isfinite(sparseChi));
+        // no fit: (D-0)^2/S^2 with S = 0.1*D is 100 per entry, over nRow*nCol entries
+        REQUIRE(sparseChi == 100.f * data.nRow() * data.nCol());
+        REQUIRE(sparseChi == denseChi);
     }
 
     SECTION("Test consistency between alpha parameters calculations")

@@ -38,6 +38,27 @@ void SparseNormalModel::extraInitialization()
 
 float SparseNormalModel::chiSq() const
 {
+    // Before sync() there is no other factor matrix, so the A*P product is zero.
+    // Dereferencing the NULL mOtherMatrix here used to segfault, whereas
+    // DenseNormalModel::chiSq() is safe in the same state (its AP matrix is
+    // zero-initialised). Return the matching "no fit" chiSq: with A*P = 0 every
+    // dot product below is zero, so the first loop contributes nothing and each
+    // stored data value contributes 1 (its (D-0)^2/D^2 term), scaled by mBeta.
+    if (mOtherMatrix == NULL)
+    {
+        float chisq = 0.f;
+        for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
+        {
+            SparseIterator<1> it(mDMatrix.getCol(j));
+            while (!it.atEnd())
+            {
+                chisq += 1.f;
+                it.next();
+            }
+        }
+        return chisq * mBeta;
+    }
+
     float chisq = 0.f;
     for (unsigned j = 0; j < mDMatrix.nCol(); ++j)
     {

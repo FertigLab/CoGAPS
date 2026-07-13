@@ -499,3 +499,49 @@ wrong), so the async-removal parity baseline no longer applies to these paths.
 | `src/gibbs_sampler/DenseNormalModel.h` | uncertainty floor `mLambda` → `factor` (`pmax(mDMatrix, factor, factor)`) |
 | `src/gibbs_sampler/SparseNormalModel.cpp` | floor `S = max(d, 1)` in the three `alphaParameters` functions |
 | `src/cpp_tests/testSparseGibbsSampler.cpp` | revived `[sparsegibbs]` dense-vs-sparse consistency test; continuous (fractional) data |
+
+## 18. `SparseNormalModel::chiSq()` segfaults when called before `sync()`
+
+### Problem
+
+`chiSq()` computes the fit `Σ (D − A·P)² / S²`, so it needs the *other* factor
+matrix (`A` needs `P`, and vice versa). Each sampler receives that pointer,
+`mOtherMatrix`, only when `sync()` is called; the constructor leaves it `NULL`.
+
+`SparseNormalModel::chiSq()` dereferences `mOtherMatrix` directly
+(`mOtherMatrix->getRow(i)` inside the dot products), so calling `chiSq()` on a
+freshly-constructed, not-yet-`sync()`ed sampler is a NULL dereference — an
+immediate segfault.
+
+`DenseNormalModel::chiSq()` is **not** affected: it reads its cached, zero-
+initialised `mAPMatrix` instead of `mOtherMatrix`, so before `sync()` it simply
+returns the "no fit" value (`A·P = 0`). The two models therefore disagreed on
+whether `chiSq()`-before-`sync()` is legal — dense tolerated it, sparse crashed.
+
+Not reachable from the production run loop (which always `sync()`s during
+initialization), but a real robustness defect for anyone using these classes as a
+library, and it surfaced while writing the sampler unit tests.
+
+### Diagnosis
+
+AddressSanitizer backtrace: crash in `HybridMatrix::getRow` ←
+`SparseNormalModel::chiSq()`, on the first `chiSq()` call, before any `sync()`.
+The cause is the un-set `mOtherMatrix` (NULL) being dereferenced.
+
+### Fix
+
+Guard `SparseNormalModel::chiSq()` against `mOtherMatrix == NULL` and return the
+same "no fit" value dense returns. With `A·P = 0`, every dot product is zero: the
+`Σ (A·P)²` loop contributes nothing and each stored data value contributes its
+`(D − 0)² / D² = 1` term, so the result is `(#non-zero entries) · mBeta`.
+
+For data with all `D ≥ 1` this equals dense's `Σ D²/S² = Σ (D / 0.1D)² = 100`
+per entry, i.e. the two models return the identical no-fit chiSq (verified in the
+regression test on `D = i + j + 1`, giving `100 · nRow · nCol`).
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/gibbs_sampler/SparseNormalModel.cpp` | `chiSq()` returns the no-fit value when `mOtherMatrix == NULL` instead of dereferencing it |
+| `src/cpp_tests/testSparseGibbsSampler.cpp` | regression: `chiSq()` before `sync()` does not crash and equals dense's no-fit chiSq |
