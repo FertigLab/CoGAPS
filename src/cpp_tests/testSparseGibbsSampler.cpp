@@ -205,6 +205,13 @@ TEST_CASE("Test SparseGibbsSampler", "[sparsegibbs]")
         dense_A.extraInitialization();
         dense_P.extraInitialization();
 
+        // chiSq must also match between sparse and dense. This exercises the S
+        // floor in chiSq() specifically: the data has 0 < D < 1 entries where the
+        // unfloored S = D disagrees with the floored S = max(0.1*D, 0.1) (issue #18
+        // follow-up). Both must use the single invSSq() model.
+        REQUIRE(sparse_A.chiSq() == TEST_APPROX(dense_A.chiSq()));
+        REQUIRE(sparse_P.chiSq() == TEST_APPROX(dense_P.chiSq()));
+
         // 1D alphaParameters must match between sparse and dense
         for (unsigned i = 0; i < data.nRow(); ++i)
             for (unsigned k = 0; k < params.nPatterns; ++k)

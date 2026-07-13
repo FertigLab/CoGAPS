@@ -545,3 +545,68 @@ regression test on `D = i + j + 1`, giving `100 · nRow · nCol`).
 |---|---|
 | `src/gibbs_sampler/SparseNormalModel.cpp` | `chiSq()` returns the no-fit value when `mOtherMatrix == NULL` instead of dereferencing it |
 | `src/cpp_tests/testSparseGibbsSampler.cpp` | regression: `chiSq()` before `sync()` does not crash and equals dense's no-fit chiSq |
+
+## 19. `SparseNormalModel::chiSq()` did not floor the uncertainty (inconsistent with dense and with issue #17)
+
+### Problem
+
+Issue #17 unified the uncertainty model on `S = max(factor·D, factor)`,
+`factor = 0.1`, and floored it in all three `alphaParameters` functions — but
+**not in `chiSq()`**, which was left computing the residual with the unfloored
+`S = D` (`dsq = get<1>(it)²`). So for continuous data with `0 < D < 1` the sparse
+`chiSq` used `S = D < 0.1` where the dense `chiSq` (and the sparse
+`alphaParameters`) used the floor `S = 0.1`. Result: `meanChiSq` reported for a
+`sparseOptimization=TRUE` run diverged from the equivalent dense run on fractional
+data. Diagnostic only (goodness-of-fit / annealing readout — the *sampling*
+decisions use the already-floored `alphaParameters`), but a real correctness gap
+and a landmine if `chiSq` were ever used more widely.
+
+### Root cause / design note
+
+The sparse model deliberately does **not** materialise an `S` matrix (that would
+defeat its whole purpose — avoiding dense `nRow×nCol` storage for single-cell
+data — and would break the `mZ1`/`mZ2` lookup-table algebra, which depends on the
+zero-entry uncertainty being a single constant that factors out into
+`mBeta = 1/factor² = 100`). Instead every calculation computes `1/S²` on the fly
+from the data value. The floor therefore has to be applied identically at each
+call site; issue #17 did three of the four, and `chiSq()` was the straggler.
+
+### Fix
+
+Extract the one uncertainty model into a single file-local helper and call it
+from all four sites:
+```cpp
+static inline float invSSq(float d)      // = 1/max(D,1)^2  (the factor is in mBeta)
+{
+    float sraw = gaps::max(d, 1.f);
+    return 1.f / (sraw * sraw);
+}
+```
+- The three `alphaParameters` functions now call `invSSq(d_val)` instead of the
+  inlined `1/max(d,1)²` (no numeric change — just de-duplication).
+- `chiSq()`'s non-zero correction becomes the floored residual: the first loop
+  adds `A·P²` at the zero weight, and each stored entry corrects it to
+  `(D − A·P)² · invSSq(D)` via `D²·invS2 − 2·D·A·P·invS2 + A·P²·(invS2 − 1)`
+  (algebraically identical to the old `1 + dot(dot − 2d − dsq·dot)/dsq` when
+  `D ≥ 1`, so integer/count data is unchanged).
+- The `mOtherMatrix == NULL` no-fit branch (issue #18) likewise became
+  `D² · invSSq(D)` so it stays consistent with the floored main path for `D < 1`.
+
+`mZ1`/`mZ2` need no change: they encode the all-entries-are-zero baseline at the
+constant `S = factor`, which the per-non-zero corrections adjust — already
+consistent with the floor.
+
+### Verification
+
+Extended the `[sparsegibbs]` consistency test (continuous data with `0 < D < 1`,
+identical `A`/`P` on a sparse and a dense sampler) to also assert
+`sparse.chiSq() == Approx(dense.chiSq())` for both the A- and P-samplers. Fails
+before the fix (sparse used `S = D` on the sub-1 entries), passes after. Full cpp
+suite green.
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/gibbs_sampler/SparseNormalModel.cpp` | new `invSSq()` helper; `chiSq()` (both branches) and all three `alphaParameters` now floor via it |
+| `src/cpp_tests/testSparseGibbsSampler.cpp` | consistency test also compares sparse vs dense `chiSq()` on fractional data |

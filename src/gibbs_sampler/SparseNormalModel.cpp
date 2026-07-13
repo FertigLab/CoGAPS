@@ -14,6 +14,20 @@
 #define COUNT_BITS(u) __builtin_popcountll(u)
 #define GET_FIRST_SET_BIT(u) (__builtin_ffsll(u) - 1)
 
+// The single uncertainty model shared by every calculation in this file. The
+// standard deviation is S = factor * max(D, 1) (relative error floored at
+// factor, factor = 0.1), matching DenseNormalModel's pmax(D, factor, factor).
+// The constant factor is pulled out into mBeta (= 1/factor^2 = 100), so every
+// per-entry term below is scaled by mBeta and this helper returns only the
+// data-dependent 1/max(D,1)^2. Keeping it in one place guarantees chiSq() and
+// all three alphaParameters() use identical uncertainty. NOTE: callers must apply
+// the mBeta factor (they already return AlphaParameters(...) * mBeta / chisq * mBeta).
+static inline float invSSq(float d)
+{
+    float sraw = gaps::max(d, 1.f);
+    return 1.f / (sraw * sraw);
+}
+
 void SparseNormalModel::setMatrix(const Matrix &mat)
 {
     mMatrix = mat;
@@ -41,9 +55,9 @@ float SparseNormalModel::chiSq() const
     // Before sync() there is no other factor matrix, so the A*P product is zero.
     // Dereferencing the NULL mOtherMatrix here used to segfault, whereas
     // DenseNormalModel::chiSq() is safe in the same state (its AP matrix is
-    // zero-initialised). Return the matching "no fit" chiSq: with A*P = 0 every
-    // dot product below is zero, so the first loop contributes nothing and each
-    // stored data value contributes 1 (its (D-0)^2/D^2 term), scaled by mBeta.
+    // zero-initialised). Return the matching "no fit" chiSq: with A*P = 0 the
+    // first loop below contributes nothing, and each stored data value D
+    // contributes (D-0)^2/S^2 = D^2 * invSSq(D), scaled by mBeta.
     if (mOtherMatrix == NULL)
     {
         float chisq = 0.f;
@@ -52,7 +66,8 @@ float SparseNormalModel::chiSq() const
             SparseIterator<1> it(mDMatrix.getCol(j));
             while (!it.atEnd())
             {
-                chisq += 1.f;
+                float d = get<1>(it);
+                chisq += d * d * invSSq(d);
                 it.next();
             }
         }
@@ -72,8 +87,12 @@ float SparseNormalModel::chiSq() const
         while (!it.atEnd())
         {
             float dot = gaps::dot(mMatrix.getRow(j), mOtherMatrix->getRow(it.getIndex()));
-            float dsq = get<1>(it) * get<1>(it);
-            chisq += 1 + dot * (dot - 2 * get<1>(it) - dsq * dot) / dsq;
+            float d = get<1>(it);
+            float invS2 = invSSq(d);
+            // the first loop added this entry's A*P^2 at the S=factor (zero) weight;
+            // correct it to the floored residual (D - A*P)^2 * invS2 for this stored
+            // non-zero entry: add (D^2 - 2*D*AP)*invS2 + AP^2*(invS2 - 1).
+            chisq += d * d * invS2 - 2.f * d * dot * invS2 + dot * dot * (invS2 - 1.f);
             it.next();
         }
     }
@@ -201,11 +220,9 @@ AlphaParameters SparseNormalModel::alphaParameters(unsigned row, unsigned col)
             float v_val = V[v_ndx];
             float d_val = data[sparseIndex++];
 
-            // floored uncertainty: S = max(d_val, 1) (effective factor*max(d,1)),
-            // matching the dense max(factor*D, factor); the data value d_val is
-            // kept in the residual term. invS2 = 1/S^2.
-            float sraw = gaps::max(d_val, 1.f);
-            float invS2 = 1.f / (sraw * sraw);
+            // floored uncertainty (see invSSq); the data value d_val is kept in
+            // the residual term, only the weight uses the floored S. invS2 = 1/S^2.
+            float invS2 = invSSq(d_val);
             float term2 = v_val * (1.f - invS2);
             s += v_val * v_val * (invS2 - 1.f);
             s_mu += v_val * d_val * invS2 + term2 * gaps::dot(mMatrix.getRow(row),
@@ -249,9 +266,8 @@ unsigned col, float ch)
             float v_val = V[v_ndx];
             float d_val = data[sparseIndex++];
 
-            // floored uncertainty (see alphaParameters(row,col))
-            float sraw = gaps::max(d_val, 1.f);
-            float invS2 = 1.f / (sraw * sraw);
+            // floored uncertainty (see invSSq)
+            float invS2 = invSSq(d_val);
             float term2 = v_val * (1.f - invS2);
             s += v_val * v_val * (invS2 - 1.f);
             s_mu += v_val * d_val * invS2 + term2 * gaps::dot(mMatrix.getRow(row),
@@ -301,10 +317,9 @@ unsigned r2, unsigned c2)
                 float v2_val = V2[v_ndx];
                 float d_val = data[sparseIndex++];
 
-                // floored uncertainty: S = max(d_val, 1); term1 = 1 - 1/S^2,
-                // and the data term is D/S^2 = d_val/S^2 (kept from d_val)
-                float sraw = gaps::max(d_val, 1.f);
-                float invS2 = 1.f / (sraw * sraw);
+                // floored uncertainty (see invSSq); term1 = 1 - 1/S^2, and the
+                // data term is D/S^2 = d_val * invS2
+                float invS2 = invSSq(d_val);
                 float term1 = 1.f - invS2;
                 float v_diff = v1_val - v2_val;
                 float ap = gaps::dot(mMatrix.getRow(r1), mOtherMatrix->getRow(v_ndx));
