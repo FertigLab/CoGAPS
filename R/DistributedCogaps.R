@@ -29,8 +29,6 @@ workerID)
     allParams$gaps@subsetIndices <- subsetIndices
     allParams$gaps@subsetDim <- ifelse(genomeWide, 1, 2)
     allParams$workerID <- workerID
-    allParams$asynchronousUpdates <- FALSE
-    allParams$nThreads <- 1
 
     # call CoGAPS
     internal <- ifelse(is(data, "character"), cogaps_from_file_cpp, cogaps_cpp)

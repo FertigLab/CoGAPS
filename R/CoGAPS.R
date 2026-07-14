@@ -111,12 +111,11 @@ snapshotPhase='sampling', ...)
     if (!identical(as.numeric(nThreads), 1) || isTRUE(asynchronousUpdates))
         warning("'nThreads' and 'asynchronousUpdates' are deprecated and ignored; ",
                 "CoGAPS now always runs single-threaded (async broke MCMC balance)")
-    asynchronousUpdates <- FALSE
-    nThreads <- 1
 
     # store all parameters in a list and parse parameters from ...
+    # (nThreads/asynchronousUpdates are deprecated no-ops -- they are accepted as
+    # arguments for backward compatibility but not threaded through to the sampler)
     allParams <- list("gaps"=params,
-        "nThreads"=nThreads,
         "messages"=messages,
         "outputFrequency"=outputFrequency,
         "nSnapshots"=nSnapshots,
@@ -130,7 +129,6 @@ snapshotPhase='sampling', ...)
         "BPPARAM"=BPPARAM,
         "outputToFile"=NULL,
         "workerID"=workerID,
-        "asynchronousUpdates"=asynchronousUpdates,
         "dataName"=dataName
     )
     allParams <- parseExtraParams(allParams, list(...))
