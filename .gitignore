@@ -31,3 +31,9 @@ src/Makevars
 
 # ignore checkpoint files
 *.out
+
+# editor / IDE local configs
+.vscode/
+
+# built package tarballs
+CoGAPS_*.tar.gz
