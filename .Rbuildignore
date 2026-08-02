@@ -7,6 +7,8 @@
 ^ChangeLog
 
 ^\.sasha-copilot-context
+^\.vscode
+^CLAUDE\.md$
 
 ^inst/benchmarks/
 ^inst/profiling/
