@@ -115,7 +115,10 @@ void DenseNormalModel::setUncertainty(const DataType &unc, bool transpose,
 bool subsetRows, const GapsParameters &params)
 {
     mSMatrix = Matrix(unc, transpose, subsetRows, params.dataIndicesSubset);
-    mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
+    // Only the SIMD padding may be overwritten -- pad() would set *every* element
+    // to 1.f and so discard the uncertainty the caller passed in. Padding lanes
+    // get 1.f so that the SIMD loops divide by 1, not by 0.
+    mSMatrix.padSIMD(1.f);
 }
 
 

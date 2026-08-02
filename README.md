@@ -28,3 +28,27 @@ devtools::install_github("FertigLab/CoGAPS")
 # Using CoGAPS
 
 Follow the vignette [here](https://github.com/FertigLab/CoGAPS/blob/master/vignettes/CoGAPS.Rmd) and available as static html [here](https://rpubs.com/jeanettejohnson/1018399)
+
+# Run as nextflow pipeline
+The example below will attempt running CoGAPS with number of patterns 3 and 4 on every `.rds` and `.h5ad` file in the input folder (`tests/nextflow`).
+```
+nextflow run main.nf --input tests/nextflow --outdir out -c nextflow.config -profile docker --max_memory 10GB --npatterns 3,4
+```
+
+Supported CLI params and their defaults are:
+
+    npatterns = "5"
+    niterations = 100
+    seed = 42
+    sparse = 0
+    distributed = "null"
+    nsets = 1
+    max_memory = '128.GB'
+    max_cpus = 8
+    max_time = '72.h'
+    n_top_genes = 5000
+    nthreads = 1
+    asynchronous_updates = 0
+    container = 'ghcr.io/fertiglab/cogaps:master'
+
+The `--container` parameter controls which CoGAPS Docker image is used for the `COGAPS` and `COGAPS_PREPROCESS` processes. Override it to pin a specific version, e.g. `--container ghcr.io/fertiglab/cogaps:sha-abc1234`.

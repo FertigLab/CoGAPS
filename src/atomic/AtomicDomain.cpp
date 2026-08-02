@@ -47,6 +47,8 @@ AtomNeighborhood AtomicDomain::randomAtomWithNeighbors(GapsRng *rng)
     GAPS_ASSERT(size() > 0);
     size_t index = rng->uniform64(0, mAtoms.size() - 1);
     Atom *center = &(mAtoms[index]);
+    // [AI-generated] Build the neighborhood used by move/exchange proposals; edge atoms have
+    // a missing neighbor on one side of the ordered atomic domain.
     Atom *left = center->hasLeft() ? &(mAtoms[center->leftIndex()]) : NULL;
     Atom *right = center->hasRight() ? &(mAtoms[center->rightIndex()]) : NULL;
     return AtomNeighborhood(left, center, right);
@@ -159,6 +161,8 @@ void AtomicDomain::erase(Atom *atom)
 
 void AtomicDomain::move(Atom *atom, uint64_t newPos)
 {
+    // [AI-generated] Validate the move stays between neighboring atoms; domain endpoints stand
+    // in for missing neighbors at the edges.
     GAPS_ASSERT(newPos > (atom->hasLeft() ? mAtoms[atom->leftIndex()].pos() : 0));
     GAPS_ASSERT(newPos < (atom->hasRight() ? mAtoms[atom->rightIndex()].pos() : mDomainLength));
     //we do not jump over neighbour

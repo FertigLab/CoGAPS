@@ -3,15 +3,11 @@
 #' instead. It is a light wrapper around cogaps_cpp that handles setting
 #' the distributed parameters
 #' @keywords internal
-#'
-#' @param index index for which subset to run on
-#' @param sets list of all subsets
 #' @param data data in a supported format
 #' @param allParams list of all parameters
-#' @param uncertainty uncertainty of data in the same format
-#' @param geneNames names of all genes
-#' @param sampleNames names of all samples
-#' @param fixedMatrix matrix of matched patterns
+#' @param uncertainty uncertainty of data in the same format as data
+#' @param subsetIndices indices of the subset of data to run on
+#' @param workerID worker ID for parallelization
 #' @return CogapsResult object
 callInternalCoGAPS <- function(data, allParams, uncertainty, subsetIndices,
 workerID)
@@ -89,7 +85,7 @@ distributedCogaps <- function(data, allParams, uncertainty)
     allParams$gaps@fixedPatterns <- matchedPatterns$consensus
     allParams$gaps@whichMatrixFixed <- ifelse(allParams$gaps@distributed
         == "genome-wide", "P", "A")
-        
+
     # run final phase with fixed matrix
     gapsCat(allParams, "Running Final Stage...\n\n")
     finalResult <- bplapply(1:length(sets), BPPARAM=allParams$BPPARAM,
@@ -235,7 +231,7 @@ stitchTogether <- function(result, allParams, sets)
         Asd <- do.call(rbind, lapply(result, function(x) x@loadingStdDev))
 
         # copy P matrix - same for all sets
-        Pmean <- result[[1]]@sampleFactors
+        Pmean <- result[[1]]@metadata$params@fixedPatterns
         Psd <- matrix(0, nrow=nrow(Pmean), ncol=ncol(Pmean))
 
         # if each feature was used once, re-order to match data
@@ -257,7 +253,7 @@ stitchTogether <- function(result, allParams, sets)
         Psd <- do.call(rbind, lapply(result, function(x) x@factorStdDev))
 
         # copy A matrix - same for all sets
-        Amean <- result[[1]]@featureLoadings
+        Amean <- result[[1]]@metadata$params@fixedPatterns
         Asd <- matrix(0, nrow=nrow(Amean), ncol=ncol(Amean))
 
         # if each sample was used once, re-order to match data
@@ -278,4 +274,3 @@ stitchTogether <- function(result, allParams, sets)
         "sampleNames"=rownames(Pmean),
         "meanChiSq"=sum(sapply(result, function(r) r@metadata$meanChiSq))))
 }
-

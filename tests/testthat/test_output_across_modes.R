@@ -6,8 +6,10 @@ test_that("equal A and P dimensions in sparse vs standard", {
                            seed=1, messages=FALSE)
     res_sparse <- CoGAPS(GIST.data_frame, nPatterns=2, nIterations=100, seed=1,
                          messages=FALSE, sparseOptimization=TRUE)
-    expect_equal(dim(res_standard@featureLoadings), dim(res_sparse@featureLoadings))
-    expect_equal(dim(res_standard@sampleFactors), dim(res_sparse@sampleFactors))
+    expect_equal(dim(res_standard@featureLoadings),
+                 dim(res_sparse@featureLoadings))
+    expect_equal(dim(res_standard@sampleFactors), 
+                 dim(res_sparse@sampleFactors))
 })
 
 # distributed CoGAPS needs on-disk data (mtx/tsv/csv/gct); passing an in-memory

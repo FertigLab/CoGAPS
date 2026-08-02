@@ -1,0 +1,78 @@
+name: nextflow-test
+
+# Triggered automatically after build-push-container succeeds, or manually.
+# Downloads the image reference artifact produced by build-push-container and
+# passes it as --container so the pipeline runs against the correct image:
+#   - master push: the freshly-pushed sha-tagged image
+#   - same-repo PRs and manual dispatches: the freshly-pushed sha-tagged image
+#   - fork PRs / missing artifact: the existing `master` image (fallback)
+on:
+  workflow_run:
+    workflows: ['build-push-container']
+    types: [completed]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: fertiglab/cogaps
+
+jobs:
+  test:
+    # Only proceed when build-push-container succeeded (no-op for manual triggers).
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          submodules: recursive
+          lfs: true
+
+      # Download the image reference written by build-push-container.
+      # continue-on-error so manual workflow_dispatch runs still work without an artifact.
+      - name: Download image reference artifact
+        id: download-artifact
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: image-ref
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      # Resolve the container to use: artifact content if available, else default to master.
+      - name: Set container image
+        id: container
+        run: |
+          if [ -f image-ref.txt ]; then
+            image=$(cat image-ref.txt)
+          else
+            image="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:master"
+          fi
+          image=$(echo "$image" | tr '[:upper:]' '[:lower:]')
+          echo "image=${image}" >> $GITHUB_OUTPUT
+          echo "Using container: ${image}"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Nextflow
+        run: |
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+
+      - name: Run Nextflow
+        run: |
+          nextflow run main.nf \
+            --input tests/nextflow \
+            --outdir out \
+            -c nextflow.config \
+            -profile docker \
+            --max_memory 8GB \
+            --max_cpus 2 \
+            --container ${{ steps.container.outputs.image }}

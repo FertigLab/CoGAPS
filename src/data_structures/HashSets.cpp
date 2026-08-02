@@ -73,6 +73,7 @@ SmallPairedHashSetU64::SmallPairedHashSetU64() {}
 
 void SmallPairedHashSetU64::insert(uint64_t a, uint64_t b)
 {
+    // [AI-generated] Store position pairs in sorted order so overlap checks are direction-agnostic.
     mSet.push_back(a < b ? PositionPair(a, b) : PositionPair(b, a));
 }
 

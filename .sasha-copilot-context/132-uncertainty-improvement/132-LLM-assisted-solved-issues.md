@@ -610,3 +610,78 @@ suite green.
 |---|---|
 | `src/gibbs_sampler/SparseNormalModel.cpp` | new `invSSq()` helper; `chiSq()` (both branches) and all three `alphaParameters` now floor via it |
 | `src/cpp_tests/testSparseGibbsSampler.cpp` | consistency test also compares sparse vs dense `chiSq()` on fractional data |
+
+---
+
+## 20. User-supplied `uncertainty=` was silently discarded (`pad()` overwrote the whole matrix)
+
+### Problem
+
+The `uncertainty=` argument of `CoGAPS()` had no effect whatsoever on a dense run.
+Two runs differing only in the uncertainty matrix returned bit-identical results:
+
+```r
+r1 <- CoGAPS(D, nPatterns=3, nIterations=200, uncertainty=0.1*as.matrix(D), seed=1)
+r2 <- CoGAPS(D, nPatterns=3, nIterations=200, uncertainty=10 *as.matrix(D), seed=1)
+getMeanChiSq(r1) == getMeanChiSq(r2)   # TRUE -- 704.3173 in both cases
+```
+
+A hundredfold change in the uncertainty left the reported chi-square untouched,
+i.e. the sampler was fitting with `S = 1` everywhere regardless of what the caller
+passed.
+
+### Root cause
+
+`DenseNormalModel::setUncertainty()` loaded the caller's matrix and then called
+`pad()`:
+
+```cpp
+mSMatrix = Matrix(unc, transpose, subsetRows, params.dataIndicesSubset);
+mSMatrix.pad(1.f); // so that SIMD operations don't divide by zero
+```
+
+`Vector::pad(val)` fills **every** allocated element, not just the SIMD padding
+lanes (`for (i = 0; i < mData.size(); ++i)`), so the line above replaced the whole
+uncertainty matrix with 1.0f. The comment shows the intent was the padding lanes
+only; the correct method is `padSIMD()`, which fills `[mSize, mData.size())` and
+was added in this branch for the SIMD-NaN fix (issue #9).
+
+The bug predates the branch — it is present in `master` too, on both the default
+and the user-supplied path. Issue #17 removed the `pad(1.f)` from the *default*
+path (replacing it with `gaps::pmax(mDMatrix, factor, factor)`) and so fixed that
+half without the user-supplied half being noticed.
+
+### Fix
+
+```cpp
+mSMatrix = Matrix(unc, transpose, subsetRows, params.dataIndicesSubset);
+// Only the SIMD padding may be overwritten -- pad() would set *every* element
+// to 1.f and so discard the uncertainty the caller passed in. Padding lanes
+// get 1.f so that the SIMD loops divide by 1, not by 0.
+mSMatrix.padSIMD(1.f);
+```
+
+`padSIMD(1.f)` keeps the SIMD-safety property (padding lanes divide by 1, never by
+0 -- see issue #9) while leaving the caller's values intact.
+
+### Verification
+
+The same two runs now differ as they must (13338.07 vs 109.872). The chi-square
+consistency test gained a case that recomputes the reported `getMeanChiSq()`
+against an explicitly passed uncertainty matrix; it fails before the fix
+(442 vs 103450) and passes after. That test came from `master`
+(`test_chisq.R`), where it was written against the pre-#17 code, and is one of the
+things the master merge brought in.
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/gibbs_sampler/DenseNormalModel.h` | `setUncertainty()` uses `padSIMD(1.f)` instead of `pad(1.f)` |
+| `tests/testthat/test_chisq.R` | added the explicit-uncertainty round-trip case |
+
+### Note
+
+`SparseNormalModel` is unaffected: `sparseOptimization=TRUE` rejects a
+user-supplied uncertainty in `checkInputs()`, so it only ever uses the built-in
+model.

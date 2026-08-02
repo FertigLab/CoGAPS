@@ -2,7 +2,7 @@
 test_that("patternMarkers work with threshold = 'all' for sparse mode", {
     #set up
     data(GIST)
-    res <- CoGAPS(GIST.data_frame, nIterations=100,
+    res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns = 7,
                   seed=1, messages=FALSE, sparseOptimization=TRUE)
     expect_no_error(patternMarkers(res, threshold = "all"))
     
@@ -11,7 +11,7 @@ test_that("patternMarkers work with threshold = 'all' for sparse mode", {
 test_that("patternMarkers work with threshold = 'all'", {
     #set up
     data(GIST)
-    res <- CoGAPS(GIST.data_frame, nIterations=100,
+    res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns = 7,
                   seed=1, messages=FALSE)
     expect_no_error(patternMarkers(res, threshold = "all"))
 })
@@ -19,7 +19,7 @@ test_that("patternMarkers work with threshold = 'all'", {
 test_that("test outputs generic in threshold = all", {
     #set up
     data(GIST)
-    res <- CoGAPS(GIST.data_frame, nIterations=100,
+    res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns = 7,
                   seed=1, messages=FALSE)
     test <- patternMarkers(res, threshold = "all")
     marker_lengths <- sapply(test$PatternMarkers, length)
@@ -34,7 +34,7 @@ test_that("test outputs generic in threshold = all", {
 
 test_that("all outputs are present", {
   data(GIST)
-  res <- CoGAPS(GIST.data_frame, nIterations=100,
+  res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns = 7,
                 seed=1, messages=FALSE)
   test <- patternMarkers(res)
   expect_true(all(c("PatternMarkers", "PatternRanks", "PatternScores") %in%
@@ -43,7 +43,7 @@ test_that("all outputs are present", {
 
 test_that("all outputs are present with non-default axis", {
   data(GIST)
-  res <- CoGAPS(GIST.data_frame, nIterations=100,
+  res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns = 7,
                 seed=1, messages=FALSE)
   test <- patternMarkers(res, axis = 2)
   expect_true(all(c("PatternMarkers", "PatternRanks", "PatternScores") %in%
@@ -52,7 +52,7 @@ test_that("all outputs are present with non-default axis", {
 
 test_that("all samples present with non-default axis and threshold='all' ", {
   data(GIST)
-  res <- CoGAPS(GIST.data_frame, nIterations=100,
+  res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns = 7,
                 seed=1, messages=FALSE)
   test <- patternMarkers(res, axis = 2, threshold = "all")
   expect_true(all(unique(unlist(test$PatternMarkers))
@@ -144,7 +144,7 @@ test_that("all patterns are returned even if no markers",{
 test_that("patternMarkers works with lp", {
     #set up
     data(GIST)
-    res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns=5,
+    res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns=7,
                   seed=1, messages=FALSE, sparseOptimization=TRUE)
     expect_no_error(patternMarkers(res, lp=list(my_lp=c(1,0,0,0,0))))
     expect_warning(patternMarkers(res, lp=list(my_lp=c(1,0,0,0)),
@@ -159,7 +159,7 @@ test_that("patternMarkers works with lp", {
 test_that("threshold = cut does not yield error", {
     #set up
     data(GIST)
-    res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns=5,
+    res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns=7,
                   seed=1, messages=FALSE, sparseOptimization=TRUE)
     expect_no_error(patternMarkers(res, threshold = "cut"))
 })

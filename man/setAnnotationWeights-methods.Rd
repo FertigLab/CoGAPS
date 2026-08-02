@@ -24,6 +24,6 @@ the modified params object
 these parameters are interrelated so they must be set together
 }
 \examples{
- params <- new("CogapsParams")
+ params <- new("CogapsParams", nPatterns=3)
  params <- setAnnotationWeights(params, c('a', 'b', 'c'), c(1,2,1))
 }

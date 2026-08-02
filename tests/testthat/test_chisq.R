@@ -32,3 +32,23 @@ test_that("chi-square reported by CoGAPS matches manually calculated (w/uncertai
         seed=42, messages=FALSE, sparseOptimization=TRUE)
     expect_equal(getMeanChiSq(res_sp), manualMeanChiSq(res_sp, D), tolerance=1e-3)
 })
+
+# Explicit user-supplied uncertainty: CoGAPS must use the matrix passed in
+# 'uncertainty=' verbatim, so the reported chi-square has to match the same sum
+# recomputed against that matrix.
+test_that("chi-square reported by CoGAPS matches manually calculated (explicit uncertainty)",
+{
+    data(GIST)
+    D <- GIST.data_frame
+    unc <- 0.1 * as.matrix(D)
+    res <- CoGAPS(D, nIterations=1000, uncertainty=unc, nPatterns=3,
+                  seed=1, messages=FALSE, sparseOptimization=FALSE)
+    reported <- getMeanChiSq(res)
+
+    A <- getAmplitudeMatrix(res)
+    P <- getPatternMatrix(res)
+    calculated <- sum(((D - A %*% t(P)) / unc)^2)
+
+    # tolerance: float precision scaled by the number of accumulated terms
+    expect_equal(reported, calculated, tolerance = (1e-7) * prod(dim(D)))
+})

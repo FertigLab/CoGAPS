@@ -24,6 +24,6 @@ the modified params object
 set the value of a parameter
 }
 \examples{
- params <- new("CogapsParams")
+ params <- new("CogapsParams", nPatterns=3)
  params <- setParam(params, "seed", 123)
 }

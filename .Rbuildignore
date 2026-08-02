@@ -11,11 +11,17 @@
 ^inst/benchmarks/
 ^inst/profiling/
 ^inst/vignettes/
-^nextflow
 
-^.git
+^\.git
 
 ^src/Makevars(?!.in$|.win$)
 ^src/.*\.o$
 ^src/.*\.so$
 ^src/.*\.dll$
+
+^nextflow*
+^main\.nf
+^work*
+\.nextflow
+\.cirro
+^tests/nextflow

@@ -4,7 +4,7 @@ test_that("standard cogaps on a subset of the data",
 {
     data(GIST)    
     subset <- sample(1:nrow(GIST.matrix), 500)
-    result <- CoGAPS(GIST.matrix, nIterations=50, messages=FALSE, seed=42,
+    result <- CoGAPS(GIST.matrix, nPatterns=7, nIterations=50, messages=FALSE, seed=42,
         subsetIndices=subset, subsetDim=1)
     expect_equal(length(subset), nrow(result@featureLoadings))
 })
@@ -50,36 +50,11 @@ test_that("subsetting data with uniform sets",
     expect_equal(sum(sapply(sets, length)), nrow(result@sampleFactors))
 })
 
-test_that("subsetting data with annotation weights",
-{
-    # TODO address how weighted sampling works with duplicates, do we need to
-    # allow passing a value for setSize in this case?
-    # we should collapse down using the mean
-    # prevent multiple copies from being in the same set
-
-    #data(GIST)
-    #gistMtxPath <- system.file("extdata/GIST.mtx", package="CoGAPS")    
-#
-    ## create annotations
-    #weight <- c(1, 2, 3)
-    #names(weight) <- c("A", "B", "C")
-    #anno <- sample(names(weight), nrow(GIST.matrix), replace=TRUE)
-    #params <- CogapsParams()
-    #params <- setAnnotationWeights(params, anno, weight)
-#
-    ## distributed cogaps across features
-    #result <- CoGAPS(gistMtxPath, params, nPatterns=3, nIterations=200,
-    #    messages=TRUE, seed=42, distributed="genome-wide")
-    #featureNames <- rownames(result@featureLoadings)
-    #sets <- lapply(getSubsets(result), function(set) which(featureNames %in% set))
-    #expect_equal(nrow(result@featureLoadings), nrow(GIST.matrix))
-    #expect_equal(sum(sapply(sets, length)), nrow(result@featureLoadings))
-#
-    ## distributed cogaps across samples
-    #result <- CoGAPS(gistMtxPath, params, nPatterns=3, nIterations=200,
-    #    messages=FALSE, seed=42, distributed="single-cell", transposeData=TRUE)
-    #sampleNames <- rownames(result@sampleFactors)
-    #sets <- lapply(getSubsets(result), function(set) which(sampleNames %in% set))
-    #expect_equal(nrow(result@sampleFactors), nrow(GIST.matrix))
-    #expect_equal(sum(sapply(sets, length)), nrow(result@sampleFactors))
-})
+# NOTE: the "subsetting data with annotation weights" test was removed here.
+# It asserted behaviour sampleWithAnnotationWeights() does not provide: the
+# weighted draw samples with replacement, so genes repeat inside a subset and
+# ~56% of genes are never drawn, making nrow(featureLoadings) != nrow(data).
+# Fixing that is a change to the distributed subsetting feature, out of scope
+# for the uncertainty branch. See
+# .sasha-copilot-context/132-uncertainty-improvement/annotation-weights-sampling-issue-eng.md
+# for the quantified defect and a fix sketch.

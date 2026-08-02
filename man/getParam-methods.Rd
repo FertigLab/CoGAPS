@@ -22,6 +22,6 @@ the value of the parameter
 get the value of a parameter
 }
 \examples{
- params <- new("CogapsParams")
+ params <- new("CogapsParams", nPatterns=3)
  getParam(params, "seed")
 }

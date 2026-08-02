@@ -9,16 +9,16 @@ test_that("Fixing P matrix works", {
 
   #run with fixed P matrix to reconstruct A
   fixedP <- res1@sampleFactors
-  param <- CogapsParams()
+  param <- CogapsParams(nPatterns=nPat)
   param <- setFixedPatterns(param, fixedP, "P")
-  res2 <- CoGAPS(testMatrix, param, nPatterns=nPat, nIterations=nIter, seed=42,
+  res2 <- CoGAPS(testMatrix, params=param, nIterations=nIter, seed=42,
                  messages = FALSE)
 
   #run with random fixedP
   fixedP <- matrix(runif(ncol(testMatrix) * nPat, 1, 10), ncol=nPat)
-  param <- CogapsParams()
+  param <- CogapsParams(nPatterns=nPat)
   param <- setFixedPatterns(param, fixedP, "P")
-  res3 <- CoGAPS(testMatrix, param, nPatterns=nPat, nIterations=nIter, seed=42,
+  res3 <- CoGAPS(testMatrix, params=param, nIterations=nIter, seed=42,
                  messages = FALSE)
 
   #expect that the A with real fixed P is better than A with random fixed P
@@ -39,16 +39,16 @@ testthat::test_that("Fixing A matrix works", {
 
   #run with fixed A matrix to reconstruct P
   fixedA <- res1@featureLoadings
-  param <- CogapsParams()
+  param <- CogapsParams(nPatterns=nPat)
   param <- setFixedPatterns(param, fixedA, "A")
-  res2 <- CoGAPS(testMatrix, param, nPatterns=nPat, nIterations=nIter, seed=42,
+  res2 <- CoGAPS(testMatrix, params=param, nIterations=nIter, seed=42,
                  messages = FALSE)
 
   #run with random fixedA
   fixedA <- matrix(runif(nrow(testMatrix) * nPat, 1, 10), ncol=nPat)
-  param <- CogapsParams()
+  param <- CogapsParams(nPatterns=nPat)
   param <- setFixedPatterns(param, fixedA, "A")
-  res3 <- CoGAPS(testMatrix, param, nPatterns=nPat, nIterations=nIter, seed=42,
+  res3 <- CoGAPS(testMatrix, params=param, nIterations=nIter, seed=42,
                  messages = FALSE)
 
   #expect that the P with real fixed A is better than P with random fixed A
@@ -70,9 +70,9 @@ test_that("chisq changes between iterations with fixed A", {
 
   #run with fixed A
   fixed <- res1@featureLoadings
-  param <- CogapsParams()
+  param <- CogapsParams(nPatterns=nPat)
   param <- setFixedPatterns(param, fixed, "A")
-  res2 <- CoGAPS(testMatrix, param, nPatterns=nPat, nIterations=nIter, seed=42,
+  res2 <- CoGAPS(testMatrix, params=param, nIterations=nIter, seed=42,
                  outputFrequency = 10, messages = FALSE)
 
   expect_true(length(unique(res2@metadata$chisq))==length(res2@metadata$chisq))
@@ -91,9 +91,9 @@ test_that("chisq changes between iterations with fixed P", {
 
   #run with fixed P
   fixed <- res1@sampleFactors
-  param <- CogapsParams()
+  param <- CogapsParams(nPatterns=nPat)
   param <- setFixedPatterns(param, fixed, "P")
-  res2 <- CoGAPS(testMatrix, param, nPatterns=nPat, nIterations=nIter, seed=42,
+  res2 <- CoGAPS(testMatrix, params=param, nIterations=nIter, seed=42,
                  outputFrequency = 10, messages = FALSE)
 
   expect_true(length(unique(res2@metadata$chisq))==length(res2@metadata$chisq))

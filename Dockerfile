@@ -1,4 +1,3 @@
-# use --platform=linux/amd64 to avoid 'no match for platform in the manifest' on M1
 FROM rocker/tidyverse:4
 
 COPY . /cogaps
@@ -6,15 +5,15 @@ WORKDIR /cogaps
 
 RUN sudo apt-get update -y && \
     apt-get upgrade -y && \
-    apt-get install libhdf5-dev build-essential patch -y
+    apt-get install -y \
+      libhdf5-dev build-essential patch \
+      libuv1 libuv1-dev \
+      autoconf automake libtool autoconf-archive
 
-#packages below didn't install with devtools::install_deps, needed BiocManager;
-#it is already installed in rocker/tidyverse:4
-RUN Rscript -e 'BiocManager::install(c("S4Vectors", "SingleCellExperiment", "SummarizedExperiment", "rhdf5", "fgsea"),ask=FALSE)'
+RUN autoreconf -fi
 
-#install all other dependencies
-RUN Rscript -e 'devtools::install_deps(".", dependencies=TRUE)'
+RUN Rscript -e 'install.packages("pak")' && \
+    Rscript -e 'pak::local_install_deps(".")' && \
+    Rscript -e 'pak::pkg_install("sparseMatrixStats")' # sparseMatrixStats is for the nextflow module
 
-#need to restart R sometimes https://github.com/r-lib/devtools/issues/2395
-RUN Rscript -e 'devtools::install(".", dependencies=TRUE)'
-
+RUN R CMD INSTALL .

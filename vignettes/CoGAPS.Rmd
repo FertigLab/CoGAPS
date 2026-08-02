@@ -100,7 +100,7 @@ function.
 
 ```{r modsim params}
 # create new parameters object
-params <- new("CogapsParams")
+params <- new("CogapsParams", nPatterns=6)
 
 # view all parameters
 params
