@@ -224,7 +224,8 @@ converted it back to `uint64_t` via `static_cast`.  Old Apple Clang (x86-64)
 converts `double` values very close to `UINT64_MAX` incorrectly — the cast
 overflows to `0`.  This silently corrupted the atomic domain length calculation.
 
-Documented with a standalone reproducer: `src/cpp_tests/static_cast_standalone_test.cpp`.
+Documented with a standalone reproducer, kept (with an explanation) in
+`.sasha-copilot-context/132-uncertainty-improvement/static-cast-uint64-reproducer/static_cast_standalone_test.cpp`.
 
 ### Fix
 
@@ -241,6 +242,6 @@ from the safe integer accessor.
 | `src/atomic/AtomicDomain.h` | added `DomainLength()` inline accessor |
 | `src/atomic/AtomicDomain.cpp` | minor cleanup |
 | `src/gibbs_sampler/SingleThreadedGibbsSampler.h` | use `mDomain.DomainLength()` |
-| `src/cpp_tests/static_cast_standalone_test.cpp` | standalone reproducer (not part of test suite) |
+| `.sasha-copilot-context/132-uncertainty-improvement/static-cast-uint64-reproducer/static_cast_standalone_test.cpp` | standalone reproducer (own `main()`, never compiled by the build) |
 
 Commits: `7f469a30`, `ac8a2e1a`

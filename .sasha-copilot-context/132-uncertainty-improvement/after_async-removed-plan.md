@@ -11,7 +11,7 @@ C++ test suite and the surviving code for latent bugs and coverage gaps.
 
 All 15 test files in the build list (`configure.ac` `GAPS_SOURCE_FILES`) compile
 and pass: **46 Catch test cases**. The only file outside the build is
-`src/cpp_tests/static_cast_standalone_test.cpp` — a standalone reproducer with its
+`.sasha-copilot-context/132-uncertainty-improvement/static-cast-uint64-reproducer/static_cast_standalone_test.cpp` — a standalone reproducer with its
 own `main` (intentional, from the `static_cast<uint64_t>` overflow investigation).
 
 **Caveat:** 6 registered TEST_CASEs are **empty stubs** (`{}`) — they "pass" while

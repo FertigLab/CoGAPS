@@ -2,8 +2,8 @@
 
 **Branch:** `132-uncertainty-improvements`
 **Date:** 2026-07-06
-**Spec:** `remove-async-plan-eng.md` / `remove-async-plan-rus.md` (this report is the
-retrospective record of executing that spec)
+**Spec:** `remove-async-plan-eng.md` (this report is the retrospective record of
+executing that spec)
 
 ---
 
