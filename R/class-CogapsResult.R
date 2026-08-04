@@ -161,8 +161,8 @@ setGeneric("getMeanChiSq", function(object)
 #' @aliases getPatternGeneSet
 #' @param object an object of type CogapsResult
 #' @param gene.sets a list of gene sets to test. List names should be the names of the gene sets
-#' @param method enrichment or overrepresentation. Conducts a test for gene set enrichment using {fgsea::gsea} ranking features by pattern amplitude or a test for gene set overrepresentation in pattern markers using {fgsea::fora}, respectively.
-#' @param ... additional parameters passed to {patternMarkers} if using overrepresentation method
+#' @param method enrichment or overrepresentation. Conducts a test for gene set enrichment using \code{fgsea::gsea} ranking features by pattern amplitude or a test for gene set overrepresentation in pattern markers using \code{fgsea::fora}, respectively.
+#' @param ... additional parameters passed to \code{patternMarkers} if using overrepresentation method
 #' @return list of dataframes containing gene set enrichment or gene set overrepresentation statistics
 #' @examples
 #' data(GIST)

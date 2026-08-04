@@ -7,7 +7,9 @@ test_that("featureLoadings and sampleFactors are not all 0s in single-cell", {
   
   params <- setDistributedParams(params, nSets = 2)
   data(GIST)
-  cg <- CoGAPS(GIST.matrix, params=params)
+  # distributed CoGAPS wants on-disk data; an in-memory matrix warns. GIST.mtx
+  # holds the same data as GIST.matrix, so the dimension checks below still hold.
+  cg <- CoGAPS(system.file("extdata/GIST.mtx", package="CoGAPS"), params=params)
 
   featureLoadings <- cg@featureLoadings
   sampleFactors <- cg@sampleFactors
@@ -31,7 +33,9 @@ test_that("featureLoadings and sampleFactors are not all 0s in genome-wide", {
   
   params <- setDistributedParams(params, nSets = 2)
   data(GIST)
-  cg <- CoGAPS(GIST.matrix, params=params)
+  # distributed CoGAPS wants on-disk data; an in-memory matrix warns. GIST.mtx
+  # holds the same data as GIST.matrix, so the dimension checks below still hold.
+  cg <- CoGAPS(system.file("extdata/GIST.mtx", package="CoGAPS"), params=params)
   
   featureLoadings <- cg@featureLoadings
   sampleFactors <- cg@sampleFactors

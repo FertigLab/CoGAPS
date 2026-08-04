@@ -465,6 +465,7 @@ function(object, threshold, lp, axis){
 })
 
 #' @noRd
+#' @importFrom stats setNames
 .patternMarkers_all <- function(ssranks) {
         pIndx<-apply(ssranks,1,which.min)
         pNames<-setNames(seq_along(colnames(ssranks)), colnames(ssranks))

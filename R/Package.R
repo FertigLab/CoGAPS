@@ -44,3 +44,8 @@ NULL
 #' @docType data
 #' @name GIST.result
 NULL
+
+# Column names used non-standardly inside dplyr/ggplot2 pipelines in
+# getPatternGeneSet() and plotPatternGeneSet(); declaring them keeps
+# "no visible binding for global variable" out of R CMD check.
+utils::globalVariables(c("gene.set", "padj", "neg.log.padj"))
