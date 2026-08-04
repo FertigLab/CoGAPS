@@ -171,7 +171,8 @@ CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
 #' params <- setParam(params, "nIterations", 100)
 #' result <- scCoGAPS(t(GIST.matrix), params, BPPARAM=BiocParallel::SerialParam())
 #' }
-scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
+scCoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
+nPatterns, nThreads=1, messages=TRUE,
 outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
@@ -211,7 +212,8 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
 #' params <- setParam(params, "nIterations", 100)
 #' result <- GWCoGAPS(GIST.matrix, params, BPPARAM=BiocParallel::SerialParam())
 #' }
-GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
+GWCoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
+nPatterns, nThreads=1, messages=TRUE,
 outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)

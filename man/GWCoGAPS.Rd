@@ -6,7 +6,8 @@
 \usage{
 GWCoGAPS(
   data,
-  params = new("CogapsParams"),
+  params = new("CogapsParams", nPatterns = nPatterns),
+  nPatterns,
   nThreads = 1,
   messages = TRUE,
   outputFrequency = 500,
@@ -25,6 +26,8 @@ GWCoGAPS(
 \item{data}{File name or R object (see details for supported types)}
 
 \item{params}{CogapsParams object}
+
+\item{nPatterns}{rank of the nmf decomposition}
 
 \item{nThreads}{deprecated and ignored; CoGAPS now always runs single-threaded}
 
