@@ -19,13 +19,21 @@ by testthat
 
 
 ## test-runner.cpp
-a custom (as compared to `testthat::use_catch()`) runner to run  cpp tests, exposes `run_catch_unit_tests()` in R, usage: 
+a custom (as compared to `testthat::use_catch()`) runner to run cpp tests. It
+exposes three functions in R. They are internal, so reach them with `:::`.
+
+### Running them by hand -- the plain, readable way
+
+This is what you want while working on the C++ code. Output goes to the console
+in the usual Catch format; the return value is the number of failed assertions,
+0 meaning everything passed.
+
 ```
 #just run all cpp tests
-CoGAPS::run_catch_unit_tests()
+CoGAPS:::run_catch_unit_tests()
 
 #use cpp xml reporter to see debug info
-CoGAPS:::run_catch_unit_tests(reporter=“xml")
+CoGAPS:::run_catch_unit_tests(reporter="xml")
 
 #call a single cpp test by name
 CoGAPS:::run_catch_unit_tests_by_tag("Test Vector.h")
@@ -41,6 +49,46 @@ CoGAPS:::run_catch_unit_tests_by_tag("[vector][green]")
 CoGAPS:::run_catch_unit_tests_by_tag("[green][vector]")
 
 ```
+
+Some of the cpp tests read the paths of the packaged data files from the global
+environment, so set those first or the file-parser cases will fail:
+
+```
+gistCsvPath <<- system.file("extdata/GIST.csv", package="CoGAPS")
+gistTsvPath <<- system.file("extdata/GIST.tsv", package="CoGAPS")
+gistMtxPath <<- system.file("extdata/GIST.mtx", package="CoGAPS")
+gistGctPath <<- system.file("extdata/GIST.gct", package="CoGAPS")
+```
+
+### How testthat runs them
+
+`tests/testthat/test_cpp.R` runs the same suite as part of `devtools::test()` and
+`R CMD check`, so a broken C++ test breaks the R build. It does not use the
+console form: Catch writes its report from C++, straight to stdout, where
+testthat cannot capture it, and the whole suite would collapse into one
+pass/fail. Instead it asks for the xml reporter and a file:
+
+```
+reportFile <- tempfile(fileext=".xml")
+CoGAPS:::run_catch_unit_tests(reporter="xml", output=reportFile)
+```
+
+`output=""` (the default) keeps writing to stdout, which is why the plain call
+above still behaves the way it always has. The test then parses the file with
+`xml2` and turns every `<TestCase>` into its own testthat expectation, so a
+failure is reported by name and source location rather than as "expected 0, got
+N".
+
+`catch_test_case_names()` returns the names of every TEST_CASE compiled in. The
+test uses it to tell "all C++ tests passed" apart from "no C++ tests were built"
+-- with `--disable-cpp-tests`, or on Windows where `Makevars.win` lists no
+`cpp_tests` objects, the suite is empty and would otherwise pass vacuously. In
+that case the test skips instead, with an explanation.
+
+```
+length(CoGAPS:::catch_test_case_names())   # 58 as of this writing
+```
+
 The tags need to be defined in `/src/cpp_tests/[test-name].cpp` in TEST_CASE:
 
 ```

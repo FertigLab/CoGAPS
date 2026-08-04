@@ -8,53 +8,75 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
 #include <Rcpp.h>
 #define TESTTHAT_TEST_RUNNER
 #include <testthat.h>
 
-// [[Rcpp::export]]
-int run_catch_unit_tests(Rcpp::String reporter="console")
+// Configure the shared Catch session: pick the reporter, restrict to a tag or
+// test name if one was given, and send the report to a file when `output` is
+// non-empty. An empty `output` leaves Catch writing to stdout, which is what
+// makes the plain console call still behave the way it always has.
+static int runCatchSession(const std::string &tag, const std::string &reporter,
+const std::string &output)
 {
-  Catch::Session& session = testthat::catchSession();
-  Catch::ConfigData cfg;
-  //we will use it to write to config as
-  //session.useConfigData(cfg);
-  session.configData().testsOrTags.clear();
-  //resetting reporterNames
-  //catch2 has reporterName rather than reporterNames,
-  //here we are inside catch
-  session.configData().reporterNames.clear();
-  //and write "console" there;
-  //catch 2 would require, but we are in catch
-  //write reporter
-  cfg.reporterNames.push_back(reporter);
-  session.useConfigData(cfg);
-  //the next line does not work here.. actually, works only one time
-  //session.configData().reporterNames.push_back(reporter);
-  int numFailed = session.run();
-  // [AI-generated] Cap the process exit code at 255, the largest portable single-byte status.
-  return (numFailed < 0xFF ? numFailed : 0xFF);
+    Catch::Session& session = testthat::catchSession();
+    Catch::ConfigData cfg;
+
+    //resetting what a previous call may have left in the live config;
+    //catch2 has reporterName rather than reporterNames, here we are inside catch
+    session.configData().testsOrTags.clear();
+    session.configData().reporterNames.clear();
+
+    if (!tag.empty())
+    {
+        cfg.testsOrTags.push_back(tag);
+    }
+    cfg.reporterNames.push_back(reporter);
+    if (!output.empty())
+    {
+        // Catch opens a FileStream for this; without it the report goes to
+        // stdout, i.e. straight past R's output handling
+        cfg.outputFilename = output;
+    }
+    session.useConfigData(cfg);
+
+    int numFailed = session.run();
+    // [AI-generated] Cap the process exit code at 255, the largest portable single-byte status.
+    return (numFailed < 0xFF ? numFailed : 0xFF);
+}
+
+// reporter: "console" (human readable, the default) or "xml" (machine readable,
+//   for tests/testthat/test_cpp.R).
+// output: file to write the report to; "" (the default) writes to stdout, which
+//   is what you want interactively. See src/cpp_tests/README.md.
+// [[Rcpp::export]]
+int run_catch_unit_tests(Rcpp::String reporter="console", Rcpp::String output="")
+{
+  return runCatchSession("", reporter, output);
 }
 
 // [[Rcpp::export]]
-int run_catch_unit_tests_by_tag(Rcpp::String tag="",Rcpp::String reporter="console")
+int run_catch_unit_tests_by_tag(Rcpp::String tag="",
+Rcpp::String reporter="console", Rcpp::String output="")
 {
-  Catch::Session& session = testthat::catchSession();
-  Catch::ConfigData cfg;
-  //we will use it to write to config as
-  //session.useConfigData(cfg);
-  //empty testsOrTags
-  session.configData().testsOrTags.clear();
-  //add new tag [tag]
-  //session.configData().testsOrTags.push_back(tag.get_cstring());
-  cfg.testsOrTags.push_back(tag.get_cstring());
-  //empty reporternames
-  session.configData().reporterNames.clear();
-  //and write "console" there
-  //session.configData().reporterNames.push_back("console");
-  cfg.reporterNames.push_back(reporter);
-  session.useConfigData(cfg);
-  int numFailed = session.run();
-  // [AI-generated] Cap the process exit code at 255, the largest portable single-byte status.
-  return (numFailed < 0xFF ? numFailed : 0xFF);
+  return runCatchSession(tag, reporter, output);
+}
+
+// Names of every TEST_CASE compiled into the package. Used to tell "all C++
+// tests passed" apart from "no C++ tests were built at all" -- with
+// --disable-cpp-tests, or on Windows where Makevars.win lists no cpp_tests
+// objects, the suite is empty and would otherwise report success vacuously.
+// [[Rcpp::export]]
+Rcpp::CharacterVector catch_test_case_names()
+{
+    std::vector<Catch::TestCase> const &all =
+        Catch::getRegistryHub().getTestCaseRegistry().getAllTests();
+
+    Rcpp::CharacterVector names(all.size());
+    for (unsigned i = 0; i < all.size(); ++i)
+    {
+        names[i] = all[i].name;
+    }
+    return names;
 }

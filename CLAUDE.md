@@ -54,20 +54,31 @@ rewrites all 77 `.Rd` files and bumps that field — check the resulting diff be
 
 ### C++ unit tests (Catch2, shipped with the `testthat` R package)
 
-`run_catch_unit_tests*` are **not** exported — reach them with `:::`. They are also driven from R
-via `tests/testthat/test_cpp.R`, which asserts the failure count is `0L`, so `R CMD check` fails on
-a broken C++ test. The file-parser tests read their data paths from the global environment, so set
-`gistCsvPath`/`gistTsvPath`/`gistMtxPath`/`gistGctPath` (with `<<-`) before calling the runner
-directly.
+These are **not** exported — reach them with `:::`. The file-parser tests read their data paths
+from the global environment, so set `gistCsvPath`/`gistTsvPath`/`gistMtxPath`/`gistGctPath` (with
+`<<-`) before calling the runner directly.
 
 ```r
-CoGAPS:::run_catch_unit_tests()                          # all
-CoGAPS:::run_catch_unit_tests(reporter = "xml")          # verbose
+CoGAPS:::run_catch_unit_tests()                          # all, console output
 CoGAPS:::run_catch_unit_tests_by_tag("Test Vector.h")    # by name
 CoGAPS:::run_catch_unit_tests_by_tag("[vector]")         # by tag
 CoGAPS:::run_catch_unit_tests_by_tag("[vector][green]")  # AND
 CoGAPS:::run_catch_unit_tests_by_tag("[vector],[green]") # OR
+CoGAPS:::catch_test_case_names()                         # what is compiled in
 ```
+
+The suite also runs inside `devtools::test()` via `tests/testthat/test_cpp.R`, so a broken C++
+test breaks `R CMD check`. That file does **not** use the console form: Catch writes its report
+from C++ directly to stdout, where testthat cannot capture it, and one `expect_equal(…, 0L)` would
+collapse the whole suite into a single pass/fail. It passes `reporter = "xml"` plus an `output`
+file instead, then parses it with `xml2` so each `<TestCase>` becomes its own expectation, named
+and located on failure. `output = ""` (the default) still writes to stdout, which is what keeps
+the interactive call unchanged.
+
+`catch_test_case_names()` guards against a vacuous pass: with `--disable-cpp-tests`, or on Windows
+where `Makevars.win` lists no `cpp_tests` objects, no test case is registered and the runner
+returns 0 regardless. The test skips in that case rather than reporting success. See
+`src/cpp_tests/README.md` for the longer write-up.
 
 ### Build options
 
