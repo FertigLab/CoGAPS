@@ -15,6 +15,40 @@ in-flight work sit in `.sasha-copilot-context/<issue>/` — including the log of
 (`132-LLM-assisted-solved-issues.md`), which is the best entry point for why the C++ looks the way
 it does. The directory is excluded from the package build via `.Rbuildignore`.
 
+## Setting up a fresh machine
+
+Verified against R 4.6.1 / Bioconductor 3.23.
+
+```r
+install.packages("BiocManager")
+BiocManager::install(c("devtools", "testthat", "roxygen2", "BiocStyle",
+                       "SingleCellExperiment", "fgsea", "gplots", "SeuratObject"))
+devtools::install_deps(".", dependencies = TRUE)   # the rest, 21 in DESCRIPTION
+```
+
+Three of these are easy to overlook, because nothing fails until it does:
+
+- **`testthat`** is in `LinkingTo`, not just `Suggests` — it ships the Catch2 header
+  the C++ test suite compiles against. Without it `src/` does not build at all.
+- **`xml2`** is what `tests/testthat/test_cpp.R` uses to turn the Catch report into
+  per-case expectations. It is only suggested, so the test silently falls back to a
+  single pass/fail check when it is absent.
+- **`SeuratObject`** is only needed for `R CMD check`, which refuses to run a
+  complete check while a suggested package is missing.
+
+Outside R:
+
+```bash
+brew install autoconf autoconf-archive   # or the distro equivalent
+```
+
+`autoconf-archive` is required to regenerate `configure` — see the note under
+Build & test. It is only needed when `configure.ac` changes.
+
+Do **not** upgrade the generated documentation casually: `DESCRIPTION` pins
+`RoxygenNote: 7.3.3`, and running `devtools::document()` under a newer roxygen2
+rewrites all 77 `.Rd` files.
+
 ## Build & test
 
 All commands are run from the package root.
