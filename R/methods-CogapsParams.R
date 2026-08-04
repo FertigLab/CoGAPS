@@ -80,7 +80,7 @@ function(object)
         cat("Warning!! Setting checkpointInterval=0 disables checkpoint logging.", "\n")
       }
       if(!is.null(object@checkpointInFile)){
-        cat("checkpointInFile          ", checkpointInFile, "\n")
+        cat("checkpointInFile          ", object@checkpointInFile, "\n")
       }
       if (!is.null(object@checkpointOutFile)){
         cat("checkpointOutFile          ", object@checkpointOutFile, "\n")

@@ -251,7 +251,9 @@ function(object, genes)
 setMethod("binaryA", signature(object="CogapsResult"),
 function(object, threshold)
 {
-    binA <- ifelse(calcZ(object) > threshold, 1, 0)
+    # binaryA thresholds the z-scores of the A (amplitude) matrix; calcZ has no
+    # default for whichMatrix, so omitting it made every call fail
+    binA <- ifelse(calcZ(object, "featureLoadings") > threshold, 1, 0)
 
     gplots::heatmap.2(binA, Rowv = FALSE, Colv = FALSE, dendrogram="none",
         scale="none", col = brewer.pal(3,"Blues"), trace="none",
@@ -648,11 +650,14 @@ function(object, save_location)
 setMethod("fromCSV", signature(save_location="character"),
 function(save_location)
 {
-  featureLoadings <- read.csv(file = paste0(save_location, "/featureLoadings.csv"))
-  sampleFactors <- read.csv(file = paste0(save_location, "/sampleFactors.csv"))
-  
-  loadingStdDev <- read.csv(file = paste0(save_location, "/loadingStdDev.csv"))
-  factorStdDev <- read.csv(file = paste0(save_location, "/factorStdDev.csv"))
+  # as.matrix: read.csv returns a data.frame, but these become the matrix slots
+  # of a LinearEmbeddingMatrix, so a round-trip through CSV has to give back
+  # matrices rather than data.frames
+  featureLoadings <- as.matrix(read.csv(file = paste0(save_location, "/featureLoadings.csv")))
+  sampleFactors <- as.matrix(read.csv(file = paste0(save_location, "/sampleFactors.csv")))
+
+  loadingStdDev <- as.matrix(read.csv(file = paste0(save_location, "/loadingStdDev.csv")))
+  factorStdDev <- as.matrix(read.csv(file = paste0(save_location, "/factorStdDev.csv")))
   
   geneNames <- read.csv(file=paste0(save_location, "/geneNames.csv"))$x
   sampleNames <- read.csv(file = paste0(save_location, "/sampleNames.csv"))$x
