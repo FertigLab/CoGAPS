@@ -20,7 +20,30 @@ So, for any correct sampler, nrows(MyMatrix)==ncols(APMatrix); ncols(MyMatrix) i
 ## Debug, etc congigure options
 All the options for config are given in ../configure.ac
 
-After changing, run autoconf
+After changing, regenerate `configure`. Plain `autoconf` is **not** enough:
+`configure.ac` uses `AX_COMPILER_VENDOR` and `AX_COMPILER_VERSION` from
+autoconf-archive, and those are pulled in by `aclocal`, not by `autoconf`. Run
+both, from the package root:
+
+```
+aclocal -I /opt/homebrew/share/aclocal   # path to the autoconf-archive macros
+autoconf
+```
+
+If you skip `aclocal`, the two `AX_*` macros are left unexpanded and end up in
+`configure` as literal shell commands. It still "works" — you just get
+
+```
+./configure: line 2940: AX_COMPILER_VENDOR: command not found
+building on  compiler version
+```
+
+and `$ax_cv_cxx_compiler_vendor` stays empty, which silently disables the
+vendor-dependent branch: `--enable-warnings` then adds no flags at all. The
+`configure` on `master` has exactly this problem; the one on this branch was
+regenerated correctly and does not.
+
+`aclocal.m4` is a build artefact of that procedure and is not committed.
 
 To pass and option to configure when running devtools::load_all or similar, set the environment varianle, for example, to run ./configure --enable-debug, run the following in R:
 

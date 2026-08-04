@@ -30,8 +30,24 @@ Rcpp::compileAttributes()             # after changing // [[Rcpp::export]] signa
 
 ```bash
 R CMD check --no-manual .   # what CI runs (FertigLab/actions r-build-check)
-autoconf                    # MUST be run after editing configure.ac
+
+# after editing configure.ac -- BOTH commands, in this order
+aclocal -I /opt/homebrew/share/aclocal   # autoconf-archive macros
+autoconf
 ```
+
+`autoconf` alone is not enough: `configure.ac` uses `AX_COMPILER_VENDOR` and
+`AX_COMPILER_VERSION` from autoconf-archive, and it is `aclocal` that makes them
+available. Skipping it leaves both macros unexpanded in `configure`, where they
+become literal shell commands — `configure` still completes, but prints
+`AX_COMPILER_VENDOR: command not found`, leaves `$ax_cv_cxx_compiler_vendor`
+empty, and so silently turns `--enable-warnings` into a no-op. That is the state
+`configure` is in on `master`; on this branch it is generated correctly, so keep
+it that way. `aclocal.m4` is an artefact of this and is not committed.
+
+Note that `--enable-warnings` currently fails the build with `-Werror`, on
+`-Wcast-function-type-mismatch` raised inside Rcpp's own `routines.h` under
+newer clang. No CoGAPS source file produces a warning.
 
 `DESCRIPTION` pins `RoxygenNote: 7.3.3`. Running `devtools::document()` under a newer roxygen2
 rewrites all 77 `.Rd` files and bumps that field — check the resulting diff before committing it.
