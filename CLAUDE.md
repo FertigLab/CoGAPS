@@ -9,11 +9,12 @@ Bayesian MCMC matrix factorization algorithm (GAPS). It factors a data matrix `D
 `A` (featureLoadings) is genes × patterns and `P` (sampleFactors) is patterns × samples, and links
 the result to gene set statistics.
 
-An earlier assistant-facing description lives in `.sasha-copilot-context/AGENTS.md`; working
-agreements with the maintainer are in `.sasha-copilot-context/copilot-rules.md`. Per-issue notes for
-in-flight work sit in `.sasha-copilot-context/<issue>/` — including the log of fixed defects
-(`132-LLM-assisted-solved-issues.md`), which is the best entry point for why the C++ looks the way
-it does. The directory is excluded from the package build via `.Rbuildignore`.
+Developer notes live in `dev-notes/`, indexed by `dev-notes/README.md`. An earlier
+assistant-facing description of the package is `dev-notes/AGENTS.md`; working agreements with the
+maintainer are in `dev-notes/copilot-rules.md`. The notes for the work in flight sit beside them —
+including the log of fixed defects (`dev-notes/132-LLM-assisted-solved-issues.md`), which is the
+best entry point for why the C++ looks the way it does. The directory is excluded from the package
+build via `.Rbuildignore`.
 
 ## Setting up a fresh machine
 

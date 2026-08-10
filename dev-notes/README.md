@@ -1,13 +1,16 @@
-# Notes for branch `132-uncertainty-improvements` — index
+# CoGAPS developer notes — index
 
-Working notes for GitHub issue #132 ("Uncertainty improvements"). Nothing here is
-part of the package: the whole `.sasha-copilot-context/` tree is excluded from the
-build via `.Rbuildignore`. The directory name is singular
-(`132-uncertainty-improvement`), the branch name is plural.
+Nothing in this directory is part of the package: `dev-notes/` is excluded by
+`.Rbuildignore`, so it reaches neither the tarball nor `R CMD check` nor
+Bioconductor. It is kept in the repository so that the reasoning behind the code
+travels with it.
 
-Two files live one level up and apply to the repository as a whole, not to this
-branch: `../AGENTS.md` (assistant-facing description of the project and its build
-commands) and `../copilot-rules.md` (working agreements with the maintainer).
+Two files describe the repository as a whole rather than any particular piece of
+work: [`AGENTS.md`](AGENTS.md), an assistant-facing description of the project and
+its build commands, and [`copilot-rules.md`](copilot-rules.md), the working
+agreements with the maintainer. Everything else below belongs to branch
+`132-uncertainty-improvements`, which tracks GitHub issue #132 ("Uncertainty
+improvements").
 
 ## Defect journals
 

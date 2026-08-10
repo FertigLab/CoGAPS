@@ -56,5 +56,5 @@ test_that("subsetting data with uniform sets",
 # ~56% of genes are never drawn, making nrow(featureLoadings) != nrow(data).
 # Fixing that is a change to the distributed subsetting feature, out of scope
 # for the uncertainty branch. See
-# .sasha-copilot-context/132-uncertainty-improvement/annotation-weights-sampling-issue-eng.md
+# dev-notes/annotation-weights-sampling-issue-eng.md
 # for the quantified defect and a fix sketch.

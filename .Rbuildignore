@@ -6,7 +6,7 @@
 ^\.Rproj\.user$
 ^ChangeLog
 
-^\.sasha-copilot-context
+^dev-notes$
 ^\.vscode
 ^CLAUDE\.md$
 

@@ -9,7 +9,7 @@ issues 1–8); cross-references such as "issue 9" refer to that shared numbering
 
 ## 9. SIMD NaN in `alphaParameters` on Mac Intel (SSE4/AVX)
 
-Full root-cause analysis is in `.sasha-copilot-context/simd-issue.md`.
+Full root-cause analysis is in `dev-notes/simd-issue.md`.
 
 The bug manifested only on Mac Intel, where Apple Clang enables SSE4.1 (or AVX)
 by default.  On this platform the SIMD loop in `alphaParameters()` increments
