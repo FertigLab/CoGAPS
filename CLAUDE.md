@@ -9,12 +9,11 @@ Bayesian MCMC matrix factorization algorithm (GAPS). It factors a data matrix `D
 `A` (featureLoadings) is genes × patterns and `P` (sampleFactors) is patterns × samples, and links
 the result to gene set statistics.
 
-Developer notes live in `dev-notes/`, indexed by `dev-notes/README.md`. An earlier
-assistant-facing description of the package is `dev-notes/AGENTS.md`; working agreements with the
-maintainer are in `dev-notes/copilot-rules.md`. The notes for the work in flight sit beside them —
-including the log of fixed defects (`dev-notes/132-LLM-assisted-solved-issues.md`), which is the
-best entry point for why the C++ looks the way it does. The directory is excluded from the package
-build via `.Rbuildignore`.
+Developer notes live in `dev-notes/`, indexed by `dev-notes/README.md` — including the log of fixed
+defects (`dev-notes/132-LLM-assisted-solved-issues.md`), which is the best entry point for why the
+C++ looks the way it does. Working agreements with the maintainer are in
+`dev-notes/rus/.agent-rules-rus.md`, the one Russian-language file here. The whole directory is
+excluded from the package build via `.Rbuildignore`.
 
 ## Setting up a fresh machine
 
@@ -157,7 +156,9 @@ src/                    C++ core
   data_structures/      Matrix, SparseMatrix, HybridMatrix, Vector, SparseIterator, ...
   file_parser/          CSV / TSV / MTX / GCT readers
   math/                 Random, VectorMath, MatrixMath, SIMD
-  cpp_tests/            Catch2 tests; test-runner.cpp exposes them to R
+  utils/                header-only: Archive, GapsAssert, GapsPrint, GlobalConfig
+  cpp_tests/            Catch2 tests
+  test-runner.cpp       exposes the Catch suite to R (sits in src/, not in cpp_tests/)
 ```
 
 ### Dispatch
