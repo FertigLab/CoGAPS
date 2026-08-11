@@ -5,7 +5,8 @@ and how the two data models — `DenseNormalModel` and `SparseNormalModel` —
 compute the same statistics from two very different representations.
 
 Branch `132-uncertainty-improvements`. Written after issues #17, #18, #19 unified
-the two models onto one uncertainty formula.
+the two models onto one uncertainty formula, and extended after issue #20, which
+made a user-supplied `S` actually reach the sampler.
 
 ---
 
@@ -142,7 +143,7 @@ two sums above.
 | `factor` lives in            | `factor = 0.1f` → `pmax(D, factor, factor)`| `mBeta = 100` + `max(d,1)` floor in `invSSq`         |
 | data storage                 | dense `D`, dense `AP` (cached)             | sparse `D`, `A·P` never cached                        |
 | pre-computed helpers         | `mAPMatrix` (cached A·P)                   | `mZ1`, `mZ2` lookup tables (rebuilt in `sync()`)     |
-| custom user uncertainty      | **supported** (`setUncertainty`)          | **ignored** (nop — always the default model)         |
+| custom user uncertainty      | **supported** (`setUncertainty`)          | **rejected** — `checkInputs()` errors out            |
 | memory footprint             | O(nRow·nCol) — fine for bulk data          | O(non-zeros) — required for single-cell scale        |
 
 The two are kept consistent only by matching math and by the `[sparsegibbs]`
@@ -184,8 +185,21 @@ partialS_mu += ratio * (D − AP);      // Σ mat(D−AP) / S^2  -> s_mu
   `ch`, without mutating `mAPMatrix`.
 
 **Custom uncertainty** (`setUncertainty`): the user may supply their own `S`
-matrix; it replaces `mSMatrix` (padded with `1.f` for SIMD safety). This is the
-one capability the sparse model does not have.
+matrix, which replaces `mSMatrix` wholesale. Only the SIMD tail is then written,
+with `padSIMD(1.f)`, so that the lanes read past the end divide by 1 rather than
+by 0.
+
+The distinction matters more than it looks. Until issue #20 that line was
+`pad(1.f)`, and `Vector::pad(val)` fills *every* allocated element, not just the
+padding lanes — so a caller's uncertainty matrix was overwritten with 1.0f in its
+entirety and `uncertainty=` had no effect at all on a dense run. Issue #17 had
+removed the same `pad(1.f)` from the default path above (replacing it with
+`pmax`), which fixed that half and left this one standing. **Never use `pad()` on
+a matrix whose contents matter.**
+
+Custom uncertainty is the one capability the sparse model does not have:
+`checkInputs()` rejects `uncertainty=` together with `sparseOptimization=TRUE`,
+so the sparse path always uses the built-in model.
 
 ---
 
@@ -284,6 +298,13 @@ The two models produce the same numbers (up to float ordering) on the same
     only identifiable up to a permutation of patterns, so even two dense runs
     correlate at ≈ −0.1. Use `A·P` reconstruction or `meanChiSq`.
 
+That the formula above is the one actually used is checked from R as well, in
+`tests/testthat/test_chisq.R`: the reported `getMeanChiSq()` is recomputed by hand
+from `featureLoadings`/`sampleFactors`, once against the built-in `max(0.1·D, 0.1)`
+(dense and sparse) and once against a matrix passed in `uncertainty=`. The second
+case is what catches a dense run that ignores the caller's `S` — it failed before
+issue #20 (442 vs 103450) and passes after.
+
 ---
 
 ## 8. Known duplication (not yet refactored)
@@ -310,11 +331,13 @@ current Phase 3/4 work).
 | uncertainty formula (dense build) | `src/gibbs_sampler/DenseNormalModel.h:96,110` |
 | dense chiSq | `src/gibbs_sampler/DenseNormalModel.cpp:55` |
 | dense alphaParameters (1D / 2D / with-change) | `src/gibbs_sampler/DenseNormalModel.cpp:161,185,216` |
-| dense custom uncertainty | `src/gibbs_sampler/DenseNormalModel.h:113` (`setUncertainty`) |
+| dense custom uncertainty | `src/gibbs_sampler/DenseNormalModel.h:114` (`setUncertainty`), `padSIMD(1.f)` at `:121` |
+| SIMD tail of the default `S` | `src/math/MatrixMath.cpp:89` (`pmax` calls `padSIMD(min_threshold)`) |
+| `uncertainty=` rejected for sparse | `R/HelperFunctions.R:223` |
 | `invSSq` (single sparse floor) | `src/gibbs_sampler/SparseNormalModel.cpp:25` (doc block from :17) |
 | `mBeta` init (= 100) | `src/gibbs_sampler/SparseNormalModel.h:77` |
 | sparse chiSq (baseline + correction + no-fit) | `src/gibbs_sampler/SparseNormalModel.cpp:53` |
-| sparse alphaParameters (1D / with-change / 2D) | `src/gibbs_sampler/SparseNormalModel.cpp:193,237,283` |
-| `mZ1`/`mZ2` lookup tables | `src/gibbs_sampler/SparseNormalModel.cpp:337` (`generateLookupTables`) |
+| sparse alphaParameters (1D / with-change / 2D) | `src/gibbs_sampler/SparseNormalModel.cpp:195,239,285` |
+| `mZ1`/`mZ2` lookup tables | `src/gibbs_sampler/SparseNormalModel.cpp:339` (`generateLookupTables`) |
 | `s`/`s_mu` → truncated-normal draw | `src/gibbs_sampler/AlphaParameters.cpp:27,38` (`gibbsMass`) |
 | cross-check test | `src/cpp_tests/testSparseGibbsSampler.cpp` (`[sparsegibbs]`) |
