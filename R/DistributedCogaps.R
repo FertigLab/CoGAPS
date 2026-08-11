@@ -241,8 +241,11 @@ stitchTogether <- function(result, allParams, sets)
             if (identical(sort(indices), sort(setIndices)))
             {
                 reorder <- match(indices, setIndices)
-                Amean <- Amean[reorder,]
-                Asd <- Asd[reorder,]
+                # drop=FALSE: with a single consensus pattern these are
+                # one-column matrices, and dropping turns them into vectors
+                # with no row names, which CogapsResult then rejects
+                Amean <- Amean[reorder,,drop=FALSE]
+                Asd <- Asd[reorder,,drop=FALSE]
             }
         }
     }
@@ -263,8 +266,8 @@ stitchTogether <- function(result, allParams, sets)
             if (identical(sort(indices), sort(setIndices)))
             {
                 reorder <- match(indices, setIndices)
-                Pmean <- Pmean[reorder,]
-                Psd <- Psd[reorder,]
+                Pmean <- Pmean[reorder,,drop=FALSE]
+                Psd <- Psd[reorder,,drop=FALSE]
             }
         }
     }
