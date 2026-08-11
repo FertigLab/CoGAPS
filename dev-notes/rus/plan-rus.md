@@ -27,6 +27,42 @@ GitHub issue: https://github.com/FertigLab/CoGAPS/issues/159
   из `featureLoadings`/`sampleFactors`; тест на согласованность стоит расширить
   так, чтобы он ловил и этот случай.
 
+### Смежное наблюдение: у распределённого прогона `meanChiSq` ровно ноль
+
+Найдено 11 августа 2026 при разборе ошибки «no gene names given» на сборке
+3.33.2, симптом другой, чем в issue 159, но путь тот же, так что чинить их
+имеет смысл вместе.
+
+```r
+data(GIST)
+p <- CogapsParams(seed=42, nIterations=100, nPatterns=2,
+                  sparseOptimization=FALSE, distributed="genome-wide")
+p <- setDistributedParams(p, nSets=11)
+CoGAPS(GIST.matrix, params=p)@metadata$meanChiSq   # 0
+CoGAPS(GIST.matrix, nPatterns=2, nIterations=100, seed=42)@metadata$meanChiSq
+                                                   # 101381.1 -- те же данные
+```
+
+Дело не в распределённости как таковой, а в фиксированной матрице — а финальная
+стадия распределённого прогона как раз фиксирует паттерны:
+
+```r
+p <- CogapsParams(nPatterns=2, nIterations=100, seed=42)
+p <- setFixedPatterns(p, r0@sampleFactors, "P")
+CoGAPS(GIST.matrix, params=p)@metadata$meanChiSq   # 0
+```
+
+Дальше `stitchTogether` складывает эти нули (`R/DistributedCogaps.R:275`), и
+сумма нулей уезжает в результат. Похоже на ту же природу, что и записанное в
+`CLAUDE.md` про `fixedPatterns`: когда матрица зафиксирована, её статистики не
+накапливаются. Но именно **ноль** — отдельная странность: если бы chi-square
+считался против нулевой матрицы, вышло бы большое число, а не ноль. То есть
+значение, судя по всему, не вычисляется вообще, а не вычисляется неправильно.
+
+Полезно как рычаг: ноль воспроизводится одной строкой и без распределённого
+прогона, так что путь «откуда берётся отчётное значение» разбирается на
+маленьком примере — а это ровно тот путь, по которому надо идти в issue 159.
+
 ## 2. Почему BiocParallel не берёт параметр «размер пачки»
 
 Разобраться, почему до BiocParallel не доходит размер пачки (`tasks` в
