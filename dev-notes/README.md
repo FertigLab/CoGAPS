@@ -6,7 +6,7 @@ Bioconductor. It is kept in the repository so that the reasoning behind the code
 travels with it.
 
 One file describes the way we work rather than any particular piece of work:
-[`rus/.agent-rules-rus.md`](rus/.agent-rules-rus.md), the working agreements with
+[`rus/agent-rules-rus.md`](rus/agent-rules-rus.md), the working agreements with
 the maintainer. It is deliberately in Russian and lives in `rus/` for that reason;
 everything an outside reader sees stays in English. The assistant-facing
 description of the project — how it is built, tested and laid out — is

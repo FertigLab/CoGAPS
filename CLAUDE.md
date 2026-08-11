@@ -12,7 +12,7 @@ the result to gene set statistics.
 Developer notes live in `dev-notes/`, indexed by `dev-notes/README.md` — including the log of fixed
 defects (`dev-notes/132-LLM-assisted-solved-issues.md`), which is the best entry point for why the
 C++ looks the way it does. Working agreements with the maintainer are in
-`dev-notes/rus/.agent-rules-rus.md`, the one Russian-language file here. The whole directory is
+`dev-notes/rus/agent-rules-rus.md`, the one Russian-language file here. The whole directory is
 excluded from the package build via `.Rbuildignore`.
 
 ## Setting up a fresh machine
