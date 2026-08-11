@@ -2,7 +2,6 @@
 #' @keywords internal
 #'
 #' @param allParams list of all CoGAPS parameters
-#' @param total total number of rows (cols) that are being paritioned
 #' @return list of subsets
 sampleWithExplictSets <- function(allParams)
 {

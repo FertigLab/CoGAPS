@@ -25,6 +25,7 @@ public:
     float* ptr();
     unsigned size() const;
     void pad(float val);
+    void padSIMD(float val);
     void operator+=(const Vector &v);
     void operator*=(float f);
     void operator/=(float f);

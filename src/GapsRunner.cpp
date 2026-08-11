@@ -5,7 +5,6 @@
 #include "math/Random.h"
 #include "utils/Archive.h"
 #include "utils/GlobalConfig.h"
-#include "gibbs_sampler/AsynchronousGibbsSampler.h"
 #include "gibbs_sampler/SingleThreadedGibbsSampler.h"
 #include "gibbs_sampler/DenseNormalModel.h"
 #include "gibbs_sampler/SparseNormalModel.h"
@@ -15,11 +14,6 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <Rcpp.h>
 #pragma GCC diagnostic pop
-#endif
-
-// library allowing for message passing in distributed mode
-#ifdef __GAPS_OPENMP__
-#include <omp.h>
 #endif
 
 // boost time helpers
@@ -66,12 +60,6 @@ template <class DataModel, class DataType>
 static GapsResult chooseSampler(const DataType &data, GapsParameters &params,
 const DataType &uncertainty, GapsRandomState *randState)
 {
-    if (params.asynchronousUpdates)
-    {
-        GAPS_MESSAGE(params.printMessages, "Sampler Type: Asynchronous\n");
-        return runCoGAPSAlgorithm< AsynchronousGibbsSampler<DataModel> >(data,
-            params, uncertainty, randState);
-    }
     GAPS_MESSAGE(params.printMessages, "Sampler Type: Sequential\n");
     return runCoGAPSAlgorithm< SingleThreadedGibbsSampler<DataModel> >(data,
         params, uncertainty, randState);
@@ -204,19 +192,19 @@ Sampler &PSampler, unsigned nA, unsigned nP)
 {
     if (params.whichMatrixFixed != 'A')
     {
-        ASampler.update(nA, params.maxThreads);
+        ASampler.update(nA);
         if (params.whichMatrixFixed != 'P')
         {
-            PSampler.sync(ASampler, params.maxThreads);
+            PSampler.sync(ASampler);
         }
     }
 
     if (params.whichMatrixFixed != 'P')
     {
-        PSampler.update(nP, params.maxThreads);
+        PSampler.update(nP);
         if (params.whichMatrixFixed != 'A')
         {
-            ASampler.sync(PSampler, params.maxThreads);
+            ASampler.sync(PSampler);
         }
     }
 }
@@ -349,19 +337,6 @@ Sampler &PSampler)
     }
 }
 
-static void calculateNumberOfThreads(GapsParameters params)
-{
-    // calculate appropiate number of threads if compiled with openmp
-    #ifdef __GAPS_OPENMP__
-    if (params.printMessages && params.printThreadUsage)
-    {
-        unsigned availableThreads = omp_get_max_threads();
-        params.maxThreads = gaps::min(availableThreads, params.maxThreads);
-        gaps_printf("Running on %d out of %d available threads\n",
-            params.maxThreads, availableThreads);
-    }
-    #endif
-}
 
 template <class Sampler, class DataType>
 static void processUncertainty(const GapsParameters params, Sampler &ASampler,
@@ -438,7 +413,6 @@ const DataType &uncertainty, GapsRandomState *randState)
     GapsAlgorithmPhase phase(GAPS_EQUILIBRATION_PHASE);
     unsigned currentIter = 0;
     processCheckpoint(params, ASampler, PSampler, randState, stats, rng, phase, currentIter);
-    calculateNumberOfThreads(params);
 
     // sync samplers and run any additional initialization needed
     ASampler.sync(PSampler);
@@ -471,8 +445,6 @@ const DataType &uncertainty, GapsRandomState *randState)
     // get result
     GapsResult result(stats);
     result.totalRunningTime = static_cast<unsigned>((bpt_now() - startTime).total_seconds());
-    result.averageQueueLengthA = ASampler.getAverageQueueLength();
-    result.averageQueueLengthP = PSampler.getAverageQueueLength();
     result.totalUpdates = totalUpdates;
 
     // do not return meanChisQ if running with a fixed matrix to avoid confusion

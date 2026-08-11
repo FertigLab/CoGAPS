@@ -25,9 +25,9 @@ getPatternGeneSet(
 
 \item{gene.sets}{a list of gene sets to test. List names should be the names of the gene sets}
 
-\item{method}{enrichment or overrepresentation. Conducts a test for gene set enrichment using {fgsea::gsea} ranking features by pattern amplitude or a test for gene set overrepresentation in pattern markers using {fgsea::fora}, respectively.}
+\item{method}{enrichment or overrepresentation. Conducts a test for gene set enrichment using \code{fgsea::gsea} ranking features by pattern amplitude or a test for gene set overrepresentation in pattern markers using \code{fgsea::fora}, respectively.}
 
-\item{...}{additional parameters passed to {patternMarkers} if using overrepresentation method}
+\item{...}{additional parameters passed to \code{patternMarkers} if using overrepresentation method}
 }
 \value{
 list of dataframes containing gene set enrichment or gene set overrepresentation statistics

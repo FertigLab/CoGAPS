@@ -41,8 +41,7 @@ public:
         float alpha, float maxGibbsMass, const GapsParameters &params,
         GapsRandomState *randState);
     unsigned nAtoms() const;
-    float getAverageQueueLength() const;
-    void update(unsigned nSteps, unsigned nThreads);
+    void update(unsigned nSteps);
     friend Archive& operator<< <DataModel> (Archive &ar, const SingleThreadedGibbsSampler &s);
     friend Archive& operator>> <DataModel> (Archive &ar, SingleThreadedGibbsSampler &s);
 private:
@@ -57,7 +56,11 @@ private:
     uint64_t mNumBins;
     uint64_t mBinLength;
     uint64_t mNumPatterns;
-    double mDomainLength; // length of entire atomic domain
+    double mdDomainLength; 
+    // doudle length of entire atomic domain
+    // actually, if we need uint64_t value, we call mDomain.DomainLength()
+    // the dmDomainLength is not to kill a old field
+    //  
     double mAlpha;
 };
 
@@ -75,7 +78,7 @@ mRng(randState),
 mNumBins(DataModel::nElements()),
 mBinLength(std::numeric_limits<uint64_t>::max() / (DataModel::nElements())),
 mNumPatterns(DataModel::nPatterns()),
-mDomainLength(mBinLength * DataModel::nElements()),
+mdDomainLength(mBinLength * DataModel::nElements()),
 mAlpha(alpha)
 {}
 
@@ -83,12 +86,6 @@ template <class DataModel>
 unsigned SingleThreadedGibbsSampler<DataModel>::nAtoms() const
 {
     return mDomain.size();
-}
-
-template <class DataModel>
-float SingleThreadedGibbsSampler<DataModel>::getAverageQueueLength() const
-{
-    return 0.f;
 }
 
 template <class DataModel>
@@ -108,8 +105,8 @@ char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
     if (u1 < 0.5f)
     {
         double nAtoms = static_cast<double>(mDomain.size());
-        double numer = nAtoms * mDomainLength;
-        float deathProb = numer / (numer + mAlpha * mNumBins * (mDomainLength - nAtoms));
+        double numer = nAtoms * mdDomainLength; //here, we need double version of the domain length
+        float deathProb = numer / (numer + mAlpha * mNumBins * (mdDomainLength - nAtoms));
         // [AI-generated] Within the birth/death branch, choose death with probability implied
         // by the atom-count prior; otherwise propose birth.
         return mRng.uniform() < deathProb ? 'D' : 'B';
@@ -119,7 +116,7 @@ char SingleThreadedGibbsSampler<DataModel>::getUpdateType() const
 }
 
 template <class DataModel>
-void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps, unsigned nThreads) // NOLINT
+void SingleThreadedGibbsSampler<DataModel>::update(unsigned nSteps)
 {
     // [AI-generated] Sequential sampler path: each proposal is generated, evaluated, and
     // applied before the next proposal is drawn.
@@ -215,8 +212,7 @@ void SingleThreadedGibbsSampler<DataModel>::move()
     // [AI-generated] Bound the move by neighboring atom positions; use domain endpoints for
     // edge atoms.
     uint64_t lbound = hood.hasLeft() ? hood.left->pos() : 0;
-    uint64_t rbound = hood.hasRight() ? hood.right->pos() :
-        static_cast<uint64_t>(mDomainLength);
+    uint64_t rbound = hood.hasRight() ? hood.right->pos() : mDomain.DomainLength();
 
     // [AI-generated] Select the new atomic position and map old/new positions to matrix indices.
     uint64_t pos = mRng.uniform64(lbound + 1, rbound - 1);
@@ -283,16 +279,18 @@ template <class DataModel>
 Archive& operator<<(Archive &ar, const SingleThreadedGibbsSampler<DataModel> &s)
 {
     operator<<(ar, static_cast<const DataModel&>(s)) << s.mDomain << s.mNumBins
-        << s.mBinLength << s.mNumPatterns << s.mDomainLength << s.mAlpha;
+        << s.mBinLength << s.mNumPatterns << s.mdDomainLength << s.mAlpha;
     return ar;
 }
 
 template <class DataModel>
 Archive& operator>>(Archive &ar, SingleThreadedGibbsSampler<DataModel> &s)
 {
-    operator>>(ar, static_cast<DataModel&>(s)) << s.mDomain << s.mNumBins
-        << s.mBinLength << s.mNumPatterns << s.mDomainLength << s.mAlpha;
+    operator>>(ar, static_cast<DataModel&>(s)) >> s.mDomain >> s.mNumBins
+        >> s.mBinLength >> s.mNumPatterns >> s.mdDomainLength >> s.mAlpha;
     return ar;
 }
+
+
 
 #endif // __COGAPS_SINGLE_THREADED_GIBBS_SAMPLER_H__

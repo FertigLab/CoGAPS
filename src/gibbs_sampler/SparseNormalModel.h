@@ -24,7 +24,7 @@ public:
         const GapsParameters &params);
     void setMatrix(const Matrix &mat);
     void setAnnealingTemp(float temp);
-    void sync(const SparseNormalModel &model, unsigned nThreads=1);
+    void sync(const SparseNormalModel &model);
     void extraInitialization();
     float chiSq() const;
     float dataSparsity() const;

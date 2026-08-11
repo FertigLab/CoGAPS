@@ -5,6 +5,7 @@
 #include "../data_structures/HybridVector.h"
 #include "../data_structures/SparseVector.h"
 #include "../utils/GapsAssert.h"
+#include "Math.h"
 #include "SIMD.h"
 
 namespace gaps
@@ -21,8 +22,9 @@ namespace gaps
     float sum(const SparseVector &v);
     bool isVectorZero(const Vector &v);
     bool isVectorZero(const HybridVector &v);
-    Vector elementSq(Vector v);
-    Vector pmax(Vector v, float p);
+    Vector elementSq(const Vector &v);
+    Vector pmax(const Vector & v, float factor, float min_threshold);
+    Vector pmax(const Vector & v, float factor);
     template <class VectorType>
     float dot(const VectorType &a, const VectorType &b);
     template <class VectorType>

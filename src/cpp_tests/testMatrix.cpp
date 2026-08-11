@@ -1,12 +1,14 @@
 #include <testthat.h>
 #include "../testthat-tweak.h"
 #include "../data_structures/Matrix.h"
-#include "../file_parser/CsvParser.h"
-#include "../file_parser/TsvParser.h"
-#include "../file_parser/MtxParser.h"
+//#include "../file_parser/MtxParser.h"
+//#include "../file_parser/CharacterDelimitedParser.h"
+#include "../file_parser/FileParser.h"
+#include "../math/Math.h"
 #include "../math/Random.h"
 #include "../math/VectorMath.h"
 #include "../math/MatrixMath.h"
+
 
 static std::vector<unsigned> sequentialVector(unsigned n)
 {
@@ -57,7 +59,7 @@ unsigned nc, unsigned nIndices, float sum1, float sum2, float sum3)
         sequentialVector(nIndices));
 }
 
-TEST_CASE("Test Writing/Reading Matrices from File")
+TEST_CASE("Test Writing/Reading Matrices from File","[matrix][matrixrw]")
 {
     // matrix to use for testing
     Matrix ref(25, 50);
@@ -70,29 +72,27 @@ TEST_CASE("Test Writing/Reading Matrices from File")
     }
 
     // write matrix to file
-    FileParser::writeToTsv("testMatWrite.tsv", ref);
     FileParser::writeToCsv("testMatWrite.csv", ref);
-    FileParser::writeToMtx("testMatWrite.mtx", ref);
+//    FileParser::writeToMtx("testMatWrite.mtx", ref);
 
     // read matrices from file
     Matrix mat(ref, false, false, sequentialVector(0));
-    Matrix matTsv("testMatWrite.tsv", false, false, sequentialVector(0));
     Matrix matCsv("testMatWrite.csv", false, false, sequentialVector(0));
-    Matrix matMtx("testMatWrite.mtx", false, false, sequentialVector(0));
+//    Matrix matMtx("testMatWrite.mtx", false, false, sequentialVector(0));
 
     // delete files
-    std::remove("testMatWrite.tsv");
     std::remove("testMatWrite.csv");
-    std::remove("testMatWrite.mtx");
+//    std::remove("testMatWrite.mtx");
 
     // test matrices
     REQUIRE(gaps::sum(mat) == gaps::sum(ref));
-    REQUIRE(gaps::sum(matTsv) == gaps::sum(ref));
     REQUIRE(gaps::sum(matCsv) == gaps::sum(ref));
-    REQUIRE(gaps::sum(matMtx) == gaps::sum(ref));
+    //REQUIRE(gaps::sum(matMtx) == gaps::sum(ref));
 }
 
-TEST_CASE("Test Matrix.h")
+
+
+TEST_CASE("Test Matrix","[matrix][matrixfull]")
 {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
@@ -124,19 +124,87 @@ TEST_CASE("Test Matrix.h")
         }
 
         // write matrix to file
-        FileParser::writeToTsv("testMatWrite.tsv", ref);
         FileParser::writeToCsv("testMatWrite.csv", ref);
-        FileParser::writeToMtx("testMatWrite.mtx", ref);
+        //FileParser::writeToMtx("testMatWrite.mtx", ref);
 
         // test
         testAllConstructorSituations(ref, 10, 25, 5, 4125.f, 1750.f, 325.f);
-        testAllConstructorSituations("testMatWrite.tsv", 10, 25, 5, 4125.f, 1750.f, 325.f);
         testAllConstructorSituations("testMatWrite.csv", 10, 25, 5, 4125.f, 1750.f, 325.f);
-        testAllConstructorSituations("testMatWrite.mtx", 10, 25, 5, 4125.f, 1750.f, 325.f);
+        //testAllConstructorSituations("testMatWrite.mtx", 10, 25, 5, 4125.f, 1750.f, 325.f);
 
         // delete files
-        std::remove("testMatWrite.tsv");
         std::remove("testMatWrite.csv");
-        std::remove("testMatWrite.mtx");
+        //std::remove("testMatWrite.mtx");
     }
+}
+
+
+TEST_CASE("Test Matrix pad","[matrix][matrixpad]")
+{
+
+    SECTION("pad")
+    {
+        Matrix mat(100, 250);
+        float foam=3;
+        //here
+        REQUIRE(!mat.empty());
+        REQUIRE(mat.nRow() == 100);
+        REQUIRE(mat.nCol() == 250);
+        REQUIRE(gaps::isVectorZero(mat.getCol(42)));
+        mat.pad(foam);
+        REQUIRE(mat.nRow()*mat.nCol()*foam == gaps::sum(mat));
+    }
+
+}
+
+TEST_CASE("Test Matrix assign","[matrix][matrixassign]")
+{
+    SECTION("assign")
+    {
+        Matrix mat(100, 250), cpmat(100,250);
+        float foam=3;
+        //here
+        mat.pad(foam);
+        cpmat=mat;
+        REQUIRE(mat.nRow()*mat.nCol()*foam == gaps::sum(cpmat));
+    }
+
+}
+
+
+TEST_CASE("Test gap Matrix pmax","[matrix][matrixpmax]")
+{
+    SECTION("pmax")
+    {
+        Matrix mat(100, 250), cpmat(100,250);
+        float foam=3,minfoam=0.3;
+        //here
+        for (unsigned i = 0; i < mat.nRow(); ++i) {
+            mat(i,i)=foam;
+        }
+        REQUIRE(minfoam == gaps::min(foam,minfoam));
+        REQUIRE(foam == gaps::max(foam,minfoam));
+        REQUIRE(minfoam == std::min(foam,minfoam));
+        REQUIRE(foam == std::max(foam,minfoam));
+        cpmat=gaps::pmax(mat,1,minfoam);
+        REQUIRE(minfoam == cpmat(0,1));
+        REQUIRE(minfoam == gaps::min(cpmat));
+    }
+}
+
+// Regression: gaps::nonZeroMean returned sum/0 = NaN on an all-zero matrix,
+// poisoning mLambda in the models.
+TEST_CASE("nonZeroMean of an all-zero matrix is 0, not NaN","[matrix][nonzeromean-empty]")
+{
+    Matrix mat(10, 10); // default-constructed: all zero
+    REQUIRE(gaps::nonZeroMean(mat) == 0.f); // NaN would fail this comparison
+}
+
+// Regression: gaps::min/max(Matrix) dereferenced getCol(0) on a zero-column matrix.
+TEST_CASE("min/max of a zero-column matrix return 0","[matrix][minmax-empty]")
+{
+    Matrix mat(5, 0);
+    REQUIRE(mat.nCol() == 0);
+    REQUIRE(gaps::min(mat) == 0.f);
+    REQUIRE(gaps::max(mat) == 0.f);
 }

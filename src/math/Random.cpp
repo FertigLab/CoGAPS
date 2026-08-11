@@ -80,6 +80,7 @@ uint32_t GapsRng::uniform32()
 // inclusive of a and b
 uint32_t GapsRng::uniform32(uint32_t a, uint32_t b)
 {
+    GAPS_ASSERT(a<=b);
     if (b == a)
     {
         return a;
@@ -88,6 +89,7 @@ uint32_t GapsRng::uniform32(uint32_t a, uint32_t b)
     uint32_t x = uniform32();
     uint32_t iPart = std::numeric_limits<uint32_t>::max() / range;
     while (x >= range * iPart)
+    //[a,b] is mapped to intervals of iPart length; everything upper than range * iPart maps to nowhere
     {
         x = uniform32();
     }
@@ -107,6 +109,7 @@ uint64_t GapsRng::uniform64()
 // inclusive of a and b
 uint64_t GapsRng::uniform64(uint64_t a, uint64_t b)
 {
+    GAPS_ASSERT(a<=b);
     if (b == a)
     {
         return a;
@@ -114,7 +117,8 @@ uint64_t GapsRng::uniform64(uint64_t a, uint64_t b)
     uint64_t range = b + 1 - a;
     uint64_t x = uniform64();
     uint64_t iPart = std::numeric_limits<uint64_t>::max() / range;
-    while (x >= range * iPart)
+    while (x >= range * iPart) 
+    //[a,b] is mapped to intervals of iPart length; everything upper than range * iPart maps to nowhere
     {
         x = uniform64();
     }
@@ -363,3 +367,4 @@ Archive& operator>>(Archive &ar, GapsRandomState &s)
     ar >> s.mSeeder;
     return ar;
 }
+

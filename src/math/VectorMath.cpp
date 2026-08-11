@@ -4,7 +4,8 @@
 
 float gaps::min(const Vector &v)
 {
-    float mn = 0.f;
+    if (v.size() == 0) return 0.f; // empty vector
+    float mn = v[0];
     for (unsigned i = 0; i < v.size(); ++i)
     {
         // [AI-generated] Keep the smaller value seen so far.
@@ -15,7 +16,8 @@ float gaps::min(const Vector &v)
 
 float gaps::min(const HybridVector &v)
 {
-    float mn = 0.f;
+    if (v.size() == 0) return 0.f; // empty vector
+    float mn = v[0];
     for (unsigned i = 0; i < v.size(); ++i)
     {
         // [AI-generated] Keep the smaller value seen so far.
@@ -26,8 +28,9 @@ float gaps::min(const HybridVector &v)
 
 float gaps::min(const SparseVector &v)
 {
-    float mn = 0.f;
     SparseIterator<1> it(v);
+    if (it.atEnd()) return 0.f; // empty (all-zero) sparse vector
+    float mn = get<1>(it);
     while (!it.atEnd())
     {
         // [AI-generated] Keep the smaller nonzero sparse value seen so far.
@@ -39,8 +42,9 @@ float gaps::min(const SparseVector &v)
 
 float gaps::max(const Vector &v)
 {
-    float mx = 0.f;
-    for (unsigned i = 0; i < v.size(); ++i)
+    if (v.size() == 0) return 0.f; // empty vector
+    float mx = v[0];
+    for (unsigned i = 1; i < v.size(); ++i)
     {
         // [AI-generated] Keep the larger value seen so far.
         mx = (v[i] > mx) ? v[i] : mx;
@@ -50,8 +54,9 @@ float gaps::max(const Vector &v)
 
 float gaps::max(const HybridVector &v)
 {
-    float mx = 0.f;
-    for (unsigned i = 0; i < v.size(); ++i)
+    if (v.size() == 0) return 0.f; // empty vector
+    float mx = v[0];
+    for (unsigned i = 1; i < v.size(); ++i)
     {
         // [AI-generated] Keep the larger value seen so far.
         mx = (v[i] > mx) ? v[i] : mx;
@@ -61,8 +66,9 @@ float gaps::max(const HybridVector &v)
 
 float gaps::max(const SparseVector &v)
 {
-    float mx = 0.f;
     SparseIterator<1> it(v);
+    if (it.atEnd()) return 0.f; // empty (all-zero) sparse vector
+    float mx = get<1>(it);
     while (!it.atEnd())
     {
         // [AI-generated] Keep the larger nonzero sparse value seen so far.
@@ -74,8 +80,9 @@ float gaps::max(const SparseVector &v)
 
 unsigned gaps::whichMax(const Vector &v)
 {
+    if (v.size() == 0) return 0; // empty vector
     unsigned ndx = 0;
-    float mx = 0.f;
+    float mx = v[0];
     for (unsigned i = 0; i < v.size(); ++i)
     {
         // [AI-generated] Track the index and value of the largest entry seen so far.
@@ -134,13 +141,14 @@ bool gaps::isVectorZero(const HybridVector &v)
     return v.empty();
 }
 
-Vector gaps::elementSq(Vector v)
+Vector gaps::elementSq(const Vector & v)
 {
+    Vector res(v.size());
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        v[i] *= v[i];
+        res[i] = v[i] * v[i];
     }
-    return v;
+    return res;
 }
 
 Vector operator*(Vector v, float f)
@@ -175,11 +183,17 @@ Vector operator/(const HybridVector &hv, float f)
     return v;
 }
 
-Vector gaps::pmax(Vector v, float p)
+Vector gaps::pmax(const Vector & v, float f, float min_thr)
 {
+    Vector res(v.size());
     for (unsigned i = 0; i < v.size(); ++i)
     {
-        v[i] = gaps::max(v[i] * p, p);
+        res[i] = std::max(v[i] * f, min_thr);
     }
-    return v;
+    res.padSIMD(min_thr);
+    return res;
+}
+
+Vector gaps::pmax(const Vector & v, float f) {
+    return (gaps::pmax(v,f,f));
 }

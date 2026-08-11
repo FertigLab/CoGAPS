@@ -56,16 +56,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// compiledWithOpenMPSupport_cpp
-bool compiledWithOpenMPSupport_cpp();
-RcppExport SEXP _CoGAPS_compiledWithOpenMPSupport_cpp() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(compiledWithOpenMPSupport_cpp());
-    return rcpp_result_gen;
-END_RCPP
-}
 // getFileInfo_cpp
 Rcpp::List getFileInfo_cpp(const std::string& path);
 RcppExport SEXP _CoGAPS_getFileInfo_cpp(SEXP pathSEXP) {
@@ -78,25 +68,37 @@ BEGIN_RCPP
 END_RCPP
 }
 // run_catch_unit_tests
-int run_catch_unit_tests(Rcpp::String reporter);
-RcppExport SEXP _CoGAPS_run_catch_unit_tests(SEXP reporterSEXP) {
+int run_catch_unit_tests(Rcpp::String reporter, Rcpp::String output);
+RcppExport SEXP _CoGAPS_run_catch_unit_tests(SEXP reporterSEXP, SEXP outputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::String >::type reporter(reporterSEXP);
-    rcpp_result_gen = Rcpp::wrap(run_catch_unit_tests(reporter));
+    Rcpp::traits::input_parameter< Rcpp::String >::type output(outputSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_catch_unit_tests(reporter, output));
     return rcpp_result_gen;
 END_RCPP
 }
 // run_catch_unit_tests_by_tag
-int run_catch_unit_tests_by_tag(Rcpp::String tag, Rcpp::String reporter);
-RcppExport SEXP _CoGAPS_run_catch_unit_tests_by_tag(SEXP tagSEXP, SEXP reporterSEXP) {
+int run_catch_unit_tests_by_tag(Rcpp::String tag, Rcpp::String reporter, Rcpp::String output);
+RcppExport SEXP _CoGAPS_run_catch_unit_tests_by_tag(SEXP tagSEXP, SEXP reporterSEXP, SEXP outputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::String >::type tag(tagSEXP);
     Rcpp::traits::input_parameter< Rcpp::String >::type reporter(reporterSEXP);
-    rcpp_result_gen = Rcpp::wrap(run_catch_unit_tests_by_tag(tag, reporter));
+    Rcpp::traits::input_parameter< Rcpp::String >::type output(outputSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_catch_unit_tests_by_tag(tag, reporter, output));
+    return rcpp_result_gen;
+END_RCPP
+}
+// catch_test_case_names
+Rcpp::CharacterVector catch_test_case_names();
+RcppExport SEXP _CoGAPS_catch_test_case_names() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(catch_test_case_names());
     return rcpp_result_gen;
 END_RCPP
 }
@@ -106,10 +108,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_CoGAPS_cogaps_cpp", (DL_FUNC) &_CoGAPS_cogaps_cpp, 3},
     {"_CoGAPS_getBuildReport_cpp", (DL_FUNC) &_CoGAPS_getBuildReport_cpp, 0},
     {"_CoGAPS_checkpointsEnabled_cpp", (DL_FUNC) &_CoGAPS_checkpointsEnabled_cpp, 0},
-    {"_CoGAPS_compiledWithOpenMPSupport_cpp", (DL_FUNC) &_CoGAPS_compiledWithOpenMPSupport_cpp, 0},
     {"_CoGAPS_getFileInfo_cpp", (DL_FUNC) &_CoGAPS_getFileInfo_cpp, 1},
-    {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 1},
-    {"_CoGAPS_run_catch_unit_tests_by_tag", (DL_FUNC) &_CoGAPS_run_catch_unit_tests_by_tag, 2},
+    {"_CoGAPS_run_catch_unit_tests", (DL_FUNC) &_CoGAPS_run_catch_unit_tests, 2},
+    {"_CoGAPS_run_catch_unit_tests_by_tag", (DL_FUNC) &_CoGAPS_run_catch_unit_tests_by_tag, 3},
+    {"_CoGAPS_catch_test_case_names", (DL_FUNC) &_CoGAPS_catch_test_case_names, 0},
     {NULL, NULL, 0}
 };
 

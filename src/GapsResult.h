@@ -31,8 +31,6 @@ struct GapsResult
     uint32_t seed;
     unsigned totalRunningTime;
     float meanChiSq;
-    float averageQueueLengthA;
-    float averageQueueLengthP;
 };
 
 #endif // __COGAPS_GAPS_RESULT__

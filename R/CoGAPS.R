@@ -28,12 +28,13 @@ checkpointsEnabled <- function()
 #' Check if compiler supported OpenMP
 #' @export
 #'
-#' @return true/false if OpenMP was supported
+#' @return FALSE (OpenMP support was removed together with the asynchronous
+#' sampler; CoGAPS now always runs single-threaded)
 #' @examples
 #' CoGAPS::compiledWithOpenMPSupport()
 compiledWithOpenMPSupport <- function()
 {
-    compiledWithOpenMPSupport_cpp()
+    FALSE
 }
 
 #' CoGAPS Matrix Factorization Algorithm
@@ -47,7 +48,7 @@ compiledWithOpenMPSupport <- function()
 #' @param data File name or R object (see details for supported types)
 #' @param params CogapsParams object
 #' @param nPatterns rank of the nmf decomposition
-#' @param nThreads maximum number of threads to run on
+#' @param nThreads deprecated and ignored; CoGAPS now always runs single-threaded
 #' @param messages T/F for displaying output
 #' @param outputFrequency number of iterations between each output (set to 0 to
 #' disable status updates, other output is controlled by @code messages)
@@ -66,7 +67,8 @@ compiledWithOpenMPSupport <- function()
 #' only worker 1 prints output and each worker outputs when it finishes, this
 #' is not neccesary when using the default parallel methods (i.e. distributed
 #' CoGAPS) but only when the user is manually calling CoGAPS in parallel
-#' @param asynchronousUpdates enable asynchronous updating which allows for multi-threaded runs
+#' @param asynchronousUpdates deprecated and ignored; the asynchronous sampler was
+#' removed because it broke MCMC detailed balance
 #' @param nSnapshots how many snapshots to take in each phase, setting this to 0 disables
 #' snapshots
 #' @param snapshotPhase which phase to take snapsjots in e.g. "equilibration", "sampling",
@@ -104,23 +106,18 @@ CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
     params <- getValueOrRds(params)
     validObject(params)
 
-    # OpenMP availability determines whether the asynchronous sampler can run.
-    # Without OpenMP, CoGAPS falls back to the sequential sampler path.
-    if (!compiledWithOpenMPSupport())
-    {
-        if (asynchronousUpdates | nThreads > 1)
-            warning(paste(
-                "OpenMP is not available in this CoGAPS build;",
-                "running with asynchronousUpdates=FALSE and nThreads=1;",
-                "this may change results in a platform-dependent manner."
-            ))
-        asynchronousUpdates = FALSE
-        nThreads = 1
-    }
+    # The asynchronous multi-threaded sampler was removed (it broke MCMC detailed
+    # balance); CoGAPS now always runs single-threaded. The 'nThreads' and
+    # 'asynchronousUpdates' arguments are kept for backward compatibility but are
+    # ignored. Warn only when a non-default value is requested.
+    if (!identical(as.numeric(nThreads), 1) || isTRUE(asynchronousUpdates))
+        warning("'nThreads' and 'asynchronousUpdates' are deprecated and ignored; ",
+                "CoGAPS now always runs single-threaded (async broke MCMC balance)")
 
     # store all parameters in a list and parse parameters from ...
+    # (nThreads/asynchronousUpdates are deprecated no-ops -- they are accepted as
+    # arguments for backward compatibility but not threaded through to the sampler)
     allParams <- list("gaps"=params,
-        "nThreads"=nThreads,
         "messages"=messages,
         "outputFrequency"=outputFrequency,
         "nSnapshots"=nSnapshots,
@@ -134,7 +131,6 @@ CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
         "BPPARAM"=BPPARAM,
         "outputToFile"=NULL,
         "workerID"=workerID,
-        "asynchronousUpdates"=asynchronousUpdates,
         "dataName"=dataName
     )
     allParams <- parseExtraParams(allParams, list(...))
@@ -175,7 +171,8 @@ CoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
 #' params <- setParam(params, "nIterations", 100)
 #' result <- scCoGAPS(t(GIST.matrix), params, BPPARAM=BiocParallel::SerialParam())
 #' }
-scCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
+scCoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
+nPatterns, nThreads=1, messages=TRUE,
 outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
@@ -215,7 +212,8 @@ BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)
 #' params <- setParam(params, "nIterations", 100)
 #' result <- GWCoGAPS(GIST.matrix, params, BPPARAM=BiocParallel::SerialParam())
 #' }
-GWCoGAPS <- function(data, params=new("CogapsParams"), nThreads=1, messages=TRUE,
+GWCoGAPS <- function(data, params=new("CogapsParams", nPatterns=nPatterns),
+nPatterns, nThreads=1, messages=TRUE,
 outputFrequency=500, uncertainty=NULL, checkpointOutFile="gaps_checkpoint.out",
 checkpointInterval=1000, checkpointInFile=NULL, transposeData=FALSE,
 BPPARAM=NULL, workerID=1, asynchronousUpdates=FALSE, ...)

@@ -9,17 +9,44 @@ AC_LANG(C++)
 AC_REQUIRE_CPP
 AC_PROG_CXX
 
-# Check if compiling debug version
-AC_ARG_ENABLE(debug, [AS_HELP_STRING([--enable-debug],[build debug version of CoGAPS])], [build_debug=yes], [build_debug=no])
+# Check if compiling gaps debug version; actuaooly, it includes broken tests and swithcing on asserts; 
+# we switched on the asserts unconditionally
+AC_ARG_ENABLE(gaps-debug, [AS_HELP_STRING([--enable-gaps-debug],[build debug version of CoGAPS])], 
+       [case "${enableval}" in
+        yes) build_gaps_debug=yes ;;
+        no)  build_gaps_debug=no ;;
+        *) AC_MSG_ERROR([--enable-gaps-debug understads only 'no' or 'yes' values]) ;;
+     esac],[build_gaps_debug=no]) 
+
+
+
+#Switches on debug cpp flags -g -O0
+AC_ARG_ENABLE(debug, [AS_HELP_STRING([--enables-debug],[build CoGAPS with debug options])],
+       [case "${enableval}" in
+        yes) build_debug=yes ;;
+        no)  build_debug=no ;;
+        *) AC_MSG_ERROR([--enable-debug understads only 'no' or 'yes' values]) ;;
+     esac],[build_debug=no]) 
+
 
 # Check if running C++ tests (this adds to compilation time)
 AC_ARG_ENABLE(cpp-tests, [AS_HELP_STRING([--enable-cpp-tests],[turn on C++ unit tests])], 
        [case "${enableval}" in
         no)  cpp_tests_disable=yes ;;
         yes) cpp_tests_disable=no ;;
-        *) AC_MSG_ERROR([--enable-cpp-tests understads only 'no' value]) ;;
-     esac],[cpp_tests_disable=no]) 
-    
+        *) AC_MSG_ERROR([--enable-cpp-tests understads only 'no' or 'yes' values]) ;;
+     esac],[cpp_tests_disable=no])
+
+# Check if checkpoint (save/resume) support should be compiled in. Checkpoints are
+# an emergency/debug feature that serialize state on every run; off by default,
+# enable with --enable-checkpoints for package debugging.
+AC_ARG_ENABLE(checkpoints, [AS_HELP_STRING([--enable-checkpoints],[turn on checkpoint (save/resume) support])],
+       [case "${enableval}" in
+        no)  cpp_checkpoints_disable=yes ;;
+        yes) cpp_checkpoints_disable=no ;;
+        *) AC_MSG_ERROR([--enable-checkpoints understands only 'no' or 'yes' values]) ;;
+     esac],[cpp_checkpoints_disable=yes])
+
 # Check if compiler warnings should be turned on
 AC_ARG_ENABLE(warnings, [AS_HELP_STRING([--enable-warnings],[compile CoGAPS with warning messages])], [warnings=yes], [warnings=no])
 
@@ -28,28 +55,31 @@ AC_ARG_ENABLE(simd, [AS_HELP_STRING([--enable-simd],[compile with SIMD support i
     [use_simd=$enableval], [use_simd=yes])
 
 # default CoGAPS specific flags
-GAPS_CPP_FLAGS=" -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -DGAPS_DISABLE_CHECKPOINTS -D__GAPS_R_BUILD__"
+GAPS_CPP_FLAGS=" -DBOOST_MATH_PROMOTE_DOUBLE_POLICY=0 -D__GAPS_R_BUILD__"
 GAPS_CXX_FLAGS=
 GAPS_LIBS=
+
+# checkpoints are off by default; define the disabling macro unless --enable-checkpoints
+if test "x$cpp_checkpoints_disable" != "xno" ; then
+    GAPS_CPP_FLAGS+=" -DGAPS_DISABLE_CHECKPOINTS "
+fi
 
 # get compiler info
 AX_COMPILER_VENDOR
 AX_COMPILER_VERSION
 
-# set openmp flags, disable only if requested
-AC_ARG_ENABLE(openmp, [AS_HELP_STRING([--enable-openmp],[compile with openMP support if available])],
-    [use_openmp=$enableval], [use_openmp=yes])
-
-AX_OPENMP
-if test "x$use_openmp" != "xno" ; then
-    GAPS_CXX_FLAGS+=" $OPENMP_CXXFLAGS "
-    GAPS_LIBS+=" $OPENMP_CXXFLAGS "
-fi
+# OpenMP removed together with the asynchronous sampler (it broke MCMC balance).
 
 echo "building on $ax_cv_cxx_compiler_vendor compiler version $ax_cv_cxx_compiler_version"
 
-# set compile flags for debug build
+# set -g -O0 for debug options
 if test "x$build_debug" = "xyes" ; then
+    echo "Building CoGAPS with debug information"
+    GAPS_CPP_FLAGS+=" -g -O0 "
+fi
+
+# set GAPS_DEBUG for debug build
+if test "x$build_gaps_debug" = "xyes" ; then
     echo "Building Debug Version of CoGAPS"
     GAPS_CPP_FLAGS+=" -DGAPS_DEBUG "
 fi
@@ -78,10 +108,7 @@ GAPS_SOURCE_FILES+=" GapsStatistics.o"
 GAPS_SOURCE_FILES+=" RcppExports.o"
 GAPS_SOURCE_FILES+=" test-runner.o"
 GAPS_SOURCE_FILES+=" atomic/Atom.o"
-GAPS_SOURCE_FILES+=" atomic/ConcurrentAtom.o"
 GAPS_SOURCE_FILES+=" atomic/AtomicDomain.o"
-GAPS_SOURCE_FILES+=" atomic/ConcurrentAtomicDomain.o"
-GAPS_SOURCE_FILES+=" atomic/ProposalQueue.o"
 GAPS_SOURCE_FILES+=" data_structures/HashSets.o"
 GAPS_SOURCE_FILES+=" data_structures/HybridMatrix.o"
 GAPS_SOURCE_FILES+=" data_structures/HybridVector.o"
@@ -105,14 +132,23 @@ GAPS_SOURCE_FILES+=" math/VectorMath.o"
 # add c++ tests to source list
 if test "x$cpp_tests_disable" != "xyes" ; then
     echo "Enabling C++ Unit Tests"
-    GAPS_CPP_FLAGS+=" -DGAPS_CPP_UNIT_TESTS "
-    GAPS_SOURCE_FILES+=" cpp_tests/testVector.o"
+    GAPS_CPP_FLAGS+=" -DGAPS_VCPP_UNIT_TESTS "
+    GAPS_SOURCE_FILES+=" cpp_tests/testAtomicDomain.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testDenseGibbsSampler.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSparseGibbsSampler.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSamplerHighLevel.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testFileParsers.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testHashSets.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testHybridMatrix.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testHybridVector.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testMathHelpers.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testMatrix.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testRandom.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSparseMatrix.o"
     GAPS_SOURCE_FILES+=" cpp_tests/testSparseVector.o"
-	GAPS_SOURCE_FILES+=" cpp_tests/testHashSets.o"
-	GAPS_SOURCE_FILES+=" cpp_tests/testHybridMatrix.o"
-	GAPS_SOURCE_FILES+=" cpp_tests/testHybridVector.o"
-	GAPS_SOURCE_FILES+=" cpp_tests/testSparseIterator.o"
-#    GAPS_SOURCE_FILES+=" cpp_tests/testConcurrentAtomicDomain.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSparseIterator.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testSerialization.o"
+    GAPS_SOURCE_FILES+=" cpp_tests/testVector.o"
 fi
 # commented files in the if above are to be reviwed
 
@@ -122,6 +158,12 @@ AC_SUBST(GAPS_CPP_FLAGS)
 AC_SUBST(GAPS_CXX_FLAGS)
 AC_SUBST(GAPS_LIBS)
 AC_SUBST(GAPS_SOURCE_FILES)
+
+echo "Writing src/Makevars"
+echo Echoing GAPS_CPP_FLAGS: 
+echo $GAPS_CPP_FLAGS
+echo Echoing GAPS_CXX_FLAGS:
+echo $GAPS_CXX_FLAGS
 
 # create makefile, output configure file
 AC_CONFIG_FILES([src/Makevars])

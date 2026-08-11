@@ -17,6 +17,16 @@ TEST_CASE("Test Vector","[vector]")
         REQUIRE(gaps::sum(v) == 0.f);
     }
 
+    SECTION("Test padding")
+    {
+        Vector v(100);
+        float foam=3;
+        v.pad(foam);
+        REQUIRE(v.size() == 100);
+        REQUIRE(!gaps::isVectorZero(v));
+        REQUIRE(100*foam==gaps::sum(v));
+    }
+
     SECTION("Test std::vector constructor")
     {   
         GapsRng rng(&randState);
@@ -47,6 +57,18 @@ TEST_CASE("Test Vector","[vector]")
         v += v;
         REQUIRE(gaps::sum(v) == 2.f * s);
     }
+}
+
+// Regression: gaps::min/max/whichMax(Vector) dereferenced v[0] on an empty
+// vector (out-of-bounds read). Now guarded to return 0 on size 0. (Same
+// empty-container class as the SparseVector fix, issue 12.)
+TEST_CASE("gaps::min/max/whichMax on empty Vector","[vector][emptyminmax]")
+{
+    Vector v(0);
+    REQUIRE(v.size() == 0);
+    REQUIRE(gaps::min(v) == 0.f);
+    REQUIRE(gaps::max(v) == 0.f);
+    REQUIRE(gaps::whichMax(v) == 0);
 }
 
 // optional test used for benchmarking, set to 0 to disable, 1 to enable

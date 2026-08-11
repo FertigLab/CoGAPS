@@ -24,17 +24,19 @@ namespace gaps
     float sum(const MatrixType &mat);
     template <class MatrixType>
     float mean(const MatrixType &mat);
-    Matrix pmax(Matrix mat, float p);
+    Matrix pmax(const Matrix & mat, float f, float min_thr);
+    Matrix pmax(const Matrix & mat, float f);
 } // namespace gaps
 
-Matrix operator*(Matrix mat, float f);
-Matrix operator/(Matrix mat, float f);
+Matrix operator*(const Matrix & mat, float f);
+Matrix operator/(const Matrix & mat, float f);
 
 template <class MatrixType>
 float gaps::min(const MatrixType &mat)
 {
-    float mn = 0.f;
-    for (unsigned i = 0; i < mat.nCol(); ++i)
+    if (mat.nCol() == 0) return 0.f; // empty matrix
+    float mn = gaps::min(mat.getCol(0));
+    for (unsigned i = 1; i < mat.nCol(); ++i)
     {
         float cmin = gaps::min(mat.getCol(i));
         // [AI-generated] Keep the smallest column minimum seen so far.
@@ -46,8 +48,9 @@ float gaps::min(const MatrixType &mat)
 template <class MatrixType>
 float gaps::max(const MatrixType &mat)
 {
-    float mx = 0.f;
-    for (unsigned i = 0; i < mat.nCol(); ++i)
+    if (mat.nCol() == 0) return 0.f; // empty matrix
+    float mx = gaps::max(mat.getCol(0));
+    for (unsigned i = 1; i < mat.nCol(); ++i)
     {
         float cmax = gaps::max(mat.getCol(i));
         // [AI-generated] Keep the largest column maximum seen so far.

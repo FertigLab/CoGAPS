@@ -13,7 +13,7 @@ AtomNeighborhood::AtomNeighborhood(Atom *l, Atom *c, Atom *r)
 
 bool AtomNeighborhood::hasLeft() const
 {
-    return left != NULL;
+    return left != NULL; 
 }
 
 bool AtomNeighborhood::hasRight() const
@@ -21,8 +21,7 @@ bool AtomNeighborhood::hasRight() const
     return right != NULL;
 }
 
-Atom::Atom(uint64_t p, float m)
-    : mIterator(), mPos(p), mLeftIndex(-1), mRightIndex(-1), mIndex(-1), mMass(m)
+Atom::Atom(uint64_t p, float m): mIterator(), mPos(p), mHasRight(false), mHasLeft(false), mMass(m)
 {}
 
 uint64_t Atom::pos() const
@@ -45,17 +44,29 @@ void Atom::updatePos(uint64_t newPos)
     mPos = newPos;
 }
 
-void Atom::setLeftIndex(int index)
+void Atom::setLeftIndex(size_t index)
 {
     mLeftIndex = index;
+    mHasLeft = true;
 }
 
-void Atom::setRightIndex(int index)
+void Atom::setRightIndex(size_t index)
 {
     mRightIndex = index;
+    mHasRight = true;
 }
 
-void Atom::setIndex(int index)
+void Atom::unsetLeftIndex(){
+    mLeftIndex = (size_t)0;
+    mHasLeft = false;
+}
+
+void Atom::unsetRightIndex(){
+    mRightIndex = (size_t)0;
+    mHasRight = false;
+}
+
+void Atom::setIndex(size_t index)
 {
     mIndex = index;
 }
@@ -67,25 +78,27 @@ void Atom::setIterator(AtomMapType::iterator it)
 
 bool Atom::hasLeft() const
 {
-    return mLeftIndex >= 0;
+    return mHasLeft;
 }
 
 bool Atom::hasRight() const
 {
-    return mRightIndex >= 0;
+    return mHasRight;
 }
 
-int Atom::leftIndex() const
+size_t Atom::leftIndex() const
 {
+    GAPS_ASSERT(mHasLeft);
     return mLeftIndex;
 }
 
-int Atom::rightIndex() const
+size_t Atom::rightIndex() const
 {
+    GAPS_ASSERT(mHasRight);
     return mRightIndex;
 }
 
-int Atom::index() const
+size_t Atom::index() const
 {
     return mIndex;
 }

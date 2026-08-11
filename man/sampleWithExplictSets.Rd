@@ -9,7 +9,6 @@ sampleWithExplictSets(allParams)
 \arguments{
 \item{allParams}{list of all CoGAPS parameters}
 
-\item{total}{total number of rows (cols) that are being paritioned}
 }
 \value{
 list of subsets

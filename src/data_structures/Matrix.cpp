@@ -26,6 +26,14 @@ void Matrix::pad(float val)
     }
 }
 
+void Matrix::padSIMD(float val)
+{
+    for (unsigned j = 0; j < mNumCols; ++j)
+    {
+        mCols[j].padSIMD(val);
+    }
+}
+
 // constructor from data set read in as a matrix
 Matrix::Matrix(const Matrix &mat, bool genesInCols, bool subsetGenes,
 std::vector<unsigned> indices)
@@ -145,6 +153,7 @@ std::vector<unsigned> indices)
         }
     }
 }
+
 
 unsigned Matrix::nRow() const
 {

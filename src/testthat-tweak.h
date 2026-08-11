@@ -17,5 +17,15 @@
 #define SECTION CATCH_SECTION 
 #define CHECK CATCH_CHECK
 #define REQUIRE CATCH_CHECK
+#define REQUIRE_THROWS CATCH_CHECK_THROWS
+
+//from <testthat.h>
+//# define context(__X__) CATCH_TEST_CASE(__X__ " | " __FILE__)
+//# define test_that CATCH_SECTION
+//# define expect_true CATCH_CHECK
+//# define expect_false CATCH_CHECK_FALSE
+//# define expect_error CATCH_CHECK_THROWS
+//# define expect_error_as CATCH_CHECK_THROWS_AS
+
 
 #endif //TESTTHAT_TWEAK_HPP

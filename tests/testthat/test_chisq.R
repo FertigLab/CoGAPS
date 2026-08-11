@@ -1,17 +1,54 @@
-test_that('chi-square reported by CoGAPS mathches manually calculated (w/uncertainty)',{
+context("CoGAPS")
+
+# Recompute the mean chi-square directly from the returned mean factor matrices
+# and the default uncertainty model, and check it against the value CoGAPS
+# reports (GapsStatistics::meanChiSq).
+#
+# The reconstruction is  M = A %*% t(P)  where A = featureLoadings (mean of the A
+# matrix) and P = sampleFactors (mean of the P matrix). The uncertainty is the
+# relative-error model floored at 0.1:  S = max(0.1 * D, 0.1). This model is the
+# same for the dense and sparse samplers (see DenseNormalModel / SparseNormalModel
+# and issues #17/#19), so the identical recomputation must hold in both modes.
+manualMeanChiSq <- function(res, D)
+{
+    A <- res@featureLoadings          # genes x patterns   (mean of A)
+    P <- res@sampleFactors            # samples x patterns  (mean of P)
+    S <- pmax(0.1 * D, 0.1)
+    sum(((D - A %*% t(P)) / S)^2)
+}
+
+test_that("chi-square reported by CoGAPS matches manually calculated (w/uncertainty)",
+{
     data(GIST)
-    data <- GIST.data_frame
-    unc <- 0.1*as.matrix(data)
-    res <- CoGAPS(data, nIterations=1000, uncertainty=unc, nPatterns=3,
+    D <- as.matrix(GIST.matrix)
+
+    # dense sampler
+    res <- CoGAPS(GIST.matrix, nPatterns=5, nIterations=500, outputFrequency=100,
+        seed=42, messages=FALSE)
+    expect_equal(getMeanChiSq(res), manualMeanChiSq(res, D), tolerance=1e-3)
+
+    # sparse sampler -- same uncertainty model, so the same recomputation applies
+    res_sp <- CoGAPS(GIST.matrix, nPatterns=5, nIterations=500, outputFrequency=100,
+        seed=42, messages=FALSE, sparseOptimization=TRUE)
+    expect_equal(getMeanChiSq(res_sp), manualMeanChiSq(res_sp, D), tolerance=1e-3)
+})
+
+# Explicit user-supplied uncertainty: CoGAPS must use the matrix passed in
+# 'uncertainty=' verbatim, so the reported chi-square has to match the same sum
+# recomputed against that matrix.
+test_that("chi-square reported by CoGAPS matches manually calculated (explicit uncertainty)",
+{
+    data(GIST)
+    D <- GIST.data_frame
+    unc <- 0.1 * as.matrix(D)
+    res <- CoGAPS(D, nIterations=1000, uncertainty=unc, nPatterns=3,
                   seed=1, messages=FALSE, sparseOptimization=FALSE)
     reported <- getMeanChiSq(res)
 
     A <- getAmplitudeMatrix(res)
     P <- getPatternMatrix(res)
-    M <- A %*% t(P)
+    calculated <- sum(((D - A %*% t(P)) / unc)^2)
 
-    calculated <- sum(((data - M)/unc)^2)
-    #Set the tolerance to float precision times matrix size
-    sprintf("difference: %.17f", abs(reported - calculated))
-    expect_equal(reported, calculated, tolerance = (1e-7)*prod(dim(data)))
+    # tolerance: float precision scaled by the number of accumulated terms
+    expect_equal(reported, calculated, tolerance = (1e-7) * prod(dim(D)))
 })

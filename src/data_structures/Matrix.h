@@ -25,6 +25,7 @@ public:
     float& operator()(unsigned i, unsigned j);
     Vector& getCol(unsigned col);
     const Vector& getCol(unsigned col) const;
+    void padSIMD(float val);
     bool empty() const;
     Matrix getMatrix() const;
     friend Archive& operator<<(Archive &ar, const Matrix &mat);

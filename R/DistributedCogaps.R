@@ -26,12 +26,6 @@ workerID)
     allParams$gaps@subsetDim <- ifelse(genomeWide, 1, 2)
     allParams$workerID <- workerID
 
-    # Distributed CoGAPS parallelizes across data subsets instead of using the
-    # OpenMP asynchronous sampler within each worker. Each worker is therefore
-    # run with asynchronousUpdates=FALSE and nThreads=1.
-    allParams$asynchronousUpdates <- FALSE
-    allParams$nThreads <- 1
-
     # call CoGAPS
     internal <- ifelse(is(data, "character"), cogaps_from_file_cpp, cogaps_cpp)
     raw <- internal(data, allParams, uncertainty)
@@ -247,8 +241,11 @@ stitchTogether <- function(result, allParams, sets)
             if (identical(sort(indices), sort(setIndices)))
             {
                 reorder <- match(indices, setIndices)
-                Amean <- Amean[reorder,]
-                Asd <- Asd[reorder,]
+                # drop=FALSE: with a single consensus pattern these are
+                # one-column matrices, and dropping turns them into vectors
+                # with no row names, which CogapsResult then rejects
+                Amean <- Amean[reorder,,drop=FALSE]
+                Asd <- Asd[reorder,,drop=FALSE]
             }
         }
     }
@@ -269,8 +266,8 @@ stitchTogether <- function(result, allParams, sets)
             if (identical(sort(indices), sort(setIndices)))
             {
                 reorder <- match(indices, setIndices)
-                Pmean <- Pmean[reorder,]
-                Psd <- Psd[reorder,]
+                Pmean <- Pmean[reorder,,drop=FALSE]
+                Psd <- Psd[reorder,,drop=FALSE]
             }
         }
     }

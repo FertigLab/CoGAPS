@@ -2,14 +2,28 @@
 #include "../testthat-tweak.h"
 #include "../utils/Archive.h"
 #include "../data_structures/Matrix.h"
+#include "../data_structures/HybridVector.h"
+#include "../data_structures/SparseVector.h"
+#include "../data_structures/HybridMatrix.h"
+#include "../data_structures/SparseMatrix.h"
 #include "../math/Random.h"
+#include "../math/MatrixMath.h"
 #include "../atomic/AtomicDomain.h"
-#include "../atomic/ProposalQueue.h"
+#include "../GapsParameters.h"
+#include "../GapsStatistics.h"
+#include "../gibbs_sampler/SingleThreadedGibbsSampler.h"
+#include "../gibbs_sampler/DenseNormalModel.h"
+
+#include <algorithm>
+#include <utility>
+#include <vector>
 
 // put Archive in it's own scope so it gets destructed (file stream closed)
 
-TEST_CASE("Reading/Writing to an Archive")
+TEST_CASE("Reading/Writing to an Archive", "[serialization][archive]")
 {
+    SECTION("Write an integer and read it back")
+    {
     {
         Archive ar1("test_ar.temp", ARCHIVE_WRITE);
         ar1 << 3;
@@ -24,10 +38,13 @@ TEST_CASE("Reading/Writing to an Archive")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
 
-TEST_CASE("Serialization of primitive types")
+TEST_CASE("Serialization of primitive types", "[serialization][primitives]")
 {
+    SECTION("Round-trip read/write of all primitive types")
+    {
     // test values
     unsigned u_read = 0, u_write = 456;
     uint32_t u32_read = 0, u32_write = 512;
@@ -68,10 +85,13 @@ TEST_CASE("Serialization of primitive types")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
 
-TEST_CASE("Vector Serialization")
+TEST_CASE("Vector Serialization", "[serialization][vector]")
 {
+    SECTION("Round-trip read/write of Vector")
+    {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
 
@@ -101,20 +121,54 @@ TEST_CASE("Vector Serialization")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
 
-TEST_CASE("HybridVector Serialization")
+TEST_CASE("HybridVector Serialization", "[serialization][hybridvector]")
 {
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
 
+    std::vector<float> in_v;
+    for (unsigned n = 0; n < 100; ++n)
+        in_v.push_back(n % 3 == 0 ? 0.f : rng.uniform(0.5f, 2.f));
+    HybridVector vecWrite(in_v), vecRead(100);
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << vecWrite; }
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> vecRead; }
+
+    REQUIRE(vecRead.size() == vecWrite.size());
+    for (unsigned i = 0; i < vecWrite.size(); ++i)
+        REQUIRE(vecRead[i] == vecWrite[i]);
+
+    std::remove("test_ar.temp");
 }
 
-TEST_CASE("SparseVector Serialization")
+TEST_CASE("SparseVector Serialization", "[serialization][sparsevector]")
 {
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
 
+    std::vector<float> in_v;
+    for (unsigned n = 0; n < 100; ++n)
+        in_v.push_back(n % 4 == 0 ? rng.uniform(0.5f, 2.f) : 0.f);
+    SparseVector vecWrite(in_v), vecRead(100);
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << vecWrite; }
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> vecRead; }
+
+    REQUIRE(vecRead.size() == vecWrite.size());
+    Vector denseWrite(vecWrite.getDense()), denseRead(vecRead.getDense());
+    for (unsigned i = 0; i < denseWrite.size(); ++i)
+        REQUIRE(denseRead[i] == denseWrite[i]);
+
+    std::remove("test_ar.temp");
 }
 
-TEST_CASE("Matrix Serialization")
+TEST_CASE("Matrix Serialization", "[serialization][matrix]")
 {
+    SECTION("Round-trip read/write of Matrix")
+    {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
 
@@ -151,20 +205,67 @@ TEST_CASE("Matrix Serialization")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
 
-TEST_CASE("HybridMatrix Serialization")
+TEST_CASE("HybridMatrix Serialization", "[serialization][hybridmatrix]")
 {
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
 
+    HybridMatrix matWrite(20, 12), matRead(20, 12);
+    for (unsigned i = 0; i < 20; ++i)
+        for (unsigned j = 0; j < 12; ++j)
+            matWrite.set(i, j, (i + j) % 3 == 0 ? 0.f : rng.uniform(0.5f, 2.f));
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << matWrite; }
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> matRead; }
+
+    REQUIRE(matRead.nRow() == matWrite.nRow());
+    REQUIRE(matRead.nCol() == matWrite.nCol());
+    for (unsigned i = 0; i < 20; ++i)
+        for (unsigned j = 0; j < 12; ++j)
+            REQUIRE(matRead(i,j) == matWrite(i,j));
+
+    std::remove("test_ar.temp");
 }
 
-TEST_CASE("SparseMatrix Serialization")
+TEST_CASE("SparseMatrix Serialization", "[serialization][sparsematrix]")
 {
+    GapsRandomState randState(123);
+    GapsRng rng(&randState);
 
+    Matrix dense(30, 10);
+    for (unsigned i = 0; i < 30; ++i)
+        for (unsigned j = 0; j < 10; ++j)
+            dense(i,j) = (i % 3 == 0) ? rng.uniform(0.5f, 2.f) : 0.f;
+    SparseMatrix matWrite(dense, false, false, std::vector<unsigned>());
+    // build the read target from an all-zero matrix so its columns start empty:
+    // the round-trip must repopulate them (catches the SparseVector count bug)
+    Matrix zeros(30, 10);
+    SparseMatrix matRead(zeros, false, false, std::vector<unsigned>());
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << matWrite; }
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> matRead; }
+
+    REQUIRE(matRead.nRow() == matWrite.nRow());
+    REQUIRE(matRead.nCol() == matWrite.nCol());
+    for (unsigned j = 0; j < matWrite.nCol(); ++j)
+    {
+        Vector colWrite(matWrite.getCol(j).getDense());
+        Vector colRead(matRead.getCol(j).getDense());
+        REQUIRE(colRead.size() == colWrite.size());
+        for (unsigned i = 0; i < colWrite.size(); ++i)
+            REQUIRE(colRead[i] == colWrite[i]);
+    }
+
+    std::remove("test_ar.temp");
 }
 
-TEST_CASE("Random Generator Serialization")
+TEST_CASE("Random Generator Serialization", "[serialization][random]")
 {
+    SECTION("Round-trip read/write of GapsRandomState")
+    {
     std::vector<float> randSequence;
 
     GapsRandomState randStateWrite(123);
@@ -206,245 +307,165 @@ TEST_CASE("Random Generator Serialization")
 
     // cleanup directory
     std::remove("test_ar.temp");
+    } // closes SECTION
 }
 
-TEST_CASE("GibbsSampler Serialization")
+// (the old CSV-based "GibbsSampler Serialization" test used the removed monolithic
+//  GibbsSampler API; it is superseded by [serialization][gibbssampler-roundtrip]
+//  below, which round-trips SingleThreadedGibbsSampler with the current API.)
+
+TEST_CASE("GapsParameters Serialization", "[serialization][gapsparameters]")
 {
-#if 0
-    Rcpp::Environment env = Rcpp::Environment::global_env();
-    std::string csvPath = Rcpp::as<std::string>(env["gistCsvPath"]);
+    Matrix data(40, 15);
+    GapsParameters pWrite(data);
+    pWrite.seed = 777;
+    pWrite.nGenes = 40;
+    pWrite.nSamples = 15;
+    pWrite.nPatterns = 5;
+    pWrite.nIterations = 321;
+    pWrite.alphaA = 0.02f;
+    pWrite.alphaP = 0.03f;
+    pWrite.maxGibbsMassA = 50.f;
+    pWrite.maxGibbsMassP = 60.f;
+    pWrite.useSparseOptimization = true;
+    pWrite.checkpointInterval = 42;
 
-    GibbsSampler Asampler(csvPath, false, 7, false, std::vector<unsigned>());
-    GibbsSampler Psampler(csvPath, true, 7, false, std::vector<unsigned>());
-    Asampler.sync(Psampler);
-    Psampler.sync(Asampler);
-    
-    Asampler.update(10000, 1);
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << pWrite; }
+    GapsParameters pRead(data);
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> pRead; }
 
-    Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
-    arWrite << Asampler;
-    arWrite.close();
+    // these are exactly the fields the serialization operators read/write; a
+    // mismatch (or a << / >> field-order slip) fails here
+    REQUIRE(pRead.seed == pWrite.seed);
+    REQUIRE(pRead.nGenes == pWrite.nGenes);
+    REQUIRE(pRead.nSamples == pWrite.nSamples);
+    REQUIRE(pRead.nPatterns == pWrite.nPatterns);
+    REQUIRE(pRead.nIterations == pWrite.nIterations);
+    REQUIRE(pRead.alphaA == pWrite.alphaA);
+    REQUIRE(pRead.alphaP == pWrite.alphaP);
+    REQUIRE(pRead.maxGibbsMassA == pWrite.maxGibbsMassA);
+    REQUIRE(pRead.maxGibbsMassP == pWrite.maxGibbsMassP);
+    REQUIRE(pRead.useSparseOptimization == pWrite.useSparseOptimization);
+    REQUIRE(pRead.checkpointInterval == pWrite.checkpointInterval);
 
-    GibbsSampler savedAsampler(csvPath, false, 7, false, std::vector<unsigned>());
-    Archive arRead("test_ar.temp", ARCHIVE_READ);
-    arRead >> savedAsampler;
-    arRead.close();
-
-    // cleanup directory
     std::remove("test_ar.temp");
-#endif
 }
 
-TEST_CASE("GapsParameters Serialization")
+TEST_CASE("GapsStatistics Serialization", "[serialization][gapsstatistics]")
 {
+    // build two dense samplers with real state so the statistics matrices are
+    // non-trivial, then round-trip the accumulated statistics
+    Matrix data(12, 8);
+    data.pad(15.f);
+    GapsRandomState randState(42);
+    GapsParameters params(data);
+    params.nPatterns = 3;
 
+    SingleThreadedGibbsSampler<DenseNormalModel> A(data, true, false, params.alphaA,
+        params.maxGibbsMassA, params, &randState);
+    SingleThreadedGibbsSampler<DenseNormalModel> P(data, false, false, params.alphaP,
+        params.maxGibbsMassP, params, &randState);
+    A.sync(P); P.sync(A);
+    A.extraInitialization(); P.extraInitialization();
+    A.update(300); P.update(300);
+    A.sync(P); P.sync(A);
+
+    GapsStatistics statsWrite(data.nRow(), data.nCol(), params.nPatterns);
+    for (unsigned i = 0; i < 5; ++i) statsWrite.update(A, P);
+    Matrix ameanW(statsWrite.Amean()), pmeanW(statsWrite.Pmean());
+    REQUIRE(gaps::sum(ameanW) > 0.f); // there is real state to serialize
+
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << statsWrite; }
+    GapsStatistics statsRead(data.nRow(), data.nCol(), params.nPatterns);
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> statsRead; }
+
+    Matrix ameanR(statsRead.Amean()), pmeanR(statsRead.Pmean());
+    REQUIRE(ameanR.nRow() == ameanW.nRow());
+    REQUIRE(ameanR.nCol() == ameanW.nCol());
+    for (unsigned i = 0; i < ameanW.nRow(); ++i)
+        for (unsigned j = 0; j < ameanW.nCol(); ++j)
+            REQUIRE(ameanR(i,j) == ameanW(i,j));
+    for (unsigned i = 0; i < pmeanW.nRow(); ++i)
+        for (unsigned j = 0; j < pmeanW.nCol(); ++j)
+            REQUIRE(pmeanR(i,j) == pmeanW(i,j));
+
+    std::remove("test_ar.temp");
 }
 
-TEST_CASE("GapsStatistics Serialization")
-{
-
-}
-
-#if 0
-TEST_CASE("AtomicDomain Serialization")
+TEST_CASE("AtomicDomain Serialization", "[serialization][atomicdomain]")
 {
     GapsRandomState randState(123);
     GapsRng rng(&randState);
-    
-    AtomicDomain domainWrite(100000);
 
+    AtomicDomain domainWrite(100000);
     for (unsigned i = 0; i < 1000; ++i)
     {
         domainWrite.insert(rng.uniform64(), rng.uniform(0.f, 100.f));
     }
 
-    {
-        Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
-        arWrite << domainWrite;
-    }
-
+    { Archive ar("test_ar.temp", ARCHIVE_WRITE); ar << domainWrite; }
     AtomicDomain domainRead(1);
-    
+    { Archive ar("test_ar.temp", ARCHIVE_READ);  ar >> domainRead; }
+
+    REQUIRE(domainRead.size() == domainWrite.size());
+    REQUIRE(domainRead.DomainLength() == domainWrite.DomainLength());
+    REQUIRE(domainRead.front()->pos()  == domainWrite.front()->pos());
+    REQUIRE(domainRead.front()->mass() == domainWrite.front()->mass());
+
+    // compare every atom as a (pos, mass) set (robust to storage order)
+    std::vector<std::pair<uint64_t, float> > want, got;
+    for (uint64_t i = 0; i < domainWrite.size(); ++i)
     {
-        Archive arRead("test_ar.temp", ARCHIVE_READ);
-        arRead >> domainRead;
+        want.push_back(std::make_pair(domainWrite.storedAtom(i)->pos(),
+            domainWrite.storedAtom(i)->mass()));
+        got.push_back(std::make_pair(domainRead.storedAtom(i)->pos(),
+            domainRead.storedAtom(i)->mass()));
     }
+    std::sort(want.begin(), want.end());
+    std::sort(got.begin(), got.end());
+    REQUIRE(want == got);
 
-    REQUIRE(domainWrite.front()->pos == domainRead.front()->pos);
-    REQUIRE(domainWrite.front()->mass == domainRead.front()->mass);
-    REQUIRE(domainWrite.size() == domainRead.size());
-    REQUIRE(domainWrite.mDomainLength == domainRead.mDomainLength);
-
-    for (unsigned i = 0; i < domainWrite.size(); ++i)
-    {
-        REQUIRE(domainWrite.mAtoms[i]->pos == domainRead.mAtoms[i]->pos);
-        REQUIRE(domainWrite.mAtoms[i]->mass == domainRead.mAtoms[i]->mass);
-    }
-
-    // cleanup directory
     std::remove("test_ar.temp");
 }
-#endif
 
-TEST_CASE("ProposalQueue Serialization")
+// Regression: SingleThreadedGibbsSampler's operator>> read the DataModel with >>
+// but then chained << (write) for mDomain/mNumBins/.../mAlpha, so a checkpoint
+// restore did NOT reload the atomic domain (a resumed run diverged from a fresh
+// one). Fixed to use >>. This round-trip catches it: nAtoms() of the restored
+// sampler must match the saved one.
+TEST_CASE("GibbsSampler serialization round-trip","[serialization][gibbssampler-roundtrip]")
 {
-    const unsigned nGenes = 10000;
-    const unsigned nPatterns = 100;
-    const unsigned nIterations = 1000;
+    Matrix data(12, 8);
+    data.pad(15.f);
+    GapsRandomState randState(42);
+    GapsParameters params(data);
+    params.nPatterns = 3;
 
-    GapsRandomState randStateWrite(123);
-    AtomicDomain domainWrite(nGenes * nPatterns);
-    ProposalQueue queueWrite(nGenes, nPatterns, &randStateWrite);
-    queueWrite.setAlpha(0.01f);
-    queueWrite.setLambda(0.01f);
-
-    for (unsigned i = 0; i < nIterations; ++i)
-    {
-        queueWrite.populate(domainWrite, nIterations);
-        for (unsigned j = 0; j < queueWrite.size(); ++j)
-        {
-            switch (queueWrite[j].type)
-            {
-                case 'B':
-                    queueWrite.acceptBirth();
-                    queueWrite[j].atom1->mass = 3.f;
-                    break;
-                case 'D':
-                    queueWrite.acceptDeath();
-                    domainWrite.erase(queueWrite[j].atom1->pos);
-                    break;
-                case 'M':
-                    queueWrite[j].atom1->pos = queueWrite[j].pos;
-                    break;
-                case 'E':
-                    float mass1 = queueWrite[j].atom1->mass;
-                    queueWrite[j].atom1->mass = queueWrite[j].atom2->mass;
-                    queueWrite[j].atom2->mass = mass1;
-                    break;
-            }
-        }
-        queueWrite.clear();
-    }
+    SingleThreadedGibbsSampler<DenseNormalModel> A(data, true, false, params.alphaA,
+        params.maxGibbsMassA, params, &randState);
+    SingleThreadedGibbsSampler<DenseNormalModel> P(data, false, false, params.alphaP,
+        params.maxGibbsMassP, params, &randState);
+    A.sync(P); P.sync(A);
+    A.extraInitialization(); P.extraInitialization();
+    A.update(500);
+    REQUIRE(A.nAtoms() > 0); // there is domain state worth serializing
 
     {
         Archive arWrite("test_ar.temp", ARCHIVE_WRITE);
-        arWrite << randStateWrite << queueWrite << domainWrite;
+        arWrite << A;
     }
 
-    GapsRandomState randStateRead(456);
-    AtomicDomain domainRead(nGenes * nPatterns);
-    ProposalQueue queueRead(nGenes, nPatterns, &randStateRead);
-    queueRead.setAlpha(100.f);
-    queueRead.setLambda(100.f);
-    
+    SingleThreadedGibbsSampler<DenseNormalModel> Aread(data, true, false, params.alphaA,
+        params.maxGibbsMassA, params, &randState);
+    REQUIRE(Aread.nAtoms() == 0); // freshly constructed: empty domain
     {
         Archive arRead("test_ar.temp", ARCHIVE_READ);
-        arRead >> randStateRead >> queueRead >> domainRead;
+        arRead >> Aread;
     }
 
-    GapsRng rngWriteTest(&randStateWrite);
-    GapsRng rngReadTest(&randStateRead);
+    // with the << bug the domain was never restored, so nAtoms() stayed 0
+    REQUIRE(Aread.nAtoms() == A.nAtoms());
+    REQUIRE(gaps::sum(Aread.MyMatrix()) == gaps::sum(A.MyMatrix()));
 
-    REQUIRE(rngWriteTest.uniform() == rngReadTest.uniform());
-    REQUIRE(rngWriteTest.uniform() == rngReadTest.uniform());
-    REQUIRE(domainWrite.size() == domainRead.size());
-    REQUIRE(queueWrite.size() == 0);
-    REQUIRE(queueRead.size() == 0);
-
-#if 0
-    REQUIRE(queueWrite.mRng.uniform() == queueRead.mRng.uniform());
-    REQUIRE(queueWrite.mRng.uniform() == queueRead.mRng.uniform());
-    REQUIRE(queueWrite.mRng.uniform() == queueRead.mRng.uniform());
-    REQUIRE(queueWrite.mRng.uniform() == queueRead.mRng.uniform());
-    REQUIRE(queueWrite.mMinAtoms == queueRead.mMinAtoms);
-    REQUIRE(queueWrite.mMaxAtoms == queueRead.mMaxAtoms);
-    REQUIRE(queueWrite.mBinLength == queueRead.mBinLength);
-    REQUIRE(queueWrite.mNumCols == queueRead.mNumCols);
-    REQUIRE(queueWrite.mAlpha == queueRead.mAlpha);
-    REQUIRE(queueWrite.mDomainLength == queueRead.mDomainLength);
-    REQUIRE(queueWrite.mNumBins == queueRead.mNumBins);
-    REQUIRE(queueWrite.mUseCachedRng == queueRead.mUseCachedRng);
-    for (unsigned i = 0; i < domainWrite.size(); ++i)
-    {
-        REQUIRE(domainWrite.mAtoms[i]->pos == domainRead.mAtoms[i]->pos);
-        REQUIRE(domainWrite.mAtoms[i]->mass == domainRead.mAtoms[i]->mass);
-    }
-#endif
-
-    for (unsigned i = 0; i < nIterations; ++i)
-    {
-        queueWrite.populate(domainWrite, nIterations);
-        queueRead.populate(domainRead, nIterations);
-        REQUIRE(queueWrite.size() == queueRead.size());
-
-        for (unsigned j = 0; j < queueWrite.size(); ++j)
-        {
-            REQUIRE(queueWrite[j].type == queueRead[j].type);
-            REQUIRE(queueWrite[j].pos == queueRead[j].pos);
-            REQUIRE(queueWrite[j].r1 == queueRead[j].r1);
-            REQUIRE(queueWrite[j].c1 == queueRead[j].c1);
-            REQUIRE(queueWrite[j].r2 == queueRead[j].r2);
-            REQUIRE(queueWrite[j].c2 == queueRead[j].c2);
-
-            if (queueWrite[j].atom1 == NULL)
-            {
-                bool b = queueRead[j].atom1 == NULL;
-                REQUIRE(b); // prevent pointer comparison warning in catch.h
-            }
-            else
-            {
-                REQUIRE(queueWrite[j].atom1->pos == queueRead[j].atom1->pos);
-                REQUIRE(queueWrite[j].atom1->mass == queueRead[j].atom1->mass);
-            }
-
-            if (queueWrite[j].atom2 == NULL)
-            {
-                bool b = queueRead[j].atom2 == NULL;
-                REQUIRE(b); // prevent pointer comparison warning in catch.h
-            }
-            else
-            {
-                REQUIRE(queueWrite[j].atom2->pos == queueRead[j].atom2->pos);
-                REQUIRE(queueWrite[j].atom2->mass == queueRead[j].atom2->mass);
-            }
-
-            // process proposal
-            switch (queueWrite[j].type)
-            {
-                case 'B':
-                    queueWrite.acceptBirth();
-                    queueRead.acceptBirth();
-                    queueWrite[j].atom1->mass = 3.f;
-                    queueRead[j].atom1->mass = 3.f;
-                    break;
-                case 'D':
-                    queueWrite.acceptDeath();
-                    queueRead.acceptDeath();
-                    domainWrite.erase(queueWrite[j].atom1->pos);
-                    domainRead.erase(queueRead[j].atom1->pos);
-                    break;
-                case 'M':
-                    queueWrite[j].atom1->pos = queueWrite[j].pos;
-                    queueRead[j].atom1->pos = queueRead[j].pos;
-                    break;
-                case 'E':
-                    float mass1w = queueWrite[j].atom1->mass;
-                    queueWrite[j].atom1->mass = queueWrite[j].atom2->mass;
-                    queueWrite[j].atom2->mass = mass1w;
-
-                    float mass1r = queueRead[j].atom1->mass;
-                    queueRead[j].atom1->mass = queueRead[j].atom2->mass;
-                    queueRead[j].atom2->mass = mass1r;
-                    break;
-            }
-        }
-
-        queueWrite.clear();
-        queueRead.clear();
-    }
-
-    // cleanup directory
     std::remove("test_ar.temp");
 }
-
-

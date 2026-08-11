@@ -5,8 +5,10 @@
 #include "../math/VectorMath.h"
 #include "../math/MatrixMath.h"
 
-TEST_CASE("Test HybridMatrix.h","[hybridmatrix]")
+TEST_CASE("Test HybridMatrix", "[hybridmatrix]")
 {
+    SECTION("Basic operations")
+    {
     HybridMatrix mat(100, 250);
     REQUIRE(mat.nRow() == 100);
     REQUIRE(mat.nCol() == 250);
@@ -32,4 +34,5 @@ TEST_CASE("Test HybridMatrix.h","[hybridmatrix]")
             REQUIRE(mat(i,j) == ref(i,j));
         }
     }
+    } // closes SECTION
 }

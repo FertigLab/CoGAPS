@@ -1,13 +1,16 @@
 #ifndef __COGAPS_ATOM_H__
 #define __COGAPS_ATOM_H__
 
+#include <cstdint>
+#include <map>
+
 struct Atom;
 class Archive;
 class AtomicDomain;
 
 // this is the map used internally by the atomic domain
-#include "../data_structures/MutableMap.h"
-typedef MutableMap<uint64_t, unsigned> AtomMapType;
+// #include "../data_structures/MutableMap.h" -- it is unsafe
+typedef std::map<uint64_t, size_t> AtomMapType;
 
 struct AtomNeighborhood
 {
@@ -30,27 +33,31 @@ public:
     void updateMass(float newMass);
     friend Archive& operator<<(Archive& ar, const Atom &a);
     friend Archive& operator>>(Archive& ar, Atom &a);
-private:
     // only the atomic domain can change the position of an atom, since it is
     // responsible for keeping them ordered
     friend class AtomicDomain;
-    void updatePos(uint64_t newPos);
-    void setLeftIndex(int index);
-    void setRightIndex(int index);
-    void setIndex(int index);
-    void setIterator(AtomMapType::iterator it);    
     bool hasLeft() const;
     bool hasRight() const;
-    int leftIndex() const;
-    int rightIndex() const;
-    int index() const;
+    size_t leftIndex() const;
+    size_t rightIndex() const;
+    size_t index() const;
     AtomMapType::iterator iterator() const;
+
+private:
+    void updatePos(uint64_t newPos);
+    void setLeftIndex(size_t index);
+    void setRightIndex(size_t index);
+    void unsetLeftIndex();
+    void unsetRightIndex();
+    void setIndex(size_t index);
+    void setIterator(AtomMapType::iterator it);    
 
     AtomMapType::iterator mIterator; // iterator to position in map
     uint64_t mPos; // position of the atom
-    int mLeftIndex; // index of left neighbor
-    int mRightIndex; // index of right neighbor
-    int mIndex; // storing the index allows vector lookup once found in map
+    bool mHasRight,mHasLeft; //are the following two defined
+    std::size_t mLeftIndex; // index of left neighbor in the atomic storage
+    std::size_t mRightIndex; // index of right neighbor in the atomic storage 
+    std::size_t mIndex; // storing the index allows vector lookup once found in map
     float mMass; // mass of the atom
 };
 

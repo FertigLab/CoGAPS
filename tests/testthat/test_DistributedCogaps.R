@@ -7,7 +7,9 @@ test_that("featureLoadings and sampleFactors are not all 0s in single-cell", {
   
   params <- setDistributedParams(params, nSets = 2)
   data(GIST)
-  cg <- CoGAPS(GIST.matrix, params=params)
+  # distributed CoGAPS wants on-disk data; an in-memory matrix warns. GIST.mtx
+  # holds the same data as GIST.matrix, so the dimension checks below still hold.
+  cg <- CoGAPS(system.file("extdata/GIST.mtx", package="CoGAPS"), params=params)
 
   featureLoadings <- cg@featureLoadings
   sampleFactors <- cg@sampleFactors
@@ -22,6 +24,32 @@ test_that("featureLoadings and sampleFactors are not all 0s in single-cell", {
   expect_true(sort((dim(featureLoadings)))[2] == nrow(GIST.matrix))
 })
 
+# One consensus pattern makes the stitched matrices one column wide. Without
+# drop=FALSE the re-ordering in stitchTogether turned them into vectors, whose
+# rownames are NULL, and the run died with "no gene names given".
+test_that("a one-pattern distributed run keeps its dim names", {
+  data(GIST)
+  for (mode in c("genome-wide", "single-cell"))
+  {
+    params <- CogapsParams(seed=42,
+                           nIterations = 100,
+                           nPatterns = 1,
+                           sparseOptimization = as.logical(0),
+                           distributed = mode)
+    params <- setDistributedParams(params, nSets = 2)
+    cg <- CoGAPS(system.file("extdata/GIST.mtx", package="CoGAPS"), params=params)
+
+    expect_true(is.matrix(cg@featureLoadings))
+    expect_true(is.matrix(cg@sampleFactors))
+    expect_equal(ncol(cg@featureLoadings), 1L)
+    expect_equal(ncol(cg@sampleFactors), 1L)
+    expect_equal(nrow(cg@featureLoadings), nrow(GIST.matrix))
+    expect_equal(nrow(cg@sampleFactors), ncol(GIST.matrix))
+    expect_false(is.null(rownames(cg@featureLoadings)))
+    expect_false(is.null(rownames(cg@sampleFactors)))
+  }
+})
+
 test_that("featureLoadings and sampleFactors are not all 0s in genome-wide", {
   params <- CogapsParams(seed=42,
                          nIterations = 100,
@@ -31,7 +59,9 @@ test_that("featureLoadings and sampleFactors are not all 0s in genome-wide", {
   
   params <- setDistributedParams(params, nSets = 2)
   data(GIST)
-  cg <- CoGAPS(GIST.matrix, params=params)
+  # distributed CoGAPS wants on-disk data; an in-memory matrix warns. GIST.mtx
+  # holds the same data as GIST.matrix, so the dimension checks below still hold.
+  cg <- CoGAPS(system.file("extdata/GIST.mtx", package="CoGAPS"), params=params)
   
   featureLoadings <- cg@featureLoadings
   sampleFactors <- cg@sampleFactors

@@ -146,10 +146,13 @@ test_that("patternMarkers works with lp", {
     data(GIST)
     res <- CoGAPS(GIST.data_frame, nIterations=100, nPatterns=7,
                   seed=1, messages=FALSE, sparseOptimization=TRUE)
-    expect_no_error(patternMarkers(res, lp=list(my_lp=c(1,0,0,0,0))))
+    # lp must have one entry per pattern, i.e. length nPatterns
+    expect_no_error(patternMarkers(res, lp=list(my_lp=c(1,0,0,0,0,0,0))))
+    # wrong length -> warning
     expect_warning(patternMarkers(res, lp=list(my_lp=c(1,0,0,0)),
                                   threshold = "all"))
-    expect_error(patternMarkers(res, lp=list(my_lp=c(2,0,0,0,0)),
+    # entry greater than 1 -> error
+    expect_error(patternMarkers(res, lp=list(my_lp=c(2,0,0,0,0,0,0)),
                                threshold = "all"))
     
 })

@@ -17,13 +17,12 @@ void DenseNormalModel::setAnnealingTemp(float temp)
 }
 
 // copy transpose of other AP matrix
-void DenseNormalModel::sync(const DenseNormalModel &model, unsigned nThreads)
+void DenseNormalModel::sync(const DenseNormalModel &model)
 {
     GAPS_ASSERT(model.mAPMatrix.nRow() == mAPMatrix.nCol());
     GAPS_ASSERT(model.mAPMatrix.nCol() == mAPMatrix.nRow());
     unsigned nc = model.mAPMatrix.nCol();
     unsigned nr = model.mAPMatrix.nRow();
-    #pragma omp parallel for num_threads(nThreads)
     for (unsigned j = 0; j < nc; ++j)
     {
         for (unsigned i = 0; i < nr; ++i)
@@ -116,7 +115,7 @@ void DenseNormalModel::changeMatrix(unsigned row, unsigned col, float delta)
 
 void DenseNormalModel::safelyChangeMatrix(unsigned row, unsigned col, float delta)
 {
-    float newVal = gaps::max(mMatrix(row, col) + delta, 0.f);
+    float newVal = std::max(mMatrix(row, col) + delta, 0.f);
     updateAPMatrix(row, col, newVal - mMatrix(row, col));
     mMatrix(row, col) = newVal;
     GAPS_ASSERT(mMatrix(row, col) >= 0.f);

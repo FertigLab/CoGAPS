@@ -133,7 +133,16 @@ Archive& operator>>(Archive &ar, SparseVector &vec)
     {
         ar >> vec.mIndexBitFlags[i];
     }
-    for (unsigned i = 0; i < vec.mData.size(); ++i)
+    // the number of stored (non-zero) values is the popcount of the bit flags,
+    // which were just read; resize mData so a differently-structured (e.g. empty)
+    // destination is restored correctly rather than left with the wrong count.
+    unsigned nNonZeroes = 0;
+    for (unsigned i = 0; i < vec.mIndexBitFlags.size(); ++i)
+    {
+        nNonZeroes += __builtin_popcountll(vec.mIndexBitFlags[i]);
+    }
+    vec.mData.resize(nNonZeroes);
+    for (unsigned i = 0; i < nNonZeroes; ++i)
     {
         ar >> vec.mData[i];
     }

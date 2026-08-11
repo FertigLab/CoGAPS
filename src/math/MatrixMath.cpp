@@ -51,6 +51,7 @@ float gaps::nonZeroMean(const Matrix &mat)
             }
         }
     }
+    if (nNonZeroes == 0) return 0.f; // all-zero matrix: avoid 0/0 = NaN
     return sum / static_cast<float>(nNonZeroes);
 }
 
@@ -68,41 +69,56 @@ float gaps::nonZeroMean(const SparseMatrix &mat)
             it.next();
         }
     }
+    if (nNonZeroes == 0) return 0.f; // all-zero matrix: avoid 0/0 = NaN
     return sum / static_cast<float>(nNonZeroes);
 }
 
-Matrix gaps::pmax(Matrix mat, float p)
+Matrix gaps::pmax(const Matrix & mat, float factor, float min_threshold)
 {
+    Matrix rmat(mat.nRow(), mat.nCol());
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
         for (unsigned i = 0; i < mat.nRow(); ++i)
         {
-            mat(i,j) = gaps::max(mat(i,j) * p, p);
+            rmat(i,j) = std::max(mat(i,j) * factor, min_threshold);
         }   
     }
-    return mat;
+    // SIMD loops in alphaParameters read past mSize into padding positions;
+    // set them to a positive value so that the denominator (S^2) is never
+    // zero there, preventing 0/0 = NaN that silences all sampleBirth() calls
+    rmat.padSIMD(min_threshold);
+    return rmat;
 }
 
-Matrix operator*(Matrix mat, float f)
+//overload threshold=factor for back compatibility
+Matrix gaps::pmax(const Matrix & mat, float factor)
 {
-    for (unsigned j = 0; j < mat.nCol(); ++j)
-    {
-        for (unsigned i = 0; i < mat.nRow(); ++i)
-        {
-            mat(i,j) *= f;
-        }   
-    }
-    return mat;
+   return gaps::pmax(mat, factor, factor);
 }
 
-Matrix operator/(Matrix mat, float f)
+
+Matrix operator*(const Matrix & mat, float f)
 {
+    Matrix rmat(mat.nRow(), mat.nCol());
     for (unsigned j = 0; j < mat.nCol(); ++j)
     {
         for (unsigned i = 0; i < mat.nRow(); ++i)
         {
-            mat(i,j) /= f;
+            rmat(i,j) = f * mat(i,j);
         }   
     }
-    return mat;
+    return rmat;
+}
+
+Matrix operator/(const Matrix & mat, float f)
+{
+    Matrix rmat(mat.nRow(), mat.nCol());
+    for (unsigned j = 0; j < mat.nCol(); ++j)
+    {
+        for (unsigned i = 0; i < mat.nRow(); ++i)
+        {
+            rmat(i,j) = mat(i,j) / f;
+        }   
+    }
+    return rmat;
 }
