@@ -36,14 +36,27 @@ Three of these are easy to overlook, because nothing fails until it does:
 - **`SeuratObject`** is only needed for `R CMD check`, which refuses to run a
   complete check while a suggested package is missing.
 
-Outside R:
+Outside R (Homebrew names; use the distro equivalent elsewhere):
 
 ```bash
-brew install autoconf autoconf-archive   # or the distro equivalent
+brew install autoconf autoconf-archive pandoc gh
+xcode-select --install     # macOS only, if the compiler is missing
 ```
 
-`autoconf-archive` is required to regenerate `configure` — see the note under
-Build & test. It is only needed when `configure.ac` changes.
+- **`autoconf` + `autoconf-archive`** regenerate `configure`, and only matter when
+  `configure.ac` changes. `autoconf-archive` supplies the `AX_COMPILER_*` macros —
+  see the note under Build & test for why `aclocal` has to run first.
+- **`pandoc`** builds the vignette: `vignettes/CoGAPS.Rmd` goes through
+  `VignetteBuilder: knitr` → rmarkdown → pandoc. `R CMD check` builds vignettes, so
+  without it the check that CI runs fails here even though the package is fine.
+  (RStudio ships its own copy; a plain shell does not.)
+- **`gh`** is not needed to build or test anything — it is how issues and PRs are
+  read from the terminal. It needs `gh auth login` once per machine.
+- The compiler itself comes from the **Xcode Command Line Tools**, not from
+  Homebrew. Verified against Apple clang 17.
+
+Versions on the current machine: autoconf 2.73, autoconf-archive 2024.10.16,
+pandoc 3.10.1, gh 2.97.0.
 
 Do **not** upgrade the generated documentation casually: `DESCRIPTION` pins
 `RoxygenNote: 7.3.3`, and running `devtools::document()` under a newer roxygen2
