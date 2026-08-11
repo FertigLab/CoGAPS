@@ -5,10 +5,10 @@ Nothing in this directory is part of the package: `dev-notes/` is excluded by
 Bioconductor. It is kept in the repository so that the reasoning behind the code
 travels with it.
 
-One file describes the way we work rather than any particular piece of work:
+Two files stand apart from the branch work and are deliberately in Russian, which
+is why they live in `rus/` — everything an outside reader sees stays in English:
 [`rus/agent-rules-rus.md`](rus/agent-rules-rus.md), the working agreements with
-the maintainer. It is deliberately in Russian and lives in `rus/` for that reason;
-everything an outside reader sees stays in English. The assistant-facing
+the maintainer, and [`rus/plan-rus.md`](rus/plan-rus.md), what is queued next. The assistant-facing
 description of the project — how it is built, tested and laid out — is
 `../CLAUDE.md`. Everything else below belongs to branch
 `132-uncertainty-improvements`, which tracks GitHub issue #132 ("Uncertainty
