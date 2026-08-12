@@ -20,7 +20,6 @@ A longer, Russian-language write-up of items 1–5 was prepared separately for t
 | 3 | `binaryA()` unusable | older than `8a21f281` | `40eb0f58` |
 | 4 | `fromCSV()` returned the wrong slot types | older than `8a21f281` | `40eb0f58` |
 | 5 | `show(CogapsParams)` errored | older than `8a21f281` | `40eb0f58` |
-| 6 | distributed run dies with "no gene names given" when the consensus collapses to one pattern | older than `8a21f281` | the commit after this one |
 
 ---
 
@@ -90,56 +89,6 @@ Fixed by qualifying it.
 
 This one had been visible all along in `R CMD check` as the "no visible binding
 for global variable ‘checkpointInFile’" NOTE — nobody had gone through the NOTEs.
-
-## 6. A distributed run dies with "no gene names given" on a one-pattern consensus
-
-Reported by the maintainer against `master` (3.33.1) as a "strange error":
-
-```r
-params <- CogapsParams(seed=42, nIterations=100, nPatterns=2,
-                       sparseOptimization=FALSE, distributed="genome-wide")
-params <- setDistributedParams(params, nSets=11)
-data(GIST)
-CoGAPS(GIST.matrix, params=params)
-#> Error in .local(.Object, ...) : no gene names given
-```
-
-`stitchTogether` re-orders the stacked subset results to match the original data:
-
-```r
-Amean <- Amean[reorder,]      # DistributedCogaps.R:244, no drop = FALSE
-```
-
-With a single-column matrix `[reorder,]` drops the dimensions and yields a plain
-vector, whose `rownames()` is `NULL`; `createCogapsResult` then refuses to build a
-`CogapsResult`. The gene names were never lost — the matrix stopped being a
-matrix. The same omission is on `:245` (`Asd`) and on `:266,267` (`Pmean`/`Psd`,
-the single-cell branch).
-
-The matrix has one column when pattern matching across subsets collapses to a
-single consensus pattern. Tracing `stitchTogether` on `master` shows exactly that:
-at `nSets=11` the eleven worker matrices are `123×1` (and one `133×1`), all with
-row names; at `nSets=13` they are `104×2` and the run completes.
-
-Not a parallelism problem, despite the "it breaks at cores+1" first impression: it
-reproduces under `BiocParallel::SerialParam()` and is deterministic for a fixed
-seed.
-
-**This branch is not immune.** The four lines are identical here; the uncertainty
-fixes (issues 17/19/20) only changed the numbers enough that GIST no longer
-collapses — `nSets` 6…16 all keep two patterns. Ask for one pattern and the same
-error appears on this branch too:
-
-```r
-p <- CogapsParams(seed=42, nIterations=100, nPatterns=1,
-                  sparseOptimization=FALSE, distributed="genome-wide")
-p <- setDistributedParams(p, nSets=4)
-CoGAPS(GIST.matrix, params=p)      # no gene names given, on 3.33.2
-```
-
-Fixed by adding `drop = FALSE` to all four subscripts. The misleading error
-message is left alone: `CogapsResult` is right to demand names, and the caller is
-what was broken.
 
 ---
 
