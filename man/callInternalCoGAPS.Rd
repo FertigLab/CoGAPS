@@ -7,7 +7,14 @@ called directly, but to avoid any re-entrant behavior this function is called
 instead. It is a light wrapper around cogaps_cpp that handles setting
 the distributed parameters}
 \usage{
-callInternalCoGAPS(data, allParams, uncertainty, subsetIndices, workerID)
+callInternalCoGAPS(
+  data,
+  allParams,
+  uncertainty,
+  subsetIndices,
+  workerID,
+  skipInternalSubset = FALSE
+)
 }
 \arguments{
 \item{data}{data in a supported format}
@@ -19,6 +26,9 @@ callInternalCoGAPS(data, allParams, uncertainty, subsetIndices, workerID)
 \item{subsetIndices}{indices of the subset of data to run on}
 
 \item{workerID}{worker ID for parallelization}
+
+\item{skipInternalSubset}{if TRUE, data is already subsetted and only names
+should be subsetted}
 }
 \value{
 CogapsResult object
