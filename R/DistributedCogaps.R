@@ -8,22 +8,35 @@
 #' @param uncertainty uncertainty of data in the same format as data
 #' @param subsetIndices indices of the subset of data to run on
 #' @param workerID worker ID for parallelization
+#' @param skipInternalSubset if TRUE, data is already subsetted and only names
+#' should be subsetted
 #' @return CogapsResult object
 callInternalCoGAPS <- function(data, allParams, uncertainty, subsetIndices,
-workerID)
+workerID, skipInternalSubset=FALSE)
 {
     # identify which mode of parallelization
     genomeWide <- allParams$gaps@distributed == "genome-wide"
     allParams$gaps@distributed <- NULL
 
-    # subset gene/sample names
-    if (genomeWide)
-        allParams$geneNames <- allParams$geneNames[subsetIndices]
-    else
-        allParams$sampleNames <- allParams$sampleNames[subsetIndices]
+    if (!is.null(subsetIndices))
+    {
+        # subset gene/sample names
+        if (genomeWide)
+            allParams$geneNames <- allParams$geneNames[subsetIndices]
+        else
+            allParams$sampleNames <- allParams$sampleNames[subsetIndices]
+    }
 
-    allParams$gaps@subsetIndices <- subsetIndices
-    allParams$gaps@subsetDim <- ifelse(genomeWide, 1, 2)
+    if (skipInternalSubset)
+    {
+        allParams$gaps@subsetIndices <- NULL
+        allParams$gaps@subsetDim <- 0
+    }
+    else
+    {
+        allParams$gaps@subsetIndices <- subsetIndices
+        allParams$gaps@subsetDim <- ifelse(genomeWide, 1, 2)
+    }
     allParams$workerID <- workerID
 
     # Distributed CoGAPS parallelizes across data subsets instead of using the
@@ -51,6 +64,16 @@ workerID)
 #' @importFrom BiocParallel bplapply MulticoreParam
 distributedCogaps <- function(data, allParams, uncertainty)
 {
+    subsetData <- function(dataInput, setIndices, subsetRows)
+    {
+        if (subsetRows)
+            return(dataInput[setIndices,,drop=FALSE])
+        return(dataInput[,setIndices,drop=FALSE])
+    }
+
+    subsetRows <- xor(allParams$transposeData,
+        allParams$gaps@distributed == "genome-wide")
+
     # randomly sample either rows or columns into subsets to break the data up
     set.seed(allParams$gaps@seed)
     sets <- createSets(data, allParams)
@@ -65,10 +88,28 @@ distributedCogaps <- function(data, allParams, uncertainty)
     {
         # run Cogaps normally on each subset of the data
         gapsCat(allParams, "Running Across Subsets...\n\n")
-        initialResult <- bplapply(1:length(sets), BPPARAM=allParams$BPPARAM,
+        initialResult <- bplapply(seq_along(sets), BPPARAM=allParams$BPPARAM,
         FUN=function(i)
         {
-            callInternalCoGAPS(data, allParams, uncertainty, sets[[i]], i)
+            if (is(data, "character"))
+            {
+                callInternalCoGAPS(data, allParams, uncertainty, sets[[i]], i)
+            }
+            else
+            {
+                setIndices <- sets[[i]]
+                subsetUncertainty <- uncertainty
+                if (!is.null(uncertainty) && !is(uncertainty, "character"))
+                    subsetUncertainty <- subsetData(uncertainty, setIndices, subsetRows)
+                callInternalCoGAPS(
+                    data=subsetData(data, setIndices, subsetRows),
+                    allParams=allParams,
+                    uncertainty=subsetUncertainty,
+                    subsetIndices=setIndices,
+                    workerID=i,
+                    skipInternalSubset=TRUE
+                )
+            }
         })
 
         # get all unmatched patterns
@@ -94,10 +135,28 @@ distributedCogaps <- function(data, allParams, uncertainty)
 
     # run final phase with fixed matrix
     gapsCat(allParams, "Running Final Stage...\n\n")
-    finalResult <- bplapply(1:length(sets), BPPARAM=allParams$BPPARAM,
+    finalResult <- bplapply(seq_along(sets), BPPARAM=allParams$BPPARAM,
     FUN=function(i)
     {
-        callInternalCoGAPS(data, allParams, uncertainty, sets[[i]], i)
+        if (is(data, "character"))
+        {
+            callInternalCoGAPS(data, allParams, uncertainty, sets[[i]], i)
+        }
+        else
+        {
+            setIndices <- sets[[i]]
+            subsetUncertainty <- uncertainty
+            if (!is.null(uncertainty) && !is(uncertainty, "character"))
+                subsetUncertainty <- subsetData(uncertainty, setIndices, subsetRows)
+            callInternalCoGAPS(
+                data=subsetData(data, setIndices, subsetRows),
+                allParams=allParams,
+                uncertainty=subsetUncertainty,
+                subsetIndices=setIndices,
+                workerID=i,
+                skipInternalSubset=TRUE
+            )
+        }
     })
 
     # concatenate final result
