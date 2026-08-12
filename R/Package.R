@@ -19,7 +19,7 @@
 #' CoGAPS: an R/C++ package to identify patterns and biological
 #' process activity in transcriptomic data.
 #' Bioinformatics. 2010 Nov 1;26(21):2792-3
-#' @docType package
+#' @docType _PACKAGE
 #' @name CoGAPS-package
 #' @importFrom Rcpp evalCpp
 #' @useDynLib CoGAPS
