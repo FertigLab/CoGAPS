@@ -173,3 +173,25 @@ test_that("single-cell distributed workers receive subsetted in-memory data", {
   fullBytes <- as.numeric(object.size(mat))
   expect_true(all(vapply(observed, function(x) x$payloadBytes < fullBytes, logical(1))))
 })
+
+
+#test more nSets than workers
+test_that("distributed workers fewer than nSets proceed successfully", {
+  set.seed(1)
+  mat <- matrix(rexp(20 * 10), nrow = 20, ncol = 10)
+
+  params <- CogapsParams(seed = 42,
+                         nIterations = 30,
+                         nPatterns = 2,
+                         sparseOptimization = as.logical(0),
+                         distributed = "genome-wide")
+  params <- setDistributedParams(params, nSets = 4)
+  
+
+  cg <- CoGAPS(mat,
+         params = params,
+         BPPARAM = BiocParallel::MulticoreParam(workers=1),
+         messages = FALSE)
+
+  expect_true(is(cg, "CogapsResult"))
+})

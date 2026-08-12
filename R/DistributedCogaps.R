@@ -81,8 +81,10 @@ distributedCogaps <- function(data, allParams, uncertainty)
         stop("data subset dimension less than nPatterns")
 
     if (is.null(allParams$BPPARAM))
-        allParams$BPPARAM <- BiocParallel::MulticoreParam(workers=length(sets))
-    
+    {
+        cores <- min(length(sets), parallel::detectCores())
+        allParams$BPPARAM <- BiocParallel::MulticoreParam(workers=max(1, cores-2))
+    }
     initialResult <- NULL
     if (is.null(allParams$gaps@fixedPatterns))
     {
